@@ -2,21 +2,33 @@ name: Build Mobile
 
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
+      - name: Set profile
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "profile=preview" >> $GITHUB_OUTPUT
+          else
+            echo "profile=preview" >> $GITHUB_OUTPUT
+          fi
+
       - run: npm install -g eas-cli
       - run: npm ci
+
       - name: Build Android
-        run: eas build --platform android --profile preview --non-interactive --no-wait
+        run: eas build --platform android --profile ${{ steps.env.outputs.profile }} --non-interactive --no-wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
