@@ -9,7 +9,7 @@ export interface Subscription {
   billingPeriod: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'LIFETIME' | 'ONE_TIME';
   billingDay?: number;
   nextPaymentDate?: string;
-  status: 'active' | 'trial' | 'paused' | 'cancelled';
+  status: 'ACTIVE' | 'trial' | 'paused' | 'cancelled';
   paymentCardId?: string;
   plan?: string;
   websiteUrl?: string;

@@ -72,8 +72,8 @@ export default function SubscriptionsScreen() {
       { text: t('common.yes'), onPress: async () => {
         try {
           await subscriptionsApi.cancel(id);
-          updateSubscription(id, { status: 'cancelled' });
-        } catch { updateSubscription(id, { status: 'cancelled' }); }
+          updateSubscription(id, { status: 'CANCELLED' });
+        } catch { updateSubscription(id, { status: 'CANCELLED' }); }
       }},
     ]);
   };

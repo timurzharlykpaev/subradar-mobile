@@ -135,7 +135,7 @@ export default function SubscriptionDetailScreen() {
 
           <Text style={styles.amount}>
             {subscription.currency} {subscription.amount.toFixed(2)}
-            <Text style={styles.period}> / {subscription.period}</Text>
+            <Text style={styles.period}> / {subscription.billingPeriod}</Text>
           </Text>
         </View>
 
@@ -149,7 +149,7 @@ export default function SubscriptionDetailScreen() {
 
           <DetailRow label={t("subscriptions.next_payment")}>
             <Text style={styles.detailValue}>
-              {new Date(subscription.nextDate).toLocaleDateString('en', {
+              {new Date(subscription.nextPaymentDate).toLocaleDateString('en', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
               })}
             </Text>
@@ -200,7 +200,7 @@ export default function SubscriptionDetailScreen() {
               <Text style={styles.websiteBtnText}>🌐 Open Website</Text>
             </TouchableOpacity>
           )}
-          {subscription.status !== 'cancelled' && (
+          {subscription.status !== 'CANCELLED' && (
             <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelSubscription}>
               <Text style={styles.cancelBtnText}>✕ Cancel Subscription</Text>
             </TouchableOpacity>

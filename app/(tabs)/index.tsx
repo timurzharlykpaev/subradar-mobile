@@ -40,9 +40,9 @@ export default function DashboardScreen() {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
-  const activeSubs = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial');
-  const trialCount = subscriptions.filter((s) => s.status === 'trial').length;
-  const cancelledCount = subscriptions.filter((s) => s.status === 'cancelled').length;
+  const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
+  const trialCount = subscriptions.filter((s) => s.status === 'TRIAL').length;
+  const cancelledCount = subscriptions.filter((s) => s.status === 'CANCELLED').length;
 
   const totalMonthly = activeSubs.reduce((sum, s) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
@@ -113,7 +113,7 @@ export default function DashboardScreen() {
 
         {/* Quick Stats */}
         <View style={styles.statsRow}>
-          <StatCard label={t('subscriptions.active')} value={subscriptions.filter((s) => s.status === 'active').length} color={COLORS.success} />
+          <StatCard label={t('subscriptions.active')} value={subscriptions.filter((s) => s.status === 'ACTIVE').length} color={COLORS.success} />
           <StatCard label={t('subscriptions.trial')} value={trialCount} color={COLORS.warning} />
           <StatCard label={t('subscriptions.cancelled')} value={cancelledCount} color={COLORS.error} />
         </View>

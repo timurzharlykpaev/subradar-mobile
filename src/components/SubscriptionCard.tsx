@@ -61,9 +61,9 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
         <Text style={styles.amount}>
           {subscription.currency} {subscription.amount.toFixed(2)}
         </Text>
-        <Text style={styles.period}>/ {subscription.period}</Text>
+        <Text style={styles.period}>/ {subscription.billingPeriod}</Text>
         <Text style={styles.nextDate}>
-          {new Date(subscription.nextDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+          {new Date(subscription.nextPaymentDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
         </Text>
       </View>
     </TouchableOpacity>
