@@ -9,7 +9,9 @@
     "loading": "読み込み中...",
     "error": "問題が発生しました",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "all": "すべて",
+    "or": "または"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -33,7 +35,14 @@
     "unused_subscriptions": "未使用のサブスクリプション",
     "monthly_trend": "月間支出トレンド",
     "by_category": "カテゴリ別支出",
-    "upcoming": "今後の支払い"
+    "upcoming": "今後の支払い",
+    "good_morning": "おはようございます",
+    "good_afternoon": "こんにちは",
+    "good_evening": "こんばんは",
+    "total_month": "今月の合計",
+    "per_month": "月あたり",
+    "active_subs_title": "アクティブなサブスクリプション",
+    "upcoming_7": "今後7日間"
   },
   "subscriptions": {
     "title": "サブスクリプション",
@@ -52,7 +61,11 @@
     "weekly": "週次",
     "next_payment": "次回支払い",
     "per_month": "/月",
-    "per_year": "/年"
+    "per_year": "/年",
+    "total": "件",
+    "empty_hint": "+をタップして最初のサブスクリプションを追加",
+    "delete_title": "サブスクを削除",
+    "cancel_title": "サブスクをキャンセル"
   },
   "add": {
     "title": "サブスクリプションを追加",
@@ -69,7 +82,14 @@
     "notes": "メモ",
     "save": "サブスクリプションを保存",
     "voice_hint": "例：Netflixに毎月15ドル支払っています",
-    "screenshot_hint": "領収書または確認メールのスクリーンショットをアップロード"
+    "screenshot_hint": "領収書または確認メールのスクリーンショットをアップロード",
+    "website": "ウェブサイト",
+    "plan": "プラン名",
+    "save_btn": "サブスクリプションを保存",
+    "required": "必須",
+    "fill_required": "名前と金額を入力してください",
+    "ai_processing": "AI処理中...",
+    "ai_screenshot": "スクリーンショット処理中..."
   },
   "settings": {
     "title": "設定",
@@ -99,5 +119,44 @@
     "open_app": "アプリを開く",
     "features": "必要なものすべて",
     "pricing": "シンプルで透明な料金"
+  },
+  "onboarding": {
+    "choose_language": "言語を選択",
+    "choose_currency": "デフォルト通貨を選択",
+    "next": "次へ →",
+    "get_started": "始める →",
+    "invalid_email": "有効なメールアドレスを入力してください",
+    "magic_link_sent": "リンクを送信しました",
+    "check_inbox": "メールを確認してください",
+    "demo_login": "デモログイン",
+    "continue_apple": "Appleで続ける",
+    "continue_google": "Googleで続ける",
+    "terms": "続けることで利用規約とプライバシーポリシーに同意したものとみなされます"
+  },
+  "analytics": {
+    "avg_month": "月平均",
+    "total_year": "今年の合計",
+    "most_expensive": "最も高額",
+    "by_category": "カテゴリ別",
+    "monthly": "月次内訳"
+  },
+  "subscription": {
+    "billing_day": "請求日",
+    "detail_title": "詳細",
+    "pause": "一時停止",
+    "resume": "再開",
+    "cancel_sub": "キャンセル",
+    "delete": "削除",
+    "edit": "編集"
+  },
+  "features": {
+    "voice_title": "音声で追加",
+    "voice_desc": "「Netflix月15ドル追加」と言うだけ",
+    "screenshot_title": "AIスクリーンショット",
+    "screenshot_desc": "請求書を撮影すればAIが情報を抽出",
+    "reminders_title": "スマートリマインダー",
+    "reminders_desc": "更新前に通知",
+    "reports_title": "税務レポート",
+    "reports_desc": "ワンタップで経費レポート生成"
   }
 }

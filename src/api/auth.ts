@@ -3,6 +3,8 @@ import { apiClient } from './client';
 export const authApi = {
   loginWithGoogle: (idToken: string) =>
     apiClient.post('/auth/google', { idToken }),
+  loginWithGoogleToken: (accessToken: string) =>
+    apiClient.post('/auth/google/token', { accessToken }),
   loginWithApple: (identityToken: string) =>
     apiClient.post('/auth/apple', { identityToken }),
   sendMagicLink: (email: string) =>

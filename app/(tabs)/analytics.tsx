@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import {
   View,
@@ -46,6 +47,7 @@ const chartStyles = StyleSheet.create({
 });
 
 export default function AnalyticsScreen() {
+  const { t } = useTranslation();
   const { subscriptions } = useSubscriptionsStore();
 
   const activeSubs = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial');
@@ -87,10 +89,10 @@ export default function AnalyticsScreen() {
 
         {/* Summary Cards */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
-          <StatCard label="Avg / month" value={`$${totalMonthly.toFixed(0)}`} />
-          <StatCard label="Total this year" value={`$${totalYearly.toFixed(0)}`} />
+          <StatCard label={t('analytics.avg_month')} value={`$${totalMonthly.toFixed(0)}`} />
+          <StatCard label={t('analytics.total_year')} value={`$${totalYearly.toFixed(0)}`} />
           {mostExpensive && (
-            <StatCard label="Most expensive" value={mostExpensive.name} sub={`$${mostExpensive.amount}/mo`} />
+            <StatCard label={t('analytics.most_expensive')} value={mostExpensive.name} sub={`$${mostExpensive.amount}/mo`} />
           )}
         </ScrollView>
 

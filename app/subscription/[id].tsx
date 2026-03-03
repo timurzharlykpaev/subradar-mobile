@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import {
   View,
@@ -18,7 +19,7 @@ import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
 
 export default function SubscriptionDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const subscription = useSubscriptionsStore((s) => s.subscriptions.find((sub) => sub.id === id));
   const { updateSubscription, removeSubscription } = useSubscriptionsStore();
@@ -37,7 +38,7 @@ export default function SubscriptionDetailScreen() {
     );
   }
 
-  const card = subscription.cardId ? getCard(subscription.cardId) : null;
+  const card = subscription.paymentCardId ? getCard(subscription.paymentCardId) : null;
   const statusColor = STATUS_COLORS[subscription.status] || COLORS.textSecondary;
   const category = CATEGORIES.find((c) => c.id === subscription.category);
 
@@ -109,8 +110,8 @@ export default function SubscriptionDetailScreen() {
 
         {/* Service Info */}
         <View style={styles.serviceCard}>
-          {subscription.logoUrl ? (
-            <Image source={{ uri: subscription.logoUrl }} style={styles.logo} />
+          {subscription.iconUrl ? (
+            <Image source={{ uri: subscription.iconUrl }} style={styles.logo} />
           ) : (
             <View style={[styles.logoPlaceholder, { backgroundColor: COLORS.primaryLight }]}>
               <Text style={styles.logoText}>{subscription.name[0]}</Text>
@@ -139,11 +140,11 @@ export default function SubscriptionDetailScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Details</Text>
 
-          <DetailRow label="Category">
+          <DetailRow label={t("add.category")}>
             <CategoryBadge categoryId={subscription.category} />
           </DetailRow>
 
-          <DetailRow label="Next Payment">
+          <DetailRow label={t("subscriptions.next_payment")}>
             <Text style={styles.detailValue}>
               {new Date(subscription.nextDate).toLocaleDateString('en', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -151,12 +152,12 @@ export default function SubscriptionDetailScreen() {
             </Text>
           </DetailRow>
 
-          <DetailRow label="Billing Day">
+          <DetailRow label={t("subscription.billing_day")}>
             <Text style={styles.detailValue}>Day {subscription.billingDay}</Text>
           </DetailRow>
 
           {card && (
-            <DetailRow label="Payment Card">
+            <DetailRow label={t("add.card")}>
               <Text style={styles.detailValue}>
                 ••••{card.last4} ({card.brand}) – {card.nickname}
               </Text>
@@ -164,7 +165,7 @@ export default function SubscriptionDetailScreen() {
           )}
 
           {subscription.notes && (
-            <DetailRow label="Notes">
+            <DetailRow label={t("add.notes")}>
               <Text style={styles.detailValue}>{subscription.notes}</Text>
             </DetailRow>
           )}

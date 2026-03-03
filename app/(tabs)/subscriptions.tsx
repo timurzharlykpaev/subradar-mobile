@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,20 +10,35 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { useSubscriptionsStore, FilterType } from '../../src/stores/subscriptionsStore';
+import { subscriptionsApi } from '../../src/api/subscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { COLORS, CATEGORIES } from '../../src/constants';
 
-const FILTERS: { label: string; value: FilterType }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Active', value: 'active' },
-  { label: 'Trial', value: 'trial' },
-  { label: 'Cancelled', value: 'cancelled' },
-  { label: 'Category', value: 'category' },
-];
-
 export default function SubscriptionsScreen() {
+  const { t } = useTranslation();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchSubs = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const res = await subscriptionsApi.getAll();
+      setSubscriptions(res.data || []);
+    } catch {}
+    finally { setRefreshing(false); }
+  }, []);
+
+  useEffect(() => { fetchSubs(); }, []);
+
+  const FILTERS: { label: string; value: FilterType }[] = [
+    { label: t('common.all'), value: 'all' },
+    { label: t('subscriptions.active'), value: 'active' },
+    { label: t('subscriptions.trial'), value: 'trial' },
+    { label: t('subscriptions.cancelled'), value: 'cancelled' },
+    { label: t('add.category'), value: 'category' },
+  ];
   const {
     searchQuery,
     filter,
@@ -33,21 +49,32 @@ export default function SubscriptionsScreen() {
     updateSubscription,
     selectedCategory,
     setSelectedCategory,
+    setSubscriptions,
   } = useSubscriptionsStore();
 
   const subs = getFiltered();
 
   const handleDelete = (id: string, name: string) => {
-    Alert.alert('Delete Subscription', `Remove ${name}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => removeSubscription(id) },
+    Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: async () => {
+        try {
+          await subscriptionsApi.delete(id);
+          removeSubscription(id);
+        } catch { removeSubscription(id); }
+      }},
     ]);
   };
 
   const handleCancel = (id: string, name: string) => {
-    Alert.alert('Cancel Subscription', `Mark ${name} as cancelled?`, [
-      { text: 'No', style: 'cancel' },
-      { text: 'Yes', onPress: () => updateSubscription(id, { status: 'cancelled' }) },
+    Alert.alert(t('subscriptions.cancel_title'), `${name}?`, [
+      { text: t('common.no'), style: 'cancel' },
+      { text: t('common.yes'), onPress: async () => {
+        try {
+          await subscriptionsApi.cancel(id);
+          updateSubscription(id, { status: 'cancelled' });
+        } catch { updateSubscription(id, { status: 'cancelled' }); }
+      }},
     ]);
   };
 
@@ -55,8 +82,8 @@ export default function SubscriptionsScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Subscriptions</Text>
-        <Text style={styles.count}>{subs.length} total</Text>
+        <Text style={styles.title}>{t('subscriptions.title')}</Text>
+        <Text style={styles.count}>{subs.length} {t('subscriptions.total')}</Text>
       </View>
 
       {/* Search */}
@@ -66,7 +93,7 @@ export default function SubscriptionsScreen() {
           style={styles.searchInput}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Search subscriptions..."
+          {...{placeholder: t('subscriptions.search')}}
           placeholderTextColor={COLORS.textMuted}
         />
         {searchQuery ? (
@@ -122,6 +149,7 @@ export default function SubscriptionsScreen() {
       {/* List */}
       <FlatList
         data={subs}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchSubs} />}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
@@ -134,8 +162,8 @@ export default function SubscriptionsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyEmoji}>📭</Text>
-            <Text style={styles.emptyText}>No subscriptions found</Text>
-            <Text style={styles.emptyHint}>Tap + to add your first subscription</Text>
+            <Text style={styles.emptyText}>{t('subscriptions.empty')}</Text>
+            <Text style={styles.emptyHint}>{t('subscriptions.empty_hint')}</Text>
           </View>
         }
       />

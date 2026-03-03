@@ -10,6 +10,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../src/i18n';
 import { notificationsApi } from '../src/api/notifications';
 import { useAuthStore } from '../src/stores/authStore';
+import { usePaymentCardsStore } from '../src/stores/paymentCardsStore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -28,8 +29,13 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     finalStatus = status;
   }
   if (finalStatus !== 'granted') return null;
-  const token = await Notifications.getExpoPushTokenAsync();
-  return token.data;
+  try {
+    const token = await Notifications.getExpoPushTokenAsync();
+    return token.data;
+  } catch {
+    // projectId not available in Expo Go — ignore
+    return null;
+  }
 }
 
 const queryClient = new QueryClient({
@@ -37,6 +43,20 @@ const queryClient = new QueryClient({
     queries: { retry: 1, staleTime: 30000 },
   },
 });
+
+function DataLoader() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { setCards } = usePaymentCardsStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    import('../src/api/cards').then(({ cardsApi }) => {
+      cardsApi.getAll().then((res: any) => setCards(res.data || [])).catch(() => {});
+    });
+  }, [isAuthenticated]);
+
+  return null;
+}
 
 function PushSetup() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -78,6 +98,7 @@ export default function RootLayout() {
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
           <StatusBar style="dark" />
+          <DataLoader />
           <PushSetup />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="onboarding" />

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
@@ -17,6 +18,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS, CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
+import { subscriptionsApi } from '../api/subscriptions';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -36,9 +38,9 @@ const emptyForm = {
   category: 'streaming',
   amount: '',
   currency: 'USD',
-  period: 'monthly' as const,
+  billingPeriod: 'MONTHLY' as const,
   billingDay: '1',
-  cardId: '',
+  paymentCardId: '',
   plan: '',
   websiteUrl: '',
   cancelUrl: '',
@@ -46,6 +48,7 @@ const emptyForm = {
 };
 
 export function AddSubscriptionSheet({ visible, onClose }: Props) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState(0);
   const [form, setForm] = useState(emptyForm);
   const [aiText, setAiText] = useState('');
@@ -82,28 +85,30 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }).start(() => onClose());
   }, [onClose]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!form.name || !form.amount) {
-      Alert.alert('Required', 'Please fill name and amount');
+      Alert.alert(t('add.required'), t('add.fill_required'));
       return;
     }
-    addSubscription({
-      id: Date.now().toString(),
-      name: form.name,
-      category: form.category,
-      amount: parseFloat(form.amount),
-      currency: form.currency,
-      period: form.period,
-      billingDay: parseInt(form.billingDay) || 1,
-      nextDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      status: 'active',
-      cardId: form.cardId || undefined,
-      plan: form.plan || undefined,
-      websiteUrl: form.websiteUrl || undefined,
-      cancelUrl: form.cancelUrl || undefined,
-      notes: form.notes || undefined,
-      createdAt: new Date().toISOString(),
-    });
+    try {
+      const res = await subscriptionsApi.create({
+        name: form.name,
+        category: form.category.toUpperCase(),
+        amount: parseFloat(form.amount),
+        currency: form.currency,
+        billingPeriod: form.billingPeriod,
+        billingDay: parseInt(form.billingDay) || 1,
+        status: 'ACTIVE',
+        paymentCardId: form.paymentCardId || undefined,
+        currentPlan: form.plan || undefined,
+        serviceUrl: form.websiteUrl || undefined,
+        cancelUrl: form.cancelUrl || undefined,
+        notes: form.notes || undefined,
+      });
+      addSubscription(res.data);
+    } catch {
+      Alert.alert(t('common.error'), '');
+    }
     setForm(emptyForm);
     handleClose();
   }, [form, handleClose]);
@@ -119,7 +124,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   };
 
   const handleVoiceDone = (_uri: string) => {
-    Alert.alert('Audio recorded', 'AI is processing... (demo)');
+    Alert.alert('', t('add.ai_processing'));
   };
 
   return (
@@ -159,7 +164,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
             {tab === 0 && (
               <View style={styles.form}>
-                <Field label="Service Name *">
+                <Field {...{label: t('add.name') + ' *'}}>
                   <TextInput
                     style={styles.input}
                     value={form.name}
@@ -169,7 +174,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   />
                 </Field>
 
-                <Field label="Category">
+                <Field {...{label: t('add.category')}}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={styles.chips}>
                       {CATEGORIES.map((cat) => (
@@ -190,7 +195,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
                 <View style={styles.row}>
                   <View style={{ flex: 1 }}>
-                    <Field label="Amount *">
+                    <Field {...{label: t('add.amount') + ' *'}}>
                       <TextInput
                         style={styles.input}
                         value={form.amount}
@@ -202,7 +207,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     </Field>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Field label="Currency">
+                    <Field {...{label: t('add.currency')}}>
                       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         <View style={styles.chips}>
                           {CURRENCIES.map((cur) => (
@@ -220,21 +225,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   </View>
                 </View>
 
-                <Field label="Billing Period">
+                <Field {...{label: t('add.billing_cycle')}}>
                   <View style={styles.chips}>
                     {BILLING_PERIODS.map((p) => (
                       <TouchableOpacity
                         key={p}
-                        style={[styles.chip, form.period === p && styles.chipActive]}
+                        style={[styles.chip, form.billingPeriod === p && styles.chipActive]}
                         onPress={() => setForm((f) => ({ ...f, period: p as any }))}
                       >
-                        <Text style={form.period === p ? styles.chipActiveText : {}}>{p}</Text>
+                        <Text style={form.billingPeriod === p ? styles.chipActiveText : {}}>{p}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 </Field>
 
-                <Field label="Plan Name">
+                <Field {...{label: t('add.plan')}}>
                   <TextInput
                     style={styles.input}
                     value={form.plan}
@@ -245,22 +250,22 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </Field>
 
                 {cards.length > 0 && (
-                  <Field label="Payment Card">
+                  <Field {...{label: t('add.card')}}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                       <View style={styles.chips}>
                         <TouchableOpacity
-                          style={[styles.chip, !form.cardId && styles.chipActive]}
-                          onPress={() => setForm((f) => ({ ...f, cardId: '' }))}
+                          style={[styles.chip, !form.paymentCardId && styles.chipActive]}
+                          onPress={() => setForm((f) => ({ ...f, paymentCardId: '' }))}
                         >
                           <Text>No card</Text>
                         </TouchableOpacity>
                         {cards.map((card) => (
                           <TouchableOpacity
                             key={card.id}
-                            style={[styles.chip, form.cardId === card.id && styles.chipActive]}
-                            onPress={() => setForm((f) => ({ ...f, cardId: card.id }))}
+                            style={[styles.chip, form.paymentCardId === card.id && styles.chipActive]}
+                            onPress={() => setForm((f) => ({ ...f, paymentCardId: card.id }))}
                           >
-                            <Text style={form.cardId === card.id ? styles.chipActiveText : {}}>
+                            <Text style={form.paymentCardId === card.id ? styles.chipActiveText : {}}>
                               ••••{card.last4} ({card.brand})
                             </Text>
                           </TouchableOpacity>
@@ -270,7 +275,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   </Field>
                 )}
 
-                <Field label="Website URL">
+                <Field {...{label: t('add.website')}}>
                   <TextInput
                     style={styles.input}
                     value={form.websiteUrl}
@@ -281,7 +286,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   />
                 </Field>
 
-                <Field label="Notes">
+                <Field {...{label: t('add.notes')}}>
                   <TextInput
                     style={[styles.input, styles.multiline]}
                     value={form.notes}

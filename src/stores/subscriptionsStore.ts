@@ -6,16 +6,16 @@ export interface Subscription {
   category: string;
   amount: number;
   currency: string;
-  period: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-  billingDay: number;
-  nextDate: string;
+  billingPeriod: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'LIFETIME' | 'ONE_TIME';
+  billingDay?: number;
+  nextPaymentDate?: string;
   status: 'active' | 'trial' | 'paused' | 'cancelled';
-  cardId?: string;
+  paymentCardId?: string;
   plan?: string;
   websiteUrl?: string;
   cancelUrl?: string;
   notes?: string;
-  logoUrl?: string;
+  iconUrl?: string;
   createdAt: string;
 }
 

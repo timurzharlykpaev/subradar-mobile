@@ -28,8 +28,8 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}
     >
       <View style={styles.left}>
-        {subscription.logoUrl ? (
-          <Image source={{ uri: subscription.logoUrl }} style={styles.logo} />
+        {subscription.iconUrl ? (
+          <Image source={{ uri: subscription.iconUrl }} style={styles.logo} />
         ) : (
           <View style={[styles.logoPlaceholder, { backgroundColor: COLORS.primaryLight }]}>
             <Text style={styles.logoText}>{subscription.name[0]}</Text>
@@ -53,7 +53,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
 
         <View style={styles.row}>
           <CategoryBadge categoryId={subscription.category} size="sm" />
-          {subscription.cardId && <CardBadge cardId={subscription.cardId} />}
+          {subscription.paymentCardId && <CardBadge cardId={subscription.paymentCardId} />}
         </View>
       </View>
 

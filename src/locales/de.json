@@ -9,7 +9,9 @@
     "loading": "Lädt...",
     "error": "Etwas ist schiefgelaufen",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "all": "Alle",
+    "or": "oder"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -33,7 +35,14 @@
     "unused_subscriptions": "Ungenutzte Abonnements",
     "monthly_trend": "Monatliche Ausgabenentwicklung",
     "by_category": "Ausgaben nach Kategorie",
-    "upcoming": "Bevorstehende Zahlungen"
+    "upcoming": "Bevorstehende Zahlungen",
+    "good_morning": "Guten Morgen",
+    "good_afternoon": "Guten Tag",
+    "good_evening": "Guten Abend",
+    "total_month": "Gesamt diesen Monat",
+    "per_month": "pro Monat",
+    "active_subs_title": "Aktive Abonnements",
+    "upcoming_7": "Bevorstehend (7 Tage)"
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -52,7 +61,11 @@
     "weekly": "Wöchentlich",
     "next_payment": "Nächste Zahlung",
     "per_month": "/Monat",
-    "per_year": "/Jahr"
+    "per_year": "/Jahr",
+    "total": "gesamt",
+    "empty_hint": "Tippe + um dein erstes Abonnement hinzuzufügen",
+    "delete_title": "Abonnement löschen",
+    "cancel_title": "Abonnement kündigen"
   },
   "add": {
     "title": "Abonnement hinzufügen",
@@ -69,7 +82,14 @@
     "notes": "Notizen",
     "save": "Abonnement speichern",
     "voice_hint": "Sagen Sie z.B.: Ich zahle 15 € für Netflix monatlich",
-    "screenshot_hint": "Laden Sie eine Quittung oder einen Screenshot der Bestätigungs-E-Mail hoch"
+    "screenshot_hint": "Laden Sie eine Quittung oder einen Screenshot der Bestätigungs-E-Mail hoch",
+    "website": "Website",
+    "plan": "Planname",
+    "save_btn": "Abonnement speichern",
+    "required": "Pflichtfeld",
+    "fill_required": "Bitte Name und Betrag ausfüllen",
+    "ai_processing": "KI verarbeitet...",
+    "ai_screenshot": "Screenshot wird verarbeitet..."
   },
   "settings": {
     "title": "Einstellungen",
@@ -99,5 +119,44 @@
     "open_app": "App öffnen",
     "features": "Alles was Sie brauchen",
     "pricing": "Einfache, transparente Preise"
+  },
+  "onboarding": {
+    "choose_language": "Sprache wählen",
+    "choose_currency": "Standardwährung wählen",
+    "next": "Weiter →",
+    "get_started": "Loslegen →",
+    "invalid_email": "Bitte gültige E-Mail eingeben",
+    "magic_link_sent": "Link gesendet",
+    "check_inbox": "Prüfe dein Postfach bei",
+    "demo_login": "Demo",
+    "continue_apple": "Mit Apple fortfahren",
+    "continue_google": "Mit Google fortfahren",
+    "terms": "Mit dem Fortfahren stimmen Sie unseren Nutzungsbedingungen zu"
+  },
+  "analytics": {
+    "avg_month": "Ø / Monat",
+    "total_year": "Gesamt dieses Jahr",
+    "most_expensive": "Teuerste",
+    "by_category": "Nach Kategorie",
+    "monthly": "Monatliche Aufschlüsselung"
+  },
+  "subscription": {
+    "billing_day": "Abrechnungstag",
+    "detail_title": "Details",
+    "pause": "Pausieren",
+    "resume": "Fortsetzen",
+    "cancel_sub": "Kündigen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten"
+  },
+  "features": {
+    "voice_title": "Per Sprache hinzufügen",
+    "voice_desc": "Sage \"Netflix 15$ monatlich\" — fertig",
+    "screenshot_title": "Screenshot-KI",
+    "screenshot_desc": "Foto vom Beleg, KI extrahiert Details",
+    "reminders_title": "Intelligente Erinnerungen",
+    "reminders_desc": "Benachrichtigungen vor Verlängerungen",
+    "reports_title": "Steuerberichte",
+    "reports_desc": "Ausgabenberichte auf Knopfdruck"
   }
 }

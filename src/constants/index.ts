@@ -47,8 +47,12 @@ export const LANGUAGES = [
 ];
 
 export const STATUS_COLORS: Record<string, string> = {
+  ACTIVE: '#4CAF50',
   active: '#4CAF50',
+  TRIAL: '#FF9800',
   trial: '#FF9800',
+  PAUSED: '#9E9E9E',
   paused: '#9E9E9E',
+  CANCELLED: '#F44336',
   cancelled: '#F44336',
 };

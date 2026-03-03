@@ -9,7 +9,9 @@
     "loading": "加载中...",
     "error": "出现了一些错误",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "all": "全部",
+    "or": "或"
   },
   "nav": {
     "dashboard": "仪表板",
@@ -33,7 +35,14 @@
     "unused_subscriptions": "未使用的订阅",
     "monthly_trend": "月度支出趋势",
     "by_category": "按类别支出",
-    "upcoming": "即将到来的付款"
+    "upcoming": "即将到来的付款",
+    "good_morning": "早上好",
+    "good_afternoon": "下午好",
+    "good_evening": "晚上好",
+    "total_month": "本月总计",
+    "per_month": "每月",
+    "active_subs_title": "活跃订阅",
+    "upcoming_7": "即将到来（7天）"
   },
   "subscriptions": {
     "title": "订阅",
@@ -52,7 +61,11 @@
     "weekly": "每周",
     "next_payment": "下次付款",
     "per_month": "/月",
-    "per_year": "/年"
+    "per_year": "/年",
+    "total": "共",
+    "empty_hint": "点击+添加第一个订阅",
+    "delete_title": "删除订阅",
+    "cancel_title": "取消订阅"
   },
   "add": {
     "title": "添加订阅",
@@ -69,7 +82,14 @@
     "notes": "备注",
     "save": "保存订阅",
     "voice_hint": "说类似：我每月为Netflix支付15美元",
-    "screenshot_hint": "上传收据或确认邮件截图"
+    "screenshot_hint": "上传收据或确认邮件截图",
+    "website": "网站",
+    "plan": "套餐名称",
+    "save_btn": "保存订阅",
+    "required": "必填",
+    "fill_required": "请填写名称和金额",
+    "ai_processing": "AI处理中...",
+    "ai_screenshot": "截图处理中..."
   },
   "settings": {
     "title": "设置",
@@ -99,5 +119,44 @@
     "open_app": "打开应用",
     "features": "您所需的一切",
     "pricing": "简单透明的定价"
+  },
+  "onboarding": {
+    "choose_language": "选择语言",
+    "choose_currency": "选择默认货币",
+    "next": "下一步 →",
+    "get_started": "开始 →",
+    "invalid_email": "请输入有效的邮箱",
+    "magic_link_sent": "链接已发送",
+    "check_inbox": "请查收邮件",
+    "demo_login": "演示登录",
+    "continue_apple": "使用Apple继续",
+    "continue_google": "使用Google继续",
+    "terms": "继续即表示您同意我们的服务条款和隐私政策"
+  },
+  "analytics": {
+    "avg_month": "月均",
+    "total_year": "本年总计",
+    "most_expensive": "最贵",
+    "by_category": "按类别",
+    "monthly": "月度明细"
+  },
+  "subscription": {
+    "billing_day": "扣款日",
+    "detail_title": "订阅详情",
+    "pause": "暂停",
+    "resume": "恢复",
+    "cancel_sub": "取消",
+    "delete": "删除",
+    "edit": "编辑"
+  },
+  "features": {
+    "voice_title": "语音添加",
+    "voice_desc": "说\"添加Netflix每月15美元\"即可",
+    "screenshot_title": "AI截图识别",
+    "screenshot_desc": "拍下账单，AI自动提取信息",
+    "reminders_title": "智能提醒",
+    "reminders_desc": "续费前收到通知",
+    "reports_title": "税务报告",
+    "reports_desc": "一键生成费用报告"
   }
 }

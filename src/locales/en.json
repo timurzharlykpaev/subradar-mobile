@@ -9,7 +9,9 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "all": "All",
+    "or": "or"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -33,7 +35,14 @@
     "unused_subscriptions": "Unused subscriptions",
     "monthly_trend": "Monthly Spend Trend",
     "by_category": "Spend by Category",
-    "upcoming": "Upcoming Payments"
+    "upcoming": "Upcoming Payments",
+    "good_morning": "Good morning",
+    "good_afternoon": "Good afternoon",
+    "good_evening": "Good evening",
+    "total_month": "Total this month",
+    "per_month": "per month",
+    "active_subs_title": "Active Subscriptions",
+    "upcoming_7": "Upcoming (7 days)"
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -52,7 +61,11 @@
     "weekly": "Weekly",
     "next_payment": "Next payment",
     "per_month": "/mo",
-    "per_year": "/yr"
+    "per_year": "/yr",
+    "total": "total",
+    "empty_hint": "Tap + to add your first subscription",
+    "delete_title": "Delete Subscription",
+    "cancel_title": "Cancel Subscription"
   },
   "add": {
     "title": "Add Subscription",
@@ -69,7 +82,14 @@
     "notes": "Notes",
     "save": "Save Subscription",
     "voice_hint": "Say something like: I pay $15 for Netflix monthly",
-    "screenshot_hint": "Upload a receipt or confirmation email screenshot"
+    "screenshot_hint": "Upload a receipt or confirmation email screenshot",
+    "website": "Website URL",
+    "plan": "Plan Name",
+    "save_btn": "Save Subscription",
+    "required": "Required",
+    "fill_required": "Please fill name and amount",
+    "ai_processing": "AI is processing...",
+    "ai_screenshot": "Processing screenshot..."
   },
   "settings": {
     "title": "Settings",
@@ -99,5 +119,44 @@
     "open_app": "Open Web App",
     "features": "Everything you need",
     "pricing": "Simple, transparent pricing"
+  },
+  "onboarding": {
+    "choose_language": "Choose your language",
+    "choose_currency": "Choose your default currency for tracking",
+    "next": "Next →",
+    "get_started": "Get Started →",
+    "invalid_email": "Please enter a valid email",
+    "magic_link_sent": "Magic Link Sent",
+    "check_inbox": "Check your inbox at",
+    "demo_login": "Demo Login",
+    "continue_apple": "Continue with Apple",
+    "continue_google": "Continue with Google",
+    "terms": "By continuing, you agree to our Terms of Service and Privacy Policy"
+  },
+  "analytics": {
+    "avg_month": "Avg / month",
+    "total_year": "Total this year",
+    "most_expensive": "Most expensive",
+    "by_category": "By Category",
+    "monthly": "Monthly Breakdown"
+  },
+  "subscription": {
+    "billing_day": "Billing Day",
+    "detail_title": "Subscription Details",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel_sub": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "features": {
+    "voice_title": "Voice Add",
+    "voice_desc": "Say \"Add Netflix $15 monthly\" and done",
+    "screenshot_title": "Screenshot AI",
+    "screenshot_desc": "Snap your invoice, AI extracts the details",
+    "reminders_title": "Smart Reminders",
+    "reminders_desc": "Get reminded before renewals",
+    "reports_title": "Tax Reports",
+    "reports_desc": "Generate expense reports in one tap"
   }
 }

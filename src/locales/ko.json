@@ -9,7 +9,9 @@
     "loading": "로딩 중...",
     "error": "문제가 발생했습니다",
     "yes": "예",
-    "no": "아니오"
+    "no": "아니오",
+    "all": "전체",
+    "or": "또는"
   },
   "nav": {
     "dashboard": "대시보드",
@@ -33,7 +35,14 @@
     "unused_subscriptions": "미사용 구독",
     "monthly_trend": "월간 지출 추이",
     "by_category": "카테고리별 지출",
-    "upcoming": "예정된 결제"
+    "upcoming": "예정된 결제",
+    "good_morning": "좋은 아침이에요",
+    "good_afternoon": "좋은 오후예요",
+    "good_evening": "좋은 저녁이에요",
+    "total_month": "이번 달 합계",
+    "per_month": "매월",
+    "active_subs_title": "활성 구독",
+    "upcoming_7": "예정된 결제 (7일)"
   },
   "subscriptions": {
     "title": "구독",
@@ -52,7 +61,11 @@
     "weekly": "주간",
     "next_payment": "다음 결제",
     "per_month": "/월",
-    "per_year": "/년"
+    "per_year": "/년",
+    "total": "개",
+    "empty_hint": "+를 눌러 첫 번째 구독을 추가하세요",
+    "delete_title": "구독 삭제",
+    "cancel_title": "구독 취소"
   },
   "add": {
     "title": "구독 추가",
@@ -69,7 +82,14 @@
     "notes": "메모",
     "save": "구독 저장",
     "voice_hint": "예: 넷플릭스에 매월 15달러를 지불합니다",
-    "screenshot_hint": "영수증 또는 확인 이메일 스크린샷을 업로드하세요"
+    "screenshot_hint": "영수증 또는 확인 이메일 스크린샷을 업로드하세요",
+    "website": "웹사이트",
+    "plan": "플랜 이름",
+    "save_btn": "구독 저장",
+    "required": "필수",
+    "fill_required": "이름과 금액을 입력해주세요",
+    "ai_processing": "AI 처리 중...",
+    "ai_screenshot": "스크린샷 처리 중..."
   },
   "settings": {
     "title": "설정",
@@ -99,5 +119,44 @@
     "open_app": "앱 열기",
     "features": "필요한 모든 것",
     "pricing": "간단하고 투명한 요금제"
+  },
+  "onboarding": {
+    "choose_language": "언어를 선택하세요",
+    "choose_currency": "기본 통화를 선택하세요",
+    "next": "다음 →",
+    "get_started": "시작하기 →",
+    "invalid_email": "유효한 이메일을 입력하세요",
+    "magic_link_sent": "링크가 전송되었습니다",
+    "check_inbox": "받은 편지함을 확인하세요",
+    "demo_login": "데모 로그인",
+    "continue_apple": "Apple로 계속",
+    "continue_google": "Google로 계속",
+    "terms": "계속하면 이용약관 및 개인정보 처리방침에 동의하는 것입니다"
+  },
+  "analytics": {
+    "avg_month": "월 평균",
+    "total_year": "올해 총계",
+    "most_expensive": "가장 비싼",
+    "by_category": "카테고리별",
+    "monthly": "월별 내역"
+  },
+  "subscription": {
+    "billing_day": "결제일",
+    "detail_title": "구독 상세",
+    "pause": "일시정지",
+    "resume": "재개",
+    "cancel_sub": "취소",
+    "delete": "삭제",
+    "edit": "편집"
+  },
+  "features": {
+    "voice_title": "음성으로 추가",
+    "voice_desc": "\"Netflix 월 15달러 추가\"라고 말하면 완료",
+    "screenshot_title": "AI 스크린샷",
+    "screenshot_desc": "청구서 촬영하면 AI가 정보 추출",
+    "reminders_title": "스마트 알림",
+    "reminders_desc": "갱신 전 알림 수신",
+    "reports_title": "세금 보고서",
+    "reports_desc": "탭 한 번으로 지출 보고서 생성"
   }
 }

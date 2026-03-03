@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_URL,

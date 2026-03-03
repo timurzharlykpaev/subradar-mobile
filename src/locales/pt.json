@@ -9,7 +9,9 @@
     "loading": "Carregando...",
     "error": "Algo deu errado",
     "yes": "Sim",
-    "no": "Não"
+    "no": "Não",
+    "all": "Todos",
+    "or": "ou"
   },
   "nav": {
     "dashboard": "Painel",
@@ -33,7 +35,14 @@
     "unused_subscriptions": "Assinaturas não utilizadas",
     "monthly_trend": "Tendência de Gasto Mensal",
     "by_category": "Gasto por Categoria",
-    "upcoming": "Próximos Pagamentos"
+    "upcoming": "Próximos Pagamentos",
+    "good_morning": "Bom dia",
+    "good_afternoon": "Boa tarde",
+    "good_evening": "Boa noite",
+    "total_month": "Total neste mês",
+    "per_month": "por mês",
+    "active_subs_title": "Assinaturas ativas",
+    "upcoming_7": "Próximos (7 dias)"
   },
   "subscriptions": {
     "title": "Assinaturas",
@@ -52,7 +61,11 @@
     "weekly": "Semanal",
     "next_payment": "Próximo pagamento",
     "per_month": "/mês",
-    "per_year": "/ano"
+    "per_year": "/ano",
+    "total": "total",
+    "empty_hint": "Toque + para adicionar sua primeira assinatura",
+    "delete_title": "Excluir assinatura",
+    "cancel_title": "Cancelar assinatura"
   },
   "add": {
     "title": "Adicionar Assinatura",
@@ -69,7 +82,14 @@
     "notes": "Notas",
     "save": "Salvar Assinatura",
     "voice_hint": "Diga algo como: Pago $15 pelo Netflix mensalmente",
-    "screenshot_hint": "Envie um recibo ou captura de tela de email de confirmação"
+    "screenshot_hint": "Envie um recibo ou captura de tela de email de confirmação",
+    "website": "Site",
+    "plan": "Nome do plano",
+    "save_btn": "Salvar assinatura",
+    "required": "Obrigatório",
+    "fill_required": "Por favor preencha nome e valor",
+    "ai_processing": "IA processando...",
+    "ai_screenshot": "Processando captura..."
   },
   "settings": {
     "title": "Configurações",
@@ -99,5 +119,44 @@
     "open_app": "Abrir App",
     "features": "Tudo que você precisa",
     "pricing": "Preços simples e transparentes"
+  },
+  "onboarding": {
+    "choose_language": "Escolha seu idioma",
+    "choose_currency": "Escolha sua moeda padrão",
+    "next": "Próximo →",
+    "get_started": "Começar →",
+    "invalid_email": "Digite um email válido",
+    "magic_link_sent": "Link enviado",
+    "check_inbox": "Verifique sua caixa em",
+    "demo_login": "Demo",
+    "continue_apple": "Continuar com Apple",
+    "continue_google": "Continuar com Google",
+    "terms": "Ao continuar, você concorda com nossos Termos e Política de privacidade"
+  },
+  "analytics": {
+    "avg_month": "Média / mês",
+    "total_year": "Total este ano",
+    "most_expensive": "Mais caro",
+    "by_category": "Por categoria",
+    "monthly": "Detalhamento mensal"
+  },
+  "subscription": {
+    "billing_day": "Dia de cobrança",
+    "detail_title": "Detalhes",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "cancel_sub": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar"
+  },
+  "features": {
+    "voice_title": "Adicionar por voz",
+    "voice_desc": "Diga \"Adicionar Netflix R$15 mensal\" — pronto",
+    "screenshot_title": "IA por captura",
+    "screenshot_desc": "Foto da fatura, IA extrai detalhes",
+    "reminders_title": "Lembretes inteligentes",
+    "reminders_desc": "Notificações antes das renovações",
+    "reports_title": "Relatórios fiscais",
+    "reports_desc": "Gere relatórios com um toque"
   }
 }
