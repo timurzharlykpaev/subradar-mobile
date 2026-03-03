@@ -34,6 +34,18 @@ export const BILLING_PERIODS = ['weekly', 'monthly', 'quarterly', 'yearly'];
 
 export const CARD_BRANDS = ['Visa', 'Mastercard', 'Amex', 'Mir', 'Other'];
 
+export const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'pt', label: 'Português', flag: '🇧🇷' },
+  { code: 'zh', label: '中文', flag: '🇨🇳' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'ko', label: '한국어', flag: '🇰🇷' },
+];
+
 export const STATUS_COLORS: Record<string, string> = {
   active: '#4CAF50',
   trial: '#FF9800',

@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "add": "추가",
+    "back": "뒤로",
+    "loading": "로딩 중...",
+    "error": "문제가 발생했습니다",
+    "yes": "예",
+    "no": "아니오"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "subscriptions": "구독",
+    "analytics": "분석",
+    "cards": "카드",
+    "reports": "보고서",
+    "workspace": "팀",
+    "settings": "설정"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "subtitle": "구독 현황 개요",
+    "monthly_spend": "월간 지출",
+    "yearly_total": "연간 합계",
+    "renewals_soon": "곧 갱신 예정",
+    "savings_possible": "절감 가능 금액",
+    "active_subscriptions": "개의 활성 구독",
+    "projected_annual": "예상 연간 지출",
+    "within_7_days": "향후 7일 이내",
+    "unused_subscriptions": "미사용 구독",
+    "monthly_trend": "월간 지출 추이",
+    "by_category": "카테고리별 지출",
+    "upcoming": "예정된 결제"
+  },
+  "subscriptions": {
+    "title": "구독",
+    "add": "구독 추가",
+    "search": "구독 검색...",
+    "all_categories": "모든 카테고리",
+    "all_statuses": "모든 상태",
+    "empty": "아직 구독이 없습니다",
+    "empty_sub": "첫 번째 구독을 추가하여 시작하세요",
+    "active": "활성",
+    "paused": "일시 중지",
+    "trial": "체험판",
+    "cancelled": "취소됨",
+    "monthly": "월간",
+    "yearly": "연간",
+    "weekly": "주간",
+    "next_payment": "다음 결제",
+    "per_month": "/월",
+    "per_year": "/년"
+  },
+  "add": {
+    "title": "구독 추가",
+    "manual": "수동",
+    "voice": "음성",
+    "screenshot": "스크린샷",
+    "name": "서비스 이름",
+    "amount": "금액",
+    "currency": "통화",
+    "billing_cycle": "청구 주기",
+    "next_date": "다음 결제일",
+    "category": "카테고리",
+    "card": "결제 카드",
+    "notes": "메모",
+    "save": "구독 저장",
+    "voice_hint": "예: 넷플릭스에 매월 15달러를 지불합니다",
+    "screenshot_hint": "영수증 또는 확인 이메일 스크린샷을 업로드하세요"
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어",
+    "theme": "테마",
+    "currency": "통화",
+    "notifications": "알림",
+    "account": "계정",
+    "logout": "로그아웃",
+    "dark_mode": "다크 모드",
+    "light_mode": "라이트 모드",
+    "system": "시스템"
+  },
+  "auth": {
+    "welcome": "다시 오셨군요",
+    "sign_in": "SubRadar AI에 로그인",
+    "google": "Google로 계속",
+    "email": "매직 링크",
+    "email_placeholder": "your@email.com",
+    "send_link": "매직 링크 보내기",
+    "sent": "이메일을 확인하세요!",
+    "sent_sub": "매직 링크를 보냈습니다:"
+  },
+  "landing": {
+    "hero_title": "돈이 어디로 가는지 정확히 파악하세요",
+    "hero_sub": "AI로 모든 구독을 추적하세요. 음성으로 추가하고, 영수증을 스캔하고, 갱신 전에 알림을 받으세요.",
+    "open_app": "앱 열기",
+    "features": "필요한 모든 것",
+    "pricing": "간단하고 투명한 요금제"
+  }
+}

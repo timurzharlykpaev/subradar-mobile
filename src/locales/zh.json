@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "back": "返回",
+    "loading": "加载中...",
+    "error": "出现了一些错误",
+    "yes": "是",
+    "no": "否"
+  },
+  "nav": {
+    "dashboard": "仪表板",
+    "subscriptions": "订阅",
+    "analytics": "分析",
+    "cards": "卡片",
+    "reports": "报告",
+    "workspace": "团队",
+    "settings": "设置"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "subtitle": "您的订阅概览",
+    "monthly_spend": "月度支出",
+    "yearly_total": "年度总计",
+    "renewals_soon": "即将续订",
+    "savings_possible": "可能的节省",
+    "active_subscriptions": "个活跃订阅",
+    "projected_annual": "预计年度支出",
+    "within_7_days": "未来7天内",
+    "unused_subscriptions": "未使用的订阅",
+    "monthly_trend": "月度支出趋势",
+    "by_category": "按类别支出",
+    "upcoming": "即将到来的付款"
+  },
+  "subscriptions": {
+    "title": "订阅",
+    "add": "添加订阅",
+    "search": "搜索订阅...",
+    "all_categories": "所有类别",
+    "all_statuses": "所有状态",
+    "empty": "暂无订阅",
+    "empty_sub": "添加您的第一个订阅以开始",
+    "active": "活跃",
+    "paused": "已暂停",
+    "trial": "试用",
+    "cancelled": "已取消",
+    "monthly": "每月",
+    "yearly": "每年",
+    "weekly": "每周",
+    "next_payment": "下次付款",
+    "per_month": "/月",
+    "per_year": "/年"
+  },
+  "add": {
+    "title": "添加订阅",
+    "manual": "手动",
+    "voice": "语音",
+    "screenshot": "截图",
+    "name": "服务名称",
+    "amount": "金额",
+    "currency": "货币",
+    "billing_cycle": "计费周期",
+    "next_date": "下次付款日期",
+    "category": "类别",
+    "card": "支付卡",
+    "notes": "备注",
+    "save": "保存订阅",
+    "voice_hint": "说类似：我每月为Netflix支付15美元",
+    "screenshot_hint": "上传收据或确认邮件截图"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "theme": "主题",
+    "currency": "货币",
+    "notifications": "通知",
+    "account": "账户",
+    "logout": "退出登录",
+    "dark_mode": "深色模式",
+    "light_mode": "浅色模式",
+    "system": "系统"
+  },
+  "auth": {
+    "welcome": "欢迎回来",
+    "sign_in": "登录 SubRadar AI",
+    "google": "使用Google继续",
+    "email": "魔法链接",
+    "email_placeholder": "your@email.com",
+    "send_link": "发送魔法链接",
+    "sent": "请查看您的邮件！",
+    "sent_sub": "我们已发送魔法链接至"
+  },
+  "landing": {
+    "hero_title": "清楚了解您的资金流向",
+    "hero_sub": "用AI追踪所有订阅。语音添加，扫描收据，续订前获得提醒。",
+    "open_app": "打开应用",
+    "features": "您所需的一切",
+    "pricing": "简单透明的定价"
+  }
+}

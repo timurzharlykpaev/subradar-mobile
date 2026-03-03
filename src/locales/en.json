@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "subscriptions": "Subscriptions",
+    "analytics": "Analytics",
+    "cards": "Cards",
+    "reports": "Reports",
+    "workspace": "Workspace",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Your subscription overview",
+    "monthly_spend": "Monthly Spend",
+    "yearly_total": "Yearly Total",
+    "renewals_soon": "Renewals Soon",
+    "savings_possible": "Savings Possible",
+    "active_subscriptions": "active subscriptions",
+    "projected_annual": "Projected annual spend",
+    "within_7_days": "Within next 7 days",
+    "unused_subscriptions": "Unused subscriptions",
+    "monthly_trend": "Monthly Spend Trend",
+    "by_category": "Spend by Category",
+    "upcoming": "Upcoming Payments"
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "add": "Add Subscription",
+    "search": "Search subscriptions...",
+    "all_categories": "All Categories",
+    "all_statuses": "All Statuses",
+    "empty": "No subscriptions yet",
+    "empty_sub": "Add your first subscription to get started",
+    "active": "Active",
+    "paused": "Paused",
+    "trial": "Trial",
+    "cancelled": "Cancelled",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "weekly": "Weekly",
+    "next_payment": "Next payment",
+    "per_month": "/mo",
+    "per_year": "/yr"
+  },
+  "add": {
+    "title": "Add Subscription",
+    "manual": "Manual",
+    "voice": "Voice",
+    "screenshot": "Screenshot",
+    "name": "Service Name",
+    "amount": "Amount",
+    "currency": "Currency",
+    "billing_cycle": "Billing Cycle",
+    "next_date": "Next Payment Date",
+    "category": "Category",
+    "card": "Payment Card",
+    "notes": "Notes",
+    "save": "Save Subscription",
+    "voice_hint": "Say something like: I pay $15 for Netflix monthly",
+    "screenshot_hint": "Upload a receipt or confirmation email screenshot"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "currency": "Currency",
+    "notifications": "Notifications",
+    "account": "Account",
+    "logout": "Sign Out",
+    "dark_mode": "Dark Mode",
+    "light_mode": "Light Mode",
+    "system": "System"
+  },
+  "auth": {
+    "welcome": "Welcome back",
+    "sign_in": "Sign in to SubRadar AI",
+    "google": "Continue with Google",
+    "email": "Magic Link",
+    "email_placeholder": "your@email.com",
+    "send_link": "Send Magic Link",
+    "sent": "Check your email!",
+    "sent_sub": "We sent a magic link to"
+  },
+  "landing": {
+    "hero_title": "Know exactly where your money goes",
+    "hero_sub": "Track all your subscriptions with AI. Add by voice, scan receipts, get reminders before renewals.",
+    "open_app": "Open Web App",
+    "features": "Everything you need",
+    "pricing": "Simple, transparent pricing"
+  }
+}

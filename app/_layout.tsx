@@ -7,6 +7,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../src/i18n';
 import { notificationsApi } from '../src/api/notifications';
 import { useAuthStore } from '../src/stores/authStore';
 
@@ -74,16 +76,18 @@ function PushSetup() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
-        <PushSetup />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="subscription/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="reports/index" />
-        </Stack>
-      </QueryClientProvider>
+      <I18nextProvider i18n={i18n}>
+        <QueryClientProvider client={queryClient}>
+          <StatusBar style="dark" />
+          <PushSetup />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="subscription/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="reports/index" />
+          </Stack>
+        </QueryClientProvider>
+      </I18nextProvider>
     </GestureHandlerRootView>
   );
 }

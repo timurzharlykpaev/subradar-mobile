@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "yes": "Sim",
+    "no": "Não"
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "subscriptions": "Assinaturas",
+    "analytics": "Análises",
+    "cards": "Cartões",
+    "reports": "Relatórios",
+    "workspace": "Equipa",
+    "settings": "Configurações"
+  },
+  "dashboard": {
+    "title": "Painel",
+    "subtitle": "Visão geral das suas assinaturas",
+    "monthly_spend": "Gasto Mensal",
+    "yearly_total": "Total Anual",
+    "renewals_soon": "Renovações em Breve",
+    "savings_possible": "Economia Possível",
+    "active_subscriptions": "assinaturas ativas",
+    "projected_annual": "Gasto anual projetado",
+    "within_7_days": "Nos próximos 7 dias",
+    "unused_subscriptions": "Assinaturas não utilizadas",
+    "monthly_trend": "Tendência de Gasto Mensal",
+    "by_category": "Gasto por Categoria",
+    "upcoming": "Próximos Pagamentos"
+  },
+  "subscriptions": {
+    "title": "Assinaturas",
+    "add": "Adicionar Assinatura",
+    "search": "Buscar assinaturas...",
+    "all_categories": "Todas as Categorias",
+    "all_statuses": "Todos os Status",
+    "empty": "Ainda sem assinaturas",
+    "empty_sub": "Adicione sua primeira assinatura para começar",
+    "active": "Ativa",
+    "paused": "Pausada",
+    "trial": "Teste",
+    "cancelled": "Cancelada",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "weekly": "Semanal",
+    "next_payment": "Próximo pagamento",
+    "per_month": "/mês",
+    "per_year": "/ano"
+  },
+  "add": {
+    "title": "Adicionar Assinatura",
+    "manual": "Manual",
+    "voice": "Voz",
+    "screenshot": "Captura de tela",
+    "name": "Nome do Serviço",
+    "amount": "Valor",
+    "currency": "Moeda",
+    "billing_cycle": "Ciclo de Cobrança",
+    "next_date": "Data do Próximo Pagamento",
+    "category": "Categoria",
+    "card": "Cartão de Pagamento",
+    "notes": "Notas",
+    "save": "Salvar Assinatura",
+    "voice_hint": "Diga algo como: Pago $15 pelo Netflix mensalmente",
+    "screenshot_hint": "Envie um recibo ou captura de tela de email de confirmação"
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "theme": "Tema",
+    "currency": "Moeda",
+    "notifications": "Notificações",
+    "account": "Conta",
+    "logout": "Sair",
+    "dark_mode": "Modo Escuro",
+    "light_mode": "Modo Claro",
+    "system": "Sistema"
+  },
+  "auth": {
+    "welcome": "Bem-vindo de volta",
+    "sign_in": "Entrar no SubRadar AI",
+    "google": "Continuar com Google",
+    "email": "Link Mágico",
+    "email_placeholder": "seu@email.com",
+    "send_link": "Enviar Link Mágico",
+    "sent": "Verifique seu email!",
+    "sent_sub": "Enviamos um link mágico para"
+  },
+  "landing": {
+    "hero_title": "Saiba exatamente para onde vai seu dinheiro",
+    "hero_sub": "Rastreie todas as suas assinaturas com IA. Adicione por voz, escaneie recibos, receba lembretes.",
+    "open_app": "Abrir App",
+    "features": "Tudo que você precisa",
+    "pricing": "Preços simples e transparentes"
+  }
+}

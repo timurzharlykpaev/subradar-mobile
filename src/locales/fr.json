@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "back": "Retour",
+    "loading": "Chargement...",
+    "error": "Quelque chose s'est mal passé",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "subscriptions": "Abonnements",
+    "analytics": "Analytique",
+    "cards": "Cartes",
+    "reports": "Rapports",
+    "workspace": "Équipe",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Vue d'ensemble de vos abonnements",
+    "monthly_spend": "Dépenses mensuelles",
+    "yearly_total": "Total annuel",
+    "renewals_soon": "Renouvellements proches",
+    "savings_possible": "Économies possibles",
+    "active_subscriptions": "abonnements actifs",
+    "projected_annual": "Dépenses annuelles projetées",
+    "within_7_days": "Dans les 7 prochains jours",
+    "unused_subscriptions": "Abonnements inutilisés",
+    "monthly_trend": "Tendance des dépenses mensuelles",
+    "by_category": "Dépenses par catégorie",
+    "upcoming": "Paiements à venir"
+  },
+  "subscriptions": {
+    "title": "Abonnements",
+    "add": "Ajouter un abonnement",
+    "search": "Rechercher des abonnements...",
+    "all_categories": "Toutes les catégories",
+    "all_statuses": "Tous les statuts",
+    "empty": "Aucun abonnement pour l'instant",
+    "empty_sub": "Ajoutez votre premier abonnement pour commencer",
+    "active": "Actif",
+    "paused": "En pause",
+    "trial": "Essai",
+    "cancelled": "Annulé",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "weekly": "Hebdomadaire",
+    "next_payment": "Prochain paiement",
+    "per_month": "/mois",
+    "per_year": "/an"
+  },
+  "add": {
+    "title": "Ajouter un abonnement",
+    "manual": "Manuel",
+    "voice": "Voix",
+    "screenshot": "Capture d'écran",
+    "name": "Nom du service",
+    "amount": "Montant",
+    "currency": "Devise",
+    "billing_cycle": "Cycle de facturation",
+    "next_date": "Date du prochain paiement",
+    "category": "Catégorie",
+    "card": "Carte de paiement",
+    "notes": "Notes",
+    "save": "Enregistrer l'abonnement",
+    "voice_hint": "Dites quelque chose comme : Je paie 15 $ pour Netflix chaque mois",
+    "screenshot_hint": "Téléchargez un reçu ou une capture d'écran d'un email de confirmation"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "theme": "Thème",
+    "currency": "Devise",
+    "notifications": "Notifications",
+    "account": "Compte",
+    "logout": "Se déconnecter",
+    "dark_mode": "Mode sombre",
+    "light_mode": "Mode clair",
+    "system": "Système"
+  },
+  "auth": {
+    "welcome": "Bon retour",
+    "sign_in": "Se connecter à SubRadar AI",
+    "google": "Continuer avec Google",
+    "email": "Lien magique",
+    "email_placeholder": "votre@email.com",
+    "send_link": "Envoyer le lien magique",
+    "sent": "Vérifiez votre email !",
+    "sent_sub": "Nous avons envoyé un lien magique à"
+  },
+  "landing": {
+    "hero_title": "Sachez exactement où va votre argent",
+    "hero_sub": "Suivez tous vos abonnements avec l'IA. Ajoutez par la voix, scannez les reçus, recevez des rappels.",
+    "open_app": "Ouvrir l'application",
+    "features": "Tout ce dont vous avez besoin",
+    "pricing": "Tarifs simples et transparents"
+  }
+}

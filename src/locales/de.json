@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "back": "Zurück",
+    "loading": "Lädt...",
+    "error": "Etwas ist schiefgelaufen",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "subscriptions": "Abonnements",
+    "analytics": "Analytik",
+    "cards": "Karten",
+    "reports": "Berichte",
+    "workspace": "Team",
+    "settings": "Einstellungen"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Ihre Abonnement-Übersicht",
+    "monthly_spend": "Monatliche Ausgaben",
+    "yearly_total": "Jahresgesamtbetrag",
+    "renewals_soon": "Bald fällige Verlängerungen",
+    "savings_possible": "Mögliche Einsparungen",
+    "active_subscriptions": "aktive Abonnements",
+    "projected_annual": "Voraussichtliche Jahresausgaben",
+    "within_7_days": "In den nächsten 7 Tagen",
+    "unused_subscriptions": "Ungenutzte Abonnements",
+    "monthly_trend": "Monatliche Ausgabenentwicklung",
+    "by_category": "Ausgaben nach Kategorie",
+    "upcoming": "Bevorstehende Zahlungen"
+  },
+  "subscriptions": {
+    "title": "Abonnements",
+    "add": "Abonnement hinzufügen",
+    "search": "Abonnements suchen...",
+    "all_categories": "Alle Kategorien",
+    "all_statuses": "Alle Status",
+    "empty": "Noch keine Abonnements",
+    "empty_sub": "Fügen Sie Ihr erstes Abonnement hinzu",
+    "active": "Aktiv",
+    "paused": "Pausiert",
+    "trial": "Testphase",
+    "cancelled": "Gekündigt",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "weekly": "Wöchentlich",
+    "next_payment": "Nächste Zahlung",
+    "per_month": "/Monat",
+    "per_year": "/Jahr"
+  },
+  "add": {
+    "title": "Abonnement hinzufügen",
+    "manual": "Manuell",
+    "voice": "Sprache",
+    "screenshot": "Screenshot",
+    "name": "Dienstname",
+    "amount": "Betrag",
+    "currency": "Währung",
+    "billing_cycle": "Abrechnungszeitraum",
+    "next_date": "Nächstes Zahlungsdatum",
+    "category": "Kategorie",
+    "card": "Zahlungskarte",
+    "notes": "Notizen",
+    "save": "Abonnement speichern",
+    "voice_hint": "Sagen Sie z.B.: Ich zahle 15 € für Netflix monatlich",
+    "screenshot_hint": "Laden Sie eine Quittung oder einen Screenshot der Bestätigungs-E-Mail hoch"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "theme": "Design",
+    "currency": "Währung",
+    "notifications": "Benachrichtigungen",
+    "account": "Konto",
+    "logout": "Abmelden",
+    "dark_mode": "Dunkelmodus",
+    "light_mode": "Hellmodus",
+    "system": "System"
+  },
+  "auth": {
+    "welcome": "Willkommen zurück",
+    "sign_in": "Bei SubRadar AI anmelden",
+    "google": "Mit Google fortfahren",
+    "email": "Magic Link",
+    "email_placeholder": "deine@email.com",
+    "send_link": "Magic Link senden",
+    "sent": "E-Mail prüfen!",
+    "sent_sub": "Wir haben einen Magic Link gesendet an"
+  },
+  "landing": {
+    "hero_title": "Wissen Sie genau, wohin Ihr Geld fließt",
+    "hero_sub": "Verfolgen Sie alle Abonnements mit KI. Per Sprache hinzufügen, Belege scannen, Erinnerungen erhalten.",
+    "open_app": "App öffnen",
+    "features": "Alles was Sie brauchen",
+    "pricing": "Einfache, transparente Preise"
+  }
+}

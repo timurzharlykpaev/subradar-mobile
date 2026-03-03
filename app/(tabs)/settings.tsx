@@ -16,13 +16,15 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { usePaymentCardsStore, PaymentCard } from '../../src/stores/paymentCardsStore';
-import { COLORS, CURRENCIES, CARD_BRANDS } from '../../src/constants';
+import { COLORS, CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const { currency, setCurrency, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
+  const { t } = useTranslation();
+  const { currency, setCurrency, language, setLanguage, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
   const { cards, addCard, removeCard } = usePaymentCardsStore();
 
   const { data: billing } = useBillingStatus();
@@ -111,8 +113,26 @@ export default function SettingsScreen() {
           </ScrollView>
         </Section>
 
+        {/* Language */}
+        <Section title={t('settings.language')}>
+          <View style={styles.langGrid}>
+            {LANGUAGES.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[styles.langChip, language === lang.code && styles.langChipActive]}
+                onPress={() => setLanguage(lang.code)}
+              >
+                <Text style={styles.langFlag}>{lang.flag}</Text>
+                <Text style={[styles.langLabel, language === lang.code && styles.langLabelActive]}>
+                  {lang.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Section>
+
         {/* Notifications */}
-        <Section title="Notifications">
+        <Section title={t('settings.notifications')}>
           <SettingRow
             label="Push Notifications"
             right={
@@ -419,6 +439,29 @@ const styles = StyleSheet.create({
   },
   proTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
   proDesc: { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 },
+  langGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  langChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+  },
+  langChipActive: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+  langFlag: { fontSize: 16 },
+  langLabel: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
+  langLabelActive: { color: COLORS.primary },
   usageRow: {
     backgroundColor: 'rgba(0,0,0,0.15)',
     borderRadius: 10,

@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "back": "Volver",
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "subscriptions": "Suscripciones",
+    "analytics": "Analítica",
+    "cards": "Tarjetas",
+    "reports": "Informes",
+    "workspace": "Equipo",
+    "settings": "Configuración"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "subtitle": "Resumen de tus suscripciones",
+    "monthly_spend": "Gasto Mensual",
+    "yearly_total": "Total Anual",
+    "renewals_soon": "Próximas Renovaciones",
+    "savings_possible": "Ahorro Posible",
+    "active_subscriptions": "suscripciones activas",
+    "projected_annual": "Gasto anual proyectado",
+    "within_7_days": "En los próximos 7 días",
+    "unused_subscriptions": "Suscripciones sin usar",
+    "monthly_trend": "Tendencia de Gasto Mensual",
+    "by_category": "Gasto por Categoría",
+    "upcoming": "Próximos Pagos"
+  },
+  "subscriptions": {
+    "title": "Suscripciones",
+    "add": "Agregar Suscripción",
+    "search": "Buscar suscripciones...",
+    "all_categories": "Todas las Categorías",
+    "all_statuses": "Todos los Estados",
+    "empty": "Aún no hay suscripciones",
+    "empty_sub": "Agrega tu primera suscripción para empezar",
+    "active": "Activa",
+    "paused": "Pausada",
+    "trial": "Prueba",
+    "cancelled": "Cancelada",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "weekly": "Semanal",
+    "next_payment": "Próximo pago",
+    "per_month": "/mes",
+    "per_year": "/año"
+  },
+  "add": {
+    "title": "Agregar Suscripción",
+    "manual": "Manual",
+    "voice": "Voz",
+    "screenshot": "Captura",
+    "name": "Nombre del Servicio",
+    "amount": "Monto",
+    "currency": "Moneda",
+    "billing_cycle": "Ciclo de Facturación",
+    "next_date": "Fecha del Próximo Pago",
+    "category": "Categoría",
+    "card": "Tarjeta de Pago",
+    "notes": "Notas",
+    "save": "Guardar Suscripción",
+    "voice_hint": "Di algo como: Pago $15 por Netflix mensualmente",
+    "screenshot_hint": "Sube un recibo o captura de correo de confirmación"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "theme": "Tema",
+    "currency": "Moneda",
+    "notifications": "Notificaciones",
+    "account": "Cuenta",
+    "logout": "Cerrar Sesión",
+    "dark_mode": "Modo Oscuro",
+    "light_mode": "Modo Claro",
+    "system": "Sistema"
+  },
+  "auth": {
+    "welcome": "Bienvenido de nuevo",
+    "sign_in": "Iniciar sesión en SubRadar AI",
+    "google": "Continuar con Google",
+    "email": "Enlace Mágico",
+    "email_placeholder": "tu@email.com",
+    "send_link": "Enviar Enlace Mágico",
+    "sent": "¡Revisa tu correo!",
+    "sent_sub": "Enviamos un enlace mágico a"
+  },
+  "landing": {
+    "hero_title": "Sabe exactamente a dónde va tu dinero",
+    "hero_sub": "Rastrea todas tus suscripciones con IA. Agrega por voz, escanea recibos, recibe recordatorios.",
+    "open_app": "Abrir App",
+    "features": "Todo lo que necesitas",
+    "pricing": "Precios simples y transparentes"
+  }
+}

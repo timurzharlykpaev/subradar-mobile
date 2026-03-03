@@ -1,0 +1,103 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "back": "戻る",
+    "loading": "読み込み中...",
+    "error": "問題が発生しました",
+    "yes": "はい",
+    "no": "いいえ"
+  },
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "subscriptions": "サブスクリプション",
+    "analytics": "分析",
+    "cards": "カード",
+    "reports": "レポート",
+    "workspace": "チーム",
+    "settings": "設定"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "subtitle": "サブスクリプションの概要",
+    "monthly_spend": "月間支出",
+    "yearly_total": "年間合計",
+    "renewals_soon": "まもなく更新",
+    "savings_possible": "節約可能額",
+    "active_subscriptions": "個のアクティブなサブスクリプション",
+    "projected_annual": "予測年間支出",
+    "within_7_days": "7日以内",
+    "unused_subscriptions": "未使用のサブスクリプション",
+    "monthly_trend": "月間支出トレンド",
+    "by_category": "カテゴリ別支出",
+    "upcoming": "今後の支払い"
+  },
+  "subscriptions": {
+    "title": "サブスクリプション",
+    "add": "サブスクリプションを追加",
+    "search": "サブスクリプションを検索...",
+    "all_categories": "すべてのカテゴリ",
+    "all_statuses": "すべてのステータス",
+    "empty": "サブスクリプションがまだありません",
+    "empty_sub": "最初のサブスクリプションを追加して始めましょう",
+    "active": "アクティブ",
+    "paused": "一時停止",
+    "trial": "トライアル",
+    "cancelled": "キャンセル済み",
+    "monthly": "月次",
+    "yearly": "年次",
+    "weekly": "週次",
+    "next_payment": "次回支払い",
+    "per_month": "/月",
+    "per_year": "/年"
+  },
+  "add": {
+    "title": "サブスクリプションを追加",
+    "manual": "手動",
+    "voice": "音声",
+    "screenshot": "スクリーンショット",
+    "name": "サービス名",
+    "amount": "金額",
+    "currency": "通貨",
+    "billing_cycle": "請求サイクル",
+    "next_date": "次回支払日",
+    "category": "カテゴリ",
+    "card": "支払いカード",
+    "notes": "メモ",
+    "save": "サブスクリプションを保存",
+    "voice_hint": "例：Netflixに毎月15ドル支払っています",
+    "screenshot_hint": "領収書または確認メールのスクリーンショットをアップロード"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語",
+    "theme": "テーマ",
+    "currency": "通貨",
+    "notifications": "通知",
+    "account": "アカウント",
+    "logout": "サインアウト",
+    "dark_mode": "ダークモード",
+    "light_mode": "ライトモード",
+    "system": "システム"
+  },
+  "auth": {
+    "welcome": "おかえりなさい",
+    "sign_in": "SubRadar AIにサインイン",
+    "google": "Googleで続ける",
+    "email": "マジックリンク",
+    "email_placeholder": "your@email.com",
+    "send_link": "マジックリンクを送信",
+    "sent": "メールをご確認ください！",
+    "sent_sub": "マジックリンクを送信しました："
+  },
+  "landing": {
+    "hero_title": "お金がどこへ行くのか正確に把握しましょう",
+    "hero_sub": "AIですべてのサブスクリプションを追跡。音声で追加、レシートをスキャン、更新前にリマインダーを受け取る。",
+    "open_app": "アプリを開く",
+    "features": "必要なものすべて",
+    "pricing": "シンプルで透明な料金"
+  }
+}
