@@ -1,7 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
 import { COLORS } from '../../src/constants';
 
@@ -12,10 +11,7 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 }
 
 export default function TabsLayout() {
-  const sheetRef = useRef<BottomSheet>(null);
-
-  const openSheet = () => sheetRef.current?.expand();
-  const closeSheet = () => sheetRef.current?.close();
+  const [sheetVisible, setSheetVisible] = useState(false);
 
   return (
     <>
@@ -47,14 +43,9 @@ export default function TabsLayout() {
           name="add"
           options={{
             title: '',
-            tabBarIcon: () => (
-              <View style={styles.addBtn}>
-                <Text style={styles.addBtnText}>＋</Text>
-              </View>
-            ),
             tabBarButton: () => (
               <TouchableOpacity
-                onPress={openSheet}
+                onPress={() => setSheetVisible(true)}
                 style={styles.addBtnWrapper}
               >
                 <View style={styles.addBtn}>
@@ -80,7 +71,10 @@ export default function TabsLayout() {
         />
       </Tabs>
 
-      <AddSubscriptionSheet ref={sheetRef} onClose={closeSheet} />
+      <AddSubscriptionSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+      />
     </>
   );
 }

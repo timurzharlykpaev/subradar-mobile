@@ -1,29 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
-  ScrollView,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withRepeat,
-  withSequence,
   withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../src/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
-import { COLORS, CURRENCIES } from '../src/constants';
-
-const { width } = Dimensions.get('window');
+import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 
 const FEATURES = [
   { emoji: '🎙', title: 'Voice Add', desc: 'Say "Add Netflix $15 monthly" and done' },
@@ -38,8 +33,9 @@ export default function OnboardingScreen() {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
   const router = useRouter();
+  const { t } = useTranslation();
   const { setUser, setOnboarded } = useAuthStore();
-  const { setCurrency } = useSettingsStore();
+  const { setLanguage, language, setCurrency } = useSettingsStore();
 
   const logoScale = useSharedValue(0.5);
   const logoOpacity = useSharedValue(0);
@@ -60,10 +56,7 @@ export default function OnboardingScreen() {
       return;
     }
     Alert.alert('Magic Link Sent', `Check your inbox at ${email}`, [
-      {
-        text: 'Demo Login',
-        onPress: () => completeAuth(),
-      },
+      { text: 'Demo Login', onPress: () => completeAuth() },
     ]);
   };
 
@@ -78,26 +71,54 @@ export default function OnboardingScreen() {
   };
 
   const steps = [
-    // Step 0: Welcome
-    <View key="welcome" style={styles.step}>
+    // Step 0: Language Selection
+    <View key="language" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
-        <View style={styles.logo}>
-          <Text style={styles.logoEmoji}>📡</Text>
-        </View>
+        <Image
+          source={require('../assets/images/icon.png')}
+          style={styles.logoImage}
+        />
         <Text style={styles.logoTitle}>SubRadar</Text>
         <View style={styles.aiBadge}>
           <Text style={styles.aiBadgeText}>AI</Text>
         </View>
       </Animated.View>
-      <Text style={styles.headline}>Track all your subscriptions{'\n'}with AI</Text>
-      <Text style={styles.subheadline}>
-        SubRadar automatically tracks, reminds, and analyzes all your recurring payments in one place.
-      </Text>
+      <Text style={styles.sectionTitle}>Choose your language</Text>
+      <View style={styles.langGrid}>
+        {LANGUAGES.map((lang) => (
+          <TouchableOpacity
+            key={lang.code}
+            style={[styles.langChip, language === lang.code && styles.langChipActive]}
+            onPress={() => setLanguage(lang.code)}
+          >
+            <Text style={styles.langFlag}>{lang.flag}</Text>
+            <Text style={[styles.langLabel, language === lang.code && styles.langLabelActive]}>
+              {lang.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>,
 
-    // Step 1: Features
+    // Step 1: Welcome (icon only, no text clutter)
+    <View key="welcome" style={styles.step}>
+      <Animated.View style={[styles.logoContainer, logoStyle]}>
+        <Image
+          source={require('../assets/images/icon.png')}
+          style={styles.logoImageLarge}
+        />
+        <Text style={styles.logoTitle}>SubRadar</Text>
+        <View style={styles.aiBadge}>
+          <Text style={styles.aiBadgeText}>AI</Text>
+        </View>
+      </Animated.View>
+      <Text style={styles.headline}>{t('landing.hero_title')}</Text>
+      <Text style={styles.subheadline}>{t('landing.hero_sub')}</Text>
+    </View>,
+
+    // Step 2: Features
     <View key="features" style={styles.step}>
-      <Text style={styles.sectionTitle}>Everything you need</Text>
+      <Text style={styles.sectionTitle}>{t('landing.features')}</Text>
       {FEATURES.map((f) => (
         <View key={f.title} style={styles.featureRow}>
           <View style={styles.featureIcon}>
@@ -111,18 +132,15 @@ export default function OnboardingScreen() {
       ))}
     </View>,
 
-    // Step 2: Currency
+    // Step 3: Currency
     <View key="currency" style={styles.step}>
-      <Text style={styles.sectionTitle}>Your region & currency</Text>
+      <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
       <Text style={styles.subheadline}>Choose your default currency for tracking</Text>
       <View style={styles.currencyGrid}>
         {CURRENCIES.map((cur) => (
           <TouchableOpacity
             key={cur}
-            style={[
-              styles.currencyChip,
-              selectedCurrency === cur && styles.currencyChipActive,
-            ]}
+            style={[styles.currencyChip, selectedCurrency === cur && styles.currencyChipActive]}
             onPress={() => setSelectedCurrency(cur)}
           >
             <Text style={[styles.currencyText, selectedCurrency === cur && styles.currencyTextActive]}>
@@ -133,9 +151,9 @@ export default function OnboardingScreen() {
       </View>
     </View>,
 
-    // Step 3: Auth
+    // Step 4: Auth
     <View key="auth" style={styles.step}>
-      <Text style={styles.sectionTitle}>Get started</Text>
+      <Text style={styles.sectionTitle}>{t('auth.welcome')}</Text>
 
       <TouchableOpacity style={styles.socialBtn} onPress={completeAuth}>
         <Text style={styles.socialIcon}>🍎</Text>
@@ -143,8 +161,8 @@ export default function OnboardingScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity style={[styles.socialBtn, styles.googleBtn]} onPress={completeAuth}>
-        <Text style={styles.socialIcon}>G</Text>
-        <Text style={styles.socialText}>Continue with Google</Text>
+        <Text style={[styles.socialIcon, { color: COLORS.text }]}>G</Text>
+        <Text style={[styles.socialText, { color: COLORS.text }]}>Continue with Google</Text>
       </TouchableOpacity>
 
       <View style={styles.divider}>
@@ -157,13 +175,13 @@ export default function OnboardingScreen() {
         style={styles.emailInput}
         value={email}
         onChangeText={setEmail}
-        placeholder="Enter your email"
+        placeholder={t('auth.email_placeholder')}
         placeholderTextColor={COLORS.textMuted}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <TouchableOpacity style={styles.emailBtn} onPress={handleEmailLogin}>
-        <Text style={styles.emailBtnText}>Send Magic Link ✨</Text>
+        <Text style={styles.emailBtnText}>{t('auth.send_link')} ✨</Text>
       </TouchableOpacity>
 
       <Text style={styles.terms}>
@@ -179,23 +197,20 @@ export default function OnboardingScreen() {
       <View style={styles.footer}>
         <View style={styles.dots}>
           {steps.map((_, i) => (
-            <View
-              key={i}
-              style={[styles.dot, step === i && styles.dotActive]}
-            />
+            <View key={i} style={[styles.dot, step === i && styles.dotActive]} />
           ))}
         </View>
 
         <View style={styles.footerBtns}>
           {step > 0 && (
             <TouchableOpacity style={styles.backBtn} onPress={() => setStep(step - 1)}>
-              <Text style={styles.backBtnText}>Back</Text>
+              <Text style={styles.backBtnText}>{t('common.back')}</Text>
             </TouchableOpacity>
           )}
           {step < steps.length - 1 && (
             <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(step + 1)}>
               <Text style={styles.nextBtnText}>
-                {step === 0 ? 'Get Started →' : 'Next →'}
+                {step === 0 ? 'Next →' : step === 1 ? 'Get Started →' : 'Next →'}
               </Text>
             </TouchableOpacity>
           )}
@@ -209,17 +224,18 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   content: { flex: 1, padding: 24, justifyContent: 'center' },
   step: { gap: 16 },
-  logoContainer: { alignItems: 'center', gap: 8, marginBottom: 24 },
-  logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 30,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  logoContainer: { alignItems: 'center', gap: 8, marginBottom: 16 },
+  logoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
   },
-  logoEmoji: { fontSize: 48 },
-  logoTitle: { fontSize: 36, fontWeight: '900', color: COLORS.text, letterSpacing: -1 },
+  logoImageLarge: {
+    width: 110,
+    height: 110,
+    borderRadius: 28,
+  },
+  logoTitle: { fontSize: 34, fontWeight: '900', color: COLORS.text, letterSpacing: -1 },
   aiBadge: {
     backgroundColor: COLORS.primary,
     paddingHorizontal: 10,
@@ -228,15 +244,31 @@ const styles = StyleSheet.create({
   },
   aiBadgeText: { color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   headline: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
     color: COLORS.text,
     textAlign: 'center',
-    lineHeight: 40,
+    lineHeight: 38,
     letterSpacing: -0.5,
   },
   subheadline: { fontSize: 15, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22 },
-  sectionTitle: { fontSize: 28, fontWeight: '900', color: COLORS.text, letterSpacing: -0.5 },
+  sectionTitle: { fontSize: 26, fontWeight: '900', color: COLORS.text, letterSpacing: -0.5 },
+  langGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  langChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+  },
+  langChipActive: { backgroundColor: COLORS.primaryLight, borderColor: COLORS.primary },
+  langFlag: { fontSize: 18 },
+  langLabel: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
+  langLabelActive: { color: COLORS.primary },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',

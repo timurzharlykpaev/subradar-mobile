@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -75,7 +74,7 @@ function PushSetup() {
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
           <StatusBar style="dark" />
@@ -88,6 +87,6 @@ export default function RootLayout() {
           </Stack>
         </QueryClientProvider>
       </I18nextProvider>
-    </GestureHandlerRootView>
+    </View>
   );
 }
