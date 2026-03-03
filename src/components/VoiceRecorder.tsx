@@ -6,7 +6,6 @@ import {
   Pressable,
   Animated,
 } from 'react-native';
-import { Audio } from 'expo-av';
 import { COLORS } from '../constants';
 
 interface Props {
@@ -16,12 +15,14 @@ interface Props {
 export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
-  const recordingRef = useRef<Audio.Recording | null>(null);
+  const recordingRef = useRef<any>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startRecording = async () => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { Audio } = require('expo-av');
       const { status } = await Audio.requestPermissionsAsync();
       if (status !== 'granted') return;
 
