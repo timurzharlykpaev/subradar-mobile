@@ -10,12 +10,14 @@ import {
   Alert,
   Modal,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { usePaymentCardsStore, PaymentCard } from '../../src/stores/paymentCardsStore';
 import { COLORS, CURRENCIES, CARD_BRANDS } from '../../src/constants';
+import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -23,8 +25,30 @@ export default function SettingsScreen() {
   const { currency, setCurrency, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
   const { cards, addCard, removeCard } = usePaymentCardsStore();
 
+  const { data: billing } = useBillingStatus();
+  const checkoutMutation = useCheckout();
+  const startTrialMutation = useStartTrial();
+
   const [showAddCard, setShowAddCard] = useState(false);
   const [cardForm, setCardForm] = useState({ nickname: '', last4: '', brand: 'Visa' as PaymentCard['brand'], color: '#6C47FF' });
+
+  const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
+  const isTrialing = billing?.status === 'trialing';
+  const canTrial = billing && !billing.trialUsed && !isPro;
+
+  const handleStartTrial = async () => {
+    try {
+      await startTrialMutation.mutateAsync();
+      Alert.alert('Trial Started!', '7 days of Pro access begins now. Enjoy all features.');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to start trial.';
+      Alert.alert('Error', msg);
+    }
+  };
+
+  const handleUpgrade = () => {
+    checkoutMutation.mutate('pro-monthly');
+  };
 
   const handleAddCard = () => {
     if (!cardForm.nickname || cardForm.last4.length !== 4) {
@@ -147,13 +171,67 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </Section>
 
-        {/* Pro */}
+        {/* Plan Card */}
         <View style={styles.proCard}>
-          <Text style={styles.proTitle}>✨ SubRadar Pro</Text>
-          <Text style={styles.proDesc}>Unlimited subscriptions, AI reports, priority support</Text>
-          <TouchableOpacity style={styles.proBtn}>
-            <Text style={styles.proBtnText}>Upgrade — $4.99/mo</Text>
-          </TouchableOpacity>
+          {isPro ? (
+            <>
+              <Text style={styles.proTitle}>
+                {isTrialing ? '⏳ Pro Trial' : '✨ SubRadar Pro'}
+              </Text>
+              {isTrialing && billing?.trialDaysLeft !== null && (
+                <Text style={styles.proDesc}>{billing?.trialDaysLeft} days remaining in trial</Text>
+              )}
+              {billing && (
+                <View style={styles.usageRow}>
+                  <Text style={styles.usageText}>
+                    AI: {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} this month
+                  </Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <>
+              <Text style={styles.proTitle}>✨ SubRadar Pro</Text>
+              <Text style={styles.proDesc}>
+                Unlimited subscriptions · 200 AI/month · Analytics
+              </Text>
+              {billing && (
+                <View style={styles.usageRow}>
+                  <Text style={styles.usageText}>
+                    Subscriptions: {billing.subscriptionCount}/{billing.subscriptionLimit ?? '∞'}
+                  </Text>
+                  <Text style={styles.usageText}>
+                    AI: {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} this month
+                  </Text>
+                </View>
+              )}
+              {canTrial ? (
+                <TouchableOpacity
+                  style={styles.proBtn}
+                  onPress={handleStartTrial}
+                  disabled={startTrialMutation.isPending}
+                >
+                  {startTrialMutation.isPending ? (
+                    <ActivityIndicator color={COLORS.primary} />
+                  ) : (
+                    <Text style={styles.proBtnText}>Start 7-day Free Trial</Text>
+                  )}
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.proBtn}
+                  onPress={handleUpgrade}
+                  disabled={checkoutMutation.isPending}
+                >
+                  {checkoutMutation.isPending ? (
+                    <ActivityIndicator color={COLORS.primary} />
+                  ) : (
+                    <Text style={styles.proBtnText}>Upgrade — $2.99/mo</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </>
+          )}
         </View>
 
         {/* Danger zone */}
@@ -341,6 +419,17 @@ const styles = StyleSheet.create({
   },
   proTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
   proDesc: { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 },
+  usageRow: {
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: 10,
+    padding: 10,
+    gap: 4,
+  },
+  usageText: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.85)',
+    fontWeight: '600',
+  },
   proBtn: {
     backgroundColor: '#FFF',
     borderRadius: 12,

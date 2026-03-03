@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Linking } from 'react-native';
 import { billingApi } from '../api/billing';
 
@@ -6,6 +6,7 @@ export function useBillingStatus() {
   return useQuery({
     queryKey: ['billing', 'me'],
     queryFn: () => billingApi.getMe().then((r) => r.data),
+    staleTime: 30000,
   });
 }
 
@@ -22,5 +23,13 @@ export function useCheckout() {
     onSuccess: (data: { url: string }) => {
       if (data?.url) Linking.openURL(data.url);
     },
+  });
+}
+
+export function useStartTrial() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => billingApi.startTrial().then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['billing', 'me'] }),
   });
 }

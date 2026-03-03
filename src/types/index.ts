@@ -81,9 +81,16 @@ export interface BillingPlan {
 }
 
 export interface BillingStatus {
-  plan: 'free' | 'pro';
-  expiresAt?: string;
-  cancelledAt?: string;
+  plan: 'free' | 'pro' | 'organization';
+  status: 'active' | 'cancelled' | 'trialing';
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean;
+  trialUsed: boolean;
+  trialDaysLeft?: number | null;
+  subscriptionCount: number;
+  subscriptionLimit: number | null;
+  aiRequestsUsed: number;
+  aiRequestsLimit: number | null;
 }
 
 export interface AISearchResult {

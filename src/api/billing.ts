@@ -5,4 +5,5 @@ export const billingApi = {
   checkout: (planId: string) => apiClient.post('/billing/checkout', { planId }),
   cancel: () => apiClient.post('/billing/cancel'),
   getPlans: () => apiClient.get('/billing/plans'),
+  startTrial: () => apiClient.post('/billing/trial'),
 };
