@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
+import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore, PaymentCard } from '../../src/stores/paymentCardsStore';
 import { COLORS, CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
@@ -52,15 +53,15 @@ export default function SettingsScreen() {
     checkoutMutation.mutate('pro-monthly');
   };
 
-  const handleAddCard = () => {
+  const handleAddCard = async () => {
     if (!cardForm.nickname || cardForm.last4.length !== 4) {
       Alert.alert('Invalid', 'Enter nickname and 4-digit last digits');
       return;
     }
-    addCard({
-      id: Date.now().toString(),
-      ...cardForm,
-    });
+    try {
+      const res = await cardsApi.create(cardForm);
+      addCard(res.data);
+    } catch { addCard({ id: Date.now().toString(), ...cardForm }); }
     setCardForm({ nickname: '', last4: '', brand: 'Visa', color: '#6C47FF' });
     setShowAddCard(false);
   };
@@ -171,7 +172,10 @@ export default function SettingsScreen() {
               <TouchableOpacity
                 onPress={() => Alert.alert('Delete', `Remove ${card.nickname}?`, [
                   { text: 'Cancel', style: 'cancel' },
-                  { text: 'Delete', style: 'destructive', onPress: () => removeCard(card.id) },
+                  { text: 'Delete', style: 'destructive', onPress: async () => {
+                    try { await cardsApi.delete(card.id); } catch {}
+                    removeCard(card.id);
+                  }},
                 ])}
               >
                 <Text style={styles.deleteBtn}>🗑</Text>
@@ -265,7 +269,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: COLORS.border }]}
-            onPress={() => Alert.alert('Logout', 'Are you sure?', [
+            onPress={() => Alert.alert('Выйти', 'Are you sure?', [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Logout', style: 'destructive', onPress: logout },
             ])}

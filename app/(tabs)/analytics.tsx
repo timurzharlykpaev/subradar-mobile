@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
+import { analyticsApi } from '../../src/api/analytics';
 import { COLORS, CATEGORIES } from '../../src/constants';
 
 // Simple bar chart without external deps for max compatibility
@@ -49,33 +50,46 @@ const chartStyles = StyleSheet.create({
 export default function AnalyticsScreen() {
   const { t } = useTranslation();
   const { subscriptions } = useSubscriptionsStore();
+  const [summary, setSummary] = useState<any>(null);
+  const [monthlyData, setMonthlyData] = useState<{ label: string; value: number }[]>([]);
+  const [byCategoryData, setByCategoryData] = useState<any[]>([]);
 
-  const activeSubs = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial');
+  useEffect(() => {
+    analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => {});
+    analyticsApi.getMonthly().then((r) => {
+      const data = (r.data || []).map((d: any) => ({
+        label: (d.label || d.month || '').slice(-2),
+        value: d.total ?? d.amount ?? 0,
+      }));
+      setMonthlyData(data);
+    }).catch(() => {});
+    analyticsApi.getByCategory().then((r) => {
+      setByCategoryData(r.data || []);
+    }).catch(() => {});
+  }, []);
 
-  const totalMonthly = activeSubs.reduce((sum, s) => {
-    const mult = s.period === 'weekly' ? 4 : s.period === 'quarterly' ? 1 / 3 : s.period === 'yearly' ? 1 / 12 : 1;
+  const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
+  const totalMonthly = summary?.totalMonthly ?? activeSubs.reduce((sum, s) => {
+    const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
     return sum + s.amount * mult;
   }, 0);
-
-  const totalYearly = totalMonthly * 12;
+  const totalYearly = summary?.totalYearly ?? totalMonthly * 12;
   const mostExpensive = activeSubs.reduce<typeof activeSubs[0] | null>(
-    (max, s) => (!max || s.amount > max.amount ? s : max),
-    null
+    (max, s) => (!max || s.amount > max.amount ? s : max), null
   );
 
-  // Monthly mock data
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthlyData = months.map((m) => ({
-    label: m,
-    value: totalMonthly * (0.8 + Math.random() * 0.4),
-  }));
-
-  // By category
-  const byCategory = CATEGORIES.map((cat) => {
-    const catSubs = activeSubs.filter((s) => s.category === cat.id);
-    const total = catSubs.reduce((sum, s) => sum + s.amount, 0);
-    return { ...cat, total, count: catSubs.length };
-  }).filter((c) => c.count > 0);
+  const byCategory = byCategoryData.length > 0
+    ? byCategoryData.map((d: any) => ({
+        id: d.category,
+        label: d.category,
+        emoji: CATEGORIES.find((c) => c.id.toUpperCase() === d.category)?.emoji || '📦',
+        total: d.total ?? d.amount ?? 0,
+        count: d.count ?? 0,
+      }))
+    : CATEGORIES.map((cat) => {
+        const catSubs = activeSubs.filter((s) => s.category?.toUpperCase() === cat.id.toUpperCase());
+        return { ...cat, total: catSubs.reduce((sum, s) => sum + s.amount, 0), count: catSubs.length };
+      }).filter((c) => c.count > 0);
 
   const categoryMax = Math.max(...byCategory.map((c) => c.total), 1);
 
@@ -83,8 +97,8 @@ export default function AnalyticsScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Analytics</Text>
-          <Text style={styles.subtitle}>Your spending breakdown</Text>
+          <Text style={styles.title}>{t('analytics.title')}</Text>
+          <Text style={styles.subtitle}>{t('analytics.subtitle')}</Text>
         </View>
 
         {/* Summary Cards */}

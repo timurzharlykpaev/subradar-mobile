@@ -11,6 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore, PaymentCard } from '../../src/stores/paymentCardsStore';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
 
@@ -45,7 +46,10 @@ export default function CardsScreen() {
   const handleDelete = (id: string) => {
     Alert.alert('Удалить карту?', 'Это действие нельзя отменить', [
       { text: 'Отмена', style: 'cancel' },
-      { text: 'Удалить', style: 'destructive', onPress: () => removeCard(id) },
+      { text: 'Удалить', style: 'destructive', onPress: async () => {
+          try { await cardsApi.delete(id); } catch {}
+          removeCard(id);
+        }},
     ]);
   };
 

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { subscriptionsApi } from '../../src/api/subscriptions';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
@@ -48,7 +49,7 @@ export default function SubscriptionDetailScreen() {
     }
   };
 
-  const handleCancelSubscription = () => {
+  const handleCancelSubscription = async () => {
     Alert.alert(
       'Cancel Subscription',
       subscription.cancelUrl
@@ -63,7 +64,8 @@ export default function SubscriptionDetailScreen() {
             if (subscription.cancelUrl) {
               Linking.openURL(subscription.cancelUrl);
             }
-            updateSubscription(id!, { status: 'cancelled' });
+            try { await subscriptionsApi.cancel(id!); } catch {}
+            updateSubscription(id!, { status: 'CANCELLED' });
             router.back();
           },
         },
@@ -87,7 +89,8 @@ export default function SubscriptionDetailScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
+          try { await subscriptionsApi.delete(id!); } catch {}
           removeSubscription(id!);
           router.back();
         },
