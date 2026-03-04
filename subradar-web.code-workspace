@@ -1,0 +1,16 @@
+{
+  "folders": [
+	{
+		"path": "../subradar-web"
+	},
+	{
+		"path": "."
+	},
+	{
+		"path": "../subradar-backend"
+	},
+	{
+		"path": "../subradar-landing"
+	}
+]
+}
