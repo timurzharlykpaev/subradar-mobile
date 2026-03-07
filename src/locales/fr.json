@@ -158,5 +158,14 @@
     "reminders_desc": "Notifs avant les renouvellements",
     "reports_title": "Rapports fiscaux",
     "reports_desc": "Générez des rapports en un tap"
+  },
+  "trials": {
+    "title": "Essais actifs",
+    "days_left": "{{count}} jours restants",
+    "ends_today": "Se termine aujourd'hui !",
+    "ends_tomorrow": "Se termine demain",
+    "expired": "Essai expiré",
+    "cancel": "Annuler",
+    "then": "puis"
   }
 }

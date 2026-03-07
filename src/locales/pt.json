@@ -158,5 +158,14 @@
     "reminders_desc": "Notificações antes das renovações",
     "reports_title": "Relatórios fiscais",
     "reports_desc": "Gere relatórios com um toque"
+  },
+  "trials": {
+    "title": "Testes ativos",
+    "days_left": "{{count}} dias restantes",
+    "ends_today": "Termina hoje!",
+    "ends_tomorrow": "Termina amanhã",
+    "expired": "Teste expirado",
+    "cancel": "Cancelar",
+    "then": "depois"
   }
 }
