@@ -7,7 +7,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Subscription } from '../stores/subscriptionsStore';
+import { Subscription } from '../types';
 import { COLORS, STATUS_COLORS } from '../constants';
 import { CategoryBadge } from './CategoryBadge';
 import { CardBadge } from './CardBadge';
@@ -47,8 +47,8 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
           </View>
         </View>
 
-        {subscription.plan && (
-          <Text style={styles.plan}>{subscription.plan}</Text>
+        {subscription.currentPlan && (
+          <Text style={styles.plan}>{subscription.currentPlan}</Text>
         )}
 
         <View style={styles.row}>
@@ -62,9 +62,11 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
           {subscription.currency} {subscription.amount.toFixed(2)}
         </Text>
         <Text style={styles.period}>/ {subscription.billingPeriod}</Text>
-        <Text style={styles.nextDate}>
-          {new Date(subscription.nextPaymentDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
-        </Text>
+        {subscription.nextBillingDate && (
+          <Text style={styles.nextDate}>
+            {new Date(subscription.nextBillingDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );

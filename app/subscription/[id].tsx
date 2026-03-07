@@ -44,8 +44,8 @@ export default function SubscriptionDetailScreen() {
   const category = CATEGORIES.find((c) => c.id === subscription.category);
 
   const handleOpenWebsite = () => {
-    if (subscription.websiteUrl) {
-      Linking.openURL(subscription.websiteUrl);
+    if (subscription.serviceUrl) {
+      Linking.openURL(subscription.serviceUrl);
     }
   };
 
@@ -60,7 +60,7 @@ export default function SubscriptionDetailScreen() {
         {
           text: 'Cancel Subscription',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             if (subscription.cancelUrl) {
               Linking.openURL(subscription.cancelUrl);
             }
@@ -123,8 +123,8 @@ export default function SubscriptionDetailScreen() {
 
           <Text style={styles.serviceName}>{subscription.name}</Text>
 
-          {subscription.plan && (
-            <Text style={styles.plan}>{subscription.plan}</Text>
+          {subscription.currentPlan && (
+            <Text style={styles.plan}>{subscription.currentPlan}</Text>
           )}
 
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
@@ -147,13 +147,15 @@ export default function SubscriptionDetailScreen() {
             <CategoryBadge categoryId={subscription.category} />
           </DetailRow>
 
-          <DetailRow label={t("subscriptions.next_payment")}>
-            <Text style={styles.detailValue}>
-              {new Date(subscription.nextPaymentDate).toLocaleDateString('en', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-              })}
-            </Text>
-          </DetailRow>
+          {subscription.nextBillingDate && (
+            <DetailRow label={t("subscriptions.next_payment")}>
+              <Text style={styles.detailValue}>
+                {new Date(subscription.nextBillingDate).toLocaleDateString('en', {
+                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                })}
+              </Text>
+            </DetailRow>
+          )}
 
           <DetailRow label={t("subscription.billing_day")}>
             <Text style={styles.detailValue}>Day {subscription.billingDay}</Text>
@@ -195,7 +197,7 @@ export default function SubscriptionDetailScreen() {
 
         {/* Actions */}
         <View style={styles.actions}>
-          {subscription.websiteUrl && (
+          {subscription.serviceUrl && (
             <TouchableOpacity style={styles.websiteBtn} onPress={handleOpenWebsite}>
               <Text style={styles.websiteBtnText}>🌐 Open Website</Text>
             </TouchableOpacity>

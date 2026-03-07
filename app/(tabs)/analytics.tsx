@@ -131,7 +131,7 @@ export default function AnalyticsScreen() {
                   <View
                     style={[
                       styles.barFill,
-                      { width: `${(cat.total / categoryMax) * 100}%`, backgroundColor: cat.color },
+                      { width: `${(cat.total / categoryMax) * 100}%`, backgroundColor: CATEGORIES.find((c) => c.id === cat.id)?.color || COLORS.primary },
                     ]}
                   />
                 </View>
@@ -154,7 +154,7 @@ export default function AnalyticsScreen() {
               </View>
               <Text style={styles.subName} numberOfLines={1}>{sub.name}</Text>
               <Text style={styles.subAmount}>
-                {sub.currency} {sub.amount.toFixed(2)}/{sub.period.slice(0, 2)}
+                {sub.currency} {sub.amount.toFixed(2)}/{sub.billingPeriod.slice(0, 2)}
               </Text>
             </View>
           ))}

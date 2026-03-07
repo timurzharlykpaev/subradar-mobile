@@ -109,7 +109,7 @@ export default function OnboardingScreen() {
   const handleGoogleToken = async (accessToken: string) => {
     setLoading(true);
     try {
-      const res = await authApi.loginWithGoogleToken(accessToken);
+      const res = await authApi.loginWithGoogleMobile(accessToken);
       const { user, accessToken: jwt, refreshToken } = res.data;
       if (refreshToken) {
         const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');

@@ -1,25 +1,7 @@
 import { create } from 'zustand';
+import { Subscription, SubscriptionStatus } from '../types';
 
-export interface Subscription {
-  id: string;
-  name: string;
-  category: string;
-  amount: number;
-  currency: string;
-  billingPeriod: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'LIFETIME' | 'ONE_TIME';
-  billingDay?: number;
-  nextPaymentDate?: string;
-  status: 'ACTIVE' | 'trial' | 'paused' | 'cancelled';
-  paymentCardId?: string;
-  plan?: string;
-  websiteUrl?: string;
-  cancelUrl?: string;
-  notes?: string;
-  iconUrl?: string;
-  createdAt: string;
-}
-
-export type FilterType = 'all' | 'active' | 'trial' | 'cancelled' | 'category';
+export type FilterType = 'all' | 'ACTIVE' | 'TRIAL' | 'CANCELLED' | 'PAUSED' | 'category';
 
 interface SubscriptionsState {
   subscriptions: Subscription[];

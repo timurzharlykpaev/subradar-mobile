@@ -35,14 +35,14 @@ const TABS = ['Manual', 'AI Assistant', 'Screenshot'];
 
 const emptyForm = {
   name: '',
-  category: 'streaming',
+  category: 'STREAMING',
   amount: '',
   currency: 'USD',
   billingPeriod: 'MONTHLY' as const,
   billingDay: '1',
   paymentCardId: '',
-  plan: '',
-  websiteUrl: '',
+  currentPlan: '',
+  serviceUrl: '',
   cancelUrl: '',
   notes: '',
 };
@@ -100,8 +100,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         billingDay: parseInt(form.billingDay) || 1,
         status: 'ACTIVE',
         paymentCardId: form.paymentCardId || undefined,
-        currentPlan: form.plan || undefined,
-        serviceUrl: form.websiteUrl || undefined,
+        currentPlan: form.currentPlan || undefined,
+        serviceUrl: form.serviceUrl || undefined,
         cancelUrl: form.cancelUrl || undefined,
         notes: form.notes || undefined,
       });
@@ -231,7 +231,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       <TouchableOpacity
                         key={p}
                         style={[styles.chip, form.billingPeriod === p && styles.chipActive]}
-                        onPress={() => setForm((f) => ({ ...f, period: p as any }))}
+                        onPress={() => setForm((f) => ({ ...f, billingPeriod: p as any }))}
                       >
                         <Text style={form.billingPeriod === p ? styles.chipActiveText : {}}>{p}</Text>
                       </TouchableOpacity>
@@ -242,8 +242,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 <Field {...{label: t('add.plan')}}>
                   <TextInput
                     style={styles.input}
-                    value={form.plan}
-                    onChangeText={(v) => setForm((f) => ({ ...f, plan: v }))}
+                    value={form.currentPlan}
+                    onChangeText={(v) => setForm((f) => ({ ...f, currentPlan: v }))}
                     placeholder="Premium, Basic..."
                     placeholderTextColor={COLORS.textMuted}
                   />
@@ -278,8 +278,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 <Field {...{label: t('add.website')}}>
                   <TextInput
                     style={styles.input}
-                    value={form.websiteUrl}
-                    onChangeText={(v) => setForm((f) => ({ ...f, websiteUrl: v }))}
+                    value={form.serviceUrl}
+                    onChangeText={(v) => setForm((f) => ({ ...f, serviceUrl: v }))}
                     placeholder="https://netflix.com"
                     placeholderTextColor={COLORS.textMuted}
                     autoCapitalize="none"

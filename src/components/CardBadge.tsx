@@ -8,11 +8,19 @@ interface Props {
 }
 
 const BRAND_COLORS: Record<string, string> = {
-  Visa: '#1A1F71',
-  Mastercard: '#EB001B',
-  Amex: '#007BC1',
-  Mir: '#0FAB5E',
-  Other: '#6B7280',
+  VISA: '#1A1F71',
+  MC: '#EB001B',
+  AMEX: '#007BC1',
+  MIR: '#0FAB5E',
+  OTHER: '#6B7280',
+};
+
+const BRAND_LABELS: Record<string, string> = {
+  VISA: 'Visa',
+  MC: 'MC',
+  AMEX: 'Amex',
+  MIR: 'Mir',
+  OTHER: 'Other',
 };
 
 export const CardBadge: React.FC<Props> = ({ cardId }) => {
@@ -20,14 +28,16 @@ export const CardBadge: React.FC<Props> = ({ cardId }) => {
 
   if (!card) return null;
 
+  const brandColor = BRAND_COLORS[card.brand] || BRAND_COLORS.OTHER;
+
   return (
-    <View style={[styles.badge, { borderColor: BRAND_COLORS[card.brand] + '40' }]}>
-      <View style={[styles.dot, { backgroundColor: BRAND_COLORS[card.brand] }]} />
+    <View style={[styles.badge, { borderColor: brandColor + '40' }]}>
+      <View style={[styles.dot, { backgroundColor: brandColor }]} />
       <Text style={styles.text}>
-        ••••{card.last4}
+        ····{card.last4}
       </Text>
-      <Text style={[styles.brand, { color: BRAND_COLORS[card.brand] }]}>
-        {card.brand}
+      <Text style={[styles.brand, { color: brandColor }]}>
+        {BRAND_LABELS[card.brand] || card.brand}
       </Text>
     </View>
   );

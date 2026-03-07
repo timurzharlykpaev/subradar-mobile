@@ -47,7 +47,7 @@ export const TrialCountdown: React.FC<Props> = ({ trials }) => {
           ? t('trials.ends_today')
           : days === 1
           ? t('trials.ends_tomorrow')
-          : t('trials.days_left', { count: days });
+          : t('trials.days_left', { count: days ?? 0 });
 
         return (
           <View key={trial.id} style={styles.card}>

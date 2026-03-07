@@ -58,10 +58,11 @@ export default function DashboardScreen() {
 
   const upcoming = subscriptions
     .filter((s) => {
-      const days = (new Date(s.nextPaymentDate).getTime() - Date.now()) / 86400000;
+      if (!s.nextBillingDate) return false;
+      const days = (new Date(s.nextBillingDate).getTime() - Date.now()) / 86400000;
       return days >= 0 && days <= 7;
     })
-    .sort((a, b) => new Date(a.nextPaymentDate).getTime() - new Date(b.nextPaymentDate).getTime());
+    .sort((a, b) => new Date(a.nextBillingDate!).getTime() - new Date(b.nextBillingDate!).getTime());
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -151,7 +152,7 @@ export default function DashboardScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.miniName}>{sub.name}</Text>
-                  <Text style={styles.miniPlan}>{sub.plan || sub.category}</Text>
+                  <Text style={styles.miniPlan}>{sub.currentPlan || sub.category}</Text>
                 </View>
                 <Text style={styles.miniAmount}>{sub.currency} {sub.amount.toFixed(2)}</Text>
               </View>

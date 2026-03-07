@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Subscription } from '../stores/subscriptionsStore';
+import { Subscription } from '../types';
 import { COLORS, CATEGORIES } from '../constants';
 
 interface Props {
@@ -9,9 +9,11 @@ interface Props {
 
 export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
   const cat = CATEGORIES.find((c) => c.id === subscription.category);
-  const daysUntil = Math.ceil(
-    (new Date(subscription.nextPaymentDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
+  const daysUntil = subscription.nextBillingDate
+    ? Math.ceil(
+        (new Date(subscription.nextBillingDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      )
+    : null;
 
   return (
     <TouchableOpacity style={[styles.card, { borderTopColor: cat?.color || COLORS.primary }]}>
@@ -21,7 +23,13 @@ export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
         {subscription.currency} {subscription.amount.toFixed(0)}
       </Text>
       <Text style={styles.days}>
-        {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `in ${daysUntil}d`}
+        {daysUntil === null
+          ? ''
+          : daysUntil === 0
+          ? 'Today'
+          : daysUntil === 1
+          ? 'Tomorrow'
+          : `in ${daysUntil}d`}
       </Text>
     </TouchableOpacity>
   );

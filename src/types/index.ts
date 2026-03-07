@@ -1,38 +1,40 @@
-export type BillingPeriod = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-export type SubscriptionStatus = 'active' | 'trial' | 'paused' | 'cancelled';
-export type CardBrand = 'Visa' | 'Mastercard' | 'Amex' | 'Mir' | 'Other';
-export type ReportType = 'summary' | 'detailed' | 'tax';
+export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY' | 'LIFETIME' | 'ONE_TIME';
+export type SubscriptionStatus = 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'TRIAL';
+export type Category = 'STREAMING' | 'AI_SERVICES' | 'INFRASTRUCTURE' | 'MUSIC' | 'GAMING' | 'PRODUCTIVITY' | 'HEALTH' | 'NEWS' | 'OTHER';
+export type CardBrand = 'VISA' | 'MC' | 'AMEX' | 'MIR' | 'OTHER';
+export type SourceType = 'MANUAL' | 'AI_VOICE' | 'AI_SCREENSHOT' | 'AI_TEXT';
+export type ReportType = 'SUMMARY' | 'DETAILED' | 'TAX' | 'AUDIT';
+export type ReportStatus = 'PENDING' | 'GENERATING' | 'READY' | 'FAILED';
 export type Theme = 'light' | 'dark' | 'system';
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'KZT' | 'RUB' | 'UAH' | 'TRY';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  plan?: 'free' | 'pro';
-}
 
 export interface Subscription {
   id: string;
   name: string;
-  category: string;
+  category: Category;
   amount: number;
   currency: string;
-  period: BillingPeriod;
-  billingDay: number;
-  nextDate: string;
+  billingPeriod: BillingPeriod;
+  billingDay?: number;
+  nextBillingDate?: string;
+  startDate?: string;
   status: SubscriptionStatus;
-  cardId?: string;
-  plan?: string;
-  websiteUrl?: string;
+  currentPlan?: string;
+  paymentCardId?: string;
+  paymentCard?: PaymentCard;
+  iconUrl?: string;
+  serviceUrl?: string;
   cancelUrl?: string;
+  managePlanUrl?: string;
   notes?: string;
   isBusinessExpense?: boolean;
   taxCategory?: string;
   reminderEnabled?: boolean;
-  reminderDays?: number;
-  createdAt: string;
+  reminderDaysBefore?: number;
+  addedVia?: SourceType;
+  aiMetadata?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PaymentCard {
@@ -41,6 +43,21 @@ export interface PaymentCard {
   last4: string;
   brand: CardBrand;
   color: string;
+  isDefault: boolean;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+  currency?: string;
+  locale?: string;
+  timezone?: string;
+  dateFormat?: string;
+  country?: string;
+  onboardingCompleted?: boolean;
+  notificationsEnabled?: boolean;
 }
 
 export interface Receipt {
@@ -55,6 +72,7 @@ export interface Receipt {
 export interface Report {
   id: string;
   type: ReportType;
+  status: ReportStatus;
   startDate: string;
   endDate: string;
   url?: string;
@@ -95,8 +113,8 @@ export interface BillingStatus {
 
 export interface AISearchResult {
   name: string;
-  category: string;
+  category: Category;
   plans: { name: string; price: number; currency: string; period: BillingPeriod }[];
-  websiteUrl?: string;
-  logoUrl?: string;
+  serviceUrl?: string;
+  iconUrl?: string;
 }

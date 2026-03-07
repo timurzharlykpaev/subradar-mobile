@@ -27,20 +27,24 @@ export function getDaysUntil(dateStr: string): number {
 
 export function periodToMonthlyAmount(amount: number, period: BillingPeriod): number {
   switch (period) {
-    case 'weekly': return amount * 4.33;
-    case 'monthly': return amount;
-    case 'quarterly': return amount / 3;
-    case 'yearly': return amount / 12;
+    case 'WEEKLY': return amount * 4.33;
+    case 'MONTHLY': return amount;
+    case 'QUARTERLY': return amount / 3;
+    case 'YEARLY': return amount / 12;
+    case 'LIFETIME': return 0;
+    case 'ONE_TIME': return 0;
     default: return amount;
   }
 }
 
 export function periodLabel(period: BillingPeriod): string {
   const labels: Record<BillingPeriod, string> = {
-    weekly: 'в неделю',
-    monthly: 'в месяц',
-    quarterly: 'в квартал',
-    yearly: 'в год',
+    WEEKLY: 'week',
+    MONTHLY: 'month',
+    QUARTERLY: 'quarter',
+    YEARLY: 'year',
+    LIFETIME: 'lifetime',
+    ONE_TIME: 'one-time',
   };
   return labels[period] || period;
 }

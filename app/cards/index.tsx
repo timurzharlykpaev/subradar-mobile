@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { cardsApi } from '../../src/api/cards';
-import { usePaymentCardsStore, PaymentCard } from '../../src/stores/paymentCardsStore';
+import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
+import { PaymentCard } from '../../src/types';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
 
 const CARD_COLORS = ['#6C47FF', '#FF6B6B', '#4CAF50', '#FF9800', '#1E88E5', '#E91E63'];
@@ -31,15 +32,15 @@ export default function CardsScreen() {
   const router = useRouter();
   const { cards, addCard, removeCard } = usePaymentCardsStore();
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ nickname: '', last4: '', brand: 'Visa' as PaymentCard['brand'], color: CARD_COLORS[0] });
+  const [form, setForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: CARD_COLORS[0] });
 
   const handleAdd = () => {
     if (!form.nickname || form.last4.length !== 4) {
       Alert.alert('Ошибка', 'Введите название и 4 последних цифры карты');
       return;
     }
-    addCard({ id: Date.now().toString(), ...form });
-    setForm({ nickname: '', last4: '', brand: 'Visa', color: CARD_COLORS[0] });
+    addCard({ id: Date.now().toString(), isDefault: false, ...form });
+    setForm({ nickname: '', last4: '', brand: 'VISA', color: CARD_COLORS[0] });
     setShowAdd(false);
   };
 
