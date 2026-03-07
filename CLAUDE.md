@@ -149,9 +149,29 @@ EXPO_PUBLIC_API_URL=http://46.101.197.19:3101/api/v1
 - `onboarding-3-analytics.png` — аналитика
 - `onboarding-4-reminders.png` — напоминания
 
-## ТЗ
+## Документация
 
-Полное техническое задание: `TZ.md` в корне репозитория.
+Подробная спецификация продукта в папке `docs/`:
+- `docs/PRODUCT_OVERVIEW.md` — обзор продукта, принципы, аудитория, монетизация, MVP критерии
+- `docs/DOMAIN_MODEL.md` — все сущности и их поля, lifecycle статусов
+- `docs/API_CONTRACTS.md` — все API endpoints (с mobile-specific аннотациями)
+- `docs/BILLING_RULES.md` — тарифы Free/Pro/Team, логика триала
+- `docs/AI_BEHAVIOR.md` — правила поведения AI, confidence levels, fallback
+- `docs/STATE_RULES.md` — жизненный цикл подписки, empty states
+- `docs/MOBILE_SCREENS.md` — screen-by-screen PRD с UI блоками, состояниями, событиями
+- `docs/NAVIGATION_MAP.md` — карта навигации (flows, tabs, overlays)
+
+## Agent Rules
+1. Не ломать существующий Google/Apple auth
+2. Не добавлять новые библиотеки без явной причины
+3. Любая AI-фича должна иметь fallback UI
+4. Любой новый экран должен быть связан с navigation map (docs/NAVIGATION_MAP.md)
+5. Любой новый API endpoint должен быть отражён в docs/API_CONTRACTS.md
+6. Любая тяжёлая операция должна быть async
+7. Любые финансовые данные требуют user confirmation
+8. Любая новая сущность должна иметь status lifecycle
+9. Любая продуктовая фича должна иметь analytics events
+10. Не реализовывать Release 2/3 фичи, пока не стабилен MVP (Release 1)
 
 ## Смежные репозитории
 
@@ -159,4 +179,4 @@ EXPO_PUBLIC_API_URL=http://46.101.197.19:3101/api/v1
 |------|---------|
 | `subradar-backend` | NestJS API |
 | `subradar-web` | React веб-приложение |
-| `subradar-landing` | Лендинг subradar.io |
+| `subradar-landing` | Лендинг subradar.ai |
