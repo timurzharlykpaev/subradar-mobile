@@ -16,6 +16,8 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { COLORS, CATEGORIES } from '../../src/constants';
 import { UpcomingPaymentCard } from '../../src/components/UpcomingPaymentCard';
+import { TrialCountdown } from '../../src/components/TrialCountdown';
+import { analyticsApi } from '../../src/api/analytics';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -24,12 +26,17 @@ export default function DashboardScreen() {
   const { currency } = useSettingsStore();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [trials, setTrials] = React.useState<any[]>([]);
 
   const fetchSubscriptions = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await subscriptionsApi.getAll();
-      setSubscriptions(res.data || []);
+      const [subsRes, trialsRes] = await Promise.all([
+        subscriptionsApi.getAll(),
+        analyticsApi.getTrials().catch(() => ({ data: [] })),
+      ]);
+      setSubscriptions(subsRes.data || []);
+      setTrials(trialsRes.data || []);
     } catch {
       // keep existing data on error
     } finally {
@@ -117,6 +124,9 @@ export default function DashboardScreen() {
           <StatCard label={t('subscriptions.trial')} value={trialCount} color={COLORS.warning} />
           <StatCard label={t('subscriptions.cancelled')} value={cancelledCount} color={COLORS.error} />
         </View>
+
+        {/* Trial countdown */}
+        {trials.length > 0 && <TrialCountdown trials={trials} />}
 
         {/* Upcoming */}
         {upcoming.length > 0 && (

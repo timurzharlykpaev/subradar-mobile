@@ -158,5 +158,14 @@
     "reminders_desc": "Benachrichtigungen vor Verlängerungen",
     "reports_title": "Steuerberichte",
     "reports_desc": "Ausgabenberichte auf Knopfdruck"
+  },
+  "trials": {
+    "title": "Aktive Testphasen",
+    "days_left": "Noch {{count}} Tage",
+    "ends_today": "Endet heute!",
+    "ends_tomorrow": "Endet morgen",
+    "expired": "Testphase abgelaufen",
+    "cancel": "Kündigen",
+    "then": "dann"
   }
 }
