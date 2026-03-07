@@ -158,5 +158,14 @@
     "reminders_desc": "갱신 전 알림 수신",
     "reports_title": "세금 보고서",
     "reports_desc": "탭 한 번으로 지출 보고서 생성"
+  },
+  "trials": {
+    "title": "활성 체험판",
+    "days_left": "{{count}}일 남음",
+    "ends_today": "오늘 종료!",
+    "ends_tomorrow": "내일 종료",
+    "expired": "체험 기간 만료",
+    "cancel": "취소",
+    "then": "이후"
   }
 }
