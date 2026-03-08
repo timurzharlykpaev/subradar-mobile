@@ -36,6 +36,24 @@ interface Props {
 
 const TABS = ['Manual', 'AI Assistant', 'Screenshot'];
 
+const POPULAR_SERVICES = [
+  { name: 'Netflix', emoji: '🎬' },
+  { name: 'Spotify', emoji: '🎵' },
+  { name: 'YouTube Premium', emoji: '▶️' },
+  { name: 'Apple iCloud', emoji: '☁️' },
+  { name: 'Google One', emoji: '🗂️' },
+  { name: 'LinkedIn Premium', emoji: '💼' },
+  { name: 'Adobe Creative Cloud', emoji: '🎨' },
+  { name: 'Microsoft 365', emoji: '📊' },
+  { name: 'ChatGPT Plus', emoji: '🤖' },
+  { name: 'Notion', emoji: '📝' },
+  { name: 'Figma', emoji: '🖌️' },
+  { name: 'GitHub', emoji: '🐙' },
+  { name: 'DigitalOcean', emoji: '🌊' },
+  { name: 'Dropbox', emoji: '📦' },
+  { name: 'Disney+', emoji: '✨' },
+];
+
 const emptyForm = {
   name: '',
   category: 'streaming',
@@ -409,7 +427,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   </TouchableOpacity>
                 </View>
 
-                {foundService && (
+                {foundService ? (
                   <View style={styles.foundServiceCard}>
                     {form.iconUrl ? (
                       <Image source={{ uri: form.iconUrl }} style={styles.foundServiceIcon}
@@ -421,7 +439,54 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         {foundService.plans?.length ?? 0} планов · {t('add.form_filled', 'Форма заполнена')} ✓
                       </Text>
                     </View>
+                    <TouchableOpacity onPress={() => { setFoundService(null); setAiQuery(''); }}>
+                      <Text style={{ fontSize: 18, color: COLORS.textMuted }}>✕</Text>
+                    </TouchableOpacity>
                   </View>
+                ) : (
+                  <>
+                    <Text style={styles.popularTitle}>{t('add.popular', 'Популярные сервисы')}</Text>
+                    <View style={styles.popularGrid}>
+                      {POPULAR_SERVICES.map((svc) => (
+                        <TouchableOpacity
+                          key={svc.name}
+                          style={styles.popularChip}
+                          onPress={() => {
+                            setAiQuery(svc.name);
+                            // auto-search after setting
+                            setTimeout(() => {
+                              aiApi.lookupService(svc.name).then((res) => {
+                                const result = res.data;
+                                setFoundService(result);
+                                const fp = result.plans?.[0];
+                                const amt = fp?.amount ?? fp?.price ?? 0;
+                                const period = ((fp?.billingCycle ?? fp?.period ?? 'MONTHLY') as string).toUpperCase();
+                                const icon = result.iconUrl ?? result.logoUrl ?? (result.serviceUrl
+                                  ? `https://www.google.com/s2/favicons?domain=${new URL(result.serviceUrl).hostname}&sz=64`
+                                  : '');
+                                setForm((f) => ({
+                                  ...f,
+                                  name: result.name ?? f.name,
+                                  category: (result.category as string)?.toLowerCase() ?? f.category,
+                                  amount: amt > 0 ? String(amt) : f.amount,
+                                  currency: fp?.currency ?? f.currency,
+                                  billingPeriod: period as any,
+                                  plan: fp?.name ?? f.plan,
+                                  websiteUrl: result.serviceUrl ?? f.websiteUrl,
+                                  cancelUrl: result.cancelUrl ?? f.cancelUrl,
+                                  iconUrl: icon,
+                                }));
+                                setTab(0); // switch to manual tab to review
+                              }).catch(() => {});
+                            }, 50);
+                          }}
+                        >
+                          <Text style={styles.popularEmoji}>{svc.emoji}</Text>
+                          <Text style={styles.popularName} numberOfLines={1}>{svc.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </>
                 )}
 
                 <View style={styles.aiDivider}>
@@ -631,6 +696,21 @@ const styles = StyleSheet.create({
   },
   trialLabel: { fontSize: 15, fontWeight: '700', color: COLORS.text },
   trialSubLabel: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
+  popularTitle: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary, marginTop: 4 },
+  popularGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  popularChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  popularEmoji: { fontSize: 16 },
+  popularName: { fontSize: 13, fontWeight: '600', color: COLORS.text, maxWidth: 110 },
   screenshotTab: { gap: 16, paddingBottom: 40 },
   screenshotPicker: {
     borderRadius: 16,
