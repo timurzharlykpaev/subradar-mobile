@@ -14,11 +14,14 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Switch,
   TouchableWithoutFeedback,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS, CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
 import { subscriptionsApi } from '../api/subscriptions';
+import { aiApi } from '../api/ai';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -45,6 +48,9 @@ const emptyForm = {
   websiteUrl: '',
   cancelUrl: '',
   notes: '',
+  iconUrl: '',
+  isTrial: false,
+  trialEndDate: '',
 };
 
 export function AddSubscriptionSheet({ visible, onClose }: Props) {
@@ -52,6 +58,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [tab, setTab] = useState(0);
   const [form, setForm] = useState(emptyForm);
   const [aiText, setAiText] = useState('');
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [foundService, setFoundService] = useState<any>(null);
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -98,20 +107,58 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         currency: form.currency,
         billingPeriod: form.billingPeriod,
         billingDay: parseInt(form.billingDay) || 1,
-        status: 'ACTIVE',
+        status: form.isTrial ? 'TRIAL' : 'ACTIVE',
         paymentCardId: form.paymentCardId || undefined,
         currentPlan: form.plan || undefined,
         serviceUrl: form.websiteUrl || undefined,
         cancelUrl: form.cancelUrl || undefined,
+        iconUrl: form.iconUrl || undefined,
         notes: form.notes || undefined,
+        trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : undefined,
       });
       addSubscription(res.data);
     } catch {
       Alert.alert(t('common.error'), '');
     }
     setForm(emptyForm);
+    setFoundService(null);
+    setAiQuery('');
     handleClose();
   }, [form, handleClose]);
+
+  const handleAILookup = useCallback(async () => {
+    if (!aiQuery.trim()) return;
+    setAiLoading(true);
+    try {
+      const res = await aiApi.lookupService(aiQuery.trim());
+      const result = res.data;
+      setFoundService(result);
+      const firstPlan = result.plans?.[0];
+      const planAmount = firstPlan?.amount ?? firstPlan?.price ?? 0;
+      const planPeriod = ((firstPlan?.billingCycle ?? firstPlan?.period ?? 'MONTHLY') as string).toUpperCase();
+      const iconUrl = result.iconUrl ?? result.logoUrl ?? (result.serviceUrl
+        ? `https://www.google.com/s2/favicons?domain=${new URL(result.serviceUrl).hostname}&sz=64`
+        : '');
+      setForm((f) => ({
+        ...f,
+        name: result.name ?? f.name,
+        category: (result.category as string)?.toLowerCase() ?? f.category,
+        amount: planAmount > 0 ? String(planAmount) : f.amount,
+        currency: firstPlan?.currency ?? f.currency,
+        billingPeriod: planPeriod as any,
+        plan: firstPlan?.name ?? f.plan,
+        websiteUrl: result.serviceUrl ?? f.websiteUrl,
+        cancelUrl: result.cancelUrl ?? f.cancelUrl,
+        iconUrl,
+      }));
+      // Switch to manual tab to let user review/confirm
+      setTab(0);
+    } catch {
+      Alert.alert(t('common.error'), 'Сервис не найден');
+    } finally {
+      setAiLoading(false);
+    }
+  }, [aiQuery]);
 
   const pickScreenshot = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -298,6 +345,38 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   />
                 </Field>
 
+                {/* Trial period toggle */}
+                <View style={styles.trialRow}>
+                  <View>
+                    <Text style={styles.trialLabel}>🎁 {t('add.trial_period', 'Триал период')}</Text>
+                    <Text style={styles.trialSubLabel}>{t('add.trial_desc', 'Бесплатный период перед оплатой')}</Text>
+                  </View>
+                  <Switch
+                    value={form.isTrial}
+                    onValueChange={(v) => setForm((f) => ({
+                      ...f,
+                      isTrial: v,
+                      trialEndDate: v
+                        ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+                        : '',
+                    }))}
+                    trackColor={{ false: COLORS.border, true: '#F59E0B' }}
+                    thumbColor={form.isTrial ? '#FFF' : '#999'}
+                  />
+                </View>
+
+                {form.isTrial && (
+                  <Field {...{label: t('add.trial_end_date', 'Триал заканчивается')}}>
+                    <TextInput
+                      style={styles.input}
+                      value={form.trialEndDate}
+                      onChangeText={(v) => setForm((f) => ({ ...f, trialEndDate: v }))}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor={COLORS.textMuted}
+                    />
+                  </Field>
+                )}
+
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
                   <Text style={styles.saveBtnText}>Add Subscription</Text>
                 </TouchableOpacity>
@@ -306,23 +385,67 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
             {tab === 1 && (
               <View style={styles.aiTab}>
-                <Text style={styles.aiHint}>
-                  Describe the subscription or paste an email, and AI will fill the form for you.
-                </Text>
+                {/* Service search */}
+                <Text style={styles.aiSectionTitle}>🔍 {t('add.search_service', 'Найти сервис')}</Text>
+                <Text style={styles.aiHint}>{t('add.ai_lookup_hint', 'Введи название — AI найдёт цену, иконку и ссылку отмены')}</Text>
+                <View style={styles.aiRow}>
+                  <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    value={aiQuery}
+                    onChangeText={setAiQuery}
+                    placeholder="Netflix, LinkedIn Premium..."
+                    placeholderTextColor={COLORS.textMuted}
+                    returnKeyType="search"
+                    onSubmitEditing={handleAILookup}
+                  />
+                  <TouchableOpacity
+                    style={[styles.aiSearchBtn, aiLoading && { opacity: 0.6 }]}
+                    onPress={handleAILookup}
+                    disabled={aiLoading || !aiQuery.trim()}
+                  >
+                    {aiLoading
+                      ? <ActivityIndicator color="#FFF" size="small" />
+                      : <Text style={styles.aiSearchBtnText}>→</Text>}
+                  </TouchableOpacity>
+                </View>
+
+                {foundService && (
+                  <View style={styles.foundServiceCard}>
+                    {form.iconUrl ? (
+                      <Image source={{ uri: form.iconUrl }} style={styles.foundServiceIcon}
+                        onError={() => {}} />
+                    ) : null}
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.foundServiceName}>{foundService.name}</Text>
+                      <Text style={styles.foundServiceMeta}>
+                        {foundService.plans?.length ?? 0} планов · {t('add.form_filled', 'Форма заполнена')} ✓
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                <View style={styles.aiDivider}>
+                  <View style={styles.aiDividerLine} />
+                  <Text style={styles.aiDividerText}>или</Text>
+                  <View style={styles.aiDividerLine} />
+                </View>
+
+                {/* Text parse */}
+                <Text style={styles.aiSectionTitle}>✨ {t('add.parse_text', 'Из текста / email')}</Text>
                 <TextInput
                   style={[styles.input, styles.multiline, { minHeight: 100 }]}
                   value={aiText}
                   onChangeText={setAiText}
-                  placeholder="e.g. I pay $9.99 per month for Netflix Premium..."
+                  placeholder="Вставь письмо или опиши подписку..."
                   placeholderTextColor={COLORS.textMuted}
                   multiline
                 />
                 <VoiceRecorder onRecordingComplete={handleVoiceDone} />
                 <TouchableOpacity
-                  style={[styles.saveBtn, { marginTop: 16 }]}
+                  style={[styles.saveBtn, { marginTop: 8 }]}
                   onPress={() => Alert.alert('AI', 'Processing... (connect API)')}
                 >
-                  <Text style={styles.saveBtnText}>✨ Parse with AI</Text>
+                  <Text style={styles.saveBtnText}>✨ Распознать</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -465,8 +588,49 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
-  aiTab: { gap: 16, paddingBottom: 40 },
-  aiHint: { fontSize: 14, color: COLORS.textSecondary, lineHeight: 20 },
+  aiTab: { gap: 12, paddingBottom: 40 },
+  aiHint: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 18 },
+  aiSectionTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text },
+  aiRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  aiSearchBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiSearchBtnText: { fontSize: 20, color: '#FFF', fontWeight: '700' },
+  foundServiceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary + '15',
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
+  },
+  foundServiceIcon: { width: 40, height: 40, borderRadius: 10 },
+  foundServiceName: { fontSize: 15, fontWeight: '700', color: COLORS.text },
+  foundServiceMeta: { fontSize: 12, color: COLORS.primary, marginTop: 2 },
+  aiDivider: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  aiDividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
+  aiDividerText: { fontSize: 12, color: COLORS.textMuted },
+  trialRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 14,
+  },
+  trialLabel: { fontSize: 15, fontWeight: '700', color: COLORS.text },
+  trialSubLabel: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
   screenshotTab: { gap: 16, paddingBottom: 40 },
   screenshotPicker: {
     borderRadius: 16,

@@ -44,9 +44,8 @@ export default function SubscriptionDetailScreen() {
   const category = CATEGORIES.find((c) => c.id === subscription.category);
 
   const handleOpenWebsite = () => {
-    if (subscription.websiteUrl) {
-      Linking.openURL(subscription.websiteUrl);
-    }
+    const url = (subscription as any).serviceUrl ?? subscription.websiteUrl;
+    if (url) Linking.openURL(url);
   };
 
   const handleCancelSubscription = async () => {
@@ -147,13 +146,33 @@ export default function SubscriptionDetailScreen() {
             <CategoryBadge categoryId={subscription.category} />
           </DetailRow>
 
-          <DetailRow label={t("subscriptions.next_payment")}>
-            <Text style={styles.detailValue}>
-              {new Date(subscription.nextPaymentDate).toLocaleDateString('en', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-              })}
-            </Text>
-          </DetailRow>
+          {subscription.status === 'TRIAL' && (subscription as any).trialEndDate ? (
+            <DetailRow label="🎁 Триал до">
+              {(() => {
+                const d = new Date((subscription as any).trialEndDate);
+                const days = Math.ceil((d.getTime() - Date.now()) / 86400000);
+                const col = days <= 0 ? COLORS.error : days <= 3 ? '#F59E0B' : COLORS.text;
+                return (
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[styles.detailValue, { color: col }]}>
+                      {d.toLocaleDateString('ru', { day: 'numeric', month: 'long' })}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: col, fontWeight: '700', marginTop: 2 }}>
+                      {days <= 0 ? 'Истёк' : days === 0 ? 'Сегодня!' : `${days} дн. осталось`}
+                    </Text>
+                  </View>
+                );
+              })()}
+            </DetailRow>
+          ) : subscription.nextPaymentDate ? (
+            <DetailRow label={t("subscriptions.next_payment")}>
+              <Text style={styles.detailValue}>
+                {new Date(subscription.nextPaymentDate).toLocaleDateString('en', {
+                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                })}
+              </Text>
+            </DetailRow>
+          ) : null}
 
           <DetailRow label={t("subscription.billing_day")}>
             <Text style={styles.detailValue}>Day {subscription.billingDay}</Text>
@@ -195,14 +214,22 @@ export default function SubscriptionDetailScreen() {
 
         {/* Actions */}
         <View style={styles.actions}>
-          {subscription.websiteUrl && (
+          {(subscription as any).serviceUrl && (
             <TouchableOpacity style={styles.websiteBtn} onPress={handleOpenWebsite}>
-              <Text style={styles.websiteBtnText}>🌐 Open Website</Text>
+              <Text style={styles.websiteBtnText}>🌐 Открыть сайт</Text>
+            </TouchableOpacity>
+          )}
+          {(subscription as any).cancelUrl && subscription.status !== 'CANCELLED' && (
+            <TouchableOpacity
+              style={styles.cancelLinkBtn}
+              onPress={() => Linking.openURL((subscription as any).cancelUrl)}
+            >
+              <Text style={styles.cancelLinkBtnText}>🔗 Страница отмены ↗</Text>
             </TouchableOpacity>
           )}
           {subscription.status !== 'CANCELLED' && (
             <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelSubscription}>
-              <Text style={styles.cancelBtnText}>✕ Cancel Subscription</Text>
+              <Text style={styles.cancelBtnText}>✕ Отменить подписку</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -306,6 +333,16 @@ const styles = StyleSheet.create({
     borderColor: COLORS.error + '40',
   },
   cancelBtnText: { fontSize: 15, fontWeight: '700', color: COLORS.error },
+  cancelLinkBtn: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: COLORS.error + '40',
+  },
+  cancelLinkBtnText: { fontSize: 15, fontWeight: '700', color: COLORS.error },
   notFound: { fontSize: 18, color: COLORS.text, textAlign: 'center', marginTop: 100 },
   backLink: { fontSize: 15, color: COLORS.primary, textAlign: 'center', marginTop: 16 },
 });

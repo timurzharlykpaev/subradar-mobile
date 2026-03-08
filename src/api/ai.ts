@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 
 export const aiApi = {
+  lookupService: (query: string) => apiClient.post('/ai/lookup', { query }),
   parseText: (text: string) => apiClient.post('/ai/parse-text', { text }),
   searchService: (query: string) => apiClient.post('/ai/search', { query }),
   parseScreenshot: (formData: FormData) =>

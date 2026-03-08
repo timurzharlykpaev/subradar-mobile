@@ -17,9 +17,21 @@ interface Props {
   onSwipeDelete?: () => void;
 }
 
+function daysUntil(date?: string | null): number | null {
+  if (!date) return null;
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return null;
+  return Math.ceil((d.getTime() - Date.now()) / 86400000);
+}
+
 export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
   const router = useRouter();
   const statusColor = STATUS_COLORS[subscription.status] || COLORS.textSecondary;
+
+  const isTrial = subscription.status === 'TRIAL';
+  const trialDays = isTrial ? daysUntil((subscription as any).trialEndDate) : null;
+  const trialUrgent = trialDays !== null && trialDays <= 3 && trialDays >= 0;
+  const trialExpired = trialDays !== null && trialDays < 0;
 
   return (
     <TouchableOpacity
@@ -62,9 +74,21 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
           {subscription.currency} {subscription.amount.toFixed(2)}
         </Text>
         <Text style={styles.period}>/ {subscription.billingPeriod}</Text>
-        <Text style={styles.nextDate}>
-          {new Date(subscription.nextPaymentDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
-        </Text>
+        {isTrial && trialDays !== null ? (
+          <View style={[styles.trialBadge, {
+            backgroundColor: trialExpired ? '#EF444420' : trialUrgent ? '#F59E0B20' : '#3B82F620',
+          }]}>
+            <Text style={[styles.trialBadgeText, {
+              color: trialExpired ? '#EF4444' : trialUrgent ? '#F59E0B' : '#3B82F6',
+            }]}>
+              {trialExpired ? 'Trial ended' : trialDays === 0 ? 'Ends today' : `🎁 ${trialDays}d`}
+            </Text>
+          </View>
+        ) : subscription.nextPaymentDate ? (
+          <Text style={styles.nextDate}>
+            {new Date(subscription.nextPaymentDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+          </Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -105,4 +129,6 @@ const styles = StyleSheet.create({
   amount: { fontSize: 15, fontWeight: '800', color: COLORS.text },
   period: { fontSize: 11, color: COLORS.textSecondary },
   nextDate: { fontSize: 11, color: COLORS.primary, fontWeight: '600' },
+  trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2 },
+  trialBadgeText: { fontSize: 10, fontWeight: '700' },
 });
