@@ -164,8 +164,75 @@ export default function OnboardingScreen() {
     }
   };
 
+  // Feature Showcase animations
+  const showcaseOpacity = useRef(new Animated.Value(0)).current;
+  const showcaseTranslateY = useRef(new Animated.Value(30)).current;
+  const card1Scale = useRef(new Animated.Value(0.85)).current;
+  const card2Scale = useRef(new Animated.Value(0.85)).current;
+  const card3Scale = useRef(new Animated.Value(0.85)).current;
+  const card4Scale = useRef(new Animated.Value(0.85)).current;
+
+  useEffect(() => {
+    if (step === 0) {
+      Animated.parallel([
+        Animated.timing(showcaseOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.timing(showcaseTranslateY, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.sequence([
+          Animated.spring(card1Scale, { toValue: 1, damping: 10, delay: 100, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.delay(150),
+          Animated.spring(card2Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.delay(250),
+          Animated.spring(card3Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.delay(350),
+          Animated.spring(card4Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
+        ]),
+      ]).start();
+    }
+  }, [step]);
+
+  const SHOWCASE_FEATURES = [
+    { emoji: '🤖', title: 'AI автодобавление', desc: 'Просто скажи название — AI найдёт цену, иконку и ссылку', scale: card1Scale },
+    { emoji: '🔔', title: 'Умные уведомления', desc: 'Письмо и push за 3 дня до списания', scale: card2Scale },
+    { emoji: '📊', title: 'Аналитика Pro', desc: 'Прогноз расходов, дубликаты, экономия', scale: card3Scale },
+    { emoji: '👥', title: 'Командный план', desc: 'Управляй подписками вместе с командой', scale: card4Scale },
+  ];
+
   const steps = [
-    // Step 0: Language
+    // Step 0: Feature Showcase
+    <Animated.View
+      key="showcase"
+      style={[styles.step, { opacity: showcaseOpacity, transform: [{ translateY: showcaseTranslateY }] }]}
+    >
+      <View style={styles.logoContainer}>
+        <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
+        <Text style={styles.logoTitle}>SubRadar</Text>
+        <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
+      </View>
+      <Text style={styles.showcaseTitle}>Всё что нужно для контроля подписок</Text>
+      <View style={styles.showcaseGrid}>
+        {SHOWCASE_FEATURES.map((f) => (
+          <Animated.View
+            key={f.title}
+            style={[styles.showcaseCard, { transform: [{ scale: f.scale }] }]}
+          >
+            <Text style={styles.showcaseEmoji}>{f.emoji}</Text>
+            <Text style={styles.showcaseCardTitle}>{f.title}</Text>
+            <Text style={styles.showcaseCardDesc}>{f.desc}</Text>
+          </Animated.View>
+        ))}
+      </View>
+      <TouchableOpacity style={styles.showcaseBtn} onPress={() => setStep(1)}>
+        <Text style={styles.showcaseBtnText}>Начать — это бесплатно →</Text>
+      </TouchableOpacity>
+    </Animated.View>,
+
+    // Step 1: Language (was Step 0)
     <View key="language" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
@@ -189,7 +256,7 @@ export default function OnboardingScreen() {
       </View>
     </View>,
 
-    // Step 1: Welcome
+    // Step 2: Welcome
     <View key="welcome" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImageLarge} />
@@ -200,7 +267,7 @@ export default function OnboardingScreen() {
       <Text style={styles.subheadline}>{t('landing.hero_sub')}</Text>
     </View>,
 
-    // Step 2: Features
+    // Step 3: Features
     <View key="features" style={styles.step}>
       <Text style={styles.sectionTitle}>{t('landing.features')}</Text>
       {FEATURES.map((f) => (
@@ -216,7 +283,7 @@ export default function OnboardingScreen() {
       ))}
     </View>,
 
-    // Step 3: Currency
+    // Step 4: Currency
     <View key="currency" style={styles.step}>
       <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
       <Text style={styles.subheadline}>{t('onboarding.choose_currency')}</Text>
@@ -235,7 +302,7 @@ export default function OnboardingScreen() {
       </View>
     </View>,
 
-    // Step 4: Auth
+    // Step 5: Auth
     <View key="auth" style={styles.step}>
       <Text style={styles.sectionTitle}>{t('auth.welcome')}</Text>
       <Text style={styles.subheadline}>{t('auth.sign_in')}</Text>
@@ -306,20 +373,22 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <View style={styles.footerBtns}>
-          {step > 0 && (
-            <TouchableOpacity style={styles.backBtn} onPress={() => setStep(step - 1)}>
-              <Text style={styles.backBtnText}>{t('common.back')}</Text>
-            </TouchableOpacity>
-          )}
-          {step < steps.length - 1 && (
-            <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(step + 1)}>
-              <Text style={styles.nextBtnText}>
-                {step === 1 ? t('onboarding.get_started') : t('onboarding.next')}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        {step > 0 && (
+          <View style={styles.footerBtns}>
+            {step > 1 && (
+              <TouchableOpacity style={styles.backBtn} onPress={() => setStep(step - 1)}>
+                <Text style={styles.backBtnText}>{t('common.back')}</Text>
+              </TouchableOpacity>
+            )}
+            {step < steps.length - 1 && (
+              <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(step + 1)}>
+                <Text style={styles.nextBtnText}>
+                  {step === 2 ? t('onboarding.get_started') : t('onboarding.next')}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -379,4 +448,12 @@ const styles = StyleSheet.create({
   backBtnText: { fontSize: 15, fontWeight: '700', color: COLORS.textSecondary },
   nextBtn: { flex: 2, paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: COLORS.primary },
   nextBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  showcaseTitle: { fontSize: 20, fontWeight: '800', color: COLORS.text, textAlign: 'center', lineHeight: 26, letterSpacing: -0.3, marginBottom: 4 },
+  showcaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  showcaseCard: { width: '47%', backgroundColor: 'rgba(139,92,246,0.15)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.3)', padding: 14, gap: 6 },
+  showcaseEmoji: { fontSize: 28 },
+  showcaseCardTitle: { fontSize: 13, fontWeight: '800', color: COLORS.text },
+  showcaseCardDesc: { fontSize: 11, color: COLORS.textSecondary, lineHeight: 15 },
+  showcaseBtn: { backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
+  showcaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 });
