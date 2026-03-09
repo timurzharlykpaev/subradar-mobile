@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  KeyboardAvoidingView,
+  ScrollView,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +26,10 @@ export default function EditProfileScreen() {
   const [name, setName] = useState(user?.name || '');
   const [saving, setSaving] = useState(false);
 
+  const handleChangeName = useCallback((text: string) => {
+    setName(text);
+  }, []);
+
   const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert(t('common.error'), t('settings.name_required'));
@@ -43,84 +47,149 @@ export default function EditProfileScreen() {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.cancel}>{t('common.cancel')}</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>{t('edit_profile.title')}</Text>
-          <TouchableOpacity onPress={handleSave} disabled={saving}>
-            {saving ? (
-              <ActivityIndicator size="small" color={COLORS.primary} />
-            ) : (
-              <Text style={styles.save}>{t('common.save')}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+  const initials = (name?.[0] || user?.email?.[0] || 'U').toUpperCase();
 
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <Text style={styles.cancel}>{t('common.cancel')}</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>{t('edit_profile.title')}</Text>
+        <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          {saving ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <Text style={styles.save}>{t('common.save')}</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Avatar */}
         <View style={styles.avatarSection}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{name?.[0]?.toUpperCase() || 'U'}</Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
         </View>
 
+        {/* Form */}
         <View style={styles.form}>
-          <Text style={styles.label}>{t('edit_profile.name')}</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder={t('edit_profile.name_placeholder')}
-            placeholderTextColor="#666"
-            autoFocus
-          />
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('edit_profile.name')}</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={handleChangeName}
+              placeholder={t('edit_profile.name_placeholder')}
+              placeholderTextColor="rgba(255,255,255,0.3)"
+              returnKeyType="done"
+              onSubmitEditing={handleSave}
+              maxLength={50}
+            />
+          </View>
 
-          <Text style={styles.label}>{t('edit_profile.email')}</Text>
-          <TextInput
-            style={[styles.input, styles.inputDisabled]}
-            value={user?.email || ''}
-            editable={false}
-          />
+          <View style={styles.field}>
+            <Text style={styles.label}>{t('edit_profile.email')}</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.inputDisabledText}>{user?.email || ''}</Text>
+            </View>
+          </View>
         </View>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: {
+    flex: 1,
+    backgroundColor: '#0F0F1A',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
-  cancel: { color: '#999', fontSize: 16 },
-  title: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  save: { color: COLORS.primary, fontSize: 16, fontWeight: '600' },
-  avatarSection: { alignItems: 'center', paddingVertical: 24 },
+  cancel: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 16,
+  },
+  title: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  save: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  avatarSection: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#FFF', fontSize: 32, fontWeight: '800' },
-  form: { paddingHorizontal: 20 },
-  label: { color: '#999', fontSize: 13, marginBottom: 8, marginTop: 20 },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 36,
+    fontWeight: '700',
+  },
+  form: {
+    paddingHorizontal: 20,
+    gap: 4,
+  },
+  field: {
+    marginBottom: 20,
+  },
+  label: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
   input: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 16,
-    color: '#FFF',
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    color: '#FFFFFF',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#2A2A3E',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  inputDisabled: { opacity: 0.5 },
+  inputDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  inputDisabledText: {
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: 16,
+  },
 });
