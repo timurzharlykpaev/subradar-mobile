@@ -11,7 +11,15 @@
     "yes": "Sim",
     "no": "Não",
     "all": "Todos",
-    "or": "ou"
+    "or": "ou",
+    "are_you_sure": "Tem certeza?",
+    "no_card": "Sem cartão"
+  },
+  "tabs": {
+    "home": "Início",
+    "subs": "Assinaturas",
+    "analytics": "Análises",
+    "settings": "Ajustes"
   },
   "nav": {
     "dashboard": "Painel",
@@ -19,7 +27,7 @@
     "analytics": "Análises",
     "cards": "Cartões",
     "reports": "Relatórios",
-    "workspace": "Equipa",
+    "workspace": "Equipe",
     "settings": "Configurações"
   },
   "dashboard": {
@@ -65,7 +73,9 @@
     "total": "total",
     "empty_hint": "Toque + para adicionar sua primeira assinatura",
     "delete_title": "Excluir assinatura",
-    "cancel_title": "Cancelar assinatura"
+    "cancel_title": "Cancelar assinatura",
+    "subscription_count": "{{count}} assinatura",
+    "subscription_count_plural": "{{count}} assinaturas"
   },
   "add": {
     "title": "Adicionar Assinatura",
@@ -89,7 +99,24 @@
     "required": "Obrigatório",
     "fill_required": "Por favor preencha nome e valor",
     "ai_processing": "IA processando...",
-    "ai_screenshot": "Processando captura..."
+    "ai_screenshot": "Processando captura...",
+    "ai_assistant": "Assistente IA",
+    "search_service": "Buscar serviço",
+    "ai_lookup_hint": "Digite um nome — a IA encontrará preço, ícone e link de cancelamento",
+    "popular": "Serviços populares",
+    "form_filled": "Formulário preenchido",
+    "parse_text": "De texto / email",
+    "paste_hint": "Cole um email ou descreva uma assinatura...",
+    "recognize": "Reconhecer",
+    "screenshot_ai_hint": "Tire uma foto de uma fatura ou recibo e a IA extrairá os detalhes.",
+    "tap_to_pick": "Toque para escolher imagem",
+    "parse_screenshot": "Analisar captura",
+    "service_not_found": "Serviço não encontrado",
+    "trial_period": "Período de teste",
+    "trial_desc": "Período gratuito antes da cobrança",
+    "trial_end_date": "Fim do teste",
+    "add_subscription": "Adicionar Assinatura",
+    "no_card": "Sem cartão"
   },
   "settings": {
     "title": "Configurações",
@@ -101,7 +128,39 @@
     "logout": "Sair",
     "dark_mode": "Modo Escuro",
     "light_mode": "Modo Claro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "profile": "Perfil",
+    "default_currency": "Moeda padrão",
+    "push_notifications": "Notificações push",
+    "remind_before": "Lembrar antes da renovação",
+    "days_before": "{{count}}d antes",
+    "payment_cards": "Cartões de pagamento",
+    "add_payment_card": "+ Adicionar cartão",
+    "reports": "Relatórios",
+    "generate_report": "Gerar relatório",
+    "pro_trial": "Teste Pro",
+    "subradar_pro": "SubRadar Pro",
+    "days_remaining": "{{count}} dias restantes no teste",
+    "ai_usage": "IA: {{used}}/{{limit}} este mês",
+    "pro_features": "Assinaturas ilimitadas · 200 IA/mês · Análises",
+    "sub_usage": "Assinaturas: {{used}}/{{limit}}",
+    "start_trial": "Iniciar teste grátis de 7 dias",
+    "upgrade": "Upgrade — $2,99/mês",
+    "export_data": "Exportar dados",
+    "data_exported": "Dados exportados (demo)",
+    "version": "SubRadar AI v1.0.0",
+    "add_card_title": "Adicionar cartão",
+    "card_nickname_placeholder": "Apelido (ex: Meu Visa)",
+    "card_last4_placeholder": "Últimos 4 dígitos",
+    "card_brand": "Bandeira",
+    "delete_card": "Excluir",
+    "remove_card": "Remover {{name}}?",
+    "invalid_card": "Insira o apelido e os 4 últimos dígitos",
+    "trial_started": "Teste iniciado!",
+    "trial_started_desc": "7 dias de acesso Pro começam agora. Aproveite todos os recursos.",
+    "failed_trial": "Falha ao iniciar o teste.",
+    "name_required": "O nome é obrigatório",
+    "save_error": "Falha ao salvar"
   },
   "auth": {
     "welcome": "Bem-vindo de volta",
@@ -111,7 +170,13 @@
     "email_placeholder": "seu@email.com",
     "send_link": "Enviar Link Mágico",
     "sent": "Verifique seu email!",
-    "sent_sub": "Enviamos um link mágico para"
+    "sent_sub": "Enviamos um link mágico para",
+    "continue_email": "Continuar com Email",
+    "send_code": "Enviar código",
+    "enter_code": "Digite o código enviado para",
+    "verify": "Verificar",
+    "resend_code": "Reenviar código",
+    "resend_in": "Reenviar em {{seconds}}s"
   },
   "landing": {
     "hero_title": "Saiba exatamente para onde vai seu dinheiro",
@@ -122,7 +187,7 @@
   },
   "onboarding": {
     "choose_language": "Escolha seu idioma",
-    "choose_currency": "Escolha sua moeda padrão",
+    "choose_currency": "Escolha sua moeda padrão para acompanhamento",
     "next": "Próximo →",
     "get_started": "Começar →",
     "invalid_email": "Digite um email válido",
@@ -131,23 +196,110 @@
     "demo_login": "Demo",
     "continue_apple": "Continuar com Apple",
     "continue_google": "Continuar com Google",
-    "terms": "Ao continuar, você concorda com nossos Termos e Política de privacidade"
+    "terms": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade",
+    "showcase_title": "Tudo que você precisa para controlar suas assinaturas",
+    "showcase_start": "Começar — é grátis →",
+    "showcase_ai_title": "IA auto-adicionar",
+    "showcase_ai_desc": "Basta dizer o nome — a IA encontra preço, ícone e link",
+    "showcase_notify_title": "Notificações inteligentes",
+    "showcase_notify_desc": "Email e push 3 dias antes da cobrança",
+    "showcase_analytics_title": "Análises Pro",
+    "showcase_analytics_desc": "Previsão de gastos, duplicados, economia",
+    "showcase_team_title": "Plano equipe",
+    "showcase_team_desc": "Gerencie assinaturas junto com sua equipe"
   },
   "analytics": {
+    "title": "Análises",
+    "subtitle": "Seus insights de gastos",
     "avg_month": "Média / mês",
     "total_year": "Total este ano",
     "most_expensive": "Mais caro",
     "by_category": "Por categoria",
-    "monthly": "Detalhamento mensal"
+    "monthly": "Detalhamento mensal",
+    "monthly_spend": "Gasto Mensal",
+    "all_subscriptions": "Todas as assinaturas",
+    "no_data": "Sem dados ainda",
+    "card_breakdown": "Por Cartão",
+    "forecast": "Previsão",
+    "forecast_30d": "30 dias",
+    "forecast_6m": "6 meses",
+    "forecast_12m": "12 meses",
+    "upgrade_forecast": "Faça upgrade para o Pro e desbloqueie previsões de gastos",
+    "savings": "Análise de Economia",
+    "potential_savings": "economia mensal potencial",
+    "duplicates": "Possíveis Duplicados",
+    "no_duplicates": "Nenhuma assinatura duplicada encontrada",
+    "upgrade_savings": "Faça upgrade para o Pro para ver oportunidades de economia",
+    "top5": "Top 5 Mais Caras"
   },
   "subscription": {
     "billing_day": "Dia de cobrança",
-    "detail_title": "Detalhes",
+    "detail_title": "Detalhes da Assinatura",
     "pause": "Pausar",
     "resume": "Retomar",
     "cancel_sub": "Cancelar",
     "delete": "Excluir",
-    "edit": "Editar"
+    "edit": "Editar",
+    "not_found": "Assinatura não encontrada",
+    "go_back": "← Voltar",
+    "details": "Detalhes",
+    "trial_until": "🎁 Teste até",
+    "trial_expired": "Expirado",
+    "trial_today": "Hoje!",
+    "trial_days_left": "{{count}} dias restantes",
+    "receipts": "Recibos",
+    "upload": "+ Enviar",
+    "no_receipts": "Nenhum recibo ainda",
+    "open_website": "🌐 Abrir site",
+    "cancel_page": "🔗 Página de cancelamento ↗",
+    "cancel_subscription": "✕ Cancelar assinatura",
+    "cancel_confirm": "Marcar esta assinatura como cancelada?",
+    "cancel_confirm_url": "Isso abrirá a página de cancelamento. Marcar como cancelada?",
+    "keep": "Manter",
+    "remove_confirm": "Remover {{name}}?",
+    "day": "Dia {{day}}"
+  },
+  "cards": {
+    "title": "Cartões",
+    "add": "+ Adicionar",
+    "empty": "Sem cartões",
+    "empty_desc": "Adicione um cartão para acompanhar despesas",
+    "add_card": "Adicionar cartão",
+    "nickname_placeholder": "Apelido (ex: \"Meu Visa\")",
+    "last4_placeholder": "Últimos 4 dígitos",
+    "payment_system": "Bandeira",
+    "color": "Cor",
+    "delete_card": "Excluir cartão?",
+    "delete_confirm": "Essa ação não pode ser desfeita",
+    "error_validation": "Insira o nome e os 4 últimos dígitos do cartão"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "report_type": "Tipo de relatório",
+    "summary": "Resumo",
+    "detailed": "Detalhado",
+    "tax": "Fiscal",
+    "date_range": "Período",
+    "this_month": "Este mês",
+    "this_quarter": "Este trimestre",
+    "this_year": "Este ano",
+    "generate": "📥 Gerar relatório PDF",
+    "generating": "⏳ Gerando...",
+    "report_ready": "Relatório pronto",
+    "report_ready_desc": "Seu relatório foi gerado (demo). Conecte a API para baixar o PDF.",
+    "summary_desc": "Visão geral de todas as assinaturas com custos totais",
+    "detailed_desc": "Detalhamento completo incluindo histórico de pagamentos e categorias",
+    "tax_desc": "Relatório fiscal de despesas para deduções",
+    "period_month": "Mês atual",
+    "period_quarter": "Últimos 3 meses",
+    "period_year": "Este ano",
+    "period_label": "Período: {{period}}"
+  },
+  "edit_profile": {
+    "title": "Editar Perfil",
+    "name": "Nome",
+    "name_placeholder": "Seu nome",
+    "email": "Email"
   },
   "features": {
     "voice_title": "Adicionar por voz",
@@ -167,5 +319,13 @@
     "expired": "Teste expirado",
     "cancel": "Cancelar",
     "then": "depois"
+  },
+  "voice": {
+    "hold_to_record": "Segure para gravar"
+  },
+  "upcoming": {
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "in_days": "em {{count}}d"
   }
 }

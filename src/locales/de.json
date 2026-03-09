@@ -11,7 +11,15 @@
     "yes": "Ja",
     "no": "Nein",
     "all": "Alle",
-    "or": "oder"
+    "or": "oder",
+    "are_you_sure": "Bist du sicher?",
+    "no_card": "Keine Karte"
+  },
+  "tabs": {
+    "home": "Start",
+    "subs": "Abos",
+    "analytics": "Analytik",
+    "settings": "Einstellungen"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -65,7 +73,9 @@
     "total": "gesamt",
     "empty_hint": "Tippe + um dein erstes Abonnement hinzuzufügen",
     "delete_title": "Abonnement löschen",
-    "cancel_title": "Abonnement kündigen"
+    "cancel_title": "Abonnement kündigen",
+    "subscription_count": "{{count}} Abonnement",
+    "subscription_count_plural": "{{count}} Abonnements"
   },
   "add": {
     "title": "Abonnement hinzufügen",
@@ -89,7 +99,24 @@
     "required": "Pflichtfeld",
     "fill_required": "Bitte Name und Betrag ausfüllen",
     "ai_processing": "KI verarbeitet...",
-    "ai_screenshot": "Screenshot wird verarbeitet..."
+    "ai_screenshot": "Screenshot wird verarbeitet...",
+    "ai_assistant": "KI-Assistent",
+    "search_service": "Dienst finden",
+    "ai_lookup_hint": "Namen eingeben — KI findet Preis, Symbol und Kündigungslink",
+    "popular": "Beliebte Dienste",
+    "form_filled": "Formular ausgefüllt",
+    "parse_text": "Aus Text / E-Mail",
+    "paste_hint": "E-Mail einfügen oder Abonnement beschreiben...",
+    "recognize": "Erkennen",
+    "screenshot_ai_hint": "Mache einen Screenshot einer Rechnung oder Quittung und die KI extrahiert die Details.",
+    "tap_to_pick": "Tippen zum Auswählen",
+    "parse_screenshot": "Screenshot analysieren",
+    "service_not_found": "Dienst nicht gefunden",
+    "trial_period": "Testphase",
+    "trial_desc": "Kostenloser Zeitraum vor der Zahlung",
+    "trial_end_date": "Testphase endet",
+    "add_subscription": "Abonnement hinzufügen",
+    "no_card": "Keine Karte"
   },
   "settings": {
     "title": "Einstellungen",
@@ -101,7 +128,39 @@
     "logout": "Abmelden",
     "dark_mode": "Dunkelmodus",
     "light_mode": "Hellmodus",
-    "system": "System"
+    "system": "System",
+    "profile": "Profil",
+    "default_currency": "Standardwährung",
+    "push_notifications": "Push-Benachrichtigungen",
+    "remind_before": "Vor Verlängerung erinnern",
+    "days_before": "{{count}} Tage vorher",
+    "payment_cards": "Zahlungskarten",
+    "add_payment_card": "+ Zahlungskarte hinzufügen",
+    "reports": "Berichte",
+    "generate_report": "Bericht erstellen",
+    "pro_trial": "Pro Testphase",
+    "subradar_pro": "SubRadar Pro",
+    "days_remaining": "Noch {{count}} Tage in der Testphase",
+    "ai_usage": "KI: {{used}}/{{limit}} diesen Monat",
+    "pro_features": "Unbegrenzte Abonnements · 200 KI/Monat · Analytik",
+    "sub_usage": "Abonnements: {{used}}/{{limit}}",
+    "start_trial": "7-Tage-Testversion starten",
+    "upgrade": "Upgrade — 2,99 $/Monat",
+    "export_data": "Daten exportieren",
+    "data_exported": "Daten exportiert (Demo)",
+    "version": "SubRadar AI v1.0.0",
+    "add_card_title": "Zahlungskarte hinzufügen",
+    "card_nickname_placeholder": "Spitzname (z.B. Meine Visa)",
+    "card_last4_placeholder": "Letzte 4 Ziffern",
+    "card_brand": "Marke",
+    "delete_card": "Löschen",
+    "remove_card": "{{name}} entfernen?",
+    "invalid_card": "Spitzname und 4-stellige Kartennummer eingeben",
+    "trial_started": "Testphase gestartet!",
+    "trial_started_desc": "7 Tage Pro-Zugang beginnen jetzt. Genieße alle Funktionen.",
+    "failed_trial": "Testphase konnte nicht gestartet werden.",
+    "name_required": "Name ist erforderlich",
+    "save_error": "Speichern fehlgeschlagen"
   },
   "auth": {
     "welcome": "Willkommen zurück",
@@ -111,7 +170,13 @@
     "email_placeholder": "deine@email.com",
     "send_link": "Magic Link senden",
     "sent": "E-Mail prüfen!",
-    "sent_sub": "Wir haben einen Magic Link gesendet an"
+    "sent_sub": "Wir haben einen Magic Link gesendet an",
+    "continue_email": "Mit E-Mail fortfahren",
+    "send_code": "Code senden",
+    "enter_code": "Code eingeben, gesendet an",
+    "verify": "Bestätigen",
+    "resend_code": "Code erneut senden",
+    "resend_in": "Erneut senden in {{seconds}}s"
   },
   "landing": {
     "hero_title": "Wissen Sie genau, wohin Ihr Geld fließt",
@@ -131,14 +196,41 @@
     "demo_login": "Demo",
     "continue_apple": "Mit Apple fortfahren",
     "continue_google": "Mit Google fortfahren",
-    "terms": "Mit dem Fortfahren stimmen Sie unseren Nutzungsbedingungen zu"
+    "terms": "Mit dem Fortfahren stimmen Sie unseren Nutzungsbedingungen zu",
+    "showcase_title": "Alles, was du brauchst, um Abonnements zu kontrollieren",
+    "showcase_start": "Jetzt starten — kostenlos →",
+    "showcase_ai_title": "KI-Automatik",
+    "showcase_ai_desc": "Sag einfach den Namen — KI findet Preis, Symbol und Link",
+    "showcase_notify_title": "Smarte Benachrichtigungen",
+    "showcase_notify_desc": "E-Mail und Push 3 Tage vor Abrechnung",
+    "showcase_analytics_title": "Analytics Pro",
+    "showcase_analytics_desc": "Ausgabenprognose, Duplikate, Einsparungen",
+    "showcase_team_title": "Team-Plan",
+    "showcase_team_desc": "Abonnements gemeinsam im Team verwalten"
   },
   "analytics": {
+    "title": "Analytik",
+    "subtitle": "Deine Ausgabenanalyse",
     "avg_month": "Ø / Monat",
     "total_year": "Gesamt dieses Jahr",
     "most_expensive": "Teuerste",
     "by_category": "Nach Kategorie",
-    "monthly": "Monatliche Aufschlüsselung"
+    "monthly": "Monatliche Aufschlüsselung",
+    "monthly_spend": "Monatliche Ausgaben",
+    "all_subscriptions": "Alle Abonnements",
+    "no_data": "Noch keine Daten",
+    "card_breakdown": "Aufschlüsselung nach Karte",
+    "forecast": "Prognose",
+    "forecast_30d": "30 Tage",
+    "forecast_6m": "6 Monate",
+    "forecast_12m": "12 Monate",
+    "upgrade_forecast": "Auf Pro upgraden, um Ausgabenprognosen freizuschalten",
+    "savings": "Sparanalyse",
+    "potential_savings": "mögliche monatliche Einsparungen",
+    "duplicates": "Mögliche Duplikate",
+    "no_duplicates": "Keine doppelten Abonnements gefunden",
+    "upgrade_savings": "Auf Pro upgraden, um Sparmöglichkeiten zu sehen",
+    "top5": "Top 5 Teuerste"
   },
   "subscription": {
     "billing_day": "Abrechnungstag",
@@ -147,7 +239,67 @@
     "resume": "Fortsetzen",
     "cancel_sub": "Kündigen",
     "delete": "Löschen",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "not_found": "Abonnement nicht gefunden",
+    "go_back": "← Zurück",
+    "details": "Details",
+    "trial_until": "🎁 Testphase bis",
+    "trial_expired": "Abgelaufen",
+    "trial_today": "Heute!",
+    "trial_days_left": "Noch {{count}} Tage",
+    "receipts": "Belege",
+    "upload": "+ Hochladen",
+    "no_receipts": "Noch keine Belege",
+    "open_website": "🌐 Website öffnen",
+    "cancel_page": "🔗 Kündigungsseite ↗",
+    "cancel_subscription": "✕ Abonnement kündigen",
+    "cancel_confirm": "Dieses Abonnement als gekündigt markieren?",
+    "cancel_confirm_url": "Die Kündigungsseite wird geöffnet. Als gekündigt markieren?",
+    "keep": "Behalten",
+    "remove_confirm": "{{name}} entfernen?",
+    "day": "Tag {{day}}"
+  },
+  "cards": {
+    "title": "Karten",
+    "add": "+ Hinzufügen",
+    "empty": "Keine Karten",
+    "empty_desc": "Karte hinzufügen, um Ausgaben zu verfolgen",
+    "add_card": "Karte hinzufügen",
+    "nickname_placeholder": "Spitzname (z.B. \"Meine Visa\")",
+    "last4_placeholder": "Letzte 4 Ziffern",
+    "payment_system": "Zahlungssystem",
+    "color": "Farbe",
+    "delete_card": "Karte löschen?",
+    "delete_confirm": "Diese Aktion kann nicht rückgängig gemacht werden",
+    "error_validation": "Name und letzte 4 Ziffern der Karte eingeben"
+  },
+  "reports": {
+    "title": "Berichte",
+    "report_type": "Berichtstyp",
+    "summary": "Zusammenfassung",
+    "detailed": "Detailliert",
+    "tax": "Steuer",
+    "date_range": "Zeitraum",
+    "this_month": "Dieser Monat",
+    "this_quarter": "Dieses Quartal",
+    "this_year": "Dieses Jahr",
+    "generate": "📥 PDF-Bericht erstellen",
+    "generating": "⏳ Wird erstellt...",
+    "report_ready": "Bericht fertig",
+    "report_ready_desc": "Ihr Bericht wurde erstellt (Demo). API verbinden, um PDF herunterzuladen.",
+    "summary_desc": "Übersicht aller Abonnements mit Gesamtkosten",
+    "detailed_desc": "Vollständige Aufschlüsselung inkl. Zahlungsverlauf und Kategorien",
+    "tax_desc": "Steuerlich relevanter Ausgabenbericht für Absetzungen",
+    "period_month": "Aktueller Monat",
+    "period_quarter": "Letzte 3 Monate",
+    "period_year": "Dieses Jahr",
+    "period_label": "Zeitraum: {{period}}"
+  },
+  "edit_profile": {
+    "title": "Profil bearbeiten",
+    "name": "Name",
+    "name_placeholder": "Dein Name",
+    "email": "E-Mail"
   },
   "features": {
     "voice_title": "Per Sprache hinzufügen",
@@ -167,5 +319,13 @@
     "expired": "Testphase abgelaufen",
     "cancel": "Kündigen",
     "then": "dann"
+  },
+  "voice": {
+    "hold_to_record": "Gedrückt halten zum Aufnehmen"
+  },
+  "upcoming": {
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "in_days": "in {{count}} T."
   }
 }

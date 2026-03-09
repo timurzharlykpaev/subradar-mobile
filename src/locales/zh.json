@@ -11,7 +11,15 @@
     "yes": "是",
     "no": "否",
     "all": "全部",
-    "or": "或"
+    "or": "或",
+    "are_you_sure": "确定吗？",
+    "no_card": "无卡"
+  },
+  "tabs": {
+    "home": "首页",
+    "subs": "订阅",
+    "analytics": "分析",
+    "settings": "设置"
   },
   "nav": {
     "dashboard": "仪表板",
@@ -65,7 +73,9 @@
     "total": "共",
     "empty_hint": "点击+添加第一个订阅",
     "delete_title": "删除订阅",
-    "cancel_title": "取消订阅"
+    "cancel_title": "取消订阅",
+    "subscription_count": "{{count}} 个订阅",
+    "subscription_count_plural": "{{count}} 个订阅"
   },
   "add": {
     "title": "添加订阅",
@@ -89,7 +99,24 @@
     "required": "必填",
     "fill_required": "请填写名称和金额",
     "ai_processing": "AI处理中...",
-    "ai_screenshot": "截图处理中..."
+    "ai_screenshot": "截图处理中...",
+    "ai_assistant": "AI 助手",
+    "search_service": "查找服务",
+    "ai_lookup_hint": "输入名称——AI将查找价格、图标和取消链接",
+    "popular": "热门服务",
+    "form_filled": "表单已填写",
+    "parse_text": "从文本/邮件",
+    "paste_hint": "粘贴邮件或描述一个订阅...",
+    "recognize": "识别",
+    "screenshot_ai_hint": "拍一张账单或收据的截图，AI将自动提取信息。",
+    "tap_to_pick": "点击选择图片",
+    "parse_screenshot": "解析截图",
+    "service_not_found": "未找到服务",
+    "trial_period": "试用期",
+    "trial_desc": "付款前的免费期",
+    "trial_end_date": "试用结束",
+    "add_subscription": "添加订阅",
+    "no_card": "无卡"
   },
   "settings": {
     "title": "设置",
@@ -101,7 +128,39 @@
     "logout": "退出登录",
     "dark_mode": "深色模式",
     "light_mode": "浅色模式",
-    "system": "系统"
+    "system": "系统",
+    "profile": "个人资料",
+    "default_currency": "默认货币",
+    "push_notifications": "推送通知",
+    "remind_before": "续费前提醒",
+    "days_before": "提前{{count}}天",
+    "payment_cards": "支付卡",
+    "add_payment_card": "+ 添加支付卡",
+    "reports": "报告",
+    "generate_report": "生成报告",
+    "pro_trial": "Pro 试用",
+    "subradar_pro": "SubRadar Pro",
+    "days_remaining": "试用期剩余{{count}}天",
+    "ai_usage": "AI：本月 {{used}}/{{limit}}",
+    "pro_features": "无限订阅 · 200次AI/月 · 高级分析",
+    "sub_usage": "订阅：{{used}}/{{limit}}",
+    "start_trial": "开始7天免费试用",
+    "upgrade": "升级 — $2.99/月",
+    "export_data": "导出数据",
+    "data_exported": "数据已导出（演示）",
+    "version": "SubRadar AI v1.0.0",
+    "add_card_title": "添加支付卡",
+    "card_nickname_placeholder": "昵称（如 我的Visa卡）",
+    "card_last4_placeholder": "后4位",
+    "card_brand": "品牌",
+    "delete_card": "删除",
+    "remove_card": "移除 {{name}}？",
+    "invalid_card": "请输入昵称和4位尾号",
+    "trial_started": "试用已开始！",
+    "trial_started_desc": "7天Pro体验现在开始，尽情使用所有功能。",
+    "failed_trial": "启动试用失败。",
+    "name_required": "名称为必填项",
+    "save_error": "保存失败"
   },
   "auth": {
     "welcome": "欢迎回来",
@@ -111,7 +170,13 @@
     "email_placeholder": "your@email.com",
     "send_link": "发送魔法链接",
     "sent": "请查看您的邮件！",
-    "sent_sub": "我们已发送魔法链接至"
+    "sent_sub": "我们已发送魔法链接至",
+    "continue_email": "使用邮箱继续",
+    "send_code": "发送验证码",
+    "enter_code": "输入发送至以下邮箱的验证码",
+    "verify": "验证",
+    "resend_code": "重新发送验证码",
+    "resend_in": "{{seconds}}秒后重新发送"
   },
   "landing": {
     "hero_title": "清楚了解您的资金流向",
@@ -131,14 +196,41 @@
     "demo_login": "演示登录",
     "continue_apple": "使用Apple继续",
     "continue_google": "使用Google继续",
-    "terms": "继续即表示您同意我们的服务条款和隐私政策"
+    "terms": "继续即表示您同意我们的服务条款和隐私政策",
+    "showcase_title": "管理订阅所需的一切",
+    "showcase_start": "立即开始——完全免费 →",
+    "showcase_ai_title": "AI 自动添加",
+    "showcase_ai_desc": "只需说出名称——AI将查找价格、图标和链接",
+    "showcase_notify_title": "智能通知",
+    "showcase_notify_desc": "扣费前3天通过邮件和推送提醒",
+    "showcase_analytics_title": "高级分析",
+    "showcase_analytics_desc": "支出预测、重复检测、节省建议",
+    "showcase_team_title": "团队方案",
+    "showcase_team_desc": "与团队一起管理订阅"
   },
   "analytics": {
+    "title": "分析",
+    "subtitle": "您的支出洞察",
     "avg_month": "月均",
     "total_year": "本年总计",
     "most_expensive": "最贵",
     "by_category": "按类别",
-    "monthly": "月度明细"
+    "monthly": "月度明细",
+    "monthly_spend": "月度支出",
+    "all_subscriptions": "所有订阅",
+    "no_data": "暂无数据",
+    "card_breakdown": "按卡分类",
+    "forecast": "预测",
+    "forecast_30d": "30天",
+    "forecast_6m": "6个月",
+    "forecast_12m": "12个月",
+    "upgrade_forecast": "升级到Pro以解锁支出预测",
+    "savings": "节省分析",
+    "potential_savings": "潜在月度节省",
+    "duplicates": "可能重复",
+    "no_duplicates": "未发现重复订阅",
+    "upgrade_savings": "升级到Pro以查看节省机会",
+    "top5": "最贵的5个订阅"
   },
   "subscription": {
     "billing_day": "扣款日",
@@ -147,7 +239,67 @@
     "resume": "恢复",
     "cancel_sub": "取消",
     "delete": "删除",
-    "edit": "编辑"
+    "edit": "编辑",
+    "not_found": "未找到订阅",
+    "go_back": "← 返回",
+    "details": "详情",
+    "trial_until": "🎁 试用至",
+    "trial_expired": "已过期",
+    "trial_today": "今天！",
+    "trial_days_left": "剩余{{count}}天",
+    "receipts": "收据",
+    "upload": "+ 上传",
+    "no_receipts": "暂无收据",
+    "open_website": "🌐 打开网站",
+    "cancel_page": "🔗 取消页面 ↗",
+    "cancel_subscription": "✕ 取消订阅",
+    "cancel_confirm": "确定将此订阅标记为已取消？",
+    "cancel_confirm_url": "这将打开取消页面。标记为已取消？",
+    "keep": "保留",
+    "remove_confirm": "移除 {{name}}？",
+    "day": "第{{day}}天"
+  },
+  "cards": {
+    "title": "卡片",
+    "add": "+ 添加",
+    "empty": "暂无卡片",
+    "empty_desc": "添加卡片以追踪消费",
+    "add_card": "添加卡片",
+    "nickname_placeholder": "昵称（如\"我的Visa卡\"）",
+    "last4_placeholder": "后4位",
+    "payment_system": "支付系统",
+    "color": "颜色",
+    "delete_card": "删除卡片？",
+    "delete_confirm": "此操作无法撤销",
+    "error_validation": "请输入卡片名称和后4位数字"
+  },
+  "reports": {
+    "title": "报告",
+    "report_type": "报告类型",
+    "summary": "摘要",
+    "detailed": "详细",
+    "tax": "税务",
+    "date_range": "日期范围",
+    "this_month": "本月",
+    "this_quarter": "本季度",
+    "this_year": "今年",
+    "generate": "📥 生成PDF报告",
+    "generating": "⏳ 生成中...",
+    "report_ready": "报告已就绪",
+    "report_ready_desc": "报告已生成（演示）。连接API以下载PDF。",
+    "summary_desc": "所有订阅概览及总费用",
+    "detailed_desc": "完整明细，包括付款历史和分类",
+    "tax_desc": "可用于税务抵扣的费用报告",
+    "period_month": "当月",
+    "period_quarter": "最近3个月",
+    "period_year": "今年",
+    "period_label": "时段：{{period}}"
+  },
+  "edit_profile": {
+    "title": "编辑资料",
+    "name": "姓名",
+    "name_placeholder": "您的姓名",
+    "email": "邮箱"
   },
   "features": {
     "voice_title": "语音添加",
@@ -167,5 +319,13 @@
     "expired": "试用已过期",
     "cancel": "取消",
     "then": "之后"
+  },
+  "voice": {
+    "hold_to_record": "按住录音"
+  },
+  "upcoming": {
+    "today": "今天",
+    "tomorrow": "明天",
+    "in_days": "{{count}}天后"
   }
 }

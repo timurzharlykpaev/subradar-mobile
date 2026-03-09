@@ -11,7 +11,15 @@
     "yes": "Sí",
     "no": "No",
     "all": "Todos",
-    "or": "o"
+    "or": "o",
+    "are_you_sure": "¿Estás seguro?",
+    "no_card": "Sin tarjeta"
+  },
+  "tabs": {
+    "home": "Inicio",
+    "subs": "Suscr.",
+    "analytics": "Analítica",
+    "settings": "Ajustes"
   },
   "nav": {
     "dashboard": "Panel",
@@ -65,7 +73,9 @@
     "total": "total",
     "empty_hint": "Toca + para añadir tu primera suscripción",
     "delete_title": "Eliminar suscripción",
-    "cancel_title": "Cancelar suscripción"
+    "cancel_title": "Cancelar suscripción",
+    "subscription_count": "{{count}} suscripción",
+    "subscription_count_plural": "{{count}} suscripciones"
   },
   "add": {
     "title": "Agregar Suscripción",
@@ -89,7 +99,24 @@
     "required": "Requerido",
     "fill_required": "Por favor completa nombre y monto",
     "ai_processing": "La IA está procesando...",
-    "ai_screenshot": "Procesando captura..."
+    "ai_screenshot": "Procesando captura...",
+    "ai_assistant": "Asistente IA",
+    "search_service": "Buscar servicio",
+    "ai_lookup_hint": "Escribe un nombre — la IA encontrará precio, icono y enlace de cancelación",
+    "popular": "Servicios populares",
+    "form_filled": "Formulario completado",
+    "parse_text": "Desde texto / correo",
+    "paste_hint": "Pega un correo o describe una suscripción...",
+    "recognize": "Reconocer",
+    "screenshot_ai_hint": "Toma una captura de una factura o recibo y la IA extraerá los datos.",
+    "tap_to_pick": "Toca para elegir imagen",
+    "parse_screenshot": "Analizar captura",
+    "service_not_found": "Servicio no encontrado",
+    "trial_period": "Período de prueba",
+    "trial_desc": "Período gratuito antes del cobro",
+    "trial_end_date": "Fin de la prueba",
+    "add_subscription": "Agregar suscripción",
+    "no_card": "Sin tarjeta"
   },
   "settings": {
     "title": "Configuración",
@@ -101,7 +128,39 @@
     "logout": "Cerrar Sesión",
     "dark_mode": "Modo Oscuro",
     "light_mode": "Modo Claro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "profile": "Perfil",
+    "default_currency": "Moneda predeterminada",
+    "push_notifications": "Notificaciones push",
+    "remind_before": "Recordar antes de la renovación",
+    "days_before": "{{count}}d antes",
+    "payment_cards": "Tarjetas de pago",
+    "add_payment_card": "+ Agregar tarjeta de pago",
+    "reports": "Informes",
+    "generate_report": "Generar informe",
+    "pro_trial": "Prueba Pro",
+    "subradar_pro": "SubRadar Pro",
+    "days_remaining": "{{count}} días restantes de prueba",
+    "ai_usage": "IA: {{used}}/{{limit}} este mes",
+    "pro_features": "Suscripciones ilimitadas · 200 IA/mes · Analítica",
+    "sub_usage": "Suscripciones: {{used}}/{{limit}}",
+    "start_trial": "Iniciar prueba gratuita de 7 días",
+    "upgrade": "Mejorar — $2.99/mes",
+    "export_data": "Exportar datos",
+    "data_exported": "Datos exportados (demo)",
+    "version": "SubRadar AI v1.0.0",
+    "add_card_title": "Agregar tarjeta de pago",
+    "card_nickname_placeholder": "Apodo (ej. Mi Visa)",
+    "card_last4_placeholder": "Últimos 4 dígitos",
+    "card_brand": "Marca",
+    "delete_card": "Eliminar",
+    "remove_card": "¿Eliminar {{name}}?",
+    "invalid_card": "Ingresa el apodo y los 4 últimos dígitos",
+    "trial_started": "¡Prueba iniciada!",
+    "trial_started_desc": "7 días de acceso Pro comienzan ahora. Disfruta todas las funciones.",
+    "failed_trial": "No se pudo iniciar la prueba.",
+    "name_required": "El nombre es obligatorio",
+    "save_error": "Error al guardar"
   },
   "auth": {
     "welcome": "Bienvenido de nuevo",
@@ -111,7 +170,13 @@
     "email_placeholder": "tu@email.com",
     "send_link": "Enviar Enlace Mágico",
     "sent": "¡Revisa tu correo!",
-    "sent_sub": "Enviamos un enlace mágico a"
+    "sent_sub": "Enviamos un enlace mágico a",
+    "continue_email": "Continuar con Email",
+    "send_code": "Enviar código",
+    "enter_code": "Ingresa el código enviado a",
+    "verify": "Verificar",
+    "resend_code": "Reenviar código",
+    "resend_in": "Reenviar en {{seconds}}s"
   },
   "landing": {
     "hero_title": "Sabe exactamente a dónde va tu dinero",
@@ -131,14 +196,41 @@
     "demo_login": "Demo",
     "continue_apple": "Continuar con Apple",
     "continue_google": "Continuar con Google",
-    "terms": "Al continuar, aceptas nuestros Términos y Política de privacidad"
+    "terms": "Al continuar, aceptas nuestros Términos y Política de privacidad",
+    "showcase_title": "Todo lo que necesitas para controlar tus suscripciones",
+    "showcase_start": "Comenzar — es gratis →",
+    "showcase_ai_title": "Auto-agregar con IA",
+    "showcase_ai_desc": "Solo di el nombre — la IA encontrará el precio, icono y enlace",
+    "showcase_notify_title": "Notificaciones inteligentes",
+    "showcase_notify_desc": "Email y push 3 días antes del cobro",
+    "showcase_analytics_title": "Analítica Pro",
+    "showcase_analytics_desc": "Pronóstico de gastos, duplicados, ahorros",
+    "showcase_team_title": "Plan de equipo",
+    "showcase_team_desc": "Gestiona suscripciones junto con tu equipo"
   },
   "analytics": {
+    "title": "Analítica",
+    "subtitle": "Información sobre tus gastos",
     "avg_month": "Prom / mes",
     "total_year": "Total este año",
     "most_expensive": "Más cara",
     "by_category": "Por categoría",
-    "monthly": "Desglose mensual"
+    "monthly": "Desglose mensual",
+    "monthly_spend": "Gasto mensual",
+    "all_subscriptions": "Todas las suscripciones",
+    "no_data": "Aún no hay datos",
+    "card_breakdown": "Desglose por tarjeta",
+    "forecast": "Pronóstico",
+    "forecast_30d": "30 días",
+    "forecast_6m": "6 meses",
+    "forecast_12m": "12 meses",
+    "upgrade_forecast": "Mejora a Pro para desbloquear pronósticos de gastos",
+    "savings": "Análisis de ahorro",
+    "potential_savings": "ahorro mensual potencial",
+    "duplicates": "Posibles duplicados",
+    "no_duplicates": "No se encontraron suscripciones duplicadas",
+    "upgrade_savings": "Mejora a Pro para ver oportunidades de ahorro",
+    "top5": "Top 5 más caras"
   },
   "subscription": {
     "billing_day": "Día de cobro",
@@ -147,7 +239,67 @@
     "resume": "Reanudar",
     "cancel_sub": "Cancelar",
     "delete": "Eliminar",
-    "edit": "Editar"
+    "edit": "Editar",
+    "not_found": "Suscripción no encontrada",
+    "go_back": "← Volver",
+    "details": "Detalles",
+    "trial_until": "🎁 Prueba hasta",
+    "trial_expired": "Expirada",
+    "trial_today": "¡Hoy!",
+    "trial_days_left": "{{count}} días restantes",
+    "receipts": "Recibos",
+    "upload": "+ Subir",
+    "no_receipts": "Aún no hay recibos",
+    "open_website": "🌐 Abrir sitio web",
+    "cancel_page": "🔗 Página de cancelación ↗",
+    "cancel_subscription": "✕ Cancelar suscripción",
+    "cancel_confirm": "¿Marcar esta suscripción como cancelada?",
+    "cancel_confirm_url": "Esto abrirá la página de cancelación. ¿Marcar como cancelada?",
+    "keep": "Mantener",
+    "remove_confirm": "¿Eliminar {{name}}?",
+    "day": "Día {{day}}"
+  },
+  "cards": {
+    "title": "Tarjetas",
+    "add": "+ Agregar",
+    "empty": "Sin tarjetas",
+    "empty_desc": "Agrega una tarjeta para rastrear gastos",
+    "add_card": "Agregar tarjeta",
+    "nickname_placeholder": "Apodo (ej. \"Mi Visa\")",
+    "last4_placeholder": "Últimos 4 dígitos",
+    "payment_system": "Sistema de pago",
+    "color": "Color",
+    "delete_card": "¿Eliminar tarjeta?",
+    "delete_confirm": "Esta acción no se puede deshacer",
+    "error_validation": "Ingresa el nombre y los 4 últimos dígitos de la tarjeta"
+  },
+  "reports": {
+    "title": "Informes",
+    "report_type": "Tipo de informe",
+    "summary": "Resumen",
+    "detailed": "Detallado",
+    "tax": "Fiscal",
+    "date_range": "Rango de fechas",
+    "this_month": "Este mes",
+    "this_quarter": "Este trimestre",
+    "this_year": "Este año",
+    "generate": "📥 Generar informe PDF",
+    "generating": "⏳ Generando...",
+    "report_ready": "Informe listo",
+    "report_ready_desc": "Tu informe ha sido generado (demo). Conecta la API para descargar el PDF.",
+    "summary_desc": "Resumen de todas las suscripciones con costos totales",
+    "detailed_desc": "Desglose completo incluyendo historial de pagos y categorías",
+    "tax_desc": "Informe de gastos listo para declaración de impuestos",
+    "period_month": "Mes actual",
+    "period_quarter": "Últimos 3 meses",
+    "period_year": "Este año",
+    "period_label": "Período: {{period}}"
+  },
+  "edit_profile": {
+    "title": "Editar perfil",
+    "name": "Nombre",
+    "name_placeholder": "Tu nombre",
+    "email": "Correo electrónico"
   },
   "features": {
     "voice_title": "Agregar por voz",
@@ -167,5 +319,13 @@
     "expired": "Prueba expirada",
     "cancel": "Cancelar",
     "then": "luego"
+  },
+  "voice": {
+    "hold_to_record": "Mantén presionado para grabar"
+  },
+  "upcoming": {
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "in_days": "en {{count}}d"
   }
 }

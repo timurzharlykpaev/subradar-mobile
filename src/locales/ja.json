@@ -11,7 +11,15 @@
     "yes": "はい",
     "no": "いいえ",
     "all": "すべて",
-    "or": "または"
+    "or": "または",
+    "are_you_sure": "よろしいですか？",
+    "no_card": "カードなし"
+  },
+  "tabs": {
+    "home": "ホーム",
+    "subs": "サブスク",
+    "analytics": "分析",
+    "settings": "設定"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -65,7 +73,9 @@
     "total": "件",
     "empty_hint": "+をタップして最初のサブスクリプションを追加",
     "delete_title": "サブスクを削除",
-    "cancel_title": "サブスクをキャンセル"
+    "cancel_title": "サブスクをキャンセル",
+    "subscription_count": "{{count}}件のサブスクリプション",
+    "subscription_count_plural": "{{count}}件のサブスクリプション"
   },
   "add": {
     "title": "サブスクリプションを追加",
@@ -89,7 +99,24 @@
     "required": "必須",
     "fill_required": "名前と金額を入力してください",
     "ai_processing": "AI処理中...",
-    "ai_screenshot": "スクリーンショット処理中..."
+    "ai_screenshot": "スクリーンショット処理中...",
+    "ai_assistant": "AIアシスタント",
+    "search_service": "サービスを検索",
+    "ai_lookup_hint": "名前を入力すると、AIが料金・アイコン・解約リンクを検索します",
+    "popular": "人気サービス",
+    "form_filled": "フォーム入力完了",
+    "parse_text": "テキスト/メールから",
+    "paste_hint": "メールの内容を貼り付けるか、サブスクリプションを記述してください...",
+    "recognize": "認識する",
+    "screenshot_ai_hint": "請求書やレシートのスクリーンショットを撮影すると、AIが詳細を抽出します。",
+    "tap_to_pick": "タップして画像を選択",
+    "parse_screenshot": "スクリーンショットを解析",
+    "service_not_found": "サービスが見つかりません",
+    "trial_period": "トライアル期間",
+    "trial_desc": "支払い前の無料期間",
+    "trial_end_date": "トライアル終了日",
+    "add_subscription": "サブスクリプションを追加",
+    "no_card": "カードなし"
   },
   "settings": {
     "title": "設定",
@@ -101,7 +128,39 @@
     "logout": "サインアウト",
     "dark_mode": "ダークモード",
     "light_mode": "ライトモード",
-    "system": "システム"
+    "system": "システム",
+    "profile": "プロフィール",
+    "default_currency": "デフォルト通貨",
+    "push_notifications": "プッシュ通知",
+    "remind_before": "更新前にリマインド",
+    "days_before": "{{count}}日前",
+    "payment_cards": "支払いカード",
+    "add_payment_card": "+ カードを追加",
+    "reports": "レポート",
+    "generate_report": "レポートを生成",
+    "pro_trial": "Proトライアル",
+    "subradar_pro": "SubRadar Pro",
+    "days_remaining": "トライアル残り{{count}}日",
+    "ai_usage": "AI：今月 {{used}}/{{limit}}",
+    "pro_features": "無制限サブスク · 月200回AI · 分析機能",
+    "sub_usage": "サブスクリプション：{{used}}/{{limit}}",
+    "start_trial": "7日間の無料トライアルを開始",
+    "upgrade": "アップグレード — $2.99/月",
+    "export_data": "データをエクスポート",
+    "data_exported": "データをエクスポートしました（デモ）",
+    "version": "SubRadar AI v1.0.0",
+    "add_card_title": "カードを追加",
+    "card_nickname_placeholder": "ニックネーム（例：マイVisa）",
+    "card_last4_placeholder": "下4桁",
+    "card_brand": "ブランド",
+    "delete_card": "削除",
+    "remove_card": "{{name}}を削除しますか？",
+    "invalid_card": "ニックネームと4桁の下4桁を入力してください",
+    "trial_started": "トライアル開始！",
+    "trial_started_desc": "7日間のProアクセスが始まりました。すべての機能をお楽しみください。",
+    "failed_trial": "トライアルの開始に失敗しました。",
+    "name_required": "名前は必須です",
+    "save_error": "保存に失敗しました"
   },
   "auth": {
     "welcome": "おかえりなさい",
@@ -111,7 +170,13 @@
     "email_placeholder": "your@email.com",
     "send_link": "マジックリンクを送信",
     "sent": "メールをご確認ください！",
-    "sent_sub": "マジックリンクを送信しました："
+    "sent_sub": "マジックリンクを送信しました：",
+    "continue_email": "メールで続ける",
+    "send_code": "コードを送信",
+    "enter_code": "送信されたコードを入力",
+    "verify": "確認",
+    "resend_code": "コードを再送",
+    "resend_in": "{{seconds}}秒後に再送"
   },
   "landing": {
     "hero_title": "お金がどこへ行くのか正確に把握しましょう",
@@ -131,14 +196,41 @@
     "demo_login": "デモログイン",
     "continue_apple": "Appleで続ける",
     "continue_google": "Googleで続ける",
-    "terms": "続けることで利用規約とプライバシーポリシーに同意したものとみなされます"
+    "terms": "続けることで利用規約とプライバシーポリシーに同意したものとみなされます",
+    "showcase_title": "サブスクリプション管理に必要なすべて",
+    "showcase_start": "始めましょう — 無料です →",
+    "showcase_ai_title": "AI自動追加",
+    "showcase_ai_desc": "名前を言うだけで、AIが料金・アイコン・リンクを検索",
+    "showcase_notify_title": "スマート通知",
+    "showcase_notify_desc": "請求3日前にメールとプッシュでお知らせ",
+    "showcase_analytics_title": "Pro分析",
+    "showcase_analytics_desc": "支出予測、重複検出、節約提案",
+    "showcase_team_title": "チームプラン",
+    "showcase_team_desc": "チームでサブスクリプションを一緒に管理"
   },
   "analytics": {
+    "title": "分析",
+    "subtitle": "支出の分析情報",
     "avg_month": "月平均",
     "total_year": "今年の合計",
     "most_expensive": "最も高額",
     "by_category": "カテゴリ別",
-    "monthly": "月次内訳"
+    "monthly": "月次内訳",
+    "monthly_spend": "月間支出",
+    "all_subscriptions": "すべてのサブスクリプション",
+    "no_data": "データがまだありません",
+    "card_breakdown": "カード別内訳",
+    "forecast": "予測",
+    "forecast_30d": "30日間",
+    "forecast_6m": "6ヶ月",
+    "forecast_12m": "12ヶ月",
+    "upgrade_forecast": "Proにアップグレードして支出予測を利用",
+    "savings": "節約分析",
+    "potential_savings": "月間の節約可能額",
+    "duplicates": "重複の可能性",
+    "no_duplicates": "重複するサブスクリプションはありません",
+    "upgrade_savings": "Proにアップグレードして節約の機会を確認",
+    "top5": "支出トップ5"
   },
   "subscription": {
     "billing_day": "請求日",
@@ -147,7 +239,67 @@
     "resume": "再開",
     "cancel_sub": "キャンセル",
     "delete": "削除",
-    "edit": "編集"
+    "edit": "編集",
+    "not_found": "サブスクリプションが見つかりません",
+    "go_back": "← 戻る",
+    "details": "詳細",
+    "trial_until": "🎁 トライアル終了日",
+    "trial_expired": "期限切れ",
+    "trial_today": "本日終了！",
+    "trial_days_left": "残り{{count}}日",
+    "receipts": "レシート",
+    "upload": "+ アップロード",
+    "no_receipts": "レシートがまだありません",
+    "open_website": "🌐 ウェブサイトを開く",
+    "cancel_page": "🔗 解約ページ ↗",
+    "cancel_subscription": "✕ サブスクリプションをキャンセル",
+    "cancel_confirm": "このサブスクリプションをキャンセル済みにしますか？",
+    "cancel_confirm_url": "解約ページを開きます。キャンセル済みにしますか？",
+    "keep": "維持する",
+    "remove_confirm": "{{name}}を削除しますか？",
+    "day": "{{day}}日"
+  },
+  "cards": {
+    "title": "カード",
+    "add": "+ 追加",
+    "empty": "カードがありません",
+    "empty_desc": "カードを追加して支出を管理",
+    "add_card": "カードを追加",
+    "nickname_placeholder": "ニックネーム（例：「マイVisa」）",
+    "last4_placeholder": "下4桁",
+    "payment_system": "決済システム",
+    "color": "色",
+    "delete_card": "カードを削除しますか？",
+    "delete_confirm": "この操作は元に戻せません",
+    "error_validation": "カードの名前と下4桁を入力してください"
+  },
+  "reports": {
+    "title": "レポート",
+    "report_type": "レポートタイプ",
+    "summary": "概要",
+    "detailed": "詳細",
+    "tax": "税務",
+    "date_range": "期間",
+    "this_month": "今月",
+    "this_quarter": "今四半期",
+    "this_year": "今年",
+    "generate": "📥 PDFレポートを生成",
+    "generating": "⏳ 生成中...",
+    "report_ready": "レポート完成",
+    "report_ready_desc": "レポートが生成されました（デモ）。APIを接続してPDFをダウンロードしてください。",
+    "summary_desc": "すべてのサブスクリプションと総費用の概要",
+    "detailed_desc": "支払い履歴とカテゴリを含む完全な内訳",
+    "tax_desc": "控除用の税務経費レポート",
+    "period_month": "今月",
+    "period_quarter": "過去3ヶ月",
+    "period_year": "今年",
+    "period_label": "期間：{{period}}"
+  },
+  "edit_profile": {
+    "title": "プロフィール編集",
+    "name": "名前",
+    "name_placeholder": "お名前",
+    "email": "メールアドレス"
   },
   "features": {
     "voice_title": "音声で追加",
@@ -167,5 +319,13 @@
     "expired": "トライアル期限切れ",
     "cancel": "キャンセル",
     "then": "その後"
+  },
+  "voice": {
+    "hold_to_record": "長押しで録音"
+  },
+  "upcoming": {
+    "today": "今日",
+    "tomorrow": "明日",
+    "in_days": "{{count}}日後"
   }
 }
