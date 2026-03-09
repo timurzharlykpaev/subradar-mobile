@@ -24,8 +24,11 @@ import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
+// Web client ID (for proxy/web fallback)
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
   '140914936328-chm3nq215c14dlj25i9pghhsuc3pif9i.apps.googleusercontent.com';
+// iOS client ID — create at console.cloud.google.com → iOS app → bundle: io.subradar.mobile
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || GOOGLE_WEB_CLIENT_ID;
 
 const FEATURES = [
   { emoji: '🎙', key: 'voice' },
@@ -70,9 +73,9 @@ export default function OnboardingScreen() {
 
   // Google OAuth
   const [, googleResponse, googlePromptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_CLIENT_ID,
-    iosClientId: GOOGLE_CLIENT_ID,
-    androidClientId: GOOGLE_CLIENT_ID,
+    clientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_WEB_CLIENT_ID,
   });
 
   useEffect(() => {
