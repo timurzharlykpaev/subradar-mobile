@@ -18,6 +18,7 @@ import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
+import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
 
 export default function SubscriptionDetailScreen() {
   const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,6 +28,7 @@ export default function SubscriptionDetailScreen() {
   const getCard = usePaymentCardsStore((s) => s.getCard);
 
   const [receipts, setReceipts] = useState<string[]>([]);
+  const [editVisible, setEditVisible] = useState(false);
 
   if (!subscription) {
     return (
@@ -105,9 +107,14 @@ export default function SubscriptionDetailScreen() {
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Text style={styles.backBtnText}>←</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-            <Text style={styles.deleteBtnText}>🗑</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.editBtn} onPress={() => setEditVisible(true)}>
+              <Text style={styles.editBtnText}>✏️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+              <Text style={styles.deleteBtnText}>🗑</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Service Info */}
@@ -234,6 +241,12 @@ export default function SubscriptionDetailScreen() {
           )}
         </View>
       </ScrollView>
+
+      <EditSubscriptionSheet
+        visible={editVisible}
+        onClose={() => setEditVisible(false)}
+        subscription={subscription}
+      />
     </SafeAreaView>
   );
 }
@@ -271,6 +284,9 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 8 },
   backBtnText: { fontSize: 24, color: COLORS.primary },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  editBtn: { padding: 8 },
+  editBtnText: { fontSize: 20 },
   deleteBtn: { padding: 8 },
   deleteBtnText: { fontSize: 20 },
   serviceCard: {
