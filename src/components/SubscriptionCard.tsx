@@ -7,6 +7,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Subscription } from '../stores/subscriptionsStore';
 import { COLORS, STATUS_COLORS } from '../constants';
 import { CategoryBadge } from './CategoryBadge';
@@ -26,6 +27,7 @@ function daysUntil(date?: string | null): number | null {
 
 export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
   const router = useRouter();
+  const { t } = useTranslation();
   const statusColor = STATUS_COLORS[subscription.status] || COLORS.textSecondary;
 
   const isTrial = subscription.status === 'TRIAL';
@@ -71,7 +73,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
 
       <View style={styles.right}>
         <Text style={styles.amount}>
-          {subscription.currency} {subscription.amount.toFixed(2)}
+          {subscription.currency} {Number(subscription.amount).toFixed(2)}
         </Text>
         <Text style={styles.period}>/ {subscription.billingPeriod}</Text>
         {isTrial && trialDays !== null ? (
@@ -81,7 +83,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
             <Text style={[styles.trialBadgeText, {
               color: trialExpired ? '#EF4444' : trialUrgent ? '#F59E0B' : '#3B82F6',
             }]}>
-              {trialExpired ? 'Trial ended' : trialDays === 0 ? 'Ends today' : `🎁 ${trialDays}d`}
+              {trialExpired ? t('trials.expired') : trialDays === 0 ? t('trials.ends_today') : `🎁 ${trialDays}d`}
             </Text>
           </View>
         ) : subscription.nextPaymentDate ? (

@@ -3,14 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   TextInput,
   Alert,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
@@ -30,13 +31,14 @@ function CardVisual({ card }: { card: PaymentCard }) {
 
 export default function CardsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { cards, addCard, removeCard } = usePaymentCardsStore();
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: CARD_COLORS[0] });
 
   const handleAdd = () => {
     if (!form.nickname || form.last4.length !== 4) {
-      Alert.alert('Ошибка', 'Введите название и 4 последних цифры карты');
+      Alert.alert(t('common.error'), t('cards.error_validation'));
       return;
     }
     addCard({ id: Date.now().toString(), isDefault: false, ...form });
@@ -45,9 +47,9 @@ export default function CardsScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert('Удалить карту?', 'Это действие нельзя отменить', [
-      { text: 'Отмена', style: 'cancel' },
-      { text: 'Удалить', style: 'destructive', onPress: async () => {
+    Alert.alert(t('cards.delete_card'), t('cards.delete_confirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: async () => {
           try { await cardsApi.delete(id); } catch {}
           removeCard(id);
         }},
@@ -58,11 +60,11 @@ export default function CardsScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>← Назад</Text>
+          <Text style={styles.back}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Карты</Text>
+        <Text style={styles.title}>{t('cards.title')}</Text>
         <TouchableOpacity onPress={() => setShowAdd(true)}>
-          <Text style={styles.addBtn}>+ Добавить</Text>
+          <Text style={styles.addBtn}>{t('cards.add')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -70,15 +72,15 @@ export default function CardsScreen() {
         {cards.length === 0 && (
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>💳</Text>
-            <Text style={styles.emptyText}>Нет карт</Text>
-            <Text style={styles.emptySubtext}>Добавьте карту для отслеживания расходов</Text>
+            <Text style={styles.emptyText}>{t('cards.empty')}</Text>
+            <Text style={styles.emptySubtext}>{t('cards.empty_desc')}</Text>
           </View>
         )}
         {cards.map((card) => (
           <View key={card.id} style={styles.cardContainer}>
             <CardVisual card={card} />
             <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(card.id)}>
-              <Text style={styles.deleteBtnText}>Удалить</Text>
+              <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -87,24 +89,24 @@ export default function CardsScreen() {
       <Modal visible={showAdd} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Добавить карту</Text>
+            <Text style={styles.modalTitle}>{t('cards.add_card')}</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Название (например: «Моя Visa»)"
+              placeholder={t('cards.nickname_placeholder')}
               value={form.nickname}
               onChangeText={(v) => setForm((f) => ({ ...f, nickname: v }))}
             />
             <TextInput
               style={styles.input}
-              placeholder="Последние 4 цифры"
+              placeholder={t('cards.last4_placeholder')}
               value={form.last4}
               onChangeText={(v) => setForm((f) => ({ ...f, last4: v.replace(/\D/g, '').slice(0, 4) }))}
               keyboardType="numeric"
               maxLength={4}
             />
 
-            <Text style={styles.label}>Платёжная система</Text>
+            <Text style={styles.label}>{t('cards.payment_system')}</Text>
             <View style={styles.row}>
               {CARD_BRANDS.map((b) => (
                 <TouchableOpacity
@@ -117,7 +119,7 @@ export default function CardsScreen() {
               ))}
             </View>
 
-            <Text style={styles.label}>Цвет</Text>
+            <Text style={styles.label}>{t('cards.color')}</Text>
             <View style={styles.row}>
               {CARD_COLORS.map((c) => (
                 <TouchableOpacity
@@ -130,10 +132,10 @@ export default function CardsScreen() {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
-                <Text style={styles.cancelBtnText}>Отмена</Text>
+                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.saveBtn} onPress={handleAdd}>
-                <Text style={styles.saveBtnText}>Сохранить</Text>
+                <Text style={styles.saveBtnText}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>

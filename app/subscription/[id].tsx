@@ -9,8 +9,8 @@ import {
   Linking,
   Alert,
   Image,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { subscriptionsApi } from '../../src/api/subscriptions';
@@ -31,9 +31,9 @@ export default function SubscriptionDetailScreen() {
   if (!subscription) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.notFound}>Subscription not found</Text>
+        <Text style={styles.notFound}>{t('subscription.not_found')}</Text>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backLink}>← Go back</Text>
+          <Text style={styles.backLink}>{t('subscription.go_back')}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -50,14 +50,14 @@ export default function SubscriptionDetailScreen() {
 
   const handleCancelSubscription = async () => {
     Alert.alert(
-      'Cancel Subscription',
+      t('subscriptions.cancel_title'),
       subscription.cancelUrl
-        ? 'This will open the cancellation page. Mark as cancelled?'
-        : 'Mark this subscription as cancelled?',
+        ? t('subscription.cancel_confirm_url')
+        : t('subscription.cancel_confirm'),
       [
-        { text: 'Keep', style: 'cancel' },
+        { text: t('subscription.keep'), style: 'cancel' },
         {
-          text: 'Cancel Subscription',
+          text: t('subscriptions.cancel_title'),
           style: 'destructive',
           onPress: async () => {
             if (subscription.cancelUrl) {
@@ -83,10 +83,10 @@ export default function SubscriptionDetailScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert('Delete', `Remove ${subscription.name}?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('common.delete'), t('subscription.remove_confirm', { name: subscription.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           try { await subscriptionsApi.delete(id!); } catch {}
@@ -133,21 +133,21 @@ export default function SubscriptionDetailScreen() {
           </View>
 
           <Text style={styles.amount}>
-            {subscription.currency} {subscription.amount.toFixed(2)}
+            {subscription.currency} {Number(subscription.amount).toFixed(2)}
             <Text style={styles.period}> / {subscription.billingPeriod}</Text>
           </Text>
         </View>
 
         {/* Details */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Details</Text>
+          <Text style={styles.cardTitle}>{t('subscription.details')}</Text>
 
           <DetailRow label={t("add.category")}>
             <CategoryBadge categoryId={subscription.category} />
           </DetailRow>
 
           {subscription.status === 'TRIAL' && (subscription as any).trialEndDate ? (
-            <DetailRow label="🎁 Триал до">
+            <DetailRow label={t('subscription.trial_until')}>
               {(() => {
                 const d = new Date((subscription as any).trialEndDate);
                 const days = Math.ceil((d.getTime() - Date.now()) / 86400000);
@@ -155,10 +155,10 @@ export default function SubscriptionDetailScreen() {
                 return (
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={[styles.detailValue, { color: col }]}>
-                      {d.toLocaleDateString('ru', { day: 'numeric', month: 'long' })}
+                      {d.toLocaleDateString('en', { day: 'numeric', month: 'long' })}
                     </Text>
                     <Text style={{ fontSize: 11, color: col, fontWeight: '700', marginTop: 2 }}>
-                      {days <= 0 ? 'Истёк' : days === 0 ? 'Сегодня!' : `${days} дн. осталось`}
+                      {days <= 0 ? t('subscription.trial_expired') : days === 0 ? t('subscription.trial_today') : t('subscription.trial_days_left', { count: days })}
                     </Text>
                   </View>
                 );
@@ -175,7 +175,7 @@ export default function SubscriptionDetailScreen() {
           ) : null}
 
           <DetailRow label={t("subscription.billing_day")}>
-            <Text style={styles.detailValue}>Day {subscription.billingDay}</Text>
+            <Text style={styles.detailValue}>{t('subscription.day', { day: subscription.billingDay })}</Text>
           </DetailRow>
 
           {card && (
@@ -196,13 +196,13 @@ export default function SubscriptionDetailScreen() {
         {/* Receipts */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Receipts</Text>
+            <Text style={styles.cardTitle}>{t('subscription.receipts')}</Text>
             <TouchableOpacity style={styles.uploadBtn} onPress={handleUploadReceipt}>
-              <Text style={styles.uploadBtnText}>+ Upload</Text>
+              <Text style={styles.uploadBtnText}>{t('subscription.upload')}</Text>
             </TouchableOpacity>
           </View>
           {receipts.length === 0 ? (
-            <Text style={styles.noReceipts}>No receipts yet</Text>
+            <Text style={styles.noReceipts}>{t('subscription.no_receipts')}</Text>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {receipts.map((uri, i) => (
@@ -216,7 +216,7 @@ export default function SubscriptionDetailScreen() {
         <View style={styles.actions}>
           {(subscription as any).serviceUrl && (
             <TouchableOpacity style={styles.websiteBtn} onPress={handleOpenWebsite}>
-              <Text style={styles.websiteBtnText}>🌐 Открыть сайт</Text>
+              <Text style={styles.websiteBtnText}>{t('subscription.open_website')}</Text>
             </TouchableOpacity>
           )}
           {(subscription as any).cancelUrl && subscription.status !== 'CANCELLED' && (
@@ -224,12 +224,12 @@ export default function SubscriptionDetailScreen() {
               style={styles.cancelLinkBtn}
               onPress={() => Linking.openURL((subscription as any).cancelUrl)}
             >
-              <Text style={styles.cancelLinkBtnText}>🔗 Страница отмены ↗</Text>
+              <Text style={styles.cancelLinkBtnText}>{t('subscription.cancel_page')}</Text>
             </TouchableOpacity>
           )}
           {subscription.status !== 'CANCELLED' && (
             <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelSubscription}>
-              <Text style={styles.cancelBtnText}>✕ Отменить подписку</Text>
+              <Text style={styles.cancelBtnText}>{t('subscription.cancel_subscription')}</Text>
             </TouchableOpacity>
           )}
         </View>

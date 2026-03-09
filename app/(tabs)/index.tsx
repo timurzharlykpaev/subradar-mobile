@@ -5,25 +5,32 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
+import { analyticsApi } from '../../src/api/analytics';
 import { COLORS, CATEGORIES } from '../../src/constants';
 import { UpcomingPaymentCard } from '../../src/components/UpcomingPaymentCard';
+import { CartesianChart, Bar } from 'victory-native';
+import Svg, { Path as SvgPath } from 'react-native-svg';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const { currency } = useSettingsStore();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [monthlyTrend, setMonthlyTrend] = React.useState<{ month: string; amount: number }[]>([]);
+  const [categoryData, setCategoryData] = React.useState<{ category: string; amount: number }[]>([]);
 
   const fetchSubscriptions = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -38,7 +45,26 @@ export default function DashboardScreen() {
     }
   };
 
-  useEffect(() => { fetchSubscriptions(); }, []);
+  const fetchAnalytics = async () => {
+    try {
+      const [monthlyRes, categoryRes] = await Promise.all([
+        analyticsApi.getMonthly().catch(() => null),
+        analyticsApi.getByCategory().catch(() => null),
+      ]);
+      if (monthlyRes?.data) {
+        const items = Array.isArray(monthlyRes.data) ? monthlyRes.data : monthlyRes.data.months || [];
+        setMonthlyTrend(items.slice(-6));
+      }
+      if (categoryRes?.data) {
+        const items = Array.isArray(categoryRes.data) ? categoryRes.data : categoryRes.data.categories || [];
+        setCategoryData(items.slice(0, 5));
+      }
+    } catch {
+      // analytics is non-critical
+    }
+  };
+
+  useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, []);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
   const trialCount = subscriptions.filter((s) => s.status === 'TRIAL').length;
@@ -48,6 +74,8 @@ export default function DashboardScreen() {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
     return sum + s.amount * mult;
   }, 0);
+
+  const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
 
   const upcoming = subscriptions
     .filter((s) => {
@@ -77,7 +105,7 @@ export default function DashboardScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); }} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); }} />
         }
       >
         {/* Header */}
@@ -86,9 +114,9 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>{greeting()}, {user?.name?.split(' ')[0] || ''} 👋</Text>
             <Text style={styles.subtitle}>{t('dashboard.subtitle')}</Text>
           </View>
-          <View style={styles.avatar}>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/(tabs)/settings')}>
             <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'U'}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Big Number */}
@@ -144,9 +172,99 @@ export default function DashboardScreen() {
                   <Text style={styles.miniName}>{sub.name}</Text>
                   <Text style={styles.miniPlan}>{sub.plan || sub.category}</Text>
                 </View>
-                <Text style={styles.miniAmount}>{sub.currency} {sub.amount.toFixed(2)}</Text>
+                <Text style={styles.miniAmount}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
               </View>
             ))}
+          </View>
+        )}
+
+        {/* Monthly Trend Chart */}
+        {monthlyTrend.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('dashboard.monthly_trend')}</Text>
+            <View style={styles.chartCard}>
+              <CartesianChart
+                data={monthlyTrend.map((item, idx) => ({ x: idx, y: Number(item.amount) || 0, label: item.month }))}
+                xKey="x"
+                yKeys={['y']}
+                domainPadding={{ left: 20, right: 20, top: 10 }}
+                axisOptions={{
+                  font: null,
+                  tickCount: { x: monthlyTrend.length, y: 4 },
+                  formatXLabel: (val: number) => {
+                    const idx = Math.round(val);
+                    if (idx < 0 || idx >= monthlyTrend.length) return '';
+                    const month = monthlyTrend[idx]?.month;
+                    if (!month || typeof month !== 'string') return '';
+                    const parts = month.split('-');
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return monthNames[parseInt(parts[1] || '1', 10) - 1] || month;
+                  },
+                  labelColor: COLORS.textSecondary,
+                }}
+              >
+                {({ points, chartBounds }) => (
+                  <Bar
+                    points={points.y}
+                    chartBounds={chartBounds}
+                    color={COLORS.primary}
+                    roundedCorners={{ topLeft: 6, topRight: 6 }}
+                  />
+                )}
+              </CartesianChart>
+            </View>
+          </View>
+        )}
+
+        {/* Category Breakdown Donut */}
+        {categoryData.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('dashboard.by_category')}</Text>
+            <View style={styles.donutCard}>
+              <CategoryDonut categories={categoryData} />
+            </View>
+          </View>
+        )}
+
+        {/* Trial Tracker */}
+        {trialSubs.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('trials.title')}</Text>
+            {trialSubs.map((sub) => {
+              const endDate = sub.nextBillingDate || sub.nextPaymentDate;
+              const daysLeft = endDate
+                ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000))
+                : null;
+              const dotColor =
+                daysLeft === null ? COLORS.textSecondary :
+                daysLeft < 3 ? COLORS.error :
+                daysLeft <= 7 ? COLORS.warning :
+                COLORS.success;
+              const monthlyAmount = (() => {
+                const mult = sub.billingPeriod === 'WEEKLY' ? 4 : sub.billingPeriod === 'QUARTERLY' ? 1 / 3 : sub.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
+                return Number(sub.amount * mult).toFixed(2);
+              })();
+              return (
+                <View key={sub.id} style={styles.trialCard}>
+                  <View style={[styles.trialDot, { backgroundColor: dotColor }]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.trialName}>{sub.name}</Text>
+                    <Text style={styles.trialMeta}>
+                      {daysLeft !== null
+                        ? daysLeft === 0
+                          ? t('trials.ends_today')
+                          : daysLeft === 1
+                            ? t('trials.ends_tomorrow')
+                            : t('trials.days_left', { count: daysLeft })
+                        : t('subscriptions.trial')}
+                    </Text>
+                  </View>
+                  <Text style={styles.trialPrice}>
+                    {t('trials.then')} {sub.currency} {monthlyAmount}{t('subscriptions.per_month')}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         )}
 
@@ -167,6 +285,65 @@ function StatCard({ label, value, color }: { label: string; value: number; color
     <View style={[styles.statCard, { borderTopColor: color }]}>
       <Text style={[styles.statValue, { color }]}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function CategoryDonut({ categories }: { categories: { category: string; amount: number }[] }) {
+  const total = categories.reduce((sum, c) => sum + Number(c.amount), 0);
+  if (total === 0) return null;
+
+  const size = 160;
+  const radius = 60;
+  const innerRadius = 40;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  let startAngle = -Math.PI / 2;
+  const slices = categories.map((cat) => {
+    const fraction = Number(cat.amount) / total;
+    const sweep = fraction * 2 * Math.PI;
+    const catInfo = CATEGORIES.find((c) => c.id === cat.category);
+    const color = catInfo?.color || '#757575';
+
+    const x1 = cx + radius * Math.cos(startAngle);
+    const y1 = cy + radius * Math.sin(startAngle);
+    const x2 = cx + radius * Math.cos(startAngle + sweep);
+    const y2 = cy + radius * Math.sin(startAngle + sweep);
+    const ix1 = cx + innerRadius * Math.cos(startAngle + sweep);
+    const iy1 = cy + innerRadius * Math.sin(startAngle + sweep);
+    const ix2 = cx + innerRadius * Math.cos(startAngle);
+    const iy2 = cy + innerRadius * Math.sin(startAngle);
+    const largeArc = sweep > Math.PI ? 1 : 0;
+
+    const d = [
+      `M ${x1} ${y1}`,
+      `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+      `L ${ix1} ${iy1}`,
+      `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2}`,
+      'Z',
+    ].join(' ');
+
+    startAngle += sweep;
+    return { d, color, category: cat.category, emoji: catInfo?.emoji || '', label: catInfo?.label || cat.category, pct: Math.round(fraction * 100) };
+  });
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {slices.map((slice, idx) => (
+          <SvgPath key={idx} d={slice.d} fill={slice.color} />
+        ))}
+      </Svg>
+      <View style={{ flex: 1, gap: 6 }}>
+        {slices.map((slice, idx) => (
+          <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
+            <Text style={{ fontSize: 12, color: COLORS.text, flex: 1 }}>{slice.emoji} {slice.label}</Text>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.textSecondary }}>{slice.pct}%</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -202,4 +379,11 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   emptyHint: { fontSize: 14, color: COLORS.textSecondary },
+  chartCard: { backgroundColor: '#1A1A2E', borderRadius: 16, padding: 16, height: 180 },
+  donutCard: { backgroundColor: '#1A1A2E', borderRadius: 16, padding: 16 },
+  trialCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#1A1A2E', borderRadius: 16, padding: 16, marginBottom: 8 },
+  trialDot: { width: 10, height: 10, borderRadius: 5 },
+  trialName: { fontSize: 15, fontWeight: '700', color: '#FFF' },
+  trialMeta: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
+  trialPrice: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
 });

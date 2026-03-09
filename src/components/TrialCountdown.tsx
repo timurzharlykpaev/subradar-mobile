@@ -57,7 +57,7 @@ export const TrialCountdown: React.FC<Props> = ({ trials }) => {
             <View style={styles.info}>
               <Text style={styles.name} numberOfLines={1}>{trial.name}</Text>
               <Text style={styles.price}>
-                {t('trials.then')} {trial.currency} {trial.amount.toFixed(2)}
+                {t('trials.then')} {trial.currency} {Number(trial.amount).toFixed(2)}
               </Text>
             </View>
             {trial.cancelUrl && (

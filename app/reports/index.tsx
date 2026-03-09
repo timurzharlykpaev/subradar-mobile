@@ -3,28 +3,49 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../src/constants';
-
-const REPORT_TYPES = ['Summary', 'Detailed', 'Tax'];
 
 export default function ReportsScreen() {
   const router = useRouter();
-  const [reportType, setReportType] = useState('Summary');
+  const { t } = useTranslation();
+
+  const REPORT_TYPES = [
+    { key: 'summary', label: t('reports.summary') },
+    { key: 'detailed', label: t('reports.detailed') },
+    { key: 'tax', label: t('reports.tax') },
+  ];
+
+  const [reportType, setReportType] = useState('summary');
   const [dateRange, setDateRange] = useState<'month' | 'quarter' | 'year'>('month');
   const [generating, setGenerating] = useState(false);
+
+  const reportTypeLabel = REPORT_TYPES.find((rt) => rt.key === reportType)?.label ?? reportType;
 
   const handleGenerate = async () => {
     setGenerating(true);
     setTimeout(() => {
       setGenerating(false);
-      Alert.alert('Report Ready', 'Your report has been generated (demo). Connect API to download PDF.');
+      Alert.alert(t('reports.report_ready'), t('reports.report_ready_desc'));
     }, 1500);
+  };
+
+  const getDescKey = () => {
+    if (reportType === 'summary') return t('reports.summary_desc');
+    if (reportType === 'detailed') return t('reports.detailed_desc');
+    return t('reports.tax_desc');
+  };
+
+  const getPeriodLabel = () => {
+    if (dateRange === 'month') return t('reports.period_month');
+    if (dateRange === 'quarter') return t('reports.period_quarter');
+    return t('reports.period_year');
   };
 
   return (
@@ -33,21 +54,21 @@ export default function ReportsScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Reports</Text>
+        <Text style={styles.title}>{t('reports.title')}</Text>
       </View>
 
       <ScrollView>
         <View style={styles.section}>
-          <Text style={styles.label}>Report Type</Text>
+          <Text style={styles.label}>{t('reports.report_type')}</Text>
           <View style={styles.chips}>
             {REPORT_TYPES.map((type) => (
               <TouchableOpacity
-                key={type}
-                style={[styles.chip, reportType === type && styles.chipActive]}
-                onPress={() => setReportType(type)}
+                key={type.key}
+                style={[styles.chip, reportType === type.key && styles.chipActive]}
+                onPress={() => setReportType(type.key)}
               >
-                <Text style={[styles.chipText, reportType === type && styles.chipTextActive]}>
-                  {type}
+                <Text style={[styles.chipText, reportType === type.key && styles.chipTextActive]}>
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -55,7 +76,7 @@ export default function ReportsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Date Range</Text>
+          <Text style={styles.label}>{t('reports.date_range')}</Text>
           <View style={styles.chips}>
             {(['month', 'quarter', 'year'] as const).map((range) => (
               <TouchableOpacity
@@ -64,7 +85,7 @@ export default function ReportsScreen() {
                 onPress={() => setDateRange(range)}
               >
                 <Text style={[styles.chipText, dateRange === range && styles.chipTextActive]}>
-                  {range === 'month' ? 'This Month' : range === 'quarter' ? 'This Quarter' : 'This Year'}
+                  {range === 'month' ? t('reports.this_month') : range === 'quarter' ? t('reports.this_quarter') : t('reports.this_year')}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -72,16 +93,10 @@ export default function ReportsScreen() {
         </View>
 
         <View style={styles.preview}>
-          <Text style={styles.previewTitle}>📄 {reportType} Report</Text>
-          <Text style={styles.previewDesc}>
-            {reportType === 'Summary'
-              ? 'Overview of all subscriptions with total costs'
-              : reportType === 'Detailed'
-              ? 'Full breakdown including payment history and categories'
-              : 'Tax-ready expense report for deductions'}
-          </Text>
+          <Text style={styles.previewTitle}>📄 {reportTypeLabel} Report</Text>
+          <Text style={styles.previewDesc}>{getDescKey()}</Text>
           <Text style={styles.previewRange}>
-            Period: {dateRange === 'month' ? 'Current month' : dateRange === 'quarter' ? 'Last 3 months' : 'This year'}
+            {t('reports.period_label', { period: getPeriodLabel() })}
           </Text>
         </View>
 
@@ -91,7 +106,7 @@ export default function ReportsScreen() {
           disabled={generating}
         >
           <Text style={styles.generateBtnText}>
-            {generating ? '⏳ Generating...' : '📥 Generate PDF Report'}
+            {generating ? t('reports.generating') : t('reports.generate')}
           </Text>
         </TouchableOpacity>
       </ScrollView>

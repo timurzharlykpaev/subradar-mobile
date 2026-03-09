@@ -34,7 +34,8 @@ interface Props {
   onClose: () => void;
 }
 
-const TABS = ['Manual', 'AI Assistant', 'Screenshot'];
+// Tab keys - labels resolved via t() below
+const TAB_KEYS = ['add.manual', 'add.ai_assistant', 'add.screenshot'] as const;
 
 const POPULAR_SERVICES = [
   { name: 'Netflix', emoji: '🎬' },
@@ -172,7 +173,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       // Switch to manual tab to let user review/confirm
       setTab(0);
     } catch {
-      Alert.alert(t('common.error'), 'Сервис не найден');
+      Alert.alert(t('common.error'), t('add.service_not_found'));
     } finally {
       setAiLoading(false);
     }
@@ -208,20 +209,20 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           style={{ flex: 1 }}
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Add Subscription</Text>
+            <Text style={styles.title}>{t('add.title')}</Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.tabs}>
-            {TABS.map((t, i) => (
+            {TAB_KEYS.map((tabKey, i) => (
               <TouchableOpacity
-                key={t}
+                key={tabKey}
                 style={[styles.tab, tab === i && styles.tabActive]}
                 onPress={() => setTab(i)}
               >
-                <Text style={[styles.tabText, tab === i && styles.tabTextActive]}>{t}</Text>
+                <Text style={[styles.tabText, tab === i && styles.tabTextActive]}>{t(tabKey)}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -322,7 +323,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                           style={[styles.chip, !form.paymentCardId && styles.chipActive]}
                           onPress={() => setForm((f) => ({ ...f, paymentCardId: '' }))}
                         >
-                          <Text>No card</Text>
+                          <Text>{t('add.no_card')}</Text>
                         </TouchableOpacity>
                         {cards.map((card) => (
                           <TouchableOpacity
@@ -366,8 +367,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 {/* Trial period toggle */}
                 <View style={styles.trialRow}>
                   <View>
-                    <Text style={styles.trialLabel}>🎁 {t('add.trial_period', 'Триал период')}</Text>
-                    <Text style={styles.trialSubLabel}>{t('add.trial_desc', 'Бесплатный период перед оплатой')}</Text>
+                    <Text style={styles.trialLabel}>🎁 {t('add.trial_period')}</Text>
+                    <Text style={styles.trialSubLabel}>{t('add.trial_desc')}</Text>
                   </View>
                   <Switch
                     value={form.isTrial}
@@ -384,7 +385,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </View>
 
                 {form.isTrial && (
-                  <Field {...{label: t('add.trial_end_date', 'Триал заканчивается')}}>
+                  <Field {...{label: t('add.trial_end_date')}}>
                     <TextInput
                       style={styles.input}
                       value={form.trialEndDate}
@@ -396,7 +397,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 )}
 
                 <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                  <Text style={styles.saveBtnText}>Add Subscription</Text>
+                  <Text style={styles.saveBtnText}>{t('add.add_subscription')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -404,8 +405,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {tab === 1 && (
               <View style={styles.aiTab}>
                 {/* Service search */}
-                <Text style={styles.aiSectionTitle}>🔍 {t('add.search_service', 'Найти сервис')}</Text>
-                <Text style={styles.aiHint}>{t('add.ai_lookup_hint', 'Введи название — AI найдёт цену, иконку и ссылку отмены')}</Text>
+                <Text style={styles.aiSectionTitle}>🔍 {t('add.search_service')}</Text>
+                <Text style={styles.aiHint}>{t('add.ai_lookup_hint')}</Text>
                 <View style={styles.aiRow}>
                   <TextInput
                     style={[styles.input, { flex: 1 }]}
@@ -436,7 +437,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     <View style={{ flex: 1 }}>
                       <Text style={styles.foundServiceName}>{foundService.name}</Text>
                       <Text style={styles.foundServiceMeta}>
-                        {foundService.plans?.length ?? 0} планов · {t('add.form_filled', 'Форма заполнена')} ✓
+                        {foundService.plans?.length ?? 0} plans · {t('add.form_filled')} ✓
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => { setFoundService(null); setAiQuery(''); }}>
@@ -445,7 +446,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   </View>
                 ) : (
                   <>
-                    <Text style={styles.popularTitle}>{t('add.popular', 'Популярные сервисы')}</Text>
+                    <Text style={styles.popularTitle}>{t('add.popular')}</Text>
                     <View style={styles.popularGrid}>
                       {POPULAR_SERVICES.map((svc) => (
                         <TouchableOpacity
@@ -491,17 +492,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
                 <View style={styles.aiDivider}>
                   <View style={styles.aiDividerLine} />
-                  <Text style={styles.aiDividerText}>или</Text>
+                  <Text style={styles.aiDividerText}>{t('common.or')}</Text>
                   <View style={styles.aiDividerLine} />
                 </View>
 
                 {/* Text parse */}
-                <Text style={styles.aiSectionTitle}>✨ {t('add.parse_text', 'Из текста / email')}</Text>
+                <Text style={styles.aiSectionTitle}>✨ {t('add.parse_text')}</Text>
                 <TextInput
                   style={[styles.input, styles.multiline, { minHeight: 100 }]}
                   value={aiText}
                   onChangeText={setAiText}
-                  placeholder="Вставь письмо или опиши подписку..."
+                  placeholder={t('add.paste_hint')}
                   placeholderTextColor={COLORS.textMuted}
                   multiline
                 />
@@ -510,7 +511,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   style={[styles.saveBtn, { marginTop: 8 }]}
                   onPress={() => Alert.alert('AI', 'Processing... (connect API)')}
                 >
-                  <Text style={styles.saveBtnText}>✨ Распознать</Text>
+                  <Text style={styles.saveBtnText}>✨ {t('add.recognize')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -518,7 +519,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {tab === 2 && (
               <View style={styles.screenshotTab}>
                 <Text style={styles.aiHint}>
-                  Take a screenshot of an invoice or receipt and AI will extract the details.
+                  {t('add.screenshot_ai_hint')}
                 </Text>
                 <TouchableOpacity style={styles.screenshotPicker} onPress={pickScreenshot}>
                   {screenshotUri ? (
@@ -526,7 +527,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   ) : (
                     <View style={styles.screenshotPlaceholder}>
                       <Text style={styles.screenshotIcon}>📸</Text>
-                      <Text style={styles.screenshotText}>Tap to pick image</Text>
+                      <Text style={styles.screenshotText}>{t('add.tap_to_pick')}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -535,7 +536,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     style={styles.saveBtn}
                     onPress={() => Alert.alert('AI', 'Processing screenshot... (connect API)')}
                   >
-                    <Text style={styles.saveBtnText}>✨ Parse Screenshot</Text>
+                    <Text style={styles.saveBtnText}>✨ {t('add.parse_screenshot')}</Text>
                   </TouchableOpacity>
                 )}
               </View>

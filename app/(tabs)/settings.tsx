@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Switch,
@@ -12,6 +11,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
@@ -43,10 +43,10 @@ export default function SettingsScreen() {
   const handleStartTrial = async () => {
     try {
       await startTrialMutation.mutateAsync();
-      Alert.alert('Trial Started!', '7 days of Pro access begins now. Enjoy all features.');
+      Alert.alert(t('settings.trial_started'), t('settings.trial_started_desc'));
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed to start trial.';
-      Alert.alert('Error', msg);
+      const msg = e instanceof Error ? e.message : t('settings.failed_trial');
+      Alert.alert(t('common.error'), msg);
     }
   };
 
@@ -56,7 +56,7 @@ export default function SettingsScreen() {
 
   const handleAddCard = async () => {
     if (!cardForm.nickname || cardForm.last4.length !== 4) {
-      Alert.alert('Invalid', 'Enter nickname and 4-digit last digits');
+      Alert.alert(t('common.error'), t('settings.invalid_card'));
       return;
     }
     try {
@@ -79,11 +79,11 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
+          <Text style={styles.title}>{t('settings.title')}</Text>
         </View>
 
         {/* Profile */}
-        <Section title="Profile">
+        <Section title={t('settings.profile')}>
           <View style={styles.profileRow}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{user?.name?.[0] || 'U'}</Text>
@@ -92,14 +92,14 @@ export default function SettingsScreen() {
               <Text style={styles.profileName}>{user?.name || 'User'}</Text>
               <Text style={styles.profileEmail}>{user?.email || ''}</Text>
             </View>
-            <TouchableOpacity style={styles.editBtn}>
-              <Text style={styles.editBtnText}>Edit</Text>
+            <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/edit-profile' as any)}>
+              <Text style={styles.editBtnText}>{t('common.edit')}</Text>
             </TouchableOpacity>
           </View>
         </Section>
 
         {/* Currency */}
-        <Section title="Default Currency">
+        <Section title={t('settings.default_currency')}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.chips}>
               {CURRENCIES.map((cur) => (
@@ -136,7 +136,7 @@ export default function SettingsScreen() {
         {/* Notifications */}
         <Section title={t('settings.notifications')}>
           <SettingRow
-            label="Push Notifications"
+            label={t('settings.push_notifications')}
             right={
               <Switch
                 value={notificationsEnabled}
@@ -145,7 +145,7 @@ export default function SettingsScreen() {
               />
             }
           />
-          <Text style={styles.sectionSubtitle}>Remind me before renewal</Text>
+          <Text style={styles.sectionSubtitle}>{t('settings.remind_before')}</Text>
           <View style={styles.chips}>
             {[1, 3, 7].map((day) => (
               <TouchableOpacity
@@ -154,7 +154,7 @@ export default function SettingsScreen() {
                 onPress={() => toggleReminderDay(day)}
               >
                 <Text style={[styles.chipText, reminderDays.includes(day) && styles.chipTextActive]}>
-                  {day}d before
+                  {t('settings.days_before', { count: day })}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -162,7 +162,7 @@ export default function SettingsScreen() {
         </Section>
 
         {/* Payment Cards */}
-        <Section title="Payment Cards">
+        <Section title={t('settings.payment_cards')}>
           {cards.map((card) => (
             <View key={card.id} style={styles.cardRow}>
               <View style={[styles.cardDot, { backgroundColor: card.color }]} />
@@ -171,9 +171,9 @@ export default function SettingsScreen() {
                 <Text style={styles.cardInfo}>••••{card.last4} · {card.brand}</Text>
               </View>
               <TouchableOpacity
-                onPress={() => Alert.alert('Delete', `Remove ${card.nickname}?`, [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Delete', style: 'destructive', onPress: async () => {
+                onPress={() => Alert.alert(t('common.delete'), t('settings.remove_card', { name: card.nickname }), [
+                  { text: t('common.cancel'), style: 'cancel' },
+                  { text: t('common.delete'), style: 'destructive', onPress: async () => {
                     try { await cardsApi.delete(card.id); } catch {}
                     removeCard(card.id);
                   }},
@@ -184,14 +184,14 @@ export default function SettingsScreen() {
             </View>
           ))}
           <TouchableOpacity style={styles.addCardBtn} onPress={() => setShowAddCard(true)}>
-            <Text style={styles.addCardBtnText}>+ Add Payment Card</Text>
+            <Text style={styles.addCardBtnText}>{t('settings.add_payment_card')}</Text>
           </TouchableOpacity>
         </Section>
 
         {/* Reports */}
-        <Section title="Reports">
+        <Section title={t('settings.reports')}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/reports' as any)}>
-            <Text style={styles.menuItemText}>📄 Generate Report</Text>
+            <Text style={styles.menuItemText}>📄 {t('settings.generate_report')}</Text>
             <Text style={styles.menuItemChevron}>›</Text>
           </TouchableOpacity>
         </Section>
@@ -201,32 +201,32 @@ export default function SettingsScreen() {
           {isPro ? (
             <>
               <Text style={styles.proTitle}>
-                {isTrialing ? '⏳ Pro Trial' : '✨ SubRadar Pro'}
+                {isTrialing ? `⏳ ${t('settings.pro_trial')}` : `✨ ${t('settings.subradar_pro')}`}
               </Text>
               {isTrialing && billing?.trialDaysLeft !== null && (
-                <Text style={styles.proDesc}>{billing?.trialDaysLeft} days remaining in trial</Text>
+                <Text style={styles.proDesc}>{t('settings.days_remaining', { count: billing?.trialDaysLeft })}</Text>
               )}
               {billing && (
                 <View style={styles.usageRow}>
                   <Text style={styles.usageText}>
-                    AI: {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} this month
+                    {t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' })}
                   </Text>
                 </View>
               )}
             </>
           ) : (
             <>
-              <Text style={styles.proTitle}>✨ SubRadar Pro</Text>
+              <Text style={styles.proTitle}>✨ {t('settings.subradar_pro')}</Text>
               <Text style={styles.proDesc}>
-                Unlimited subscriptions · 200 AI/month · Analytics
+                {t('settings.pro_features')}
               </Text>
               {billing && (
                 <View style={styles.usageRow}>
                   <Text style={styles.usageText}>
-                    Subscriptions: {billing.subscriptionCount}/{billing.subscriptionLimit ?? '∞'}
+                    {t('settings.sub_usage', { used: billing.subscriptionCount, limit: billing.subscriptionLimit ?? '∞' })}
                   </Text>
                   <Text style={styles.usageText}>
-                    AI: {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} this month
+                    {t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' })}
                   </Text>
                 </View>
               )}
@@ -239,7 +239,7 @@ export default function SettingsScreen() {
                   {startTrialMutation.isPending ? (
                     <ActivityIndicator color={COLORS.primary} />
                   ) : (
-                    <Text style={styles.proBtnText}>Start 7-day Free Trial</Text>
+                    <Text style={styles.proBtnText}>{t('settings.start_trial')}</Text>
                   )}
                 </TouchableOpacity>
               ) : (
@@ -251,7 +251,7 @@ export default function SettingsScreen() {
                   {checkoutMutation.isPending ? (
                     <ActivityIndicator color={COLORS.primary} />
                   ) : (
-                    <Text style={styles.proBtnText}>Upgrade — $2.99/mo</Text>
+                    <Text style={styles.proBtnText}>{t('settings.upgrade')}</Text>
                   )}
                 </TouchableOpacity>
               )}
@@ -260,53 +260,53 @@ export default function SettingsScreen() {
         </View>
 
         {/* Danger zone */}
-        <Section title="Account">
+        <Section title={t('settings.account')}>
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => Alert.alert('Export', 'Data exported (demo)')}
+            onPress={() => Alert.alert(t('settings.export_data'), t('settings.data_exported'))}
           >
-            <Text style={styles.menuItemText}>📤 Export Data</Text>
+            <Text style={styles.menuItemText}>📤 {t('settings.export_data')}</Text>
             <Text style={styles.menuItemChevron}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: COLORS.border }]}
-            onPress={() => Alert.alert('Выйти', 'Are you sure?', [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Logout', style: 'destructive', onPress: logout },
+            onPress={() => Alert.alert(t('settings.logout'), t('common.are_you_sure'), [
+              { text: t('common.cancel'), style: 'cancel' },
+              { text: t('settings.logout'), style: 'destructive', onPress: logout },
             ])}
           >
-            <Text style={[styles.menuItemText, { color: COLORS.error }]}>🚪 Sign Out</Text>
+            <Text style={[styles.menuItemText, { color: COLORS.error }]}>🚪 {t('settings.logout')}</Text>
             <Text style={styles.menuItemChevron}>›</Text>
           </TouchableOpacity>
         </Section>
 
-        <Text style={styles.version}>SubRadar AI v1.0.0</Text>
+        <Text style={styles.version}>{t('settings.version')}</Text>
       </ScrollView>
 
       {/* Add Card Modal */}
       <Modal visible={showAddCard} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Add Payment Card</Text>
+            <Text style={styles.modalTitle}>{t('settings.add_card_title')}</Text>
 
             <TextInput
               style={styles.input}
               value={cardForm.nickname}
               onChangeText={(v) => setCardForm((f) => ({ ...f, nickname: v }))}
-              placeholder="Nickname (e.g. My Visa)"
+              placeholder={t('settings.card_nickname_placeholder')}
               placeholderTextColor={COLORS.textMuted}
             />
             <TextInput
               style={styles.input}
               value={cardForm.last4}
               onChangeText={(v) => setCardForm((f) => ({ ...f, last4: v.slice(0, 4) }))}
-              placeholder="Last 4 digits"
+              placeholder={t('settings.card_last4_placeholder')}
               keyboardType="number-pad"
               maxLength={4}
               placeholderTextColor={COLORS.textMuted}
             />
 
-            <Text style={styles.label}>Brand</Text>
+            <Text style={styles.label}>{t('settings.card_brand')}</Text>
             <View style={styles.chips}>
               {CARD_BRANDS.map((brand) => (
                 <TouchableOpacity
@@ -323,10 +323,10 @@ export default function SettingsScreen() {
 
             <View style={styles.modalBtns}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAddCard(false)}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.saveBtn} onPress={handleAddCard}>
-                <Text style={styles.saveBtnText}>Save</Text>
+                <Text style={styles.saveBtnText}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>

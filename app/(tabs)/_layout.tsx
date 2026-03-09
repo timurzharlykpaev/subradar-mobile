@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
 import { COLORS } from '../../src/constants';
 
@@ -12,6 +13,7 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 
 export default function TabsLayout() {
   const [sheetVisible, setSheetVisible] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -28,14 +30,14 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: t('tabs.home'),
             tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="subscriptions"
           options={{
-            title: 'Subs',
+            title: t('tabs.subs'),
             tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
           }}
         />
@@ -58,14 +60,14 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="analytics"
           options={{
-            title: 'Analytics',
+            title: t('tabs.analytics'),
             tabBarIcon: ({ focused }) => <TabIcon emoji="📈" focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="settings"
           options={{
-            title: 'Settings',
+            title: t('tabs.settings'),
             tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
           }}
         />

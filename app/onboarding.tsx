@@ -275,10 +275,10 @@ export default function OnboardingScreen() {
   }, [step]);
 
   const SHOWCASE_FEATURES = [
-    { emoji: '🤖', title: 'AI автодобавление', desc: 'Просто скажи название — AI найдёт цену, иконку и ссылку', scale: card1Scale },
-    { emoji: '🔔', title: 'Умные уведомления', desc: 'Письмо и push за 3 дня до списания', scale: card2Scale },
-    { emoji: '📊', title: 'Аналитика Pro', desc: 'Прогноз расходов, дубликаты, экономия', scale: card3Scale },
-    { emoji: '👥', title: 'Командный план', desc: 'Управляй подписками вместе с командой', scale: card4Scale },
+    { emoji: '🤖', title: t('onboarding.showcase_ai_title'), desc: t('onboarding.showcase_ai_desc'), scale: card1Scale },
+    { emoji: '🔔', title: t('onboarding.showcase_notify_title'), desc: t('onboarding.showcase_notify_desc'), scale: card2Scale },
+    { emoji: '📊', title: t('onboarding.showcase_analytics_title'), desc: t('onboarding.showcase_analytics_desc'), scale: card3Scale },
+    { emoji: '👥', title: t('onboarding.showcase_team_title'), desc: t('onboarding.showcase_team_desc'), scale: card4Scale },
   ];
 
   const steps = [
@@ -292,7 +292,7 @@ export default function OnboardingScreen() {
         <Text style={styles.logoTitle}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </View>
-      <Text style={styles.showcaseTitle}>Всё что нужно для контроля подписок</Text>
+      <Text style={styles.showcaseTitle}>{t('onboarding.showcase_title')}</Text>
       <View style={styles.showcaseGrid}>
         {SHOWCASE_FEATURES.map((f) => (
           <Animated.View
@@ -306,7 +306,7 @@ export default function OnboardingScreen() {
         ))}
       </View>
       <TouchableOpacity style={styles.showcaseBtn} onPress={() => setStep(1)}>
-        <Text style={styles.showcaseBtnText}>Начать — это бесплатно →</Text>
+        <Text style={styles.showcaseBtnText}>{t('onboarding.showcase_start')}</Text>
       </TouchableOpacity>
     </Animated.View>,
 

@@ -6,6 +6,7 @@ import {
   Pressable,
   Animated,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { COLORS } from '../constants';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
+  const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const recordingRef = useRef<any>(null);
@@ -81,7 +83,7 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
         </Animated.View>
       </Pressable>
       <Text style={styles.label}>
-        {isRecording ? formatDuration(duration) : 'Hold to record'}
+        {isRecording ? formatDuration(duration) : t('voice.hold_to_record')}
       </Text>
     </View>
   );

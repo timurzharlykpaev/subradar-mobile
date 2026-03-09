@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Subscription } from '../stores/subscriptionsStore';
 import { COLORS, CATEGORIES } from '../constants';
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
+  const { t } = useTranslation();
   const cat = CATEGORIES.find((c) => c.id === subscription.category);
   const daysUntil = subscription.nextPaymentDate
     ? Math.ceil((new Date(subscription.nextPaymentDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -18,10 +20,10 @@ export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
       <Text style={styles.emoji}>{cat?.emoji || '📦'}</Text>
       <Text style={styles.name} numberOfLines={1}>{subscription.name}</Text>
       <Text style={styles.amount}>
-        {subscription.currency} {subscription.amount.toFixed(0)}
+        {subscription.currency} {Number(subscription.amount).toFixed(0)}
       </Text>
       <Text style={styles.days}>
-        {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `in ${daysUntil}d`}
+        {daysUntil === 0 ? t('upcoming.today') : daysUntil === 1 ? t('upcoming.tomorrow') : t('upcoming.in_days', { count: daysUntil })}
       </Text>
     </TouchableOpacity>
   );
