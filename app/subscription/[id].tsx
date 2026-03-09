@@ -59,7 +59,7 @@ export default function SubscriptionDetailScreen() {
         {
           text: 'Cancel Subscription',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             if (subscription.cancelUrl) {
               Linking.openURL(subscription.cancelUrl);
             }
