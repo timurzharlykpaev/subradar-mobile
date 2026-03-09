@@ -1,3 +1,5 @@
+import { BillingPeriod, CardBrand } from '../types';
+
 export const COLORS = {
   primary: '#6C47FF',
   primaryLight: '#EDE9FF',
@@ -15,24 +17,22 @@ export const COLORS = {
 };
 
 export const CATEGORIES = [
-  { id: 'streaming', label: 'Streaming', emoji: '🎬', color: '#E53935' },
-  { id: 'music', label: 'Music', emoji: '🎵', color: '#8E24AA' },
-  { id: 'productivity', label: 'Productivity', emoji: '💼', color: '#1E88E5' },
-  { id: 'gaming', label: 'Gaming', emoji: '🎮', color: '#43A047' },
-  { id: 'fitness', label: 'Fitness', emoji: '💪', color: '#FB8C00' },
-  { id: 'news', label: 'News', emoji: '📰', color: '#00ACC1' },
-  { id: 'cloud', label: 'Cloud', emoji: '☁️', color: '#039BE5' },
-  { id: 'education', label: 'Education', emoji: '📚', color: '#F4511E' },
-  { id: 'finance', label: 'Finance', emoji: '💰', color: '#43A047' },
-  { id: 'shopping', label: 'Shopping', emoji: '🛍️', color: '#E91E63' },
-  { id: 'other', label: 'Other', emoji: '📦', color: '#757575' },
+  { id: 'STREAMING', label: 'Streaming', emoji: '📺', color: '#E53935' },
+  { id: 'AI_SERVICES', label: 'AI Services', emoji: '🤖', color: '#8E24AA' },
+  { id: 'INFRASTRUCTURE', label: 'Infrastructure', emoji: '☁️', color: '#039BE5' },
+  { id: 'MUSIC', label: 'Music', emoji: '🎵', color: '#8E24AA' },
+  { id: 'GAMING', label: 'Gaming', emoji: '🎮', color: '#43A047' },
+  { id: 'PRODUCTIVITY', label: 'Productivity', emoji: '📋', color: '#1E88E5' },
+  { id: 'HEALTH', label: 'Health', emoji: '💪', color: '#FB8C00' },
+  { id: 'NEWS', label: 'News', emoji: '📰', color: '#00ACC1' },
+  { id: 'OTHER', label: 'Other', emoji: '📦', color: '#757575' },
 ];
 
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'KZT', 'RUB', 'UAH', 'TRY'];
 
-export const BILLING_PERIODS = ['weekly', 'monthly', 'quarterly', 'yearly'];
+export const BILLING_PERIODS: BillingPeriod[] = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
 
-export const CARD_BRANDS = ['Visa', 'Mastercard', 'Amex', 'Mir', 'Other'];
+export const CARD_BRANDS: CardBrand[] = ['VISA', 'MC', 'AMEX', 'MIR', 'OTHER'];
 
 export const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -48,11 +48,7 @@ export const LANGUAGES = [
 
 export const STATUS_COLORS: Record<string, string> = {
   ACTIVE: '#4CAF50',
-  active: '#4CAF50',
   TRIAL: '#FF9800',
-  trial: '#FF9800',
   PAUSED: '#9E9E9E',
-  paused: '#9E9E9E',
   CANCELLED: '#F44336',
-  cancelled: '#F44336',
 };

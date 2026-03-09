@@ -158,5 +158,14 @@
     "reminders_desc": "续费前收到通知",
     "reports_title": "税务报告",
     "reports_desc": "一键生成费用报告"
+  },
+  "trials": {
+    "title": "活跃试用",
+    "days_left": "剩余{{count}}天",
+    "ends_today": "今天到期！",
+    "ends_tomorrow": "明天到期",
+    "expired": "试用已过期",
+    "cancel": "取消",
+    "then": "之后"
   }
 }

@@ -1,15 +1,21 @@
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '../api/ai';
 
-export function useAISearch() {
+export function useAILookupService() {
   return useMutation({
-    mutationFn: (query: string) => aiApi.searchService(query).then((r) => r.data),
+    mutationFn: (query: string) => aiApi.lookupService(query).then((r) => r.data),
+  });
+}
+
+export function useAIParseText() {
+  return useMutation({
+    mutationFn: (text: string) => aiApi.parseText(text).then((r) => r.data),
   });
 }
 
 export function useVoiceToSubscription() {
   return useMutation({
-    mutationFn: (formData: FormData) => aiApi.parseVoice(formData).then((r) => r.data),
+    mutationFn: (formData: FormData) => aiApi.voice(formData).then((r) => r.data),
   });
 }
 

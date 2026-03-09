@@ -158,5 +158,14 @@
     "reminders_desc": "Get reminded before renewals",
     "reports_title": "Tax Reports",
     "reports_desc": "Generate expense reports in one tap"
+  },
+  "trials": {
+    "title": "Active Trials",
+    "days_left": "{{count}} days left",
+    "ends_today": "Ends today!",
+    "ends_tomorrow": "Ends tomorrow",
+    "expired": "Trial expired",
+    "cancel": "Cancel",
+    "then": "then"
   }
 }

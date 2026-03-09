@@ -1,12 +1,5 @@
 import { create } from 'zustand';
-
-export interface PaymentCard {
-  id: string;
-  nickname: string;
-  last4: string;
-  brand: 'Visa' | 'Mastercard' | 'Amex' | 'Mir' | 'Other';
-  color: string;
-}
+import { PaymentCard } from '../types';
 
 interface PaymentCardsState {
   cards: PaymentCard[];

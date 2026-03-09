@@ -158,5 +158,14 @@
     "reminders_desc": "Recibe avisos antes de las renovaciones",
     "reports_title": "Informes de gastos",
     "reports_desc": "Genera informes en un toque"
+  },
+  "trials": {
+    "title": "Pruebas activas",
+    "days_left": "{{count}} días restantes",
+    "ends_today": "¡Termina hoy!",
+    "ends_tomorrow": "Termina mañana",
+    "expired": "Prueba expirada",
+    "cancel": "Cancelar",
+    "then": "luego"
   }
 }

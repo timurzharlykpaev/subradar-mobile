@@ -16,7 +16,8 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { cardsApi } from '../../src/api/cards';
-import { usePaymentCardsStore, PaymentCard } from '../../src/stores/paymentCardsStore';
+import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
+import { PaymentCard } from '../../src/types';
 import { COLORS, CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,7 @@ export default function SettingsScreen() {
   const startTrialMutation = useStartTrial();
 
   const [showAddCard, setShowAddCard] = useState(false);
-  const [cardForm, setCardForm] = useState({ nickname: '', last4: '', brand: 'Visa' as PaymentCard['brand'], color: '#6C47FF' });
+  const [cardForm, setCardForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: '#6C47FF' });
 
   const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
   const isTrialing = billing?.status === 'trialing';
@@ -61,8 +62,8 @@ export default function SettingsScreen() {
     try {
       const res = await cardsApi.create(cardForm);
       addCard(res.data);
-    } catch { addCard({ id: Date.now().toString(), ...cardForm }); }
-    setCardForm({ nickname: '', last4: '', brand: 'Visa', color: '#6C47FF' });
+    } catch { addCard({ id: Date.now().toString(), isDefault: false, ...cardForm }); }
+    setCardForm({ nickname: '', last4: '', brand: 'VISA', color: '#6C47FF' });
     setShowAddCard(false);
   };
 
