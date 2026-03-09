@@ -24,11 +24,12 @@ import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Web client ID (for proxy/web fallback)
+// Web client ID
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
   '140914936328-chm3nq215c14dlj25i9pghhsuc3pif9i.apps.googleusercontent.com';
-// iOS client ID — create at console.cloud.google.com → iOS app → bundle: io.subradar.mobile
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || GOOGLE_WEB_CLIENT_ID;
+// iOS client ID (bundle: io.subradar.mobile)
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+  '140914936328-hftqahkh20bdie089g2mfdcnuuker4cm.apps.googleusercontent.com';
 
 const FEATURES = [
   { emoji: '🎙', key: 'voice' },
@@ -65,6 +66,11 @@ export default function OnboardingScreen() {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const otpInputRefs = useRef<Array<TextInput | null>>([]);
 
   const router = useRouter();
   const { t, i18n } = useTranslation();

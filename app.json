@@ -18,6 +18,15 @@
       "icon": "./assets/images/icon.png",
       "entitlements": {
         "aps-environment": "development"
+      },
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.140914936328-hftqahkh20bdie089g2mfdcnuuker4cm"
+            ]
+          }
+        ]
       }
     },
     "android": {
