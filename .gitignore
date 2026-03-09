@@ -45,3 +45,4 @@ yarn-error.*
 .env.*
 !.env.example
 GoogleService-Info.plist
+GoogleService-Info.plist

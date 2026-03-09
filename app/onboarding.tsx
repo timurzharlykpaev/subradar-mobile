@@ -24,11 +24,12 @@ import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Web client ID (for proxy/web fallback)
+// Web client ID
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
   '140914936328-chm3nq215c14dlj25i9pghhsuc3pif9i.apps.googleusercontent.com';
-// iOS client ID — create at console.cloud.google.com → iOS app → bundle: io.subradar.mobile
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || GOOGLE_WEB_CLIENT_ID;
+// iOS client ID (bundle: io.subradar.mobile)
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+  '140914936328-hftqahkh20bdie089g2mfdcnuuker4cm.apps.googleusercontent.com';
 
 const FEATURES = [
   { emoji: '🎙', key: 'voice' },
@@ -65,6 +66,11 @@ export default function OnboardingScreen() {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const otpInputRefs = useRef<Array<TextInput | null>>([]);
 
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -153,6 +159,70 @@ export default function OnboardingScreen() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // OTP countdown timer
+  useEffect(() => {
+    if (otpTimer <= 0) return;
+    const interval = setInterval(() => {
+      setOtpTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [otpTimer]);
+
+  const handleSendOtp = async () => {
+    if (!email.includes('@')) {
+      Alert.alert('', t('onboarding.invalid_email'));
+      return;
+    }
+    setLoading(true);
+    try {
+      await authApi.sendOtp(email);
+      setOtpSent(true);
+      setOtpTimer(60);
+      setOtpCode('');
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Failed to send code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) return;
+    setLoading(true);
+    try {
+      const res = await authApi.verifyOtp(email, otpCode);
+      const { user, accessToken: jwt, refreshToken } = res.data;
+      if (refreshToken) {
+        const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+        await AsyncStorage.setItem('refresh_token', refreshToken);
+      }
+      finishAuth(user, jwt);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Invalid code');
+      setOtpCode('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpDigitChange = (text: string, index: number) => {
+    const digit = text.replace(/[^0-9]/g, '');
+    const newCode = otpCode.split('');
+    newCode[index] = digit;
+    const joined = newCode.join('').slice(0, 6);
+    setOtpCode(joined);
+
+    if (digit && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otpCode[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
     }
   };
 
@@ -321,36 +391,78 @@ export default function OnboardingScreen() {
         </View>
       )}
 
-      {Platform.OS === 'ios' && (
-        <TouchableOpacity style={styles.socialBtn} onPress={handleAppleLogin} disabled={loading}>
-          <AppleIcon />
-          <Text style={styles.socialText}>{t('onboarding.continue_apple')}</Text>
-        </TouchableOpacity>
-      )}
+      {!otpMode ? (
+        <>
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity style={styles.socialBtn} onPress={handleAppleLogin} disabled={loading}>
+              <AppleIcon />
+              <Text style={styles.socialText}>{t('onboarding.continue_apple')}</Text>
+            </TouchableOpacity>
+          )}
 
-      <TouchableOpacity
-        style={[styles.socialBtn, styles.googleBtn]}
-        onPress={() => googlePromptAsync()}
-        disabled={loading}
-      >
-        <GoogleIcon />
-        <Text style={[styles.socialText, { color: COLORS.text }]}>{t('onboarding.continue_google')}</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.socialBtn, styles.googleBtn]}
+            onPress={() => googlePromptAsync()}
+            disabled={loading}
+          >
+            <GoogleIcon />
+            <Text style={[styles.socialText, { color: COLORS.text }]}>{t('onboarding.continue_google')}</Text>
+          </TouchableOpacity>
 
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>{t('common.or')}</Text>
-        <View style={styles.dividerLine} />
-      </View>
+          <TouchableOpacity
+            style={[styles.socialBtn, styles.emailOtpBtn]}
+            onPress={() => setOtpMode(true)}
+            disabled={loading}
+          >
+            <Text style={styles.emailOtpIcon}>✉️</Text>
+            <Text style={[styles.socialText, { color: COLORS.text }]}>{t('auth.continue_email')}</Text>
+          </TouchableOpacity>
+        </>
+      ) : otpSent ? (
+        <View style={styles.otpContainer}>
+          <Text style={styles.otpSubtitle}>{t('auth.enter_code')}</Text>
+          <Text style={styles.otpEmail}>{email}</Text>
 
-      {magicSent ? (
-        <View style={styles.magicSentBox}>
-          <Text style={styles.magicSentEmoji}>✉️</Text>
-          <Text style={styles.magicSentTitle}>{t('auth.sent')}</Text>
-          <Text style={styles.magicSentSub}>{t('auth.sent_sub')} {email}</Text>
+          <View style={styles.otpInputRow}>
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => { otpInputRefs.current[index] = ref; }}
+                style={[styles.otpDigitInput, otpCode[index] ? styles.otpDigitFilled : null]}
+                value={otpCode[index] || ''}
+                onChangeText={(text) => handleOtpDigitChange(text, index)}
+                onKeyPress={(e) => handleOtpKeyPress(e, index)}
+                keyboardType="number-pad"
+                maxLength={1}
+                selectTextOnFocus
+              />
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={[styles.emailBtn, otpCode.length < 6 && styles.emailBtnDisabled]}
+            onPress={handleVerifyOtp}
+            disabled={loading || otpCode.length < 6}
+          >
+            <Text style={styles.emailBtnText}>{t('auth.verify')}</Text>
+          </TouchableOpacity>
+
+          {otpTimer > 0 ? (
+            <Text style={styles.otpTimerText}>
+              {t('auth.resend_in', { seconds: otpTimer })}
+            </Text>
+          ) : (
+            <TouchableOpacity onPress={handleSendOtp} disabled={loading}>
+              <Text style={styles.otpResendText}>{t('auth.resend_code')}</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity onPress={() => { setOtpMode(false); setOtpSent(false); setOtpCode(''); }}>
+            <Text style={styles.otpBackText}>{t('common.back')}</Text>
+          </TouchableOpacity>
         </View>
       ) : (
-        <>
+        <View style={styles.otpContainer}>
           <TextInput
             style={styles.emailInput}
             value={email}
@@ -360,10 +472,14 @@ export default function OnboardingScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <TouchableOpacity style={styles.emailBtn} onPress={handleMagicLink} disabled={loading}>
-            <Text style={styles.emailBtnText}>{t('auth.send_link')} ✨</Text>
+          <TouchableOpacity style={styles.emailBtn} onPress={handleSendOtp} disabled={loading}>
+            <Text style={styles.emailBtnText}>{t('auth.send_code')}</Text>
           </TouchableOpacity>
-        </>
+
+          <TouchableOpacity onPress={() => setOtpMode(false)}>
+            <Text style={styles.otpBackText}>{t('common.back')}</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       <Text style={styles.terms}>{t('onboarding.terms')}</Text>
@@ -464,4 +580,16 @@ const styles = StyleSheet.create({
   showcaseCardDesc: { fontSize: 11, color: COLORS.textSecondary, lineHeight: 15 },
   showcaseBtn: { backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
   showcaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  emailOtpBtn: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
+  emailOtpIcon: { fontSize: 18 },
+  otpContainer: { gap: 14, alignItems: 'center' },
+  otpSubtitle: { fontSize: 15, color: COLORS.textSecondary, textAlign: 'center' },
+  otpEmail: { fontSize: 15, fontWeight: '700', color: COLORS.text, textAlign: 'center' },
+  otpInputRow: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
+  otpDigitInput: { width: 48, height: 56, borderRadius: 12, borderWidth: 1.5, borderColor: COLORS.border, backgroundColor: COLORS.surface, textAlign: 'center', fontSize: 22, fontWeight: '700', color: COLORS.text },
+  otpDigitFilled: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
+  emailBtnDisabled: { opacity: 0.5 },
+  otpTimerText: { fontSize: 13, color: COLORS.textMuted, textAlign: 'center' },
+  otpResendText: { fontSize: 14, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
+  otpBackText: { fontSize: 14, fontWeight: '600', color: COLORS.textSecondary, textAlign: 'center', marginTop: 4 },
 });

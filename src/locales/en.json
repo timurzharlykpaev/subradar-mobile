@@ -111,7 +111,13 @@
     "email_placeholder": "your@email.com",
     "send_link": "Send Magic Link",
     "sent": "Check your email!",
-    "sent_sub": "We sent a magic link to"
+    "sent_sub": "We sent a magic link to",
+    "continue_email": "Continue with Email",
+    "send_code": "Send Code",
+    "enter_code": "Enter the code sent to",
+    "verify": "Verify",
+    "resend_code": "Resend Code",
+    "resend_in": "Resend in {{seconds}}s"
   },
   "landing": {
     "hero_title": "Know exactly where your money goes",
