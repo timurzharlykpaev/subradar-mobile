@@ -82,6 +82,11 @@ export default function OnboardingScreen() {
     if (googleResponse?.type === 'success') {
       const accessToken = googleResponse.authentication?.accessToken;
       if (accessToken) handleGoogleToken(accessToken);
+    } else if (googleResponse?.type === 'error') {
+      Alert.alert(
+        'Google Sign-In Error',
+        'Please set up iOS Client ID in Google Cloud Console (bundle: io.subradar.mobile). Use email sign-in for now.',
+      );
     }
   }, [googleResponse]);
 

@@ -6,7 +6,7 @@ export const authApi = {
   loginWithGoogleMobile: (accessToken: string) =>
     apiClient.post('/auth/google/mobile', { accessToken }),
   loginWithApple: (identityToken: string) =>
-    apiClient.post('/auth/apple', { identityToken }),
+    apiClient.post('/auth/apple', { idToken: identityToken }),
   sendMagicLink: (email: string) =>
     apiClient.post('/auth/magic-link', { email }),
   verifyMagicLink: (token: string) =>
