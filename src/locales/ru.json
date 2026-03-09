@@ -111,7 +111,13 @@
     "email_placeholder": "your@email.com",
     "send_link": "Отправить ссылку",
     "sent": "Проверьте почту!",
-    "sent_sub": "Мы отправили магическую ссылку на"
+    "sent_sub": "Мы отправили магическую ссылку на",
+    "continue_email": "Войти по Email",
+    "send_code": "Отправить код",
+    "enter_code": "Введите код, отправленный на",
+    "verify": "Подтвердить",
+    "resend_code": "Отправить повторно",
+    "resend_in": "Повторно через {{seconds}} сек"
   },
   "landing": {
     "hero_title": "Знайте, куда уходят деньги",
