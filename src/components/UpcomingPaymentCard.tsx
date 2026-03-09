@@ -9,9 +9,9 @@ interface Props {
 
 export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
   const cat = CATEGORIES.find((c) => c.id === subscription.category);
-  const daysUntil = Math.ceil(
-    (new Date(subscription.nextPaymentDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
+  const daysUntil = subscription.nextPaymentDate
+    ? Math.ceil((new Date(subscription.nextPaymentDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   return (
     <TouchableOpacity style={[styles.card, { borderTopColor: cat?.color || COLORS.primary }]}>

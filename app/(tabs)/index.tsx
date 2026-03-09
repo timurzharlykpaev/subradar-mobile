@@ -51,10 +51,11 @@ export default function DashboardScreen() {
 
   const upcoming = subscriptions
     .filter((s) => {
+      if (!s.nextPaymentDate) return false;
       const days = (new Date(s.nextPaymentDate).getTime() - Date.now()) / 86400000;
       return days >= 0 && days <= 7;
     })
-    .sort((a, b) => new Date(a.nextPaymentDate).getTime() - new Date(b.nextPaymentDate).getTime());
+    .sort((a, b) => new Date(a.nextPaymentDate!).getTime() - new Date(b.nextPaymentDate!).getTime());
 
   const greeting = () => {
     const h = new Date().getHours();

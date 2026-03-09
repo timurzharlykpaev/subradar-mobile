@@ -9,7 +9,7 @@ export interface Subscription {
   billingPeriod: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'LIFETIME' | 'ONE_TIME';
   billingDay?: number;
   nextPaymentDate?: string;
-  status: 'ACTIVE' | 'trial' | 'paused' | 'cancelled';
+  status: 'ACTIVE' | 'TRIAL' | 'PAUSED' | 'CANCELLED';
   paymentCardId?: string;
   plan?: string;
   websiteUrl?: string;
@@ -69,6 +69,6 @@ export const useSubscriptionsStore = create<SubscriptionsState>((set, get) => ({
     if (filter === 'category' && selectedCategory) {
       return result.filter((s) => s.category === selectedCategory);
     }
-    return result.filter((s) => s.status === filter);
+    return result.filter((s) => s.status.toLowerCase() === filter);
   },
 }));
