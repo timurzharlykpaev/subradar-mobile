@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
+import { reportError } from '../utils/errorReporter';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
 
@@ -23,6 +24,18 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
     }
+
+    const status: number | undefined = error.response?.status;
+    if (!status || status >= 500) {
+      const url = error.config?.url ?? 'unknown';
+      const method = error.config?.method?.toUpperCase() ?? '?';
+      reportError(
+        `API ${method} ${url} → ${status ?? 'network error'}`,
+        error.stack,
+        { status, url, method },
+      );
+    }
+
     return Promise.reject(error);
   }
 );

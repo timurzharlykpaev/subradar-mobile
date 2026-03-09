@@ -11,6 +11,7 @@ import i18n from '../src/i18n';
 import { notificationsApi } from '../src/api/notifications';
 import { useAuthStore } from '../src/stores/authStore';
 import { usePaymentCardsStore } from '../src/stores/paymentCardsStore';
+import { ErrorBoundary } from '../src/utils/ErrorBoundary';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -98,20 +99,22 @@ function PushSetup() {
 
 export default function RootLayout() {
   return (
-    <View style={{ flex: 1 }}>
-      <I18nextProvider i18n={i18n}>
-        <QueryClientProvider client={queryClient}>
-          <StatusBar style="dark" />
-          <DataLoader />
-          <PushSetup />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="subscription/[id]" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="reports/index" />
-          </Stack>
-        </QueryClientProvider>
-      </I18nextProvider>
-    </View>
+    <ErrorBoundary>
+      <View style={{ flex: 1 }}>
+        <I18nextProvider i18n={i18n}>
+          <QueryClientProvider client={queryClient}>
+            <StatusBar style="dark" />
+            <DataLoader />
+            <PushSetup />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="subscription/[id]" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="reports/index" />
+            </Stack>
+          </QueryClientProvider>
+        </I18nextProvider>
+      </View>
+    </ErrorBoundary>
   );
 }
