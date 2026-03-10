@@ -109,41 +109,43 @@ function GoogleIcon() {
 }
 
 // ─── Service SVG Icons ──────────────────────────────────────────────────────
+// Simple guaranteed-to-render brand icons
 function NetflixIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M5.398 0v24l4.5-12.3V24h2.7V0H9.9L7.2 12.3V0z" fill="#E50914" />
-      <Path d="M14.1 0v12.3L11.4 0H8.7l4.5 12.3V24h2.7V0z" fill="#E50914" />
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      <Path d="M4 2h3.5l5.5 14.5V2H16v16h-3.5L7 3.5V18H4V2z" fill="white" />
     </Svg>
   );
 }
 function SpotifyIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Circle cx="12" cy="12" r="12" fill="#1DB954" />
-      <Path d="M17.25 16.5a.75.75 0 01-.41-.12c-2.4-1.47-5.42-1.8-8.97-1a.75.75 0 01-.34-1.46c3.9-.9 7.24-.51 9.94 1.14a.75.75 0 01-.22 1.44zm1.21-2.7a.94.94 0 01-.52-.15c-2.74-1.7-6.91-2.19-10.15-1.2a.94.94 0 01-.54-1.8c3.7-1.13 8.3-.58 11.47 1.38a.94.94 0 01-.26 1.77zm.1-2.8a.94.94 0 01-.47-.13C15.18 8.9 9.9 8.7 6.5 9.72a.94.94 0 01-.55-1.8c3.9-1.18 10-.95 13.55 1.25a.94.94 0 01-.44 1.83z" fill="white" />
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      <Path d="M16 7.5C12.5 5.8 7.5 5.5 4 6.8l-.5-1.8C8 3.2 13.5 3.5 17.5 5.5L16 7.5z" fill="white" />
+      <Path d="M15.5 11C12.5 9.5 8 9.2 5 10.2l-.4-1.6c3.5-1.1 8.5-.8 12 1L15.5 11z" fill="white" />
+      <Path d="M14.5 14.5C12 13.2 8.5 13 6 13.8l-.3-1.4c3-1 7-.8 10 .8l-1.2 1.3z" fill="white" />
     </Svg>
   );
 }
 function ICloudIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" fill="#0071E3" />
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      <Path d="M15.5 8.1A5 5 0 0010 4a5 5 0 00-4.8 3.6A4 4 0 005 15h10a4 4 0 00.5-6.9z" fill="white" />
     </Svg>
   );
 }
 function YoutubeIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8z" fill="#FF0000" />
-      <Path d="M9.75 15.5l6.25-3.5-6.25-3.5v7z" fill="white" />
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      <Rect x="1" y="4" width="18" height="12" rx="3" fill="white" opacity="0.9" />
+      <Path d="M8 7.5l5 2.5-5 2.5V7.5z" fill="#FF0000" />
     </Svg>
   );
 }
 function OpenAIIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path d="M22.28 9.29a5.44 5.44 0 00-.47-4.48 5.5 5.5 0 00-5.91-2.63A5.5 5.5 0 0011.72 0a5.5 5.5 0 00-5.24 3.81 5.5 5.5 0 00-3.67 2.67 5.5 5.5 0 00.68 6.44 5.44 5.44 0 00.47 4.48 5.5 5.5 0 005.91 2.63A5.5 5.5 0 0012.28 22a5.5 5.5 0 005.25-3.82 5.5 5.5 0 003.67-2.66 5.5 5.5 0 00-.68-6.43l-.24-.8zm-9.5 10.2a4.07 4.07 0 01-2.62-.95l.13-.07 4.35-2.51a.72.72 0 00.36-.62v-6.13l1.84 1.06a.07.07 0 01.04.06v5.07a4.09 4.09 0 01-4.1 4.09zm-8.82-3.75a4.07 4.07 0 01-.49-2.75l.13.08 4.35 2.51a.72.72 0 00.72 0l5.3-3.06v2.12a.07.07 0 01-.03.06L9.6 17.2a4.09 4.09 0 01-5.64-1.46zm-1.15-9.5a4.07 4.07 0 012.13-1.79v5.15a.72.72 0 00.36.62l5.3 3.06-1.84 1.06a.07.07 0 01-.07 0L4.3 11.8a4.09 4.09 0 01-.49-5.56zm15.1 3.52l-5.3-3.06 1.83-1.06a.07.07 0 01.07 0l4.49 2.59a4.09 4.09 0 01-.63 6.38v-5.15a.72.72 0 00-.36-.7l-.1-.01zm1.83-2.78l-.13-.08-4.35-2.51a.72.72 0 00-.72 0l-5.3 3.06V5.33a.07.07 0 01.03-.06L14.4 2.8a4.09 4.09 0 016.14 4.18zM8.54 12.85l-1.84-1.06a.07.07 0 01-.04-.06V6.66A4.09 4.09 0 0113.4 3.9l-.13.07-4.35 2.51a.72.72 0 00-.36.62l-.02 5.75zm1-.23L12 11.25l2.46 1.42v2.83L12 16.92l-2.46-1.42v-2.88z" fill="#10A37F" />
+    <Svg width={20} height={20} viewBox="0 0 20 20">
+      <Circle cx="10" cy="10" r="8" stroke="white" strokeWidth="1.5" fill="none" />
+      <Path d="M10 3l1.8 5.5H17l-4.5 3.3 1.7 5.2L10 14l-4.2 3 1.7-5.2L3 8.5h5.2L10 3z" fill="white" opacity="0.9" />
     </Svg>
   );
 }
@@ -285,22 +287,19 @@ function AuthHero() {
         borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
         transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
       }} />
-      {/* Logo */}
+      {/* Logo — real app icon */}
       <Animated.View style={{
-        width: 90, height: 90, borderRadius: 26,
-        backgroundColor: '#8B5CF6',
-        alignItems: 'center', justifyContent: 'center',
-        shadowColor: '#8B5CF6', shadowOpacity: 0.7, shadowRadius: 30,
-        shadowOffset: { width: 0, height: 8 }, elevation: 20,
+        width: 90, height: 90, borderRadius: 22,
+        shadowColor: '#8B5CF6', shadowOpacity: 0.5, shadowRadius: 24,
+        shadowOffset: { width: 0, height: 6 }, elevation: 16,
         transform: [{ scale: logoScale }], opacity: logoOpacity,
-        zIndex: 10,
+        zIndex: 10, overflow: 'hidden',
       }}>
-        <Svg width={44} height={44} viewBox="0 0 24 24" fill="none">
-          <Path d="M3 6C3 4.34 4.34 3 6 3h12c1.66 0 3 1.34 3 3v2H3V6z" fill="rgba(255,255,255,0.3)" />
-          <Path d="M3 8h18v10c0 1.66-1.34 3-3 3H6c-1.66 0-3-1.34-3-3V8z" fill="rgba(255,255,255,0.15)" />
-          <Path d="M7 12h10M7 15.5h6" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-          <Circle cx="18" cy="15.5" r="2" fill="white" opacity="0.9" />
-        </Svg>
+        <Image
+          source={require('../assets/images/icon.png')}
+          style={{ width: 90, height: 90, borderRadius: 22 }}
+          resizeMode="cover"
+        />
       </Animated.View>
 
       {/* Floating cards */}
