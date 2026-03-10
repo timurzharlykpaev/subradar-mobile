@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
+import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
@@ -20,29 +20,51 @@ const CHART_HEIGHT = 180;
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
 function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const maxVal = Math.max(...data.map((d) => d.total), 1);
   const barW = Math.max(12, (screenWidth - 120) / data.length - 6);
   const chartW = screenWidth - 80;
+  const labelHeight = 18;
+  const totalH = CHART_HEIGHT + labelHeight;
+
+  const getMonthLabel = (monthStr: string) => {
+    const parts = String(monthStr || '').split('-');
+    const monthNum = parts.length >= 2 ? parseInt(parts[1], 10) : parseInt(parts[0], 10);
+    if (monthNum >= 1 && monthNum <= 12) return t(`months.${monthNum}`, { defaultValue: monthStr });
+    return monthStr.slice(-2);
+  };
 
   return (
-    <View style={{ height: CHART_HEIGHT }}>
-      <Svg width={chartW} height={CHART_HEIGHT}>
+    <View style={{ height: totalH }}>
+      <Svg width={chartW} height={totalH}>
         {data.map((d, i) => {
           const barH = Math.max(4, (d.total / maxVal) * (CHART_HEIGHT - 30));
-          const x = i * ((chartW) / data.length) + ((chartW / data.length) - barW) / 2;
+          const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
           const y = CHART_HEIGHT - 30 - barH;
+          const isMax = d.total === maxVal;
+          const labelX = x + barW / 2;
           return (
             <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={4} fill="#8B5CF6" opacity={0.85} />
+              <Rect x={x} y={y} width={barW} height={barH} rx={4} fill={isMax ? colors.primary : 'rgba(139,92,246,0.4)'} />
+              {d.total > 0 && (
+                <SvgText
+                  x={labelX} y={y - 3}
+                  fontSize={9} fontWeight="700"
+                  fill={isMax ? colors.primary : colors.textMuted}
+                  textAnchor="middle"
+                >
+                  ${d.total >= 1000 ? `${(d.total / 1000).toFixed(1)}k` : d.total.toFixed(0)}
+                </SvgText>
+              )}
             </React.Fragment>
           );
         })}
       </Svg>
       {/* X labels */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: -labelHeight + 4 }}>
         {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
-          <Text key={i} style={{ fontSize: 10, color: colors.textMuted }}>{String(d.month || '').slice(-2)}</Text>
+          <Text key={i} style={{ fontSize: 10, color: colors.textMuted }}>{getMonthLabel(d.month)}</Text>
         ))}
       </View>
     </View>
