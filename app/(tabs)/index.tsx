@@ -52,7 +52,12 @@ export default function DashboardScreen() {
         analyticsApi.getByCategory().catch(() => null),
       ]);
       if (monthlyRes?.data) {
-        const items = Array.isArray(monthlyRes.data) ? monthlyRes.data : monthlyRes.data.months || [];
+        const raw = Array.isArray(monthlyRes.data) ? monthlyRes.data : monthlyRes.data.months || [];
+        // Backend returns { label: '2025-04', total: 45 } — normalize to { month, amount }
+        const items = raw.map((d: any) => ({
+          month: d.month ?? d.label ?? '',
+          amount: Number(d.amount ?? d.total ?? 0),
+        })).filter((d: any) => d.month);
         setMonthlyTrend(items.slice(-6));
       }
       if (categoryRes?.data) {
@@ -179,7 +184,7 @@ export default function DashboardScreen() {
         )}
 
         {/* Monthly Trend Chart */}
-        {monthlyTrend.length > 0 && (
+        {monthlyTrend.length > 0 && monthlyTrend.some(d => d.amount > 0) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('dashboard.monthly_trend')}</Text>
             <View style={styles.chartCard}>
@@ -203,7 +208,7 @@ export default function DashboardScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('trials.title')}</Text>
             {trialSubs.map((sub) => {
-              const endDate = sub.nextBillingDate || sub.nextPaymentDate;
+              const endDate = sub.nextPaymentDate;
               const daysLeft = endDate
                 ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000))
                 : null;
@@ -263,28 +268,44 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 
 function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }) {
   const { width: screenWidth } = useWindowDimensions();
-  const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
   const chartW = screenWidth - 80;
-  const chartH = 140;
-  const barW = Math.max(10, chartW / data.length - 6);
+  const chartH = 120;
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const hasData = data.some((d) => Number(d.amount) > 0);
+  const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
+  const barW = Math.max(8, chartW / Math.max(data.length, 1) - 8);
+
+  if (!hasData) {
+    return (
+      <View style={{ height: chartH + 24, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 13, color: COLORS.textMuted }}>Нет данных за этот период</Text>
+      </View>
+    );
+  }
 
   return (
     <View>
       <Svg width={chartW} height={chartH}>
         {data.map((d, i) => {
           const val = Number(d.amount) || 0;
-          const barH = Math.max(4, (val / maxVal) * (chartH - 20));
+          const barH = Math.max(4, (val / maxVal) * (chartH - 16));
           const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
-          const y = chartH - 20 - barH;
-          return <Rect key={i} x={x} y={y} width={barW} height={barH} rx={4} fill={COLORS.primary} opacity={0.85} />;
+          const y = chartH - barH;
+          const isMax = val === maxVal;
+          return (
+            <Rect
+              key={i} x={x} y={y} width={barW} height={barH} rx={5}
+              fill={isMax ? COLORS.primary : 'rgba(139,92,246,0.35)'}
+            />
+          );
         })}
       </Svg>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
-        {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => {
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 6 }}>
+        {data.map((d, i) => {
           const monthStr = typeof d.month === 'string' ? d.month : String(d.month || '');
           const parts = monthStr.split('-');
-          const label = monthNames[parseInt(parts[1] || '1', 10) - 1] || monthStr;
+          const monthIdx = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : parseInt(monthStr, 10) - 1;
+          const label = monthNames[monthIdx] || monthStr;
           return <Text key={i} style={{ fontSize: 10, color: COLORS.textSecondary }}>{label}</Text>;
         })}
       </View>
@@ -385,7 +406,7 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   emptyHint: { fontSize: 14, color: COLORS.textSecondary },
-  chartCard: { backgroundColor: '#1A1A2E', borderRadius: 16, padding: 16, height: 180 },
+  chartCard: { backgroundColor: COLORS.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.1)' },
   donutCard: { backgroundColor: '#1A1A2E', borderRadius: 16, padding: 16 },
   trialCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#1A1A2E', borderRadius: 16, padding: 16, marginBottom: 8 },
   trialDot: { width: 10, height: 10, borderRadius: 5 },
