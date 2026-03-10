@@ -11,6 +11,9 @@ import i18n from '../src/i18n';
 import { notificationsApi } from '../src/api/notifications';
 import { useAuthStore } from '../src/stores/authStore';
 import { usePaymentCardsStore } from '../src/stores/paymentCardsStore';
+import { useSettingsStore } from '../src/stores/settingsStore';
+import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
+import { schedulePaymentReminders } from '../src/utils/localNotifications';
 import { ErrorBoundary } from '../src/utils/ErrorBoundary';
 
 Notifications.setNotificationHandler({
@@ -49,14 +52,44 @@ const queryClient = new QueryClient({
   },
 });
 
+function LanguageLoader() {
+  const language = useSettingsStore((s) => s.language);
+  useEffect(() => {
+    if (language && i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
+  return null;
+}
+
 function DataLoader() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { setCards } = usePaymentCardsStore();
+  const { setSubscriptions, subscriptions } = useSubscriptionsStore();
+  const { reminderDays, notificationsEnabled } = useSettingsStore();
 
   useEffect(() => {
     if (!isAuthenticated) return;
+
+    // Load cards
     import('../src/api/cards').then(({ cardsApi }) => {
       cardsApi.getAll().then((res: any) => setCards(res.data || [])).catch(() => {});
+    });
+
+    // Load subscriptions and schedule local reminders
+    import('../src/api/subscriptions').then(({ subscriptionsApi }) => {
+      subscriptionsApi.getAll().then((res: any) => {
+        const subs = res.data || [];
+        setSubscriptions(subs);
+        if (notificationsEnabled) {
+          schedulePaymentReminders(subs, reminderDays);
+        }
+      }).catch(() => {
+        // Offline — use cached subscriptions from store
+        if (subscriptions.length > 0 && notificationsEnabled) {
+          schedulePaymentReminders(subscriptions, reminderDays);
+        }
+      });
     });
   }, [isAuthenticated]);
 
@@ -104,6 +137,7 @@ export default function RootLayout() {
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
             <StatusBar style="dark" />
+            <LanguageLoader />
             <DataLoader />
             <PushSetup />
             <Stack screenOptions={{ headerShown: false }}>
