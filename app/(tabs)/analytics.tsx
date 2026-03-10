@@ -8,16 +8,103 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { COLORS, CATEGORIES } from '../../src/constants';
-import { CartesianChart, Bar } from 'victory-native';
-import { Pie, type PieSliceData } from 'victory-native';
-import { LinearGradient, vec } from '@shopify/react-native-skia';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CHART_HEIGHT = 220;
+const CHART_HEIGHT = 180;
+
+// ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
+function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
+  const maxVal = Math.max(...data.map((d) => d.total), 1);
+  const barW = Math.max(12, (SCREEN_WIDTH - 120) / data.length - 6);
+  const chartW = SCREEN_WIDTH - 80;
+
+  return (
+    <View style={{ height: CHART_HEIGHT }}>
+      <Svg width={chartW} height={CHART_HEIGHT}>
+        {data.map((d, i) => {
+          const barH = Math.max(4, (d.total / maxVal) * (CHART_HEIGHT - 30));
+          const x = i * ((chartW) / data.length) + ((chartW / data.length) - barW) / 2;
+          const y = CHART_HEIGHT - 30 - barH;
+          return (
+            <React.Fragment key={i}>
+              <Rect x={x} y={y} width={barW} height={barH} rx={4} fill="#8B5CF6" opacity={0.85} />
+            </React.Fragment>
+          );
+        })}
+      </Svg>
+      {/* X labels */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
+        {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
+          <Text key={i} style={{ fontSize: 10, color: '#9CA3AF' }}>{d.month.slice(-2)}</Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// ─── Custom CategoryDonutChart ───────────────────────────────────────────────
+function CategoryDonutChart({ categories, total, avgLabel }: {
+  categories: { id: string; color: string; total: number }[];
+  total: number;
+  avgLabel: string;
+}) {
+  const size = 160;
+  const radius = 60;
+  const innerRadius = 40;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  if (!total || !isFinite(total)) return null;
+
+  let startAngle = -Math.PI / 2;
+  const slices = categories
+    .filter((c) => isFinite(c.total) && c.total > 0)
+    .map((cat) => {
+      const fraction = cat.total / total;
+      const sweep = fraction * 2 * Math.PI;
+      if (!isFinite(sweep) || sweep <= 0) return null;
+
+      const x1 = cx + radius * Math.cos(startAngle);
+      const y1 = cy + radius * Math.sin(startAngle);
+      const x2 = cx + radius * Math.cos(startAngle + sweep);
+      const y2 = cy + radius * Math.sin(startAngle + sweep);
+      const ix1 = cx + innerRadius * Math.cos(startAngle + sweep);
+      const iy1 = cy + innerRadius * Math.sin(startAngle + sweep);
+      const ix2 = cx + innerRadius * Math.cos(startAngle);
+      const iy2 = cy + innerRadius * Math.sin(startAngle);
+      const largeArc = sweep > Math.PI ? 1 : 0;
+
+      const d = [
+        `M ${x1} ${y1}`,
+        `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+        `L ${ix1} ${iy1}`,
+        `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2}`,
+        'Z',
+      ].join(' ');
+
+      startAngle += sweep;
+      return { d, color: cat.color };
+    }).filter(Boolean) as { d: string; color: string }[];
+
+  return (
+    <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 8 }}>
+      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {slices.map((slice, idx) => (
+          <SvgPath key={idx} d={slice.d} fill={slice.color} />
+        ))}
+      </Svg>
+      <View style={{ position: 'absolute', alignItems: 'center' }}>
+        <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFFFFF' }}>${Number(total).toFixed(0)}</Text>
+        <Text style={{ fontSize: 11, color: '#9CA3AF' }}>{avgLabel}</Text>
+      </View>
+    </View>
+  );
+}
 
 const CARD_BG = '#1A1A2E';
 const CARD_RADIUS = 16;
@@ -85,22 +172,25 @@ export default function AnalyticsScreen() {
   // Category breakdown
   const byCategory = byCategoryData.length > 0
     ? byCategoryData.map((d: any) => {
-        const cat = CATEGORIES.find((c) => c.id.toUpperCase() === d.category);
+        const cat = CATEGORIES.find((c) => c.id.toUpperCase() === (d.category || '').toUpperCase());
         return {
-          id: d.category,
-          label: d.category,
+          id: d.category || '',
+          label: cat?.label || d.category || '',
           emoji: cat?.emoji || '📦',
           color: cat?.color || '#757575',
-          total: d.total ?? d.amount ?? 0,
+          total: isFinite(Number(d.total ?? d.amount)) ? Number(d.total ?? d.amount) : 0,
           count: d.count ?? 0,
         };
-      })
+      }).filter((c) => c.total > 0)
     : CATEGORIES.map((cat) => {
         const catSubs = activeSubs.filter((s) => s.category?.toUpperCase() === cat.id.toUpperCase());
         return { ...cat, total: catSubs.reduce((sum, s) => sum + s.amount, 0), count: catSubs.length };
       }).filter((c) => c.count > 0);
 
   const categoryTotal = byCategory.reduce((sum, c) => sum + c.total, 0);
+
+  // Pie chart data (unused - kept for reference)
+  // const pieData = byCategory.map(cat => ({ value: cat.total, color: cat.color, label: cat.label }));
 
   // Top 5 most expensive
   const top5 = [...activeSubs]
@@ -113,8 +203,8 @@ export default function AnalyticsScreen() {
     : (() => {
         const map = new Map<string, { label: string; total: number }>();
         activeSubs.forEach((s) => {
-          const cardLabel = s.paymentCard
-            ? `${s.paymentCard.brand} ****${s.paymentCard.last4}`
+          const cardLabel = s.paymentCardId
+            ? `Card ****${s.paymentCardId.slice(-4)}`
             : t('common.no_card');
           const key = s.paymentCardId || 'unknown';
           const existing = map.get(key);
@@ -128,15 +218,6 @@ export default function AnalyticsScreen() {
       })();
 
   const cardMax = Math.max(...cardBreakdown.map((c: any) => c.total ?? c.amount ?? 0), 1);
-
-  // Pie chart data
-  const pieData: PieSliceData[] = byCategory.length > 0
-    ? byCategory.map((cat) => ({
-        value: cat.total,
-        color: cat.color,
-        label: cat.label,
-      }))
-    : [{ value: 1, color: '#757575', label: t('analytics.no_data') }];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -155,67 +236,22 @@ export default function AnalyticsScreen() {
           )}
         </ScrollView>
 
-        {/* 1. Monthly Bar Chart (Victory) */}
+        {/* 1. Monthly Bar Chart (custom SVG) */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{t('analytics.monthly_spend')}</Text>
           {monthlyData.length > 0 ? (
-            <View style={{ height: CHART_HEIGHT }}>
-              <CartesianChart
-                data={monthlyData}
-                xKey="month"
-                yKeys={['total']}
-                domainPadding={{ left: 20, right: 20, top: 20 }}
-                axisOptions={{
-                  font: null,
-                  tickCount: { x: Math.min(monthlyData.length, 6), y: 4 },
-                  formatXLabel: (val) => String(val).slice(-2),
-                  labelColor: '#9CA3AF',
-                  lineColor: 'rgba(255,255,255,0.1)',
-                }}
-              >
-                {({ points, chartBounds }) => (
-                  <Bar
-                    points={points.total}
-                    chartBounds={chartBounds}
-                    roundedCorners={{ topLeft: 6, topRight: 6 }}
-                    barWidth={Math.max(12, (SCREEN_WIDTH - 120) / monthlyData.length - 8)}
-                  >
-                    <LinearGradient
-                      start={vec(0, 0)}
-                      end={vec(0, CHART_HEIGHT)}
-                      colors={['#8B5CF6', '#6C47FF']}
-                    />
-                  </Bar>
-                )}
-              </CartesianChart>
-            </View>
+            <MonthlyBarChart data={monthlyData} />
           ) : (
             <Text style={styles.empty}>{t('analytics.no_data')}</Text>
           )}
         </View>
 
-        {/* 2. Category Donut Chart */}
+        {/* 2. Category Donut Chart (custom SVG) */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{t('analytics.by_category')}</Text>
           {byCategory.length > 0 ? (
             <>
-              <View style={styles.pieContainer}>
-                <View style={{ height: 200, width: 200 }}>
-                  <Pie.Chart
-                    data={pieData}
-                    innerRadius={55}
-                  >
-                    {({ slice }) => (
-                      <Pie.Slice key={slice.label} />
-                    )}
-                  </Pie.Chart>
-                </View>
-                <View style={styles.pieCenterLabel}>
-                  <Text style={styles.pieCenterAmount}>${Number(categoryTotal).toFixed(0)}</Text>
-                  <Text style={styles.pieCenterSub}>{t('analytics.avg_month')}</Text>
-                </View>
-              </View>
-              {/* Legend */}
+              <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
               <View style={styles.legendContainer}>
                 {byCategory.map((cat) => (
                   <View key={cat.id} style={styles.legendItem}>
