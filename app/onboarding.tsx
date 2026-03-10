@@ -789,7 +789,22 @@ export default function OnboardingScreen() {
         </View>
       )}
 
-      <Text style={styles.terms}>{t('onboarding.terms')}</Text>
+      <Text style={styles.terms}>
+        {t('onboarding.terms_prefix')}{' '}
+        <Text
+          style={[styles.terms, { color: COLORS.primary, textDecorationLine: 'underline' }]}
+          onPress={() => WebBrowser.openBrowserAsync('https://subradar.ai/legal/terms')}
+        >
+          {t('onboarding.terms_link')}
+        </Text>
+        {' '}{t('onboarding.terms_and')}{' '}
+        <Text
+          style={[styles.terms, { color: COLORS.primary, textDecorationLine: 'underline' }]}
+          onPress={() => WebBrowser.openBrowserAsync('https://subradar.ai/legal/privacy')}
+        >
+          {t('onboarding.privacy_link')}
+        </Text>
+      </Text>
     </View>,
   ];
 

@@ -220,7 +220,11 @@
     "showcase_analytics_title": "Pro分析",
     "showcase_analytics_desc": "支出予測、重複検出、節約提案",
     "showcase_team_title": "チームプラン",
-    "showcase_team_desc": "チームでサブスクリプションを一緒に管理"
+    "showcase_team_desc": "チームでサブスクリプションを一緒に管理",
+    "terms_prefix": "続行することで、以下に同意したことになります",
+    "terms_link": "利用規約",
+    "terms_and": "および",
+    "privacy_link": "プライバシーポリシー"
   },
   "analytics": {
     "title": "分析",

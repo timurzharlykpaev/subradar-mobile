@@ -220,7 +220,11 @@
     "showcase_analytics_title": "프로 분석",
     "showcase_analytics_desc": "지출 예측, 중복 감지, 절약 방법",
     "showcase_team_title": "팀 플랜",
-    "showcase_team_desc": "팀원과 함께 구독을 관리하세요"
+    "showcase_team_desc": "팀원과 함께 구독을 관리하세요",
+    "terms_prefix": "계속하면 다음에 동의하게 됩니다",
+    "terms_link": "이용약관",
+    "terms_and": "및",
+    "privacy_link": "개인정보 처리방침"
   },
   "analytics": {
     "title": "분석",

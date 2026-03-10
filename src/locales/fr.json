@@ -220,7 +220,11 @@
     "showcase_analytics_title": "Analytique Pro",
     "showcase_analytics_desc": "Prévisions de dépenses, doublons, économies",
     "showcase_team_title": "Plan équipe",
-    "showcase_team_desc": "Gérez vos abonnements en équipe"
+    "showcase_team_desc": "Gérez vos abonnements en équipe",
+    "terms_prefix": "En continuant, vous acceptez nos",
+    "terms_link": "Conditions d'utilisation",
+    "terms_and": "et",
+    "privacy_link": "Politique de confidentialité"
   },
   "analytics": {
     "title": "Analytique",

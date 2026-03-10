@@ -220,7 +220,11 @@
     "showcase_analytics_title": "Análises Pro",
     "showcase_analytics_desc": "Previsão de gastos, duplicados, economia",
     "showcase_team_title": "Plano equipe",
-    "showcase_team_desc": "Gerencie assinaturas junto com sua equipe"
+    "showcase_team_desc": "Gerencie assinaturas junto com sua equipe",
+    "terms_prefix": "Ao continuar, você concorda com os",
+    "terms_link": "Termos de uso",
+    "terms_and": "e",
+    "privacy_link": "Política de privacidade"
   },
   "analytics": {
     "title": "Análises",

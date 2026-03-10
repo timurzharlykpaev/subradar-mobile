@@ -220,7 +220,11 @@
     "showcase_analytics_title": "Analytics Pro",
     "showcase_analytics_desc": "Ausgabenprognose, Duplikate, Einsparungen",
     "showcase_team_title": "Team-Plan",
-    "showcase_team_desc": "Abonnements gemeinsam im Team verwalten"
+    "showcase_team_desc": "Abonnements gemeinsam im Team verwalten",
+    "terms_prefix": "Mit dem Fortfahren stimmen Sie unseren",
+    "terms_link": "Nutzungsbedingungen",
+    "terms_and": "und",
+    "privacy_link": "Datenschutzrichtlinien"
   },
   "analytics": {
     "title": "Analytik",

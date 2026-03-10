@@ -220,7 +220,11 @@
     "showcase_analytics_title": "高级分析",
     "showcase_analytics_desc": "支出预测、重复检测、节省建议",
     "showcase_team_title": "团队方案",
-    "showcase_team_desc": "与团队一起管理订阅"
+    "showcase_team_desc": "与团队一起管理订阅",
+    "terms_prefix": "继续即表示您同意我们的",
+    "terms_link": "使用条款",
+    "terms_and": "和",
+    "privacy_link": "隐私政策"
   },
   "analytics": {
     "title": "分析",

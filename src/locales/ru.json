@@ -220,7 +220,11 @@
     "showcase_analytics_title": "Аналитика Pro",
     "showcase_analytics_desc": "Прогноз расходов, дубликаты, экономия",
     "showcase_team_title": "Командный план",
-    "showcase_team_desc": "Управляй подписками вместе с командой"
+    "showcase_team_desc": "Управляй подписками вместе с командой",
+    "terms_prefix": "Продолжая, вы соглашаетесь с",
+    "terms_link": "Условиями использования",
+    "terms_and": "и",
+    "privacy_link": "Политикой конфиденциальности"
   },
   "analytics": {
     "title": "Аналитика",
