@@ -83,7 +83,7 @@ export default function DashboardScreen() {
 
   const totalMonthly = activeSubs.reduce((sum, s) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
-    return sum + s.amount * mult;
+    return sum + (Number(s.amount) || 0) * mult;
   }, 0);
 
   // Forecast: next 30 days
@@ -94,7 +94,7 @@ export default function DashboardScreen() {
     const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     return date >= now && date <= in30;
   });
-  const forecast30 = upcomingNext30.reduce((sum, s) => sum + s.amount, 0);
+  const forecast30 = Number(upcomingNext30.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)) || 0;
 
   // Potential savings: duplicate categories
   const categoryCounts = subscriptions.reduce((acc, s) => {
@@ -214,7 +214,7 @@ export default function DashboardScreen() {
             <View style={[styles.forecastCard, { flex: 1 }]}>
               <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
               <Text style={styles.forecastLabel}>{t('dashboard.next_30_days')}</Text>
-              <Text style={styles.forecastAmount}>{currency} {forecast30.toFixed(2)}</Text>
+              <Text style={styles.forecastAmount}>{currency} {(forecast30 || 0).toFixed(2)}</Text>
               <Text style={styles.forecastSub}>{upcomingNext30.length} {t('dashboard.subscriptions_label')}</Text>
             </View>
             <View style={[styles.forecastCard, { flex: 1 }]}>
