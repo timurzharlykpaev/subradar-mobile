@@ -149,77 +149,72 @@ function OpenAIIcon() {
 }
 
 const FLOAT_CARDS = [
-  { name: 'Netflix',  amount: '$15.99', color: '#1a0a0a', IconComponent: NetflixIcon,  x: -115, delay: 0,   duration: 3200, yPos: -75 },
-  { name: 'Spotify',  amount: '$9.99',  color: '#0a1a0f', IconComponent: SpotifyIcon,  x: 95,   delay: 400,  duration: 2800, yPos: -35 },
-  { name: 'iCloud',   amount: '$2.99',  color: '#0a0f1a', IconComponent: ICloudIcon,   x: -75,  delay: 800,  duration: 3600, yPos: 20  },
-  { name: 'YouTube',  amount: '$13.99', color: '#1a0a0a', IconComponent: YoutubeIcon,  x: 110,  delay: 200,  duration: 3000, yPos: 60  },
-  { name: 'ChatGPT',  amount: '$20.00', color: '#071a15', IconComponent: OpenAIIcon,   x: -125, delay: 600,  duration: 3400, yPos: 90  },
+  { name: 'Netflix',  amount: '$15.99', bg: '#FFEAEA', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: -80 },
+  { name: 'Spotify',  amount: '$9.99',  bg: '#EAFAF1', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 90,   delay: 400,  duration: 2900, yPos: -40 },
+  { name: 'iCloud',   amount: '$2.99',  bg: '#EAF2FF', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 15  },
+  { name: 'YouTube',  amount: '$13.99', bg: '#FFEAEA', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 55  },
+  { name: 'ChatGPT',  amount: '$20.00', bg: '#EAF7F4', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 88  },
 ];
 
-function FloatingCard({ name, amount, color, IconComponent, x, delay, duration, yPos }: {
-  name: string; amount: string; color: string; IconComponent: React.FC;
+function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos }: {
+  name: string; amount: string; bg: string; iconBg: string; IconComponent: React.FC;
   x: number; delay: number; duration: number; yPos: number;
 }) {
-  const entryY = useRef(new Animated.Value(40)).current;
+  const entryY = useRef(new Animated.Value(30)).current;
   const entryOpacity = useRef(new Animated.Value(0)).current;
-  const floatY = useRef(new Animated.Value(0)).current;
+  // Linear 0→1 progress mapped to sine — no jump at loop boundary
+  const progress = useRef(new Animated.Value(0)).current;
+
+  const floatY = progress.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: [0, -8, 0, 8, 0],
+  });
 
   useEffect(() => {
-    // Smooth entry
     Animated.parallel([
       Animated.timing(entryY, {
-        toValue: 0, duration: 700, delay,
+        toValue: 0, duration: 650, delay,
         easing: Easing.out(Easing.cubic), useNativeDriver: true,
       }),
       Animated.timing(entryOpacity, {
-        toValue: 1, duration: 700, delay,
+        toValue: 1, duration: 650, delay,
         easing: Easing.out(Easing.quad), useNativeDriver: true,
       }),
     ]).start(() => {
-      // Smooth sine-wave float — no jump at loop boundary
+      // Perfect loop: 0→1, outputRange[0]===outputRange[4] → no jump ever
       Animated.loop(
-        Animated.sequence([
-          Animated.timing(floatY, {
-            toValue: -9, duration: duration / 2,
-            easing: Easing.inOut(Easing.sin), useNativeDriver: true,
-          }),
-          Animated.timing(floatY, {
-            toValue: 9, duration: duration / 2,
-            easing: Easing.inOut(Easing.sin), useNativeDriver: true,
-          }),
-        ])
+        Animated.timing(progress, {
+          toValue: 1, duration,
+          easing: Easing.linear, useNativeDriver: true,
+        })
       ).start();
     });
   }, []);
-
-  const combinedY = Animated.add(entryY, floatY);
 
   return (
     <Animated.View style={{
       position: 'absolute',
       top: yPos,
-      transform: [{ translateX: x }, { translateY: combinedY }],
+      transform: [{ translateX: x }, { translateY: Animated.add(entryY, floatY) }],
       opacity: entryOpacity,
     }}>
       <View style={{
         flexDirection: 'row', alignItems: 'center', gap: 8,
-        backgroundColor: 'rgba(15,10,30,0.75)',
-        borderWidth: 1, borderColor: 'rgba(139,92,246,0.25)',
-        borderRadius: 18, paddingHorizontal: 12, paddingVertical: 9,
-        shadowColor: '#8B5CF6', shadowOpacity: 0.25, shadowRadius: 10,
-        shadowOffset: { width: 0, height: 4 }, elevation: 8,
+        backgroundColor: bg,
+        borderRadius: 18, paddingHorizontal: 11, paddingVertical: 8,
+        shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 }, elevation: 6,
       }}>
         <View style={{
           width: 30, height: 30, borderRadius: 9,
-          backgroundColor: color,
+          backgroundColor: iconBg,
           alignItems: 'center', justifyContent: 'center',
-          borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
         }}>
           <IconComponent />
         </View>
         <View>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff', letterSpacing: -0.2 }}>{name}</Text>
-          <Text style={{ fontSize: 10, color: 'rgba(180,165,220,0.8)', marginTop: 1 }}>{amount}/mo</Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: '#1a1a2e', letterSpacing: -0.2 }}>{name}</Text>
+          <Text style={{ fontSize: 10, color: '#666', marginTop: 1 }}>{amount}/mo</Text>
         </View>
       </View>
     </Animated.View>
@@ -648,11 +643,8 @@ export default function OnboardingScreen() {
 
       {!otpMode ? (
         <>
-          <Text style={{ fontSize: 26, fontWeight: '900', color: COLORS.text, textAlign: 'center', marginBottom: 4, letterSpacing: -0.5 }}>
+          <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.text, textAlign: 'center', marginBottom: 28, letterSpacing: -0.5 }}>
             SubRadar
-          </Text>
-          <Text style={{ fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', marginBottom: 24 }}>
-            {t('auth.sign_in')}
           </Text>
           {Platform.OS === 'ios' && (
             <TouchableOpacity style={styles.socialBtn} onPress={handleAppleLogin} disabled={loading}>
