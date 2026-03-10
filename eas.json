@@ -44,7 +44,7 @@
         "ascApiKeyIssuerId": "YOUR_ISSUER_ID",
         "ascApiKeyId": "YOUR_KEY_ID",
         "ascApiKeyPath": "./AuthKey.p8",
-        "appleTeamId": "YOUR_TEAM_ID"
+        "appleTeamId": "KH4TZU35XL"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
@@ -56,7 +56,7 @@
         "ascApiKeyIssuerId": "YOUR_ISSUER_ID",
         "ascApiKeyId": "YOUR_KEY_ID",
         "ascApiKeyPath": "./AuthKey.p8",
-        "appleTeamId": "YOUR_TEAM_ID"
+        "appleTeamId": "KH4TZU35XL"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
