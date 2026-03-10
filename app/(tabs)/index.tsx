@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
@@ -84,6 +85,24 @@ export default function DashboardScreen() {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
     return sum + s.amount * mult;
   }, 0);
+
+  // Forecast: next 30 days
+  const upcomingNext30 = subscriptions.filter((s) => {
+    if (!s.nextPaymentDate) return false;
+    const date = new Date(s.nextPaymentDate);
+    const now = new Date();
+    const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    return date >= now && date <= in30;
+  });
+  const forecast30 = upcomingNext30.reduce((sum, s) => sum + s.amount, 0);
+
+  // Potential savings: duplicate categories
+  const categoryCounts = subscriptions.reduce((acc, s) => {
+    if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return acc;
+    acc[s.category] = (acc[s.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const duplicateCategories = Object.entries(categoryCounts).filter(([, count]) => count > 1);
 
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
 
@@ -188,6 +207,41 @@ export default function DashboardScreen() {
           </View>
         )}
 
+        {/* Forecast Block */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('dashboard.forecast_title')}</Text>
+          <View style={styles.forecastRow}>
+            <View style={[styles.forecastCard, { flex: 1 }]}>
+              <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
+              <Text style={styles.forecastLabel}>{t('dashboard.next_30_days')}</Text>
+              <Text style={styles.forecastAmount}>{currency} {forecast30.toFixed(2)}</Text>
+              <Text style={styles.forecastSub}>{upcomingNext30.length} {t('dashboard.subscriptions_label')}</Text>
+            </View>
+            <View style={[styles.forecastCard, { flex: 1 }]}>
+              <Ionicons name="trending-up-outline" size={20} color={COLORS.success} />
+              <Text style={styles.forecastLabel}>{t('dashboard.per_year')}</Text>
+              <Text style={styles.forecastAmount}>{currency} {(totalMonthly * 12).toFixed(2)}</Text>
+              <Text style={styles.forecastSub}>{t('dashboard.annually')}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Potential Savings */}
+        {duplicateCategories.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.savingsCard}>
+              <Ionicons name="bulb-outline" size={22} color={COLORS.warning} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.savingsTitle}>{t('dashboard.potential_savings')}</Text>
+                <Text style={styles.savingsSub}>{duplicateCategories.length} {t('dashboard.possible_duplicates')}</Text>
+              </View>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/analytics')} style={styles.reviewBtn}>
+                <Text style={styles.reviewBtnText}>{t('dashboard.review')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {/* Monthly Trend Chart */}
         {monthlyTrend.length > 0 && monthlyTrend.some(d => d.amount > 0) && (
           <View style={styles.section}>
@@ -257,8 +311,45 @@ export default function DashboardScreen() {
             <Text style={styles.emptyHint}>{t('subscriptions.empty_hint')}</Text>
           </View>
         )}
+
+        {/* Quick Actions */}
+        <View style={[styles.section, { paddingBottom: 20 }]}>
+          <Text style={styles.sectionTitle}>{t('dashboard.quick_actions')}</Text>
+          <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+            <QuickAction
+              icon="add-circle-outline"
+              label={t('dashboard.add_subscription')}
+              onPress={() => router.push('/(tabs)/add')}
+              color={COLORS.primary}
+            />
+            <QuickAction
+              icon="document-text-outline"
+              label={t('dashboard.generate_report')}
+              onPress={() => router.push('/reports')}
+              color="#34D399"
+            />
+            <QuickAction
+              icon="star-outline"
+              label={t('dashboard.upgrade_pro')}
+              onPress={() => router.push('/paywall')}
+              color={COLORS.warning}
+            />
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function QuickAction({ icon, label, onPress, color }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void; color: string }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{ flex: 1, minWidth: '45%', backgroundColor: COLORS.card, borderRadius: 14, padding: 14, alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border }}
+    >
+      <Ionicons name={icon} size={24} color={color} />
+      <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.text, textAlign: 'center' }}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -418,4 +509,14 @@ const styles = StyleSheet.create({
   trialName: { fontSize: 15, fontWeight: '700', color: COLORS.text },
   trialMeta: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
   trialPrice: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary },
+  forecastRow: { flexDirection: 'row', gap: 10 },
+  forecastCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: COLORS.border, gap: 6 },
+  forecastLabel: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '600', marginTop: 4 },
+  forecastAmount: { fontSize: 20, fontWeight: '900', color: COLORS.text },
+  forecastSub: { fontSize: 11, color: COLORS.textMuted },
+  savingsCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: COLORS.border },
+  savingsTitle: { fontSize: 14, fontWeight: '700', color: COLORS.text },
+  savingsSub: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
+  reviewBtn: { backgroundColor: COLORS.primaryLight, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
+  reviewBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
 });

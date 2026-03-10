@@ -12,13 +12,17 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useSubscriptionsStore, FilterType } from '../../src/stores/subscriptionsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { COLORS, CATEGORIES } from '../../src/constants';
+import { usePlanLimits } from '../../src/hooks/usePlanLimits';
 
 export default function SubscriptionsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const { subsLimitReached } = usePlanLimits();
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchSubs = useCallback(async () => {
@@ -78,12 +82,24 @@ export default function SubscriptionsScreen() {
     ]);
   };
 
+  const handleAdd = () => {
+    if (subsLimitReached) {
+      router.push('/paywall');
+    }
+    // If not limit reached, FAB in _layout.tsx handles adding
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>{t('subscriptions.title')}</Text>
         <Text style={styles.count}>{subs.length} {t('subscriptions.total')}</Text>
+        {subsLimitReached && (
+          <TouchableOpacity onPress={handleAdd} style={styles.upgradeChip}>
+            <Text style={styles.upgradeChipText}>⭐ Upgrade</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Search */}
@@ -225,4 +241,14 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   emptyHint: { fontSize: 14, color: COLORS.textSecondary },
+  upgradeChip: {
+    marginLeft: 'auto',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  upgradeChipText: { fontSize: 12, fontWeight: '700', color: COLORS.primary },
 });

@@ -19,6 +19,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { COLORS, CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
 import { subscriptionsApi } from '../api/subscriptions';
 import { aiApi } from '../api/ai';
@@ -26,6 +27,7 @@ import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { VoiceRecorder } from './VoiceRecorder';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -74,6 +76,8 @@ const emptyForm = {
 
 export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { t } = useTranslation();
+  const router = useRouter();
+  const { subsLimitReached } = usePlanLimits();
   const [tab, setTab] = useState(0);
   const [form, setForm] = useState(emptyForm);
   const [aiText, setAiText] = useState('');
@@ -114,6 +118,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   }, [onClose]);
 
   const handleSave = useCallback(async () => {
+    if (subsLimitReached) {
+      onClose();
+      router.push('/paywall');
+      return;
+    }
     if (!form.name || !form.amount) {
       Alert.alert(t('add.required'), t('add.fill_required'));
       return;

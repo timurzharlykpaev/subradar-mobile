@@ -418,11 +418,16 @@ export default function OnboardingScreen() {
 
   const logoStyle = { transform: [{ scale: logoScale }], opacity: logoOpacity };
 
+  const navigateToApp = () => {
+    router.replace('/(tabs)');
+  };
+
   const finishAuth = (user: any, token: string) => {
     setCurrency(selectedCurrency);
     setUser(user, token);
     setOnboarded();
-    router.replace('/(tabs)');
+    // Go to "add first subscription" step (step 6)
+    setStep(6);
   };
 
   const handleGoogleToken = async (accessToken: string) => {
@@ -805,6 +810,27 @@ export default function OnboardingScreen() {
           {t('onboarding.privacy_link')}
         </Text>
       </Text>
+    </View>,
+
+    // Step 6: Add first subscription
+    <View key="first_sub" style={[styles.step, { alignItems: 'center', justifyContent: 'center', gap: 24 }]}>
+      <Text style={[styles.headline, { textAlign: 'center' }]}>{t('onboarding.first_sub_title')}</Text>
+      <Text style={[styles.subheadline, { textAlign: 'center' }]}>{t('onboarding.first_sub_subtitle')}</Text>
+      <TouchableOpacity
+        style={[styles.nextBtn, { width: '100%', alignItems: 'center' }]}
+        onPress={() => { router.replace('/(tabs)'); }}
+      >
+        <Text style={styles.nextBtnText}>📝 {t('onboarding.add_manually')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.nextBtn, { width: '100%', alignItems: 'center', backgroundColor: COLORS.surface2 }]}
+        onPress={() => { navigateToApp(); }}
+      >
+        <Text style={styles.nextBtnText}>🤖 {t('onboarding.add_with_ai')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigateToApp()}>
+        <Text style={{ fontSize: 15, color: COLORS.textSecondary, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
+      </TouchableOpacity>
     </View>,
   ];
 
