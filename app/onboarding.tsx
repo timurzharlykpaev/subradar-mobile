@@ -90,8 +90,8 @@ export default function OnboardingScreen() {
       if (accessToken) handleGoogleToken(accessToken);
     } else if (googleResponse?.type === 'error') {
       Alert.alert(
-        'Google Sign-In Error',
-        'Please set up iOS Client ID in Google Cloud Console (bundle: io.subradar.mobile). Use email sign-in for now.',
+        t('auth.google_signin_error'),
+        t('auth.google_setup_hint'),
       );
     }
   }, [googleResponse]);
@@ -131,7 +131,7 @@ export default function OnboardingScreen() {
       }
       finishAuth(user, jwt);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Google login failed');
+      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.google_login_failed'));
     } finally {
       setLoading(false);
     }
@@ -155,7 +155,7 @@ export default function OnboardingScreen() {
       finishAuth(user, jwt);
     } catch (e: any) {
       if (e.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert('Error', e?.response?.data?.message || 'Apple login failed');
+        Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.apple_login_failed'));
       }
     } finally {
       setLoading(false);
@@ -183,7 +183,7 @@ export default function OnboardingScreen() {
       setOtpTimer(60);
       setOtpCode('');
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Failed to send code');
+      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.failed_send_code'));
     } finally {
       setLoading(false);
     }
@@ -201,7 +201,7 @@ export default function OnboardingScreen() {
       }
       finishAuth(user, jwt);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Invalid code');
+      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.invalid_code'));
       setOtpCode('');
     } finally {
       setLoading(false);
@@ -236,7 +236,7 @@ export default function OnboardingScreen() {
       await authApi.sendMagicLink(email);
       setMagicSent(true);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Failed to send link');
+      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.failed_send_link'));
     } finally {
       setLoading(false);
     }

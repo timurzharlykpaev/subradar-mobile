@@ -116,7 +116,13 @@
     "trial_desc": "Free period before payment",
     "trial_end_date": "Trial ends",
     "add_subscription": "Add Subscription",
-    "no_card": "No card"
+    "no_card": "No card",
+    "name_placeholder": "Netflix, Spotify...",
+    "plan_placeholder": "Premium, Basic...",
+    "notes_placeholder": "Additional notes...",
+    "search_placeholder": "Netflix, LinkedIn Premium...",
+    "plans_count": "{{count}} plans",
+    "card_nickname_example": "My Visa"
   },
   "settings": {
     "title": "Settings",
@@ -176,7 +182,15 @@
     "enter_code": "Enter the code sent to",
     "verify": "Verify",
     "resend_code": "Resend Code",
-    "resend_in": "Resend in {{seconds}}s"
+    "resend_in": "Resend in {{seconds}}s",
+    "error_title": "Error",
+    "google_signin_error": "Google Sign-In Error",
+    "google_setup_hint": "Please set up iOS Client ID in Google Cloud Console (bundle: io.subradar.mobile). Use email sign-in for now.",
+    "google_login_failed": "Google login failed",
+    "apple_login_failed": "Apple login failed",
+    "failed_send_code": "Failed to send code",
+    "invalid_code": "Invalid code",
+    "failed_send_link": "Failed to send link"
   },
   "landing": {
     "hero_title": "Know exactly where your money goes",
@@ -230,7 +244,9 @@
     "duplicates": "Possible Duplicates",
     "no_duplicates": "No duplicate subscriptions found",
     "upgrade_savings": "Upgrade to Pro to see savings opportunities",
-    "top5": "Top 5 Most Expensive"
+    "top5": "Top 5 Most Expensive",
+    "card_label": "Card {{number}}",
+    "duplicate_label": "Duplicate {{number}}"
   },
   "subscription": {
     "billing_day": "Billing Day",
@@ -293,7 +309,8 @@
     "period_month": "Current month",
     "period_quarter": "Last 3 months",
     "period_year": "This year",
-    "period_label": "Period: {{period}}"
+    "period_label": "Period: {{period}}",
+    "report_suffix": "Report"
   },
   "edit_profile": {
     "title": "Edit Profile",

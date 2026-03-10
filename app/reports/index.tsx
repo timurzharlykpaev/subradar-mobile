@@ -93,7 +93,7 @@ export default function ReportsScreen() {
         </View>
 
         <View style={styles.preview}>
-          <Text style={styles.previewTitle}>📄 {reportTypeLabel} Report</Text>
+          <Text style={styles.previewTitle}>📄 {reportTypeLabel} {t('reports.report_suffix')}</Text>
           <Text style={styles.previewDesc}>{getDescKey()}</Text>
           <Text style={styles.previewRange}>
             {t('reports.period_label', { period: getPeriodLabel() })}

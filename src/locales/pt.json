@@ -116,7 +116,13 @@
     "trial_desc": "Período gratuito antes da cobrança",
     "trial_end_date": "Fim do teste",
     "add_subscription": "Adicionar Assinatura",
-    "no_card": "Sem cartão"
+    "no_card": "Sem cartão",
+    "name_placeholder": "Netflix, Spotify...",
+    "plan_placeholder": "Premium, Basic...",
+    "notes_placeholder": "Notas adicionais...",
+    "search_placeholder": "Netflix, LinkedIn Premium...",
+    "plans_count": "{{count}} planos",
+    "card_nickname_example": "Meu Visa"
   },
   "settings": {
     "title": "Configurações",
@@ -176,7 +182,15 @@
     "enter_code": "Digite o código enviado para",
     "verify": "Verificar",
     "resend_code": "Reenviar código",
-    "resend_in": "Reenviar em {{seconds}}s"
+    "resend_in": "Reenviar em {{seconds}}s",
+    "error_title": "Erro",
+    "google_signin_error": "Erro de login do Google",
+    "google_setup_hint": "Configure o iOS Client ID no Google Cloud Console (bundle: io.subradar.mobile). Use o login por email por enquanto.",
+    "google_login_failed": "Falha no login do Google",
+    "apple_login_failed": "Falha no login da Apple",
+    "failed_send_code": "Não foi possível enviar o código",
+    "invalid_code": "Código inválido",
+    "failed_send_link": "Não foi possível enviar o link"
   },
   "landing": {
     "hero_title": "Saiba exatamente para onde vai seu dinheiro",
@@ -230,7 +244,9 @@
     "duplicates": "Possíveis Duplicados",
     "no_duplicates": "Nenhuma assinatura duplicada encontrada",
     "upgrade_savings": "Faça upgrade para o Pro para ver oportunidades de economia",
-    "top5": "Top 5 Mais Caras"
+    "top5": "Top 5 Mais Caras",
+    "card_label": "Cartão {{number}}",
+    "duplicate_label": "Duplicata {{number}}"
   },
   "subscription": {
     "billing_day": "Dia de cobrança",
@@ -293,7 +309,8 @@
     "period_month": "Mês atual",
     "period_quarter": "Últimos 3 meses",
     "period_year": "Este ano",
-    "period_label": "Período: {{period}}"
+    "period_label": "Período: {{period}}",
+    "report_suffix": "Relatório"
   },
   "edit_profile": {
     "title": "Editar Perfil",

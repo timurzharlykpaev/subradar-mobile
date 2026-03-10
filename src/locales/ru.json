@@ -116,7 +116,13 @@
     "trial_desc": "Бесплатный период перед оплатой",
     "trial_end_date": "Триал заканчивается",
     "add_subscription": "Добавить подписку",
-    "no_card": "Без карты"
+    "no_card": "Без карты",
+    "name_placeholder": "Netflix, Spotify...",
+    "plan_placeholder": "Premium, Basic...",
+    "notes_placeholder": "Дополнительные заметки...",
+    "search_placeholder": "Netflix, LinkedIn Premium...",
+    "plans_count": "{{count}} планов",
+    "card_nickname_example": "Моя Visa"
   },
   "settings": {
     "title": "Настройки",
@@ -176,7 +182,15 @@
     "enter_code": "Введите код, отправленный на",
     "verify": "Подтвердить",
     "resend_code": "Отправить повторно",
-    "resend_in": "Повторно через {{seconds}} сек"
+    "resend_in": "Повторно через {{seconds}} сек",
+    "error_title": "Ошибка",
+    "google_signin_error": "Ошибка входа через Google",
+    "google_setup_hint": "Настройте iOS Client ID в Google Cloud Console (bundle: io.subradar.mobile). Пока используйте вход по email.",
+    "google_login_failed": "Не удалось войти через Google",
+    "apple_login_failed": "Не удалось войти через Apple",
+    "failed_send_code": "Не удалось отправить код",
+    "invalid_code": "Неверный код",
+    "failed_send_link": "Не удалось отправить ссылку"
   },
   "landing": {
     "hero_title": "Знайте, куда уходят деньги",
@@ -230,7 +244,9 @@
     "duplicates": "Возможные дубликаты",
     "no_duplicates": "Дубликатов не найдено",
     "upgrade_savings": "Обновите до Pro для анализа экономии",
-    "top5": "Топ-5 самых дорогих"
+    "top5": "Топ-5 самых дорогих",
+    "card_label": "Карта {{number}}",
+    "duplicate_label": "Дубликат {{number}}"
   },
   "subscription": {
     "billing_day": "День списания",
@@ -293,7 +309,8 @@
     "period_month": "Текущий месяц",
     "period_quarter": "Последние 3 месяца",
     "period_year": "Этот год",
-    "period_label": "Период: {{period}}"
+    "period_label": "Период: {{period}}",
+    "report_suffix": "Отчёт"
   },
   "edit_profile": {
     "title": "Редактировать профиль",

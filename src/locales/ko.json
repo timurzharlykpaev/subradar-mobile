@@ -116,7 +116,13 @@
     "trial_desc": "결제 전 무료 기간",
     "trial_end_date": "체험 종료일",
     "add_subscription": "구독 추가",
-    "no_card": "카드 없음"
+    "no_card": "카드 없음",
+    "name_placeholder": "Netflix, Spotify...",
+    "plan_placeholder": "Premium, Basic...",
+    "notes_placeholder": "추가 메모...",
+    "search_placeholder": "Netflix, LinkedIn Premium...",
+    "plans_count": "{{count}}개 플랜",
+    "card_nickname_example": "내 Visa"
   },
   "settings": {
     "title": "설정",
@@ -176,7 +182,15 @@
     "enter_code": "전송된 코드를 입력하세요",
     "verify": "확인",
     "resend_code": "코드 재전송",
-    "resend_in": "{{seconds}}초 후 재전송"
+    "resend_in": "{{seconds}}초 후 재전송",
+    "error_title": "오류",
+    "google_signin_error": "Google 로그인 오류",
+    "google_setup_hint": "Google Cloud Console에서 iOS Client ID를 설정하세요 (bundle: io.subradar.mobile). 현재는 이메일 로그인을 사용하세요.",
+    "google_login_failed": "Google 로그인 실패",
+    "apple_login_failed": "Apple 로그인 실패",
+    "failed_send_code": "코드 전송 실패",
+    "invalid_code": "잘못된 코드",
+    "failed_send_link": "링크 전송 실패"
   },
   "landing": {
     "hero_title": "돈이 어디로 가는지 정확히 파악하세요",
@@ -230,7 +244,9 @@
     "duplicates": "중복 가능성",
     "no_duplicates": "중복 구독이 없습니다",
     "upgrade_savings": "절약 기회를 보려면 Pro로 업그레이드하세요",
-    "top5": "가장 비싼 구독 Top 5"
+    "top5": "가장 비싼 구독 Top 5",
+    "card_label": "카드 {{number}}",
+    "duplicate_label": "중복 {{number}}"
   },
   "subscription": {
     "billing_day": "결제일",
@@ -293,7 +309,8 @@
     "period_month": "이번 달",
     "period_quarter": "최근 3개월",
     "period_year": "올해",
-    "period_label": "기간: {{period}}"
+    "period_label": "기간: {{period}}",
+    "report_suffix": "보고서"
   },
   "edit_profile": {
     "title": "프로필 편집",

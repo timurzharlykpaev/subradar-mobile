@@ -243,7 +243,7 @@ export default function AnalyticsScreen() {
                   <Text style={styles.cardBreakdownIcon}>💳</Text>
                   <View style={{ flex: 1, gap: 4 }}>
                     <View style={styles.cardBreakdownLabelRow}>
-                      <Text style={styles.cardBreakdownLabel} numberOfLines={1}>{card.label || card.nickname || `Card ${i + 1}`}</Text>
+                      <Text style={styles.cardBreakdownLabel} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
                       <Text style={styles.cardBreakdownAmount}>${Number(amount).toFixed(2)}</Text>
                     </View>
                     <View style={styles.barBg}>
@@ -314,7 +314,7 @@ export default function AnalyticsScreen() {
                     <View key={i} style={styles.duplicateRow}>
                       <Text style={styles.duplicateIcon}>⚠️</Text>
                       <Text style={styles.duplicateText} numberOfLines={2}>
-                        {dup.name || dup.names?.join(' & ') || `Duplicate ${i + 1}`}
+                        {dup.name || dup.names?.join(' & ') || t('analytics.duplicate_label', { number: i + 1 })}
                       </Text>
                     </View>
                   ))}

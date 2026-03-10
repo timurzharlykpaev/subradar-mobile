@@ -147,7 +147,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                     style={styles.input}
                     value={form.name}
                     onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
-                    placeholder="Netflix, Spotify..."
+                    placeholder={t('add.name_placeholder')}
                     placeholderTextColor={COLORS.textMuted}
                   />
                 </Field>
@@ -280,7 +280,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                         style={styles.input}
                         value={newCard.nickname}
                         onChangeText={(v) => setNewCard((c) => ({ ...c, nickname: v }))}
-                        placeholder="My Visa"
+                        placeholder={t('add.card_nickname_example')}
                         placeholderTextColor={COLORS.textMuted}
                       />
                     </Field>

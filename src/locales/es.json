@@ -116,7 +116,13 @@
     "trial_desc": "Período gratuito antes del cobro",
     "trial_end_date": "Fin de la prueba",
     "add_subscription": "Agregar suscripción",
-    "no_card": "Sin tarjeta"
+    "no_card": "Sin tarjeta",
+    "name_placeholder": "Netflix, Spotify...",
+    "plan_placeholder": "Premium, Basic...",
+    "notes_placeholder": "Notas adicionales...",
+    "search_placeholder": "Netflix, LinkedIn Premium...",
+    "plans_count": "{{count}} planes",
+    "card_nickname_example": "Mi Visa"
   },
   "settings": {
     "title": "Configuración",
@@ -176,7 +182,15 @@
     "enter_code": "Ingresa el código enviado a",
     "verify": "Verificar",
     "resend_code": "Reenviar código",
-    "resend_in": "Reenviar en {{seconds}}s"
+    "resend_in": "Reenviar en {{seconds}}s",
+    "error_title": "Error",
+    "google_signin_error": "Error de inicio de sesión con Google",
+    "google_setup_hint": "Configure el iOS Client ID en Google Cloud Console (bundle: io.subradar.mobile). Use el inicio de sesión por email por ahora.",
+    "google_login_failed": "Error al iniciar sesión con Google",
+    "apple_login_failed": "Error al iniciar sesión con Apple",
+    "failed_send_code": "No se pudo enviar el código",
+    "invalid_code": "Código inválido",
+    "failed_send_link": "No se pudo enviar el enlace"
   },
   "landing": {
     "hero_title": "Sabe exactamente a dónde va tu dinero",
@@ -230,7 +244,9 @@
     "duplicates": "Posibles duplicados",
     "no_duplicates": "No se encontraron suscripciones duplicadas",
     "upgrade_savings": "Mejora a Pro para ver oportunidades de ahorro",
-    "top5": "Top 5 más caras"
+    "top5": "Top 5 más caras",
+    "card_label": "Tarjeta {{number}}",
+    "duplicate_label": "Duplicado {{number}}"
   },
   "subscription": {
     "billing_day": "Día de cobro",
@@ -293,7 +309,8 @@
     "period_month": "Mes actual",
     "period_quarter": "Últimos 3 meses",
     "period_year": "Este año",
-    "period_label": "Período: {{period}}"
+    "period_label": "Período: {{period}}",
+    "report_suffix": "Informe"
   },
   "edit_profile": {
     "title": "Editar perfil",

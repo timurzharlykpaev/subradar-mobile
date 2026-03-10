@@ -235,7 +235,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     style={styles.input}
                     value={form.name}
                     onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
-                    placeholder="Netflix, Spotify..."
+                    placeholder={t('add.name_placeholder')}
                     placeholderTextColor={COLORS.textMuted}
                   />
                 </Field>
@@ -310,7 +310,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     style={styles.input}
                     value={form.currentPlan}
                     onChangeText={(v) => setForm((f) => ({ ...f, currentPlan: v }))}
-                    placeholder="Premium, Basic..."
+                    placeholder={t('add.plan_placeholder')}
                     placeholderTextColor={COLORS.textMuted}
                   />
                 </Field>
@@ -357,7 +357,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     style={[styles.input, styles.multiline]}
                     value={form.notes}
                     onChangeText={(v) => setForm((f) => ({ ...f, notes: v }))}
-                    placeholder="Additional notes..."
+                    placeholder={t('add.notes_placeholder')}
                     placeholderTextColor={COLORS.textMuted}
                     multiline
                     numberOfLines={3}
@@ -412,7 +412,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     style={[styles.input, { flex: 1 }]}
                     value={aiQuery}
                     onChangeText={setAiQuery}
-                    placeholder="Netflix, LinkedIn Premium..."
+                    placeholder={t('add.search_placeholder')}
                     placeholderTextColor={COLORS.textMuted}
                     returnKeyType="search"
                     onSubmitEditing={handleAILookup}
@@ -437,7 +437,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     <View style={{ flex: 1 }}>
                       <Text style={styles.foundServiceName}>{foundService.name}</Text>
                       <Text style={styles.foundServiceMeta}>
-                        {foundService.plans?.length ?? 0} plans · {t('add.form_filled')} ✓
+                        {t('add.plans_count', { count: foundService.plans?.length ?? 0 })} · {t('add.form_filled')} ✓
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => { setFoundService(null); setAiQuery(''); }}>
@@ -509,7 +509,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 <VoiceRecorder onRecordingComplete={handleVoiceDone} />
                 <TouchableOpacity
                   style={[styles.saveBtn, { marginTop: 8 }]}
-                  onPress={() => Alert.alert('AI', 'Processing... (connect API)')}
+                  onPress={() => Alert.alert(t('add.ai_assistant'), t('add.ai_processing'))}
                 >
                   <Text style={styles.saveBtnText}>✨ {t('add.recognize')}</Text>
                 </TouchableOpacity>
@@ -534,7 +534,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 {screenshotUri && (
                   <TouchableOpacity
                     style={styles.saveBtn}
-                    onPress={() => Alert.alert('AI', 'Processing screenshot... (connect API)')}
+                    onPress={() => Alert.alert(t('add.ai_assistant'), t('add.ai_screenshot'))}
                   >
                     <Text style={styles.saveBtnText}>✨ {t('add.parse_screenshot')}</Text>
                   </TouchableOpacity>
