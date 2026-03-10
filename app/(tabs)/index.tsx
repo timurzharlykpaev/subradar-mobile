@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -18,8 +19,7 @@ import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
 import { COLORS, CATEGORIES } from '../../src/constants';
 import { UpcomingPaymentCard } from '../../src/components/UpcomingPaymentCard';
-import { CartesianChart, Bar } from 'victory-native';
-import Svg, { Path as SvgPath } from 'react-native-svg';
+import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -183,35 +183,7 @@ export default function DashboardScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('dashboard.monthly_trend')}</Text>
             <View style={styles.chartCard}>
-              <CartesianChart
-                data={monthlyTrend.map((item, idx) => ({ x: idx, y: Number(item.amount) || 0, label: item.month }))}
-                xKey="x"
-                yKeys={['y']}
-                domainPadding={{ left: 20, right: 20, top: 10 }}
-                axisOptions={{
-                  font: null,
-                  tickCount: { x: monthlyTrend.length, y: 4 },
-                  formatXLabel: (val: number) => {
-                    const idx = Math.round(val);
-                    if (idx < 0 || idx >= monthlyTrend.length) return '';
-                    const month = monthlyTrend[idx]?.month;
-                    if (!month || typeof month !== 'string') return '';
-                    const parts = month.split('-');
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    return monthNames[parseInt(parts[1] || '1', 10) - 1] || month;
-                  },
-                  labelColor: COLORS.textSecondary,
-                }}
-              >
-                {({ points, chartBounds }) => (
-                  <Bar
-                    points={points.y}
-                    chartBounds={chartBounds}
-                    color={COLORS.primary}
-                    roundedCorners={{ topLeft: 6, topRight: 6 }}
-                  />
-                )}
-              </CartesianChart>
+              <MonthlyBarChart data={monthlyTrend} />
             </View>
           </View>
         )}
@@ -285,6 +257,37 @@ function StatCard({ label, value, color }: { label: string; value: number; color
     <View style={[styles.statCard, { borderTopColor: color }]}>
       <Text style={[styles.statValue, { color }]}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }) {
+  const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
+  const chartW = SCREEN_WIDTH - 80;
+  const chartH = 140;
+  const barW = Math.max(10, chartW / data.length - 6);
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  return (
+    <View>
+      <Svg width={chartW} height={chartH}>
+        {data.map((d, i) => {
+          const val = Number(d.amount) || 0;
+          const barH = Math.max(4, (val / maxVal) * (chartH - 20));
+          const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
+          const y = chartH - 20 - barH;
+          return <Rect key={i} x={x} y={y} width={barW} height={barH} rx={4} fill={COLORS.primary} opacity={0.85} />;
+        })}
+      </Svg>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
+        {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => {
+          const parts = (d.month || '').split('-');
+          const label = monthNames[parseInt(parts[1] || '1', 10) - 1] || d.month;
+          return <Text key={i} style={{ fontSize: 10, color: COLORS.textSecondary }}>{label}</Text>;
+        })}
+      </View>
     </View>
   );
 }
