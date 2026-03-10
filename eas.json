@@ -16,10 +16,12 @@
         "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1"
       },
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "autoIncrement": true
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "autoIncrement": true
       }
     },
     "production": {
@@ -31,32 +33,34 @@
         "autoIncrement": true
       },
       "android": {
-        "autoIncrement": true,
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "autoIncrement": true
       }
     }
   },
   "submit": {
-    "production": {
+    "preview": {
       "ios": {
-        "appleId": "timurzharlykpaev@gmail.com",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+        "ascApiKeyIssuerId": "YOUR_ISSUER_ID",
+        "ascApiKeyId": "YOUR_KEY_ID",
+        "ascApiKeyPath": "./AuthKey.p8",
+        "appleTeamId": "YOUR_TEAM_ID"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
         "track": "internal"
       }
     },
-    "preview": {
+    "production": {
       "ios": {
-        "appleId": "timurzharlykpaev@gmail.com",
-        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+        "ascApiKeyIssuerId": "YOUR_ISSUER_ID",
+        "ascApiKeyId": "YOUR_KEY_ID",
+        "ascApiKeyPath": "./AuthKey.p8",
+        "appleTeamId": "YOUR_TEAM_ID"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
-        "track": "internal"
+        "track": "production"
       }
     }
   }

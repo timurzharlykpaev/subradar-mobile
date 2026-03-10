@@ -1,4 +1,4 @@
-name: Build Dev (TestFlight + Play Internal)
+name: Build Dev → TestFlight Internal + Play Internal
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
-    name: iOS Preview Build → TestFlight
+  build-and-submit-ios:
+    name: iOS → TestFlight (Internal)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,19 +20,23 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build iOS (preview → TestFlight internal)
-        run: eas build --platform ios --profile preview --non-interactive --no-wait
+      - name: Build iOS preview
+        run: eas build --platform ios --profile preview --non-interactive
         env:
           EXPO_PUBLIC_API_URL: https://api-dev.subradar.ai/api/v1
 
-  build-android:
-    name: Android Preview Build → Play Internal
+      - name: Submit to TestFlight
+        run: eas submit --platform ios --profile preview --latest --non-interactive
+        env:
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+
+  build-and-submit-android:
+    name: Android → Play Internal Testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,13 +49,18 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build Android (preview APK → Play Internal)
-        run: eas build --platform android --profile preview --non-interactive --no-wait
+      - name: Write Google Service Account
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > google-service-account.json
+
+      - name: Build Android preview
+        run: eas build --platform android --profile preview --non-interactive
         env:
           EXPO_PUBLIC_API_URL: https://api-dev.subradar.ai/api/v1
+
+      - name: Submit to Play Internal Testing
+        run: eas submit --platform android --profile preview --latest --non-interactive
