@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
 import { COLORS } from '../../src/constants';
 
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+function TabIcon({ name, focused }: { name: keyof typeof Ionicons.glyphMap; focused: boolean }) {
   return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>
+    <Ionicons
+      name={focused ? name : (`${name}-outline` as keyof typeof Ionicons.glyphMap)}
+      size={24}
+      color={focused ? COLORS.primary : COLORS.textMuted}
+    />
   );
 }
 
@@ -31,14 +36,14 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: t('tabs.home'),
-            tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+            tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="subscriptions"
           options={{
             title: t('tabs.subs'),
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
+            tabBarIcon: ({ focused }) => <TabIcon name="layers" focused={focused} />,
           }}
         />
         <Tabs.Screen
@@ -51,7 +56,7 @@ export default function TabsLayout() {
                 style={styles.addBtnWrapper}
               >
                 <View style={styles.addBtn}>
-                  <Text style={styles.addBtnText}>＋</Text>
+                  <Ionicons name="add" size={28} color="#FFF" />
                 </View>
               </TouchableOpacity>
             ),
@@ -61,14 +66,14 @@ export default function TabsLayout() {
           name="analytics"
           options={{
             title: t('tabs.analytics'),
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📈" focused={focused} />,
+            tabBarIcon: ({ focused }) => <TabIcon name="bar-chart" focused={focused} />,
           }}
         />
         <Tabs.Screen
           name="settings"
           options={{
             title: t('tabs.settings'),
-            tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+            tabBarIcon: ({ focused }) => <TabIcon name="settings" focused={focused} />,
           }}
         />
       </Tabs>
@@ -83,11 +88,16 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: COLORS.surface,
-    borderTopColor: COLORS.border,
-    height: 80,
-    paddingBottom: 16,
-    paddingTop: 8,
+    backgroundColor: '#0F0F1A',
+    borderTopWidth: 0,
+    height: 84,
+    paddingBottom: 20,
+    paddingTop: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 20,
   },
   tabLabel: {
     fontSize: 10,
@@ -107,7 +117,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
-  addBtnText: { color: '#FFF', fontSize: 24, fontWeight: '300' },
   addBtnWrapper: {
     flex: 1,
     alignItems: 'center',

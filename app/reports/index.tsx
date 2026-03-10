@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../src/constants';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ReportsScreen() {
   const router = useRouter();
@@ -93,7 +94,10 @@ export default function ReportsScreen() {
         </View>
 
         <View style={styles.preview}>
-          <Text style={styles.previewTitle}>📄 {reportTypeLabel} {t('reports.report_suffix')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="document-text" size={16} color={COLORS.text} />
+            <Text style={styles.previewTitle}>{reportTypeLabel} {t('reports.report_suffix')}</Text>
+          </View>
           <Text style={styles.previewDesc}>{getDescKey()}</Text>
           <Text style={styles.previewRange}>
             {t('reports.period_label', { period: getPeriodLabel() })}

@@ -16,6 +16,7 @@ import { useSubscriptionsStore, FilterType } from '../../src/stores/subscription
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { COLORS, CATEGORIES } from '../../src/constants';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function SubscriptionsScreen() {
   const { t } = useTranslation();
@@ -88,7 +89,7 @@ export default function SubscriptionsScreen() {
 
       {/* Search */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Ionicons name="search-outline" size={16} color={COLORS.textMuted} />
         <TextInput
           style={styles.searchInput}
           value={searchQuery}
@@ -98,7 +99,7 @@ export default function SubscriptionsScreen() {
         />
         {searchQuery ? (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Text style={styles.clearIcon}>✕</Text>
+            <Ionicons name="close-circle" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
         ) : null}
       </View>
@@ -140,7 +141,8 @@ export default function SubscriptionsScreen() {
               ]}
               onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
             >
-              <Text>{cat.emoji} {cat.label}</Text>
+              <View style={[styles.catDot, { backgroundColor: cat.color }]} />
+              <Text style={[styles.catLabel, selectedCategory === cat.id && { color: '#FFF' }]}>{cat.label}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -161,7 +163,7 @@ export default function SubscriptionsScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📭</Text>
+            <Ionicons name="mail-open-outline" size={48} color={COLORS.textMuted} />
             <Text style={styles.emptyText}>{t('subscriptions.empty')}</Text>
             <Text style={styles.emptyHint}>{t('subscriptions.empty_hint')}</Text>
           </View>
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     marginBottom: 12,
   },
-  searchIcon: { fontSize: 16 },
+  searchIcon: { fontSize: 16 }, // kept for compatibility
   searchInput: { flex: 1, fontSize: 15, color: COLORS.text },
   clearIcon: { fontSize: 14, color: COLORS.textMuted, padding: 4 },
   filtersScroll: { maxHeight: 48 },
@@ -213,6 +215,9 @@ const styles = StyleSheet.create({
   filterText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
   filterTextActive: { color: '#FFF' },
   catChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -220,9 +225,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  catDot: { width: 8, height: 8, borderRadius: 4 },
+  catLabel: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
   list: { padding: 20, paddingTop: 8 },
   empty: { alignItems: 'center', paddingTop: 80, gap: 8 },
-  emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   emptyHint: { fontSize: 14, color: COLORS.textSecondary },
 });

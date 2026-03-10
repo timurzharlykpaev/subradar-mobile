@@ -17,6 +17,7 @@ import { subscriptionsApi } from '../../src/api/subscriptions';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
+import { Ionicons } from '@expo/vector-icons';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
 import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
 
@@ -109,10 +110,10 @@ export default function SubscriptionDetailScreen() {
           </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.editBtn} onPress={() => setEditVisible(true)}>
-              <Text style={styles.editBtnText}>✏️</Text>
+              <Ionicons name="pencil" size={18} color="#FFF" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-              <Text style={styles.deleteBtnText}>🗑</Text>
+              <Ionicons name="trash-outline" size={18} color={COLORS.error} />
             </TouchableOpacity>
           </View>
         </View>
@@ -285,7 +286,11 @@ const styles = StyleSheet.create({
   backBtn: { padding: 8 },
   backBtnText: { fontSize: 24, color: COLORS.primary },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  editBtn: { padding: 8 },
+  editBtn: {
+    padding: 8,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+  },
   editBtnText: { fontSize: 20 },
   deleteBtn: { padding: 8 },
   deleteBtnText: { fontSize: 20 },

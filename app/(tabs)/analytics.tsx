@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
@@ -256,7 +257,7 @@ export default function AnalyticsScreen() {
                 {byCategory.map((cat) => (
                   <View key={cat.id} style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                    <Text style={styles.legendLabel} numberOfLines={1}>{cat.emoji} {cat.label}</Text>
+                    <Text style={styles.legendLabel} numberOfLines={1}>{cat.label}</Text>
                     <Text style={styles.legendPercent}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
                     <Text style={styles.legendAmount}>${Number(cat.total).toFixed(0)}</Text>
                   </View>
@@ -276,7 +277,7 @@ export default function AnalyticsScreen() {
               const amount = card.total ?? card.amount ?? 0;
               return (
                 <View key={card.label || i} style={styles.cardBreakdownRow}>
-                  <Text style={styles.cardBreakdownIcon}>💳</Text>
+                  <Ionicons name="card-outline" size={20} color={COLORS.textMuted} style={styles.cardBreakdownIonicon} />
                   <View style={{ flex: 1, gap: 4 }}>
                     <View style={styles.cardBreakdownLabelRow}>
                       <Text style={styles.cardBreakdownLabel} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
@@ -323,7 +324,7 @@ export default function AnalyticsScreen() {
             </View>
           ) : (
             <View style={styles.lockedContainer}>
-              <Text style={styles.lockIcon}>🔒</Text>
+              <Ionicons name="lock-closed" size={32} color={COLORS.primary} />
               <Text style={styles.lockedText}>{t('analytics.upgrade_forecast')}</Text>
             </View>
           )}
@@ -361,7 +362,7 @@ export default function AnalyticsScreen() {
             </>
           ) : (
             <View style={styles.lockedContainer}>
-              <Text style={styles.lockIcon}>🔒</Text>
+              <Ionicons name="lock-closed" size={32} color={COLORS.primary} />
               <Text style={styles.lockedText}>{t('analytics.upgrade_savings')}</Text>
             </View>
           )}
@@ -378,7 +379,7 @@ export default function AnalyticsScreen() {
                 <View key={sub.id} style={styles.top5Row}>
                   <Text style={styles.top5Rank}>{index + 1}</Text>
                   <View style={[styles.top5Icon, { backgroundColor: catInfo?.color || COLORS.primary }]}>
-                    <Text style={styles.top5Emoji}>{catInfo?.emoji || '📦'}</Text>
+                    <Ionicons name="pricetag-outline" size={16} color={catInfo?.color ? '#fff' : '#fff'} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.top5Name} numberOfLines={1}>{sub.name}</Text>
@@ -524,6 +525,7 @@ const styles = StyleSheet.create({
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   cardBreakdownIcon: { fontSize: 20, width: 28 },
+  cardBreakdownIonicon: { width: 28, marginTop: 2 },
   cardBreakdownLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
   cardBreakdownLabel: { fontSize: 14, fontWeight: '700', color: '#E5E7EB', flex: 1 },
   cardBreakdownAmount: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
@@ -539,7 +541,6 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     gap: 8,
   },
-  lockIcon: { fontSize: 32 },
   lockedText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center' },
 
   // Savings
@@ -582,7 +583,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  top5Emoji: { fontSize: 18 },
+  top5Emoji: { fontSize: 18 }, // kept for compatibility
   top5Name: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
   top5Period: { fontSize: 11, color: '#6B7280', marginTop: 1 },
   top5Monthly: { fontSize: 14, fontWeight: '800', color: COLORS.primary },

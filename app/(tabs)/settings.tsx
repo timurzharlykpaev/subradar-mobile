@@ -11,6 +11,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -191,7 +192,10 @@ export default function SettingsScreen() {
         {/* Reports */}
         <Section title={t('settings.reports')}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/reports' as any)}>
-            <Text style={styles.menuItemText}>📄 {t('settings.generate_report')}</Text>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="document-text-outline" size={18} color={COLORS.textMuted} style={styles.menuItemIcon} />
+              <Text style={styles.menuItemText}>{t('settings.generate_report')}</Text>
+            </View>
             <Text style={styles.menuItemChevron}>›</Text>
           </TouchableOpacity>
         </Section>
@@ -265,7 +269,10 @@ export default function SettingsScreen() {
             style={styles.menuItem}
             onPress={() => Alert.alert(t('settings.export_data'), t('settings.data_exported'))}
           >
-            <Text style={styles.menuItemText}>📤 {t('settings.export_data')}</Text>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="share-outline" size={18} color={COLORS.textMuted} style={styles.menuItemIcon} />
+              <Text style={styles.menuItemText}>{t('settings.export_data')}</Text>
+            </View>
             <Text style={styles.menuItemChevron}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -275,7 +282,10 @@ export default function SettingsScreen() {
               { text: t('settings.logout'), style: 'destructive', onPress: () => { logout(); router.replace('/onboarding'); } },
             ])}
           >
-            <Text style={[styles.menuItemText, { color: COLORS.error }]}>🚪 {t('settings.logout')}</Text>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="log-out-outline" size={18} color={COLORS.error} style={styles.menuItemIcon} />
+              <Text style={[styles.menuItemText, { color: COLORS.error }]}>{t('settings.logout')}</Text>
+            </View>
             <Text style={styles.menuItemChevron}>›</Text>
           </TouchableOpacity>
         </Section>
@@ -431,6 +441,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
   },
+  menuItemLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  menuItemIcon: { marginRight: 8 },
   menuItemText: { fontSize: 15, color: COLORS.text },
   menuItemChevron: { fontSize: 20, color: COLORS.textMuted },
   proCard: {

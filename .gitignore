@@ -47,3 +47,4 @@ yarn-error.*
 GoogleService-Info.plist
 GoogleService-Info.plist
 google-service-account.json
+AuthKey*.p8

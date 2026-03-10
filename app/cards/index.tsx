@@ -16,6 +16,7 @@ import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
+import { Ionicons } from '@expo/vector-icons';
 
 const CARD_COLORS = ['#6C47FF', '#FF6B6B', '#4CAF50', '#FF9800', '#1E88E5', '#E91E63'];
 
@@ -71,7 +72,7 @@ export default function CardsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {cards.length === 0 && (
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>💳</Text>
+            <Ionicons name="card-outline" size={64} color={COLORS.textMuted} style={{ marginBottom: 12 }} />
             <Text style={styles.emptyText}>{t('cards.empty')}</Text>
             <Text style={styles.emptySubtext}>{t('cards.empty_desc')}</Text>
           </View>

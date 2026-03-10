@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
@@ -121,7 +122,7 @@ export default function DashboardScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>{greeting()}, {user?.name?.split(' ')[0] || ''} 👋</Text>
+            <Text style={styles.greeting}>{greeting()}, {user?.name?.split(' ')[0] || ''}</Text>
             <Text style={styles.subtitle}>{t('dashboard.subtitle')}</Text>
           </View>
           <TouchableOpacity style={styles.avatar} onPress={() => router.push('/(tabs)/settings')}>
@@ -142,7 +143,7 @@ export default function DashboardScreen() {
               if (catSubs.length === 0) return null;
               return (
                 <View key={cat.id} style={styles.catChip}>
-                  <Text style={styles.catEmoji}>{cat.emoji}</Text>
+                  <View style={[styles.catDot, { backgroundColor: cat.color }]} />
                   <Text style={styles.catLabel}>{cat.label}</Text>
                 </View>
               );
@@ -252,7 +253,7 @@ export default function DashboardScreen() {
 
         {subscriptions.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>📭</Text>
+            <Ionicons name="mail-open-outline" size={48} color={COLORS.textMuted} />
             <Text style={styles.emptyText}>{t('subscriptions.empty')}</Text>
             <Text style={styles.emptyHint}>{t('subscriptions.empty_hint')}</Text>
           </View>
@@ -371,7 +372,7 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
         {slices.map((slice, idx) => (
           <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
-            <Text style={{ fontSize: 12, color: COLORS.text, flex: 1 }}>{slice.emoji} {slice.label}</Text>
+            <Text style={{ fontSize: 12, color: COLORS.text, flex: 1 }}>{slice.label}</Text>
             <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.textSecondary }}>{slice.pct}%</Text>
           </View>
         ))}
@@ -392,8 +393,8 @@ const styles = StyleSheet.create({
   totalAmount: { fontSize: 40, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
   totalSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
   categoryRow: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
-  catChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  catEmoji: { fontSize: 12 },
+  catChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  catDot: { width: 8, height: 8, borderRadius: 4 },
   catLabel: { fontSize: 11, color: '#FFF', fontWeight: '600' },
   statsRow: { flexDirection: 'row', gap: 10, padding: 20, paddingBottom: 0 },
   statCard: { flex: 1, backgroundColor: COLORS.surface, borderRadius: 14, padding: 14, borderTopWidth: 3, alignItems: 'center' },
@@ -408,7 +409,6 @@ const styles = StyleSheet.create({
   miniPlan: { fontSize: 11, color: COLORS.textSecondary, textTransform: 'capitalize' },
   miniAmount: { fontSize: 14, fontWeight: '800', color: COLORS.text },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
-  emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
   emptyHint: { fontSize: 14, color: COLORS.textSecondary },
   chartCard: { backgroundColor: COLORS.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.1)' },
