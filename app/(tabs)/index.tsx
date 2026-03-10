@@ -290,8 +290,8 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 }
 
 function CategoryDonut({ categories }: { categories: { category: string; amount: number }[] }) {
-  const total = categories.reduce((sum, c) => sum + Number(c.amount), 0);
-  if (total === 0) return null;
+  const total = categories.reduce((sum, c) => sum + (isFinite(Number(c.amount)) ? Number(c.amount) : 0), 0);
+  if (!total || !isFinite(total)) return null;
 
   const size = 160;
   const radius = 60;
@@ -300,9 +300,12 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
   const cy = size / 2;
 
   let startAngle = -Math.PI / 2;
-  const slices = categories.map((cat) => {
+  const slices = categories
+    .filter((c) => isFinite(Number(c.amount)) && Number(c.amount) > 0)
+    .map((cat) => {
     const fraction = Number(cat.amount) / total;
     const sweep = fraction * 2 * Math.PI;
+    if (!isFinite(sweep) || sweep <= 0) return null;
     const catInfo = CATEGORIES.find((c) => c.id === cat.category);
     const color = catInfo?.color || '#757575';
 
@@ -326,7 +329,7 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
 
     startAngle += sweep;
     return { d, color, category: cat.category, emoji: catInfo?.emoji || '', label: catInfo?.label || cat.category, pct: Math.round(fraction * 100) };
-  });
+  }).filter(Boolean) as { d: string; color: string; category: string; emoji: string; label: string; pct: number }[];
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
