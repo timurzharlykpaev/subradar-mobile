@@ -225,10 +225,10 @@ export default function AnalyticsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.header}>
-          <Text style={styles.title}>{t('analytics.title')}</Text>
-          <Text style={styles.subtitle}>{t('analytics.subtitle')}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('analytics.title')}</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('analytics.subtitle')}</Text>
         </View>
 
         {/* Summary Cards */}
@@ -241,18 +241,18 @@ export default function AnalyticsScreen() {
         </ScrollView>
 
         {/* 1. Monthly Bar Chart (custom SVG) */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('analytics.monthly_spend')}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.monthly_spend')}</Text>
           {monthlyData.length > 0 ? (
             <MonthlyBarChart data={monthlyData} />
           ) : (
-            <Text style={styles.empty}>{t('analytics.no_data')}</Text>
+            <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
           )}
         </View>
 
         {/* 2. Category Donut Chart (custom SVG) */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('analytics.by_category')}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.by_category')}</Text>
           {byCategory.length > 0 ? (
             <>
               <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
@@ -260,22 +260,22 @@ export default function AnalyticsScreen() {
                 {byCategory.map((cat) => (
                   <View key={cat.id} style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                    <Text style={styles.legendLabel} numberOfLines={1}>{cat.emoji} {cat.label}</Text>
-                    <Text style={styles.legendPercent}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
-                    <Text style={styles.legendAmount}>${Number(cat.total).toFixed(0)}</Text>
+                    <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.emoji} {cat.label}</Text>
+                    <Text style={[styles.legendPercent, { color: colors.textMuted }]}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
+                    <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
                   </View>
                 ))}
               </View>
             </>
           ) : (
-            <Text style={styles.empty}>{t('analytics.no_data')}</Text>
+            <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
           )}
         </View>
 
         {/* 3. Card Breakdown */}
         {cardBreakdown.length > 0 && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('analytics.card_breakdown')}</Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.card_breakdown')}</Text>
             {cardBreakdown.map((card: any, i: number) => {
               const amount = card.total ?? card.amount ?? 0;
               return (
@@ -283,8 +283,8 @@ export default function AnalyticsScreen() {
                   <Text style={styles.cardBreakdownIcon}>💳</Text>
                   <View style={{ flex: 1, gap: 4 }}>
                     <View style={styles.cardBreakdownLabelRow}>
-                      <Text style={styles.cardBreakdownLabel} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
-                      <Text style={styles.cardBreakdownAmount}>${Number(amount).toFixed(2)}</Text>
+                      <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
+                      <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${Number(amount).toFixed(2)}</Text>
                     </View>
                     <View style={styles.barBg}>
                       <View
@@ -305,9 +305,9 @@ export default function AnalyticsScreen() {
         )}
 
         {/* 4. Forecast Section (Pro-gated) */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.cardTitle}>{t('analytics.forecast')}</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.forecast')}</Text>
             {!isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>}
           </View>
           {isPro ? (
@@ -326,17 +326,17 @@ export default function AnalyticsScreen() {
               />
             </View>
           ) : (
-            <View style={styles.lockedContainer}>
+            <View style={[styles.lockedContainer, { backgroundColor: colors.surface2 }]}>
               <Text style={styles.lockIcon}>🔒</Text>
-              <Text style={styles.lockedText}>{t('analytics.upgrade_forecast')}</Text>
+              <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_forecast')}</Text>
             </View>
           )}
         </View>
 
         {/* 5. Savings Analysis (Pro-gated) */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.cardTitle}>{t('analytics.savings')}</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.savings')}</Text>
             {!isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>}
           </View>
           {isPro ? (
@@ -349,32 +349,32 @@ export default function AnalyticsScreen() {
               </View>
               {(savings?.duplicates && savings.duplicates.length > 0) ? (
                 <View style={styles.duplicatesSection}>
-                  <Text style={styles.duplicatesTitle}>{t('analytics.duplicates')}</Text>
+                  <Text style={[styles.duplicatesTitle, { color: colors.text }]}>{t('analytics.duplicates')}</Text>
                   {savings.duplicates.map((dup: any, i: number) => (
                     <View key={i} style={styles.duplicateRow}>
                       <Text style={styles.duplicateIcon}>⚠️</Text>
-                      <Text style={styles.duplicateText} numberOfLines={2}>
+                      <Text style={[styles.duplicateText, { color: colors.textMuted }]} numberOfLines={2}>
                         {dup.name || dup.names?.join(' & ') || t('analytics.duplicate_label', { number: i + 1 })}
                       </Text>
                     </View>
                   ))}
                 </View>
               ) : (
-                <Text style={styles.noDuplicates}>{t('analytics.no_duplicates')}</Text>
+                <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
               )}
             </>
           ) : (
-            <View style={styles.lockedContainer}>
+            <View style={[styles.lockedContainer, { backgroundColor: colors.surface2 }]}>
               <Text style={styles.lockIcon}>🔒</Text>
-              <Text style={styles.lockedText}>{t('analytics.upgrade_savings')}</Text>
+              <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_savings')}</Text>
             </View>
           )}
         </View>
 
         {/* 6. Top 5 Most Expensive */}
         {top5.length > 0 && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('analytics.top5')}</Text>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.top5')}</Text>
             {top5.map((sub, index) => {
               const catInfo = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
               const monthly = getMonthlyAmount(sub);
@@ -385,8 +385,8 @@ export default function AnalyticsScreen() {
                     <Text style={styles.top5Emoji}>{catInfo?.emoji || '📦'}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.top5Name} numberOfLines={1}>{sub.name}</Text>
-                    <Text style={styles.top5Period}>
+                    <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                    <Text style={[styles.top5Period, { color: colors.textSecondary }]}>
                       {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
                     </Text>
                   </View>
@@ -398,21 +398,21 @@ export default function AnalyticsScreen() {
         )}
 
         {/* All Subscriptions */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('analytics.all_subscriptions')}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.all_subscriptions')}</Text>
           {activeSubs.map((sub) => (
             <View key={sub.id} style={styles.subRow}>
               <View style={[styles.subIcon, { backgroundColor: colors.primaryLight }]}>
-                <Text style={styles.subIconText}>{sub.name[0]}</Text>
+                <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
               </View>
-              <Text style={styles.subName} numberOfLines={1}>{sub.name}</Text>
-              <Text style={styles.subAmount}>
+              <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+              <Text style={[styles.subAmount, { color: colors.textMuted }]}>
                 {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
               </Text>
             </View>
           ))}
           {activeSubs.length === 0 && (
-            <Text style={styles.empty}>{t('analytics.no_data')}</Text>
+            <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
           )}
         </View>
 
@@ -423,20 +423,22 @@ export default function AnalyticsScreen() {
 }
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  const { colors } = useTheme();
   return (
-    <View style={statStyles.card}>
-      <Text style={statStyles.label}>{label}</Text>
-      <Text style={statStyles.value} numberOfLines={1}>{value}</Text>
-      {sub && <Text style={statStyles.sub}>{sub}</Text>}
+    <View style={[statStyles.card, { backgroundColor: colors.card, borderColor: 'rgba(108,71,255,0.2)' }]}>
+      <Text style={[statStyles.label, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[statStyles.value, { color: colors.primary }]} numberOfLines={1}>{value}</Text>
+      {sub && <Text style={[statStyles.sub, { color: colors.textSecondary }]}>{sub}</Text>}
     </View>
   );
 }
 
 function ForecastCard({ label, value }: { label: string; value: string | number }) {
+  const { colors } = useTheme();
   return (
     <View style={forecastStyles.card}>
-      <Text style={forecastStyles.value}>${value}</Text>
-      <Text style={forecastStyles.label}>{label}</Text>
+      <Text style={[forecastStyles.value, { color: colors.primary }]}>${value}</Text>
+      <Text style={[forecastStyles.label, { color: colors.textSecondary }]}>{label}</Text>
     </View>
   );
 }

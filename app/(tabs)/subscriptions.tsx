@@ -95,20 +95,20 @@ export default function SubscriptionsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('subscriptions.title')}</Text>
-        <Text style={styles.count}>{subs.length} {t('subscriptions.total')}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('subscriptions.title')}</Text>
+        <Text style={[styles.count, { color: colors.textSecondary }]}>{subs.length} {t('subscriptions.total')}</Text>
         {subsLimitReached && (
-          <TouchableOpacity onPress={handleAdd} style={styles.upgradeChip}>
-            <Text style={styles.upgradeChipText}>⭐ Upgrade</Text>
+          <TouchableOpacity onPress={handleAdd} style={[styles.upgradeChip, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
+            <Text style={[styles.upgradeChipText, { color: colors.primary }]}>⭐ Upgrade</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Search */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text }]}
           value={searchQuery}
           onChangeText={setSearchQuery}
           {...{placeholder: t('subscriptions.search')}}
@@ -116,7 +116,7 @@ export default function SubscriptionsScreen() {
         />
         {searchQuery ? (
           <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Text style={styles.clearIcon}>✕</Text>
+            <Text style={[styles.clearIcon, { color: colors.textMuted }]}>✕</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -131,10 +131,18 @@ export default function SubscriptionsScreen() {
         {FILTERS.map((f) => (
           <TouchableOpacity
             key={f.value}
-            style={[styles.filterChip, filter === f.value && styles.filterChipActive]}
+            style={[
+              styles.filterChip,
+              { backgroundColor: colors.surface2, borderColor: colors.border },
+              filter === f.value && { backgroundColor: colors.primary, borderColor: colors.primary },
+            ]}
             onPress={() => setFilter(f.value)}
           >
-            <Text style={[styles.filterText, filter === f.value && styles.filterTextActive]}>
+            <Text style={[
+              styles.filterText,
+              { color: colors.textSecondary },
+              filter === f.value && styles.filterTextActive,
+            ]}>
               {f.label}
             </Text>
           </TouchableOpacity>
@@ -154,11 +162,12 @@ export default function SubscriptionsScreen() {
               key={cat.id}
               style={[
                 styles.catChip,
+                { backgroundColor: colors.surface2, borderColor: colors.border },
                 selectedCategory === cat.id && { backgroundColor: cat.color },
               ]}
               onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
             >
-              <Text>{cat.emoji} {cat.label}</Text>
+              <Text style={{ color: selectedCategory === cat.id ? '#FFF' : colors.text }}>{cat.emoji} {cat.label}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -180,8 +189,8 @@ export default function SubscriptionsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyEmoji}>📭</Text>
-            <Text style={styles.emptyText}>{t('subscriptions.empty')}</Text>
-            <Text style={styles.emptyHint}>{t('subscriptions.empty_hint')}</Text>
+            <Text style={[styles.emptyText, { color: colors.text }]}>{t('subscriptions.empty')}</Text>
+            <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>{t('subscriptions.empty_hint')}</Text>
           </View>
         }
       />
@@ -238,7 +247,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  list: { padding: 20, paddingTop: 8 },
+  list: { padding: 20, paddingTop: 8, paddingBottom: 100 },
   empty: { alignItems: 'center', paddingTop: 80, gap: 8 },
   emptyEmoji: { fontSize: 48 },
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },

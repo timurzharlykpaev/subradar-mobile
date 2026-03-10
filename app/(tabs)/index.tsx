@@ -56,7 +56,6 @@ export default function DashboardScreen() {
       ]);
       if (monthlyRes?.data) {
         const raw = Array.isArray(monthlyRes.data) ? monthlyRes.data : monthlyRes.data.months || [];
-        // Backend returns { label: '2025-04', total: 45 } — normalize to { month, amount }
         const items = raw.map((d: any) => ({
           month: d.month ?? d.label ?? '',
           amount: Number(d.amount ?? d.total ?? 0),
@@ -65,7 +64,6 @@ export default function DashboardScreen() {
       }
       if (categoryRes?.data) {
         const raw = Array.isArray(categoryRes.data) ? categoryRes.data : categoryRes.data.categories || [];
-        // API returns { category: "STREAMING", total: 15.99 } — normalize to { category, amount }
         const items = raw.map((d: any) => ({
           category: d.category,
           amount: Number(d.amount ?? d.total ?? 0),
@@ -88,7 +86,6 @@ export default function DashboardScreen() {
     return sum + (Number(s.amount) || 0) * mult;
   }, 0);
 
-  // Forecast: next 30 days
   const upcomingNext30 = subscriptions.filter((s) => {
     if (!s.nextPaymentDate) return false;
     const date = new Date(s.nextPaymentDate);
@@ -98,7 +95,6 @@ export default function DashboardScreen() {
   });
   const forecast30 = Number(upcomingNext30.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)) || 0;
 
-  // Potential savings: duplicate categories
   const categoryCounts = subscriptions.reduce((acc, s) => {
     if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return acc;
     acc[s.category] = (acc[s.category] || 0) + 1;
@@ -135,6 +131,7 @@ export default function DashboardScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); }} />
         }
@@ -142,10 +139,10 @@ export default function DashboardScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>{greeting()}, {user?.name?.split(' ')[0] || ''} 👋</Text>
-            <Text style={styles.subtitle}>{t('dashboard.subtitle')}</Text>
+            <Text style={[styles.greeting, { color: colors.text }]}>{greeting()}, {user?.name?.split(' ')[0] || ''} 👋</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t('dashboard.subtitle')}</Text>
           </View>
-          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/(tabs)/settings')}>
+          <TouchableOpacity style={[styles.avatar, { backgroundColor: colors.primary }]} onPress={() => router.push('/(tabs)/settings')}>
             <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'U'}</Text>
           </TouchableOpacity>
         </View>
@@ -181,7 +178,7 @@ export default function DashboardScreen() {
         {/* Upcoming */}
         {upcoming.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('dashboard.upcoming_7')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.upcoming_7')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {upcoming.map((sub) => (
                 <UpcomingPaymentCard key={sub.id} subscription={sub} />
@@ -193,17 +190,17 @@ export default function DashboardScreen() {
         {/* Active subs */}
         {activeSubs.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('dashboard.active_subs_title')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.active_subs_title')}</Text>
             {activeSubs.slice(0, 5).map((sub) => (
-              <View key={sub.id} style={styles.miniCard}>
+              <View key={sub.id} style={[styles.miniCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.miniIcon, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={styles.miniIconText}>{sub.name[0]}</Text>
+                  <Text style={[styles.miniIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.miniName}>{sub.name}</Text>
-                  <Text style={styles.miniPlan}>{sub.plan || sub.category}</Text>
+                  <Text style={[styles.miniName, { color: colors.text }]}>{sub.name}</Text>
+                  <Text style={[styles.miniPlan, { color: colors.textSecondary }]}>{sub.plan || sub.category}</Text>
                 </View>
-                <Text style={styles.miniAmount}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
+                <Text style={[styles.miniAmount, { color: colors.text }]}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
               </View>
             ))}
           </View>
@@ -211,19 +208,19 @@ export default function DashboardScreen() {
 
         {/* Forecast Block */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('dashboard.forecast_title')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
           <View style={styles.forecastRow}>
-            <View style={[styles.forecastCard, { flex: 1 }]}>
+            <View style={[styles.forecastCard, { flex: 1, backgroundColor: colors.card, borderColor: colors.border }]}>
               <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-              <Text style={styles.forecastLabel}>{t('dashboard.next_30_days')}</Text>
-              <Text style={styles.forecastAmount}>{currency} {(forecast30 || 0).toFixed(2)}</Text>
-              <Text style={styles.forecastSub}>{upcomingNext30.length} {t('dashboard.subscriptions_label')}</Text>
+              <Text style={[styles.forecastLabel, { color: colors.textSecondary }]}>{t('dashboard.next_30_days')}</Text>
+              <Text style={[styles.forecastAmount, { color: colors.text }]}>{currency} {(forecast30 || 0).toFixed(2)}</Text>
+              <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{upcomingNext30.length} {t('dashboard.subscriptions_label')}</Text>
             </View>
-            <View style={[styles.forecastCard, { flex: 1 }]}>
+            <View style={[styles.forecastCard, { flex: 1, backgroundColor: colors.card, borderColor: colors.border }]}>
               <Ionicons name="trending-up-outline" size={20} color={colors.success} />
-              <Text style={styles.forecastLabel}>{t('dashboard.per_year')}</Text>
-              <Text style={styles.forecastAmount}>{currency} {(totalMonthly * 12).toFixed(2)}</Text>
-              <Text style={styles.forecastSub}>{t('dashboard.annually')}</Text>
+              <Text style={[styles.forecastLabel, { color: colors.textSecondary }]}>{t('dashboard.per_year')}</Text>
+              <Text style={[styles.forecastAmount, { color: colors.text }]}>{currency} {(totalMonthly * 12).toFixed(2)}</Text>
+              <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{t('dashboard.annually')}</Text>
             </View>
           </View>
         </View>
@@ -231,14 +228,14 @@ export default function DashboardScreen() {
         {/* Potential Savings */}
         {duplicateCategories.length > 0 && (
           <View style={styles.section}>
-            <View style={styles.savingsCard}>
+            <View style={[styles.savingsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Ionicons name="bulb-outline" size={22} color={colors.warning} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.savingsTitle}>{t('dashboard.potential_savings')}</Text>
-                <Text style={styles.savingsSub}>{duplicateCategories.length} {t('dashboard.possible_duplicates')}</Text>
+                <Text style={[styles.savingsTitle, { color: colors.text }]}>{t('dashboard.potential_savings')}</Text>
+                <Text style={[styles.savingsSub, { color: colors.textSecondary }]}>{duplicateCategories.length} {t('dashboard.possible_duplicates')}</Text>
               </View>
-              <TouchableOpacity onPress={() => router.push('/(tabs)/analytics')} style={styles.reviewBtn}>
-                <Text style={styles.reviewBtnText}>{t('dashboard.review')}</Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/analytics')} style={[styles.reviewBtn, { backgroundColor: colors.primaryLight }]}>
+                <Text style={[styles.reviewBtnText, { color: colors.primary }]}>{t('dashboard.review')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -247,8 +244,8 @@ export default function DashboardScreen() {
         {/* Monthly Trend Chart */}
         {monthlyTrend.length > 0 && monthlyTrend.some(d => d.amount > 0) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('dashboard.monthly_trend')}</Text>
-            <View style={styles.chartCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.monthly_trend')}</Text>
+            <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <MonthlyBarChart data={monthlyTrend} />
             </View>
           </View>
@@ -257,8 +254,8 @@ export default function DashboardScreen() {
         {/* Category Breakdown Donut */}
         {categoryData.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('dashboard.by_category')}</Text>
-            <View style={styles.donutCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.by_category')}</Text>
+            <View style={[styles.donutCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <CategoryDonut categories={categoryData} />
             </View>
           </View>
@@ -267,7 +264,7 @@ export default function DashboardScreen() {
         {/* Trial Tracker */}
         {trialSubs.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('trials.title')}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('trials.title')}</Text>
             {trialSubs.map((sub) => {
               const endDate = sub.nextPaymentDate;
               const daysLeft = endDate
@@ -283,11 +280,11 @@ export default function DashboardScreen() {
                 return Number(sub.amount * mult).toFixed(2);
               })();
               return (
-                <View key={sub.id} style={styles.trialCard}>
+                <View key={sub.id} style={[styles.trialCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <View style={[styles.trialDot, { backgroundColor: dotColor }]} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.trialName}>{sub.name}</Text>
-                    <Text style={styles.trialMeta}>
+                    <Text style={[styles.trialName, { color: colors.text }]}>{sub.name}</Text>
+                    <Text style={[styles.trialMeta, { color: colors.textSecondary }]}>
                       {daysLeft !== null
                         ? daysLeft === 0
                           ? t('trials.ends_today')
@@ -297,7 +294,7 @@ export default function DashboardScreen() {
                         : t('subscriptions.trial')}
                     </Text>
                   </View>
-                  <Text style={styles.trialPrice}>
+                  <Text style={[styles.trialPrice, { color: colors.textSecondary }]}>
                     {t('trials.then')} {sub.currency} {monthlyAmount}{t('subscriptions.per_month')}
                   </Text>
                 </View>
@@ -309,14 +306,14 @@ export default function DashboardScreen() {
         {subscriptions.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>📭</Text>
-            <Text style={styles.emptyText}>{t('subscriptions.empty')}</Text>
-            <Text style={styles.emptyHint}>{t('subscriptions.empty_hint')}</Text>
+            <Text style={[styles.emptyText, { color: colors.text }]}>{t('subscriptions.empty')}</Text>
+            <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>{t('subscriptions.empty_hint')}</Text>
           </View>
         )}
 
         {/* Quick Actions */}
         <View style={[styles.section, { paddingBottom: 20 }]}>
-          <Text style={styles.sectionTitle}>{t('dashboard.quick_actions')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.quick_actions')}</Text>
           <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
             <QuickAction
               icon="add-circle-outline"
@@ -357,10 +354,11 @@ function QuickAction({ icon, label, onPress, color }: { icon: React.ComponentPro
 }
 
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  const { colors } = useTheme();
   return (
-    <View style={[styles.statCard, { borderTopColor: color }]}>
+    <View style={[styles.statCard, { borderTopColor: color, backgroundColor: colors.card, borderColor: colors.border }]}>
       <Text style={[styles.statValue, { color }]}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
     </View>
   );
 }

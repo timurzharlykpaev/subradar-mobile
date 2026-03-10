@@ -79,7 +79,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
