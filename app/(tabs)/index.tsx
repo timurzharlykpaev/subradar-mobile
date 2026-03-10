@@ -21,7 +21,7 @@ import { analyticsApi } from '../../src/api/analytics';
 import { COLORS, CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { UpcomingPaymentCard } from '../../src/components/UpcomingPaymentCard';
-import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
+import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -383,18 +383,34 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
 
   return (
     <View>
-      <Svg width={chartW} height={chartH}>
+      <Svg width={chartW} height={chartH + 18}>
         {data.map((d, i) => {
           const val = Number(d.amount) || 0;
           const barH = Math.max(4, (val / maxVal) * (chartH - 16));
           const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
-          const y = chartH - barH;
+          const y = chartH - barH + 18;
           const isMax = val === maxVal;
+          const labelX = x + barW / 2;
+          const labelY = y - 4;
           return (
-            <Rect
-              key={i} x={x} y={y} width={barW} height={barH} rx={5}
-              fill={isMax ? colors.primary : 'rgba(139,92,246,0.35)'}
-            />
+            <React.Fragment key={i}>
+              <Rect
+                x={x} y={y} width={barW} height={barH} rx={5}
+                fill={isMax ? colors.primary : 'rgba(139,92,246,0.35)'}
+              />
+              {val > 0 && (
+                <SvgText
+                  x={labelX}
+                  y={labelY}
+                  fontSize={9}
+                  fontWeight="700"
+                  fill={isMax ? colors.primary : colors.textSecondary}
+                  textAnchor="middle"
+                >
+                  ${val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val.toFixed(0)}
+                </SvgText>
+              )}
+            </React.Fragment>
           );
         })}
       </Svg>
