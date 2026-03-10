@@ -272,7 +272,7 @@ export default function SettingsScreen() {
             style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: COLORS.border }]}
             onPress={() => Alert.alert(t('settings.logout'), t('common.are_you_sure'), [
               { text: t('common.cancel'), style: 'cancel' },
-              { text: t('settings.logout'), style: 'destructive', onPress: logout },
+              { text: t('settings.logout'), style: 'destructive', onPress: () => { logout(); router.replace('/onboarding'); } },
             ])}
           >
             <Text style={[styles.menuItemText, { color: COLORS.error }]}>🚪 {t('settings.logout')}</Text>
