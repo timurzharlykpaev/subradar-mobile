@@ -15,11 +15,13 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../src/stores/authStore';
 import { authApi } from '../src/api/auth';
 import { COLORS } from '../src/constants';
+import { useTheme } from '../src/theme';
 import { useTranslation } from 'react-i18next';
 
 export default function EditProfileScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors } = useTheme();
   const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
 
@@ -50,18 +52,18 @@ export default function EditProfileScreen() {
   const initials = (name?.[0] || user?.email?.[0] || 'U').toUpperCase();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Text style={styles.cancel}>{t('common.cancel')}</Text>
+          <Text style={[styles.cancel, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{t('edit_profile.title')}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('edit_profile.title')}</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           {saving ? (
-            <ActivityIndicator size="small" color={COLORS.primary} />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={styles.save}>{t('common.save')}</Text>
+            <Text style={[styles.save, { color: colors.primary }]}>{t('common.save')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -82,13 +84,13 @@ export default function EditProfileScreen() {
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.field}>
-            <Text style={styles.label}>{t('edit_profile.name')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.name')}</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.text }]}
               value={name}
               onChangeText={handleChangeName}
               placeholder={t('edit_profile.name_placeholder')}
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={colors.textMuted}
               returnKeyType="done"
               onSubmitEditing={handleSave}
               maxLength={50}
@@ -96,9 +98,9 @@ export default function EditProfileScreen() {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>{t('edit_profile.email')}</Text>
-            <View style={styles.inputDisabled}>
-              <Text style={styles.inputDisabledText}>{user?.email || ''}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.email')}</Text>
+            <View style={[styles.inputDisabled, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.inputDisabledText, { color: colors.textMuted }]}>{user?.email || ''}</Text>
             </View>
           </View>
         </View>

@@ -348,5 +348,19 @@
     "today": "Aujourd'hui",
     "tomorrow": "Demain",
     "in_days": "dans {{count}}j"
+  },
+  "months": {
+    "1": "Jan",
+    "2": "Fév",
+    "3": "Mar",
+    "4": "Avr",
+    "5": "Mai",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aoû",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Déc"
   }
 }

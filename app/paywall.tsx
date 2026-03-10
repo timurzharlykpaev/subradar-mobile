@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../src/constants';
+import { useTheme } from '../src/theme';
 
 const FEATURES = [
   'Unlimited subscriptions',
@@ -50,6 +51,7 @@ const PLANS = [
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [selected, setSelected] = useState('pro');
 
   const handleStartTrial = () => {
@@ -58,7 +60,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Close button */}
         <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
@@ -67,8 +69,8 @@ export default function PaywallScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Unlock SubRadar Pro</Text>
-          <Text style={styles.subtitle}>7-day free trial, cancel anytime</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Unlock SubRadar Pro</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>7-day free trial, cancel anytime</Text>
         </View>
 
         {/* Plan cards */}
@@ -77,7 +79,7 @@ export default function PaywallScreen() {
           return (
             <TouchableOpacity
               key={plan.id}
-              style={[styles.planCard, isSelected && styles.planCardSelected]}
+              style={[styles.planCard, { backgroundColor: colors.card, borderColor: colors.border }, isSelected && { borderColor: colors.primary, backgroundColor: colors.surface2 }]}
               onPress={() => setSelected(plan.id)}
             >
               {plan.popular && (
@@ -87,15 +89,15 @@ export default function PaywallScreen() {
               )}
               <View style={styles.planHeader}>
                 <View>
-                  <Text style={styles.planName}>{plan.name}</Text>
+                  <Text style={[styles.planName, { color: colors.text }]}>{plan.name}</Text>
                   {plan.trialDays > 0 && (
                     <Text style={styles.trialLabel}>{plan.trialDays}-day free trial</Text>
                   )}
                 </View>
                 <View style={styles.priceContainer}>
-                  <Text style={styles.planPrice}>{plan.price}</Text>
+                  <Text style={[styles.planPrice, { color: colors.text }]}>{plan.price}</Text>
                   {plan.period ? (
-                    <Text style={styles.planPeriod}>{plan.period}</Text>
+                    <Text style={[styles.planPeriod, { color: colors.textSecondary }]}>{plan.period}</Text>
                   ) : null}
                 </View>
               </View>
@@ -113,7 +115,8 @@ export default function PaywallScreen() {
                       <Text
                         style={[
                           styles.featureText,
-                          !included && styles.featureTextDisabled,
+                          { color: colors.text },
+                          !included && { color: colors.textMuted },
                         ]}
                       >
                         {feature}
@@ -137,11 +140,11 @@ export default function PaywallScreen() {
           <Text style={styles.trialBtnText}>Start Free Trial</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.laterBtn} onPress={() => router.back()}>
-          <Text style={styles.laterBtnText}>Maybe Later</Text>
+        <TouchableOpacity style={[styles.laterBtn, { borderColor: colors.border }]} onPress={() => router.back()}>
+          <Text style={[styles.laterBtnText, { color: colors.textSecondary }]}>Maybe Later</Text>
         </TouchableOpacity>
 
-        <Text style={styles.disclaimer}>
+        <Text style={[styles.disclaimer, { color: colors.textMuted }]}>
           Cancel anytime. No charge during trial.
         </Text>
       </ScrollView>

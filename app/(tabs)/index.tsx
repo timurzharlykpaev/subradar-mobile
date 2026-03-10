@@ -365,10 +365,10 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 
 function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const chartW = screenWidth - 80;
   const chartH = 120;
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const hasData = data.some((d) => Number(d.amount) > 0);
   const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
   const barW = Math.max(8, chartW / Math.max(data.length, 1) - 8);
@@ -418,8 +418,8 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
         {data.map((d, i) => {
           const monthStr = typeof d.month === 'string' ? d.month : String(d.month || '');
           const parts = monthStr.split('-');
-          const monthIdx = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : parseInt(monthStr, 10) - 1;
-          const label = monthNames[monthIdx] || monthStr;
+          const monthNum = parts.length >= 2 ? parseInt(parts[1], 10) : parseInt(monthStr, 10);
+          const label = t(`months.${monthNum}`, { defaultValue: monthStr });
           return <Text key={i} style={{ fontSize: 10, color: colors.textSecondary }}>{label}</Text>;
         })}
       </View>

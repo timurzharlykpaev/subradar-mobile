@@ -17,6 +17,7 @@ import { subscriptionsApi } from '../../src/api/subscriptions';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
 import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
 
@@ -27,13 +28,14 @@ export default function SubscriptionDetailScreen() {
   const { updateSubscription, removeSubscription } = useSubscriptionsStore();
   const getCard = usePaymentCardsStore((s) => s.getCard);
 
+  const { colors } = useTheme();
   const [receipts, setReceipts] = useState<string[]>([]);
   const [editVisible, setEditVisible] = useState(false);
 
   if (!subscription) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.notFound}>{t('subscription.not_found')}</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.notFound, { color: colors.text }]}>{t('subscription.not_found')}</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backLink}>{t('subscription.go_back')}</Text>
         </TouchableOpacity>
@@ -100,7 +102,7 @@ export default function SubscriptionDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -127,10 +129,10 @@ export default function SubscriptionDetailScreen() {
             </View>
           )}
 
-          <Text style={styles.serviceName}>{subscription.name}</Text>
+          <Text style={[styles.serviceName, { color: colors.text }]}>{subscription.name}</Text>
 
           {subscription.plan && (
-            <Text style={styles.plan}>{subscription.plan}</Text>
+            <Text style={[styles.plan, { color: colors.textSecondary }]}>{subscription.plan}</Text>
           )}
 
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
@@ -146,8 +148,8 @@ export default function SubscriptionDetailScreen() {
         </View>
 
         {/* Details */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('subscription.details')}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('subscription.details')}</Text>
 
           <DetailRow label={t("add.category")}>
             <CategoryBadge categoryId={subscription.category} />
@@ -201,15 +203,15 @@ export default function SubscriptionDetailScreen() {
         </View>
 
         {/* Receipts */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>{t('subscription.receipts')}</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('subscription.receipts')}</Text>
             <TouchableOpacity style={styles.uploadBtn} onPress={handleUploadReceipt}>
               <Text style={styles.uploadBtnText}>{t('subscription.upload')}</Text>
             </TouchableOpacity>
           </View>
           {receipts.length === 0 ? (
-            <Text style={styles.noReceipts}>{t('subscription.no_receipts')}</Text>
+            <Text style={[styles.noReceipts, { color: colors.textMuted }]}>{t('subscription.no_receipts')}</Text>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {receipts.map((uri, i) => (
@@ -222,8 +224,8 @@ export default function SubscriptionDetailScreen() {
         {/* Actions */}
         <View style={styles.actions}>
           {(subscription as any).serviceUrl && (
-            <TouchableOpacity style={styles.websiteBtn} onPress={handleOpenWebsite}>
-              <Text style={styles.websiteBtnText}>{t('subscription.open_website')}</Text>
+            <TouchableOpacity style={[styles.websiteBtn, { backgroundColor: colors.surface2, borderColor: colors.border }]} onPress={handleOpenWebsite}>
+              <Text style={[styles.websiteBtnText, { color: colors.text }]}>{t('subscription.open_website')}</Text>
             </TouchableOpacity>
           )}
           {(subscription as any).cancelUrl && subscription.status !== 'CANCELLED' && (
@@ -252,9 +254,10 @@ export default function SubscriptionDetailScreen() {
 }
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  const { colors } = useTheme();
   return (
-    <View style={rowStyles.row}>
-      <Text style={rowStyles.label}>{label}</Text>
+    <View style={[rowStyles.row, { borderBottomColor: colors.border }]}>
+      <Text style={[rowStyles.label, { color: colors.textSecondary }]}>{label}</Text>
       <View style={rowStyles.value}>{children}</View>
     </View>
   );

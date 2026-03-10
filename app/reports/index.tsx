@@ -11,10 +11,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 
 export default function ReportsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   const REPORT_TYPES = [
     { key: 'summary', label: t('reports.summary') },
@@ -49,25 +51,25 @@ export default function ReportsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>←</Text>
+          <Text style={[styles.backBtnText, { color: colors.primary }]}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{t('reports.title')}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('reports.title')}</Text>
       </View>
 
       <ScrollView>
         <View style={styles.section}>
-          <Text style={styles.label}>{t('reports.report_type')}</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>{t('reports.report_type')}</Text>
           <View style={styles.chips}>
             {REPORT_TYPES.map((type) => (
               <TouchableOpacity
                 key={type.key}
-                style={[styles.chip, reportType === type.key && styles.chipActive]}
+                style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border }, reportType === type.key && styles.chipActive]}
                 onPress={() => setReportType(type.key)}
               >
-                <Text style={[styles.chipText, reportType === type.key && styles.chipTextActive]}>
+                <Text style={[styles.chipText, { color: colors.textSecondary }, reportType === type.key && styles.chipTextActive]}>
                   {type.label}
                 </Text>
               </TouchableOpacity>
@@ -76,15 +78,15 @@ export default function ReportsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{t('reports.date_range')}</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>{t('reports.date_range')}</Text>
           <View style={styles.chips}>
             {(['month', 'quarter', 'year'] as const).map((range) => (
               <TouchableOpacity
                 key={range}
-                style={[styles.chip, dateRange === range && styles.chipActive]}
+                style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border }, dateRange === range && styles.chipActive]}
                 onPress={() => setDateRange(range)}
               >
-                <Text style={[styles.chipText, dateRange === range && styles.chipTextActive]}>
+                <Text style={[styles.chipText, { color: colors.textSecondary }, dateRange === range && styles.chipTextActive]}>
                   {range === 'month' ? t('reports.this_month') : range === 'quarter' ? t('reports.this_quarter') : t('reports.this_year')}
                 </Text>
               </TouchableOpacity>
@@ -92,10 +94,10 @@ export default function ReportsScreen() {
           </View>
         </View>
 
-        <View style={styles.preview}>
-          <Text style={styles.previewTitle}>📄 {reportTypeLabel} {t('reports.report_suffix')}</Text>
-          <Text style={styles.previewDesc}>{getDescKey()}</Text>
-          <Text style={styles.previewRange}>
+        <View style={[styles.preview, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+          <Text style={[styles.previewTitle, { color: colors.text }]}>📄 {reportTypeLabel} {t('reports.report_suffix')}</Text>
+          <Text style={[styles.previewDesc, { color: colors.textSecondary }]}>{getDescKey()}</Text>
+          <Text style={[styles.previewRange, { color: colors.primary }]}>
             {t('reports.period_label', { period: getPeriodLabel() })}
           </Text>
         </View>

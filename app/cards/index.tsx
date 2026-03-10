@@ -16,6 +16,7 @@ import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 
 const CARD_COLORS = ['#6C47FF', '#FF6B6B', '#4CAF50', '#FF9800', '#1E88E5', '#E91E63'];
 
@@ -32,6 +33,7 @@ function CardVisual({ card }: { card: PaymentCard }) {
 export default function CardsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const { cards, addCard, removeCard } = usePaymentCardsStore();
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: CARD_COLORS[0] });
@@ -57,14 +59,14 @@ export default function CardsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>← {t('common.back')}</Text>
+          <Text style={[styles.back, { color: colors.primary }]}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{t('cards.title')}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('cards.title')}</Text>
         <TouchableOpacity onPress={() => setShowAdd(true)}>
-          <Text style={styles.addBtn}>{t('cards.add')}</Text>
+          <Text style={[styles.addBtn, { color: colors.primary }]}>{t('cards.add')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -72,8 +74,8 @@ export default function CardsScreen() {
         {cards.length === 0 && (
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>💳</Text>
-            <Text style={styles.emptyText}>{t('cards.empty')}</Text>
-            <Text style={styles.emptySubtext}>{t('cards.empty_desc')}</Text>
+            <Text style={[styles.emptyText, { color: colors.text }]}>{t('cards.empty')}</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>{t('cards.empty_desc')}</Text>
           </View>
         )}
         {cards.map((card) => (
@@ -88,38 +90,40 @@ export default function CardsScreen() {
 
       <Modal visible={showAdd} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>{t('cards.add_card')}</Text>
+          <View style={[styles.modal, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('cards.add_card')}</Text>
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface2 }]}
               placeholder={t('cards.nickname_placeholder')}
+              placeholderTextColor={colors.textMuted}
               value={form.nickname}
               onChangeText={(v) => setForm((f) => ({ ...f, nickname: v }))}
             />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface2 }]}
               placeholder={t('cards.last4_placeholder')}
+              placeholderTextColor={colors.textMuted}
               value={form.last4}
               onChangeText={(v) => setForm((f) => ({ ...f, last4: v.replace(/\D/g, '').slice(0, 4) }))}
               keyboardType="numeric"
               maxLength={4}
             />
 
-            <Text style={styles.label}>{t('cards.payment_system')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('cards.payment_system')}</Text>
             <View style={styles.row}>
               {CARD_BRANDS.map((b) => (
                 <TouchableOpacity
                   key={b}
-                  style={[styles.chip, form.brand === b && styles.chipActive]}
+                  style={[styles.chip, { borderColor: colors.border }, form.brand === b && styles.chipActive]}
                   onPress={() => setForm((f) => ({ ...f, brand: b as PaymentCard['brand'] }))}
                 >
-                  <Text style={[styles.chipText, form.brand === b && styles.chipTextActive]}>{b}</Text>
+                  <Text style={[styles.chipText, { color: colors.text }, form.brand === b && styles.chipTextActive]}>{b}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.label}>{t('cards.color')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('cards.color')}</Text>
             <View style={styles.row}>
               {CARD_COLORS.map((c) => (
                 <TouchableOpacity
@@ -131,8 +135,8 @@ export default function CardsScreen() {
             </View>
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAdd(false)}>
-                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+              <TouchableOpacity style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={() => setShowAdd(false)}>
+                <Text style={[styles.cancelBtnText, { color: colors.text }]}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.saveBtn} onPress={handleAdd}>
                 <Text style={styles.saveBtnText}>{t('common.save')}</Text>
