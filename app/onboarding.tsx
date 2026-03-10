@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import {
   View,
   Text,
@@ -813,23 +814,35 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 6: Add first subscription
-    <View key="first_sub" style={[styles.step, { alignItems: 'center', justifyContent: 'center', gap: 24 }]}>
+    <View key="first_sub" style={[styles.step, { alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 24 }]}>
+      {/* Icon */}
+      <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: COLORS.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+        <Ionicons name="add-circle" size={52} color={COLORS.primary} />
+      </View>
       <Text style={[styles.headline, { textAlign: 'center' }]}>{t('onboarding.first_sub_title')}</Text>
-      <Text style={[styles.subheadline, { textAlign: 'center' }]}>{t('onboarding.first_sub_subtitle')}</Text>
+      <Text style={[styles.subheadline, { textAlign: 'center', marginBottom: 8 }]}>{t('onboarding.first_sub_subtitle')}</Text>
+
+      {/* Add manually */}
       <TouchableOpacity
-        style={[styles.nextBtn, { width: '100%', alignItems: 'center' }]}
+        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
         onPress={() => { router.replace('/(tabs)'); }}
       >
-        <Text style={styles.nextBtnText}>📝 {t('onboarding.add_manually')}</Text>
+        <Ionicons name="create-outline" size={20} color="#FFF" />
+        <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_manually')}</Text>
       </TouchableOpacity>
+
+      {/* Add with AI */}
       <TouchableOpacity
-        style={[styles.nextBtn, { width: '100%', alignItems: 'center', backgroundColor: COLORS.surface2 }]}
-        onPress={() => { navigateToApp(); }}
+        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: '#2D2060', borderWidth: 1, borderColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
+        onPress={() => { router.replace('/(tabs)'); }}
       >
-        <Text style={styles.nextBtnText}>🤖 {t('onboarding.add_with_ai')}</Text>
+        <Ionicons name="sparkles-outline" size={20} color={COLORS.primary} />
+        <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.primary }}>{t('onboarding.add_with_ai')}</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigateToApp()}>
-        <Text style={{ fontSize: 15, color: COLORS.textSecondary, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
+
+      {/* Skip */}
+      <TouchableOpacity onPress={() => navigateToApp()} style={{ paddingVertical: 8 }}>
+        <Text style={{ fontSize: 15, color: COLORS.textMuted, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
       </TouchableOpacity>
     </View>,
   ];
