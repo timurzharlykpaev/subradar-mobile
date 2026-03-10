@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   Animated,
+  Easing,
   ActivityIndicator,
   Platform,
   Dimensions,
@@ -107,57 +108,118 @@ function GoogleIcon() {
   );
 }
 
-// ─── Floating subscription card ────────────────────────────────────────────
+// ─── Service SVG Icons ──────────────────────────────────────────────────────
+function NetflixIcon() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path d="M5.398 0v24l4.5-12.3V24h2.7V0H9.9L7.2 12.3V0z" fill="#E50914" />
+      <Path d="M14.1 0v12.3L11.4 0H8.7l4.5 12.3V24h2.7V0z" fill="#E50914" />
+    </Svg>
+  );
+}
+function SpotifyIcon() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Circle cx="12" cy="12" r="12" fill="#1DB954" />
+      <Path d="M17.25 16.5a.75.75 0 01-.41-.12c-2.4-1.47-5.42-1.8-8.97-1a.75.75 0 01-.34-1.46c3.9-.9 7.24-.51 9.94 1.14a.75.75 0 01-.22 1.44zm1.21-2.7a.94.94 0 01-.52-.15c-2.74-1.7-6.91-2.19-10.15-1.2a.94.94 0 01-.54-1.8c3.7-1.13 8.3-.58 11.47 1.38a.94.94 0 01-.26 1.77zm.1-2.8a.94.94 0 01-.47-.13C15.18 8.9 9.9 8.7 6.5 9.72a.94.94 0 01-.55-1.8c3.9-1.18 10-.95 13.55 1.25a.94.94 0 01-.44 1.83z" fill="white" />
+    </Svg>
+  );
+}
+function ICloudIcon() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" fill="#0071E3" />
+    </Svg>
+  );
+}
+function YoutubeIcon() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8z" fill="#FF0000" />
+      <Path d="M9.75 15.5l6.25-3.5-6.25-3.5v7z" fill="white" />
+    </Svg>
+  );
+}
+function OpenAIIcon() {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24">
+      <Path d="M22.28 9.29a5.44 5.44 0 00-.47-4.48 5.5 5.5 0 00-5.91-2.63A5.5 5.5 0 0011.72 0a5.5 5.5 0 00-5.24 3.81 5.5 5.5 0 00-3.67 2.67 5.5 5.5 0 00.68 6.44 5.44 5.44 0 00.47 4.48 5.5 5.5 0 005.91 2.63A5.5 5.5 0 0012.28 22a5.5 5.5 0 005.25-3.82 5.5 5.5 0 003.67-2.66 5.5 5.5 0 00-.68-6.43l-.24-.8zm-9.5 10.2a4.07 4.07 0 01-2.62-.95l.13-.07 4.35-2.51a.72.72 0 00.36-.62v-6.13l1.84 1.06a.07.07 0 01.04.06v5.07a4.09 4.09 0 01-4.1 4.09zm-8.82-3.75a4.07 4.07 0 01-.49-2.75l.13.08 4.35 2.51a.72.72 0 00.72 0l5.3-3.06v2.12a.07.07 0 01-.03.06L9.6 17.2a4.09 4.09 0 01-5.64-1.46zm-1.15-9.5a4.07 4.07 0 012.13-1.79v5.15a.72.72 0 00.36.62l5.3 3.06-1.84 1.06a.07.07 0 01-.07 0L4.3 11.8a4.09 4.09 0 01-.49-5.56zm15.1 3.52l-5.3-3.06 1.83-1.06a.07.07 0 01.07 0l4.49 2.59a4.09 4.09 0 01-.63 6.38v-5.15a.72.72 0 00-.36-.7l-.1-.01zm1.83-2.78l-.13-.08-4.35-2.51a.72.72 0 00-.72 0l-5.3 3.06V5.33a.07.07 0 01.03-.06L14.4 2.8a4.09 4.09 0 016.14 4.18zM8.54 12.85l-1.84-1.06a.07.07 0 01-.04-.06V6.66A4.09 4.09 0 0113.4 3.9l-.13.07-4.35 2.51a.72.72 0 00-.36.62l-.02 5.75zm1-.23L12 11.25l2.46 1.42v2.83L12 16.92l-2.46-1.42v-2.88z" fill="#10A37F" />
+    </Svg>
+  );
+}
+
 const FLOAT_CARDS = [
-  { name: 'Netflix', amount: '$15.99', color: '#E50914', icon: '🎬', x: -110, delay: 0 },
-  { name: 'Spotify', amount: '$9.99', color: '#1DB954', icon: '🎵', x: 90, delay: 300 },
-  { name: 'iCloud', amount: '$2.99', color: '#0071E3', icon: '☁️', x: -70, delay: 600 },
-  { name: 'YouTube', amount: '$13.99', color: '#FF0000', icon: '▶️', x: 105, delay: 900 },
-  { name: 'ChatGPT', amount: '$20.00', color: '#10A37F', icon: '🤖', x: -120, delay: 200 },
+  { name: 'Netflix',  amount: '$15.99', color: '#1a0a0a', IconComponent: NetflixIcon,  x: -115, delay: 0,   duration: 3200, yPos: -75 },
+  { name: 'Spotify',  amount: '$9.99',  color: '#0a1a0f', IconComponent: SpotifyIcon,  x: 95,   delay: 400,  duration: 2800, yPos: -35 },
+  { name: 'iCloud',   amount: '$2.99',  color: '#0a0f1a', IconComponent: ICloudIcon,   x: -75,  delay: 800,  duration: 3600, yPos: 20  },
+  { name: 'YouTube',  amount: '$13.99', color: '#1a0a0a', IconComponent: YoutubeIcon,  x: 110,  delay: 200,  duration: 3000, yPos: 60  },
+  { name: 'ChatGPT',  amount: '$20.00', color: '#071a15', IconComponent: OpenAIIcon,   x: -125, delay: 600,  duration: 3400, yPos: 90  },
 ];
 
-function FloatingCard({ name, amount, color, icon, x, delay }: {
-  name: string; amount: string; color: string; icon: string; x: number; delay: number;
+function FloatingCard({ name, amount, color, IconComponent, x, delay, duration, yPos }: {
+  name: string; amount: string; color: string; IconComponent: React.FC;
+  x: number; delay: number; duration: number; yPos: number;
 }) {
-  const translateY = useRef(new Animated.Value(60)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-  const floatAnim = useRef(new Animated.Value(0)).current;
+  const entryY = useRef(new Animated.Value(40)).current;
+  const entryOpacity = useRef(new Animated.Value(0)).current;
+  const floatY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Entry animation
+    // Smooth entry
     Animated.parallel([
-      Animated.timing(translateY, { toValue: 0, duration: 600, delay, useNativeDriver: true }),
-      Animated.timing(opacity, { toValue: 1, duration: 600, delay, useNativeDriver: true }),
+      Animated.timing(entryY, {
+        toValue: 0, duration: 700, delay,
+        easing: Easing.out(Easing.cubic), useNativeDriver: true,
+      }),
+      Animated.timing(entryOpacity, {
+        toValue: 1, duration: 700, delay,
+        easing: Easing.out(Easing.quad), useNativeDriver: true,
+      }),
     ]).start(() => {
-      // Floating loop
+      // Smooth sine-wave float — no jump at loop boundary
       Animated.loop(
         Animated.sequence([
-          Animated.timing(floatAnim, { toValue: -8, duration: 2000 + delay % 800, useNativeDriver: true }),
-          Animated.timing(floatAnim, { toValue: 8, duration: 2000 + delay % 800, useNativeDriver: true }),
+          Animated.timing(floatY, {
+            toValue: -9, duration: duration / 2,
+            easing: Easing.inOut(Easing.sin), useNativeDriver: true,
+          }),
+          Animated.timing(floatY, {
+            toValue: 9, duration: duration / 2,
+            easing: Easing.inOut(Easing.sin), useNativeDriver: true,
+          }),
         ])
       ).start();
     });
   }, []);
 
+  const combinedY = Animated.add(entryY, floatY);
+
   return (
     <Animated.View style={{
       position: 'absolute',
-      transform: [{ translateX: x }, { translateY: Animated.add(translateY, floatAnim) }],
-      opacity,
+      top: yPos,
+      transform: [{ translateX: x }, { translateY: combinedY }],
+      opacity: entryOpacity,
     }}>
       <View style={{
         flexDirection: 'row', alignItems: 'center', gap: 8,
-        backgroundColor: 'rgba(255,255,255,0.12)',
-        borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10,
-        shadowColor: color, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+        backgroundColor: 'rgba(15,10,30,0.75)',
+        borderWidth: 1, borderColor: 'rgba(139,92,246,0.25)',
+        borderRadius: 18, paddingHorizontal: 12, paddingVertical: 9,
+        shadowColor: '#8B5CF6', shadowOpacity: 0.25, shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 }, elevation: 8,
       }}>
-        <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 14 }}>{icon}</Text>
+        <View style={{
+          width: 30, height: 30, borderRadius: 9,
+          backgroundColor: color,
+          alignItems: 'center', justifyContent: 'center',
+          borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+        }}>
+          <IconComponent />
         </View>
         <View>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff' }}>{name}</Text>
-          <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{amount}/mo</Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff', letterSpacing: -0.2 }}>{name}</Text>
+          <Text style={{ fontSize: 10, color: 'rgba(180,165,220,0.8)', marginTop: 1 }}>{amount}/mo</Text>
         </View>
       </View>
     </Animated.View>
@@ -165,65 +227,91 @@ function FloatingCard({ name, amount, color, icon, x, delay }: {
 }
 
 function AuthHero() {
-  const logoScale = useRef(new Animated.Value(0.6)).current;
+  const logoScale = useRef(new Animated.Value(0.5)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const ringScale = useRef(new Animated.Value(0.8)).current;
-  const ringOpacity = useRef(new Animated.Value(0)).current;
+  const ring1Scale = useRef(new Animated.Value(1)).current;
+  const ring1Opacity = useRef(new Animated.Value(0.4)).current;
+  const ring2Scale = useRef(new Animated.Value(1)).current;
+  const ring2Opacity = useRef(new Animated.Value(0.25)).current;
 
   useEffect(() => {
+    // Logo entry
     Animated.parallel([
-      Animated.spring(logoScale, { toValue: 1, tension: 60, friction: 8, useNativeDriver: true }),
-      Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.spring(logoScale, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }),
+      Animated.timing(logoOpacity, { toValue: 1, duration: 600, easing: Easing.out(Easing.quad), useNativeDriver: true }),
     ]).start();
 
+    // Ring 1 pulse
     Animated.loop(
       Animated.sequence([
         Animated.parallel([
-          Animated.timing(ringScale, { toValue: 1.4, duration: 1800, useNativeDriver: true }),
-          Animated.timing(ringOpacity, { toValue: 0, duration: 1800, useNativeDriver: true }),
+          Animated.timing(ring1Scale, { toValue: 1.5, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(ring1Opacity, { toValue: 0, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         ]),
         Animated.parallel([
-          Animated.timing(ringScale, { toValue: 0.8, duration: 0, useNativeDriver: true }),
-          Animated.timing(ringOpacity, { toValue: 0.3, duration: 0, useNativeDriver: true }),
+          Animated.timing(ring1Scale, { toValue: 1, duration: 0, useNativeDriver: true }),
+          Animated.timing(ring1Opacity, { toValue: 0.4, duration: 0, useNativeDriver: true }),
         ]),
       ])
     ).start();
+
+    // Ring 2 pulse (offset)
+    setTimeout(() => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(ring2Scale, { toValue: 1.5, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+            Animated.timing(ring2Opacity, { toValue: 0, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          ]),
+          Animated.parallel([
+            Animated.timing(ring2Scale, { toValue: 1, duration: 0, useNativeDriver: true }),
+            Animated.timing(ring2Opacity, { toValue: 0.25, duration: 0, useNativeDriver: true }),
+          ]),
+        ])
+      ).start();
+    }, 1000);
   }, []);
 
   return (
-    <View style={{ width: '100%', height: 220, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-      {/* Background gradient circles */}
+    <View style={{ width: '100%', height: 230, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+      {/* Glow blob */}
       <View style={{
-        position: 'absolute', width: 200, height: 200, borderRadius: 100,
-        backgroundColor: 'rgba(139,92,246,0.15)',
+        position: 'absolute', width: 180, height: 180, borderRadius: 90,
+        backgroundColor: 'rgba(139,92,246,0.12)',
       }} />
-      {/* Pulse ring */}
+      {/* Pulse rings */}
       <Animated.View style={{
-        position: 'absolute', width: 160, height: 160, borderRadius: 80,
-        borderWidth: 2, borderColor: '#8B5CF6',
-        transform: [{ scale: ringScale }], opacity: ringOpacity,
+        position: 'absolute', width: 120, height: 120, borderRadius: 60,
+        borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
+        transform: [{ scale: ring1Scale }], opacity: ring1Opacity,
       }} />
-
-      {/* Logo circle */}
       <Animated.View style={{
-        width: 96, height: 96, borderRadius: 28,
+        position: 'absolute', width: 120, height: 120, borderRadius: 60,
+        borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
+        transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
+      }} />
+      {/* Logo */}
+      <Animated.View style={{
+        width: 90, height: 90, borderRadius: 26,
         backgroundColor: '#8B5CF6',
         alignItems: 'center', justifyContent: 'center',
-        shadowColor: '#8B5CF6', shadowOpacity: 0.6, shadowRadius: 24, elevation: 16,
+        shadowColor: '#8B5CF6', shadowOpacity: 0.7, shadowRadius: 30,
+        shadowOffset: { width: 0, height: 8 }, elevation: 20,
         transform: [{ scale: logoScale }], opacity: logoOpacity,
+        zIndex: 10,
       }}>
-        <Text style={{ fontSize: 42, fontWeight: '900', color: '#fff', letterSpacing: -2 }}>S</Text>
+        <Svg width={44} height={44} viewBox="0 0 24 24" fill="none">
+          <Path d="M3 6C3 4.34 4.34 3 6 3h12c1.66 0 3 1.34 3 3v2H3V6z" fill="rgba(255,255,255,0.3)" />
+          <Path d="M3 8h18v10c0 1.66-1.34 3-3 3H6c-1.66 0-3-1.34-3-3V8z" fill="rgba(255,255,255,0.15)" />
+          <Path d="M7 12h10M7 15.5h6" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+          <Circle cx="18" cy="15.5" r="2" fill="white" opacity="0.9" />
+        </Svg>
       </Animated.View>
 
       {/* Floating cards */}
-      {FLOAT_CARDS.map((card, i) => {
-        const yPositions = [-70, -40, 10, 50, 85];
-        return (
-          <View key={card.name} style={{ position: 'absolute', top: 110 + yPositions[i] }}>
-            <FloatingCard {...card} />
-          </View>
-        );
-      })}
+      {FLOAT_CARDS.map((card) => (
+        <FloatingCard key={card.name} {...card} />
+      ))}
     </View>
   );
 }
