@@ -282,8 +282,9 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
       </Svg>
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
         {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => {
-          const parts = (d.month || '').split('-');
-          const label = monthNames[parseInt(parts[1] || '1', 10) - 1] || d.month;
+          const monthStr = typeof d.month === 'string' ? d.month : String(d.month || '');
+          const parts = monthStr.split('-');
+          const label = monthNames[parseInt(parts[1] || '1', 10) - 1] || monthStr;
           return <Text key={i} style={{ fontSize: 10, color: COLORS.textSecondary }}>{label}</Text>;
         })}
       </View>

@@ -40,7 +40,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
       {/* X labels */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
         {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
-          <Text key={i} style={{ fontSize: 10, color: '#9CA3AF' }}>{d.month.slice(-2)}</Text>
+          <Text key={i} style={{ fontSize: 10, color: '#9CA3AF' }}>{String(d.month || '').slice(-2)}</Text>
         ))}
       </View>
     </View>
