@@ -19,6 +19,8 @@ import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
 import { COLORS, CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
+import { useTheme } from '../../src/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
 
@@ -27,6 +29,7 @@ export default function SettingsScreen() {
   const { user, logout } = useAuthStore();
   const { t } = useTranslation();
   const { currency, setCurrency, language, setLanguage, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
+  const { isDark, toggleTheme, colors } = useTheme();
   const { cards, addCard, removeCard } = usePaymentCardsStore();
 
   const { data: billing } = useBillingStatus();
@@ -76,7 +79,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('settings.title')}</Text>
@@ -134,6 +137,24 @@ export default function SettingsScreen() {
         </Section>
 
         {/* Notifications */}
+        {/* Theme Toggle */}
+        <Section title={t('settings.theme')}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16, backgroundColor: colors.card, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: colors.border }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Ionicons name={isDark ? 'moon' : 'sunny'} size={20} color={colors.primary} />
+              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>
+                {isDark ? t('settings.dark_mode') : t('settings.light_mode')}
+              </Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#E5E7EB', true: colors.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+        </Section>
+
         <Section title={t('settings.notifications')}>
           <SettingRow
             label={t('settings.push_notifications')}

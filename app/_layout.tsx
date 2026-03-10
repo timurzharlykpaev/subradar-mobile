@@ -8,6 +8,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../src/i18n';
+import { ThemeProvider } from '../src/theme';
 import { notificationsApi } from '../src/api/notifications';
 import { useAuthStore } from '../src/stores/authStore';
 import { usePaymentCardsStore } from '../src/stores/paymentCardsStore';
@@ -133,6 +134,7 @@ function PushSetup() {
 export default function RootLayout() {
   return (
     <ErrorBoundary>
+      <ThemeProvider>
       <View style={{ flex: 1 }}>
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
@@ -149,6 +151,7 @@ export default function RootLayout() {
           </QueryClientProvider>
         </I18nextProvider>
       </View>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

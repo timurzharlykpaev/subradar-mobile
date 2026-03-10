@@ -24,6 +24,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
 import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
+import { useTheme } from '../src/theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -382,6 +383,7 @@ export default function OnboardingScreen() {
   const { t, i18n } = useTranslation();
   const { setUser, setOnboarded } = useAuthStore();
   const { setLanguage, language, setCurrency } = useSettingsStore();
+  const { colors } = useTheme();
 
   // Google OAuth
   const [, googleResponse, googlePromptAsync] = Google.useAuthRequest({
@@ -697,13 +699,13 @@ export default function OnboardingScreen() {
 
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       )}
 
       {!otpMode ? (
         <>
-          <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.text, textAlign: 'center', marginBottom: 28, letterSpacing: -0.5 }}>
+          <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text, textAlign: 'center', marginBottom: 28, letterSpacing: -0.5 }}>
             SubRadar
           </Text>
           {Platform.OS === 'ios' && (
@@ -719,7 +721,7 @@ export default function OnboardingScreen() {
             disabled={loading}
           >
             <GoogleIcon />
-            <Text style={[styles.socialText, { color: COLORS.text }]}>{t('onboarding.continue_google')}</Text>
+            <Text style={[styles.socialText, { color: colors.text }]}>{t('onboarding.continue_google')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -728,7 +730,7 @@ export default function OnboardingScreen() {
             disabled={loading}
           >
             <Text style={styles.emailOtpIcon}>✉️</Text>
-            <Text style={[styles.socialText, { color: COLORS.text }]}>{t('auth.continue_email')}</Text>
+            <Text style={[styles.socialText, { color: colors.text }]}>{t('auth.continue_email')}</Text>
           </TouchableOpacity>
         </>
       ) : otpSent ? (
@@ -781,7 +783,7 @@ export default function OnboardingScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder={t('auth.email_placeholder')}
-            placeholderTextColor={COLORS.textMuted}
+            placeholderTextColor={colors.textMuted}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -798,14 +800,14 @@ export default function OnboardingScreen() {
       <Text style={styles.terms}>
         {t('onboarding.terms_prefix')}{' '}
         <Text
-          style={[styles.terms, { color: COLORS.primary, textDecorationLine: 'underline' }]}
+          style={[styles.terms, { color: colors.primary, textDecorationLine: 'underline' }]}
           onPress={() => WebBrowser.openBrowserAsync('https://subradar.ai/legal/terms')}
         >
           {t('onboarding.terms_link')}
         </Text>
         {' '}{t('onboarding.terms_and')}{' '}
         <Text
-          style={[styles.terms, { color: COLORS.primary, textDecorationLine: 'underline' }]}
+          style={[styles.terms, { color: colors.primary, textDecorationLine: 'underline' }]}
           onPress={() => WebBrowser.openBrowserAsync('https://subradar.ai/legal/privacy')}
         >
           {t('onboarding.privacy_link')}
@@ -816,15 +818,15 @@ export default function OnboardingScreen() {
     // Step 6: Add first subscription
     <View key="first_sub" style={[styles.step, { alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 24 }]}>
       {/* Icon */}
-      <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: COLORS.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-        <Ionicons name="add-circle" size={52} color={COLORS.primary} />
+      <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+        <Ionicons name="add-circle" size={52} color={colors.primary} />
       </View>
       <Text style={[styles.headline, { textAlign: 'center' }]}>{t('onboarding.first_sub_title')}</Text>
       <Text style={[styles.subheadline, { textAlign: 'center', marginBottom: 8 }]}>{t('onboarding.first_sub_subtitle')}</Text>
 
       {/* Add manually */}
       <TouchableOpacity
-        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
+        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
         onPress={() => { router.replace('/(tabs)'); }}
       >
         <Ionicons name="create-outline" size={20} color="#FFF" />
@@ -833,22 +835,22 @@ export default function OnboardingScreen() {
 
       {/* Add with AI */}
       <TouchableOpacity
-        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: '#2D2060', borderWidth: 1, borderColor: COLORS.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
+        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: '#2D2060', borderWidth: 1, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
         onPress={() => { router.replace('/(tabs)'); }}
       >
-        <Ionicons name="sparkles-outline" size={20} color={COLORS.primary} />
-        <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.primary }}>{t('onboarding.add_with_ai')}</Text>
+        <Ionicons name="sparkles-outline" size={20} color={colors.primary} />
+        <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_with_ai')}</Text>
       </TouchableOpacity>
 
       {/* Skip */}
       <TouchableOpacity onPress={() => navigateToApp()} style={{ paddingVertical: 8 }}>
-        <Text style={{ fontSize: 15, color: COLORS.textMuted, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
+        <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
       </TouchableOpacity>
     </View>,
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>{steps[step]}</View>
 
       <View style={styles.footer}>

@@ -53,3 +53,6 @@ export const STATUS_COLORS: Record<string, string> = {
   PAUSED: '#9E9E9E',
   CANCELLED: '#F44336',
 };
+
+// Re-export themes for convenience
+export { DarkTheme, LightTheme } from '../theme/colors';

@@ -17,12 +17,14 @@ import { useSubscriptionsStore, FilterType } from '../../src/stores/subscription
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { COLORS, CATEGORIES } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 import { usePlanLimits } from '../../src/hooks/usePlanLimits';
 
 export default function SubscriptionsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { subsLimitReached } = usePlanLimits();
+  const { colors } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchSubs = useCallback(async () => {
@@ -90,7 +92,7 @@ export default function SubscriptionsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>{t('subscriptions.title')}</Text>
@@ -110,7 +112,7 @@ export default function SubscriptionsScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
           {...{placeholder: t('subscriptions.search')}}
-          placeholderTextColor={COLORS.textMuted}
+          placeholderTextColor={colors.textMuted}
         />
         {searchQuery ? (
           <TouchableOpacity onPress={() => setSearchQuery('')}>

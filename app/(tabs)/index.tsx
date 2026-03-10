@@ -19,6 +19,7 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
 import { COLORS, CATEGORIES } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 import { UpcomingPaymentCard } from '../../src/components/UpcomingPaymentCard';
 import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
 
@@ -28,6 +29,7 @@ export default function DashboardScreen() {
   const user = useAuthStore((s) => s.user);
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const { currency } = useSettingsStore();
+  const { colors } = useTheme();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [monthlyTrend, setMonthlyTrend] = React.useState<{ month: string; amount: number }[]>([]);
@@ -123,14 +125,14 @@ export default function DashboardScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -194,7 +196,7 @@ export default function DashboardScreen() {
             <Text style={styles.sectionTitle}>{t('dashboard.active_subs_title')}</Text>
             {activeSubs.slice(0, 5).map((sub) => (
               <View key={sub.id} style={styles.miniCard}>
-                <View style={[styles.miniIcon, { backgroundColor: COLORS.primaryLight }]}>
+                <View style={[styles.miniIcon, { backgroundColor: colors.primaryLight }]}>
                   <Text style={styles.miniIconText}>{sub.name[0]}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
@@ -212,13 +214,13 @@ export default function DashboardScreen() {
           <Text style={styles.sectionTitle}>{t('dashboard.forecast_title')}</Text>
           <View style={styles.forecastRow}>
             <View style={[styles.forecastCard, { flex: 1 }]}>
-              <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
+              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
               <Text style={styles.forecastLabel}>{t('dashboard.next_30_days')}</Text>
               <Text style={styles.forecastAmount}>{currency} {(forecast30 || 0).toFixed(2)}</Text>
               <Text style={styles.forecastSub}>{upcomingNext30.length} {t('dashboard.subscriptions_label')}</Text>
             </View>
             <View style={[styles.forecastCard, { flex: 1 }]}>
-              <Ionicons name="trending-up-outline" size={20} color={COLORS.success} />
+              <Ionicons name="trending-up-outline" size={20} color={colors.success} />
               <Text style={styles.forecastLabel}>{t('dashboard.per_year')}</Text>
               <Text style={styles.forecastAmount}>{currency} {(totalMonthly * 12).toFixed(2)}</Text>
               <Text style={styles.forecastSub}>{t('dashboard.annually')}</Text>
@@ -230,7 +232,7 @@ export default function DashboardScreen() {
         {duplicateCategories.length > 0 && (
           <View style={styles.section}>
             <View style={styles.savingsCard}>
-              <Ionicons name="bulb-outline" size={22} color={COLORS.warning} />
+              <Ionicons name="bulb-outline" size={22} color={colors.warning} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.savingsTitle}>{t('dashboard.potential_savings')}</Text>
                 <Text style={styles.savingsSub}>{duplicateCategories.length} {t('dashboard.possible_duplicates')}</Text>
@@ -272,10 +274,10 @@ export default function DashboardScreen() {
                 ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000))
                 : null;
               const dotColor =
-                daysLeft === null ? COLORS.textSecondary :
-                daysLeft < 3 ? COLORS.error :
-                daysLeft <= 7 ? COLORS.warning :
-                COLORS.success;
+                daysLeft === null ? colors.textSecondary :
+                daysLeft < 3 ? colors.error :
+                daysLeft <= 7 ? colors.warning :
+                colors.success;
               const monthlyAmount = (() => {
                 const mult = sub.billingPeriod === 'WEEKLY' ? 4 : sub.billingPeriod === 'QUARTERLY' ? 1 / 3 : sub.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
                 return Number(sub.amount * mult).toFixed(2);
@@ -320,7 +322,7 @@ export default function DashboardScreen() {
               icon="add-circle-outline"
               label={t('dashboard.add_subscription')}
               onPress={() => router.push('/(tabs)/add')}
-              color={COLORS.primary}
+              color={colors.primary}
             />
             <QuickAction
               icon="document-text-outline"
@@ -332,7 +334,7 @@ export default function DashboardScreen() {
               icon="star-outline"
               label={t('dashboard.upgrade_pro')}
               onPress={() => router.push('/paywall')}
-              color={COLORS.warning}
+              color={colors.warning}
             />
           </View>
         </View>
@@ -342,13 +344,14 @@ export default function DashboardScreen() {
 }
 
 function QuickAction({ icon, label, onPress, color }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void; color: string }) {
+  const { colors } = useTheme();
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={{ flex: 1, minWidth: '45%', backgroundColor: COLORS.card, borderRadius: 14, padding: 14, alignItems: 'center', gap: 8, borderWidth: 1, borderColor: COLORS.border }}
+      style={{ flex: 1, minWidth: '45%', backgroundColor: colors.card, borderRadius: 14, padding: 14, alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.border }}
     >
       <Ionicons name={icon} size={24} color={color} />
-      <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.text, textAlign: 'center' }}>{label}</Text>
+      <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -363,6 +366,7 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 }
 
 function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }) {
+  const { colors } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const chartW = screenWidth - 80;
   const chartH = 120;
@@ -374,7 +378,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
   if (!hasData) {
     return (
       <View style={{ height: chartH + 24, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 13, color: COLORS.textMuted }}>Нет данных за этот период</Text>
+        <Text style={{ fontSize: 13, color: colors.textMuted }}>Нет данных за этот период</Text>
       </View>
     );
   }
@@ -391,7 +395,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
           return (
             <Rect
               key={i} x={x} y={y} width={barW} height={barH} rx={5}
-              fill={isMax ? COLORS.primary : 'rgba(139,92,246,0.35)'}
+              fill={isMax ? colors.primary : 'rgba(139,92,246,0.35)'}
             />
           );
         })}
@@ -402,7 +406,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
           const parts = monthStr.split('-');
           const monthIdx = parts.length >= 2 ? parseInt(parts[1], 10) - 1 : parseInt(monthStr, 10) - 1;
           const label = monthNames[monthIdx] || monthStr;
-          return <Text key={i} style={{ fontSize: 10, color: COLORS.textSecondary }}>{label}</Text>;
+          return <Text key={i} style={{ fontSize: 10, color: colors.textSecondary }}>{label}</Text>;
         })}
       </View>
     </View>
@@ -410,6 +414,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
 }
 
 function CategoryDonut({ categories }: { categories: { category: string; amount: number }[] }) {
+  const { colors } = useTheme();
   const total = categories.reduce((sum, c) => sum + (isFinite(Number(c.amount)) ? Number(c.amount) : 0), 0);
   if (!total || !isFinite(total)) return null;
 
@@ -462,8 +467,8 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
         {slices.map((slice, idx) => (
           <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
-            <Text style={{ fontSize: 12, color: COLORS.text, flex: 1 }}>{slice.emoji} {slice.label}</Text>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.textSecondary }}>{slice.pct}%</Text>
+            <Text style={{ fontSize: 12, color: colors.text, flex: 1 }}>{slice.emoji} {slice.label}</Text>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary }}>{slice.pct}%</Text>
           </View>
         ))}
       </View>

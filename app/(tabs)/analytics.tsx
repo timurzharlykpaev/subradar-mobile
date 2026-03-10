@@ -13,11 +13,13 @@ import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { COLORS, CATEGORIES } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 
 const CHART_HEIGHT = 180;
 
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
 function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
+  const { colors } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const maxVal = Math.max(...data.map((d) => d.total), 1);
   const barW = Math.max(12, (screenWidth - 120) / data.length - 6);
@@ -40,7 +42,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
       {/* X labels */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
         {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
-          <Text key={i} style={{ fontSize: 10, color: COLORS.textMuted }}>{String(d.month || '').slice(-2)}</Text>
+          <Text key={i} style={{ fontSize: 10, color: colors.textMuted }}>{String(d.month || '').slice(-2)}</Text>
         ))}
       </View>
     </View>
@@ -53,6 +55,7 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
   total: number;
   avgLabel: string;
 }) {
+  const { colors } = useTheme();
   const size = 160;
   const radius = 60;
   const innerRadius = 40;
@@ -99,8 +102,8 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
         ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>${Number(total).toFixed(0)}</Text>
-        <Text style={{ fontSize: 11, color: COLORS.textMuted }}>{avgLabel}</Text>
+        <Text style={{ fontSize: 20, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
+        <Text style={{ fontSize: 11, color: colors.textMuted }}>{avgLabel}</Text>
       </View>
     </View>
   );
@@ -123,6 +126,7 @@ export default function AnalyticsScreen() {
   const { subscriptions } = useSubscriptionsStore();
   const { data: billingStatus } = useBillingStatus();
   const isPro = billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization';
+  const { colors } = useTheme();
 
   const [summary, setSummary] = useState<any>(null);
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
@@ -220,7 +224,7 @@ export default function AnalyticsScreen() {
   const cardMax = Math.max(...cardBreakdown.map((c: any) => c.total ?? c.amount ?? 0), 1);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('analytics.title')}</Text>
@@ -288,7 +292,7 @@ export default function AnalyticsScreen() {
                           styles.barFill,
                           {
                             width: `${(amount / cardMax) * 100}%`,
-                            backgroundColor: COLORS.primary,
+                            backgroundColor: colors.primary,
                           },
                         ]}
                       />
@@ -377,7 +381,7 @@ export default function AnalyticsScreen() {
               return (
                 <View key={sub.id} style={styles.top5Row}>
                   <Text style={styles.top5Rank}>{index + 1}</Text>
-                  <View style={[styles.top5Icon, { backgroundColor: catInfo?.color || COLORS.primary }]}>
+                  <View style={[styles.top5Icon, { backgroundColor: catInfo?.color || colors.primary }]}>
                     <Text style={styles.top5Emoji}>{catInfo?.emoji || '📦'}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -398,7 +402,7 @@ export default function AnalyticsScreen() {
           <Text style={styles.cardTitle}>{t('analytics.all_subscriptions')}</Text>
           {activeSubs.map((sub) => (
             <View key={sub.id} style={styles.subRow}>
-              <View style={[styles.subIcon, { backgroundColor: COLORS.primaryLight }]}>
+              <View style={[styles.subIcon, { backgroundColor: colors.primaryLight }]}>
                 <Text style={styles.subIconText}>{sub.name[0]}</Text>
               </View>
               <Text style={styles.subName} numberOfLines={1}>{sub.name}</Text>
