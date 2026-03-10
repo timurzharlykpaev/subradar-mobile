@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Animated,
   ActivityIndicator,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -103,6 +104,127 @@ function GoogleIcon() {
       <Path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
       <Path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
     </Svg>
+  );
+}
+
+// ─── Floating subscription card ────────────────────────────────────────────
+const FLOAT_CARDS = [
+  { name: 'Netflix', amount: '$15.99', color: '#E50914', icon: '🎬', x: -110, delay: 0 },
+  { name: 'Spotify', amount: '$9.99', color: '#1DB954', icon: '🎵', x: 90, delay: 300 },
+  { name: 'iCloud', amount: '$2.99', color: '#0071E3', icon: '☁️', x: -70, delay: 600 },
+  { name: 'YouTube', amount: '$13.99', color: '#FF0000', icon: '▶️', x: 105, delay: 900 },
+  { name: 'ChatGPT', amount: '$20.00', color: '#10A37F', icon: '🤖', x: -120, delay: 200 },
+];
+
+function FloatingCard({ name, amount, color, icon, x, delay }: {
+  name: string; amount: string; color: string; icon: string; x: number; delay: number;
+}) {
+  const translateY = useRef(new Animated.Value(60)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Entry animation
+    Animated.parallel([
+      Animated.timing(translateY, { toValue: 0, duration: 600, delay, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 600, delay, useNativeDriver: true }),
+    ]).start(() => {
+      // Floating loop
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(floatAnim, { toValue: -8, duration: 2000 + delay % 800, useNativeDriver: true }),
+          Animated.timing(floatAnim, { toValue: 8, duration: 2000 + delay % 800, useNativeDriver: true }),
+        ])
+      ).start();
+    });
+  }, []);
+
+  return (
+    <Animated.View style={{
+      position: 'absolute',
+      transform: [{ translateX: x }, { translateY: Animated.add(translateY, floatAnim) }],
+      opacity,
+    }}>
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10,
+        shadowColor: color, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+      }}>
+        <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 14 }}>{icon}</Text>
+        </View>
+        <View>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff' }}>{name}</Text>
+          <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{amount}/mo</Text>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
+function AuthHero() {
+  const logoScale = useRef(new Animated.Value(0.6)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const ringScale = useRef(new Animated.Value(0.8)).current;
+  const ringOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(logoScale, { toValue: 1, tension: 60, friction: 8, useNativeDriver: true }),
+      Animated.timing(logoOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+    ]).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(ringScale, { toValue: 1.4, duration: 1800, useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0, duration: 1800, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(ringScale, { toValue: 0.8, duration: 0, useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0.3, duration: 0, useNativeDriver: true }),
+        ]),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <View style={{ width: '100%', height: 220, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+      {/* Background gradient circles */}
+      <View style={{
+        position: 'absolute', width: 200, height: 200, borderRadius: 100,
+        backgroundColor: 'rgba(139,92,246,0.15)',
+      }} />
+      {/* Pulse ring */}
+      <Animated.View style={{
+        position: 'absolute', width: 160, height: 160, borderRadius: 80,
+        borderWidth: 2, borderColor: '#8B5CF6',
+        transform: [{ scale: ringScale }], opacity: ringOpacity,
+      }} />
+
+      {/* Logo circle */}
+      <Animated.View style={{
+        width: 96, height: 96, borderRadius: 28,
+        backgroundColor: '#8B5CF6',
+        alignItems: 'center', justifyContent: 'center',
+        shadowColor: '#8B5CF6', shadowOpacity: 0.6, shadowRadius: 24, elevation: 16,
+        transform: [{ scale: logoScale }], opacity: logoOpacity,
+      }}>
+        <Text style={{ fontSize: 42, fontWeight: '900', color: '#fff', letterSpacing: -2 }}>S</Text>
+      </Animated.View>
+
+      {/* Floating cards */}
+      {FLOAT_CARDS.map((card, i) => {
+        const yPositions = [-70, -40, 10, 50, 85];
+        return (
+          <View key={card.name} style={{ position: 'absolute', top: 110 + yPositions[i] }}>
+            <FloatingCard {...card} />
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -427,9 +549,8 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 5: Auth
-    <View key="auth" style={styles.step}>
-      <Text style={styles.sectionTitle}>{t('auth.welcome')}</Text>
-      <Text style={styles.subheadline}>{t('auth.sign_in')}</Text>
+    <View key="auth" style={[styles.step, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
+      <AuthHero />
 
       {loading && (
         <View style={styles.loadingOverlay}>
@@ -439,6 +560,12 @@ export default function OnboardingScreen() {
 
       {!otpMode ? (
         <>
+          <Text style={{ fontSize: 26, fontWeight: '900', color: COLORS.text, textAlign: 'center', marginBottom: 4, letterSpacing: -0.5 }}>
+            SubRadar
+          </Text>
+          <Text style={{ fontSize: 14, color: COLORS.textSecondary, textAlign: 'center', marginBottom: 24 }}>
+            {t('auth.sign_in')}
+          </Text>
           {Platform.OS === 'ios' && (
             <TouchableOpacity style={styles.socialBtn} onPress={handleAppleLogin} disabled={loading}>
               <AppleIcon />
