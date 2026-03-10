@@ -5,7 +5,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path as SvgPath, Rect } from 'react-native-svg';
@@ -14,14 +14,14 @@ import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { COLORS, CATEGORIES } from '../../src/constants';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
 const CHART_HEIGHT = 180;
 
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
 function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
+  const { width: screenWidth } = useWindowDimensions();
   const maxVal = Math.max(...data.map((d) => d.total), 1);
-  const barW = Math.max(12, (SCREEN_WIDTH - 120) / data.length - 6);
-  const chartW = SCREEN_WIDTH - 80;
+  const barW = Math.max(12, (screenWidth - 120) / data.length - 6);
+  const chartW = screenWidth - 80;
 
   return (
     <View style={{ height: CHART_HEIGHT }}>

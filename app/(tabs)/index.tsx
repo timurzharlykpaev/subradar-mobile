@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -261,11 +261,10 @@ function StatCard({ label, value, color }: { label: string; value: number; color
   );
 }
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
 function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }) {
+  const { width: screenWidth } = useWindowDimensions();
   const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
-  const chartW = SCREEN_WIDTH - 80;
+  const chartW = screenWidth - 80;
   const chartH = 140;
   const barW = Math.max(10, chartW / data.length - 6);
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
