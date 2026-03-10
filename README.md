@@ -152,6 +152,58 @@ assets/
 
 ---
 
+## Deployment
+
+### Dev deploy (automatic)
+
+```bash
+git checkout dev
+git merge main          # или feature branch
+git push origin dev     # → GitHub Actions запускает EAS Build автоматически
+```
+
+Через ~15 мин тестировщики увидят новую версию:
+- iOS → TestFlight → Internal Testers
+- Android → Play Console → Internal Testing → скачать по ссылке
+
+### Prod deploy (manual)
+
+```bash
+# 1. Убедись что всё протестировано на dev
+# 2. Merge dev → main
+git checkout main
+git merge dev
+git push origin main
+
+# 3. Запусти prod сборку вручную
+eas build --platform all --profile production
+
+# 4. После сборки — отправь в магазины
+eas submit --platform ios --profile production --latest
+eas submit --platform android --profile production --latest
+```
+
+Или через GitHub:
+**Actions → "Build Prod" → Run workflow → platform: all**
+
+### Rollback
+
+EAS хранит все предыдущие сборки:
+```bash
+# Посмотреть список сборок
+eas build:list
+
+# Отправить конкретную сборку в магазин
+eas submit --platform ios --id <build-id>
+```
+
+### Версии
+
+Версии автоматически инкрементируются при каждом билде (`autoIncrement: true` в eas.json).  
+Текущая версия в `app.json` → `expo.version`.
+
+---
+
 ## Demo Account (for reviewers)
 
 | Field | Value |
