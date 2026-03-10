@@ -1,0 +1,57 @@
+name: Build Dev (TestFlight + Play Internal)
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: iOS Preview Build → TestFlight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS (preview → TestFlight internal)
+        run: eas build --platform ios --profile preview --non-interactive --no-wait
+        env:
+          EXPO_PUBLIC_API_URL: https://api-dev.subradar.ai/api/v1
+
+  build-android:
+    name: Android Preview Build → Play Internal
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android (preview APK → Play Internal)
+        run: eas build --platform android --profile preview --non-interactive --no-wait
+        env:
+          EXPO_PUBLIC_API_URL: https://api-dev.subradar.ai/api/v1
