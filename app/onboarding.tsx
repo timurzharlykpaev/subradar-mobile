@@ -605,16 +605,20 @@ export default function OnboardingScreen() {
         <Text style={styles.logoTitle}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </View>
-      <Text style={styles.showcaseTitle}>{t('onboarding.showcase_title')}</Text>
+      <Text style={[styles.showcaseTitle, { color: colors.text }]}>{t('onboarding.showcase_title')}</Text>
       <View style={styles.showcaseGrid}>
         {SHOWCASE_FEATURES.map((f) => (
           <Animated.View
             key={f.title}
-            style={[styles.showcaseCard, { transform: [{ scale: f.scale }] }]}
+            style={[styles.showcaseCard, {
+              transform: [{ scale: f.scale }],
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            }]}
           >
             <f.Icon />
-            <Text style={styles.showcaseCardTitle}>{f.title}</Text>
-            <Text style={styles.showcaseCardDesc}>{f.desc}</Text>
+            <Text style={[styles.showcaseCardTitle, { color: colors.text }]}>{f.title}</Text>
+            <Text style={[styles.showcaseCardDesc, { color: colors.textSecondary }]}>{f.desc}</Text>
           </Animated.View>
         ))}
       </View>
@@ -654,8 +658,8 @@ export default function OnboardingScreen() {
         <Text style={styles.logoTitle}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </Animated.View>
-      <Text style={styles.headline}>{t('landing.hero_title')}</Text>
-      <Text style={styles.subheadline}>{t('landing.hero_sub')}</Text>
+      <Text style={[styles.headline, { color: colors.text }]}>{t('landing.hero_title')}</Text>
+      <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('landing.hero_sub')}</Text>
     </View>,
 
     // Step 3: Features
@@ -677,7 +681,7 @@ export default function OnboardingScreen() {
     // Step 4: Currency
     <View key="currency" style={styles.step}>
       <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
-      <Text style={styles.subheadline}>{t('onboarding.choose_currency')}</Text>
+      <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('onboarding.choose_currency')}</Text>
       <View style={styles.currencyGrid}>
         {CURRENCIES.map((cur) => (
           <TouchableOpacity
@@ -821,8 +825,8 @@ export default function OnboardingScreen() {
       <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
         <Ionicons name="add-circle" size={52} color={colors.primary} />
       </View>
-      <Text style={[styles.headline, { textAlign: 'center' }]}>{t('onboarding.first_sub_title')}</Text>
-      <Text style={[styles.subheadline, { textAlign: 'center', marginBottom: 8 }]}>{t('onboarding.first_sub_subtitle')}</Text>
+      <Text style={[styles.headline, { textAlign: 'center', color: colors.text }]}>{t('onboarding.first_sub_title')}</Text>
+      <Text style={[styles.subheadline, { textAlign: 'center', marginBottom: 8, color: colors.textSecondary }]}>{t('onboarding.first_sub_subtitle')}</Text>
 
       {/* Add manually */}
       <TouchableOpacity
