@@ -152,6 +152,118 @@ assets/
 
 ---
 
+## Build & Submit
+
+### Build commands
+
+```bash
+# Dev build (твой девайс — development client)
+eas build --platform ios --profile development
+eas build --platform android --profile development
+
+# Preview build (тестировщики — Internal Testing)
+eas build --platform ios --profile preview
+eas build --platform android --profile preview
+
+# Prod build (App Store / Google Play)
+eas build --platform ios --profile production
+eas build --platform android --profile production
+
+# Обе платформы сразу
+eas build --platform all --profile preview
+eas build --platform all --profile production
+```
+
+> После запуска билд уходит в EAS облако (~10-15 мин).  
+> Следить за прогрессом: `eas build:list` или на [expo.dev/builds](https://expo.dev/builds)
+
+---
+
+### Submit commands
+
+```bash
+# Отправить последний билд в магазины
+eas submit --platform ios --profile preview --latest       # → TestFlight Internal
+eas submit --platform ios --profile production --latest    # → App Store Review
+
+eas submit --platform android --profile preview --latest   # → Play Internal Testing
+eas submit --platform android --profile production --latest # → Play Production
+
+# Отправить конкретный билд по ID
+eas submit --platform ios --id <build-id>
+```
+
+---
+
+### Build → Submit flow (полный цикл)
+
+#### Тестировщикам (dev сборка)
+
+```bash
+# 1. Собрать
+eas build --platform all --profile preview
+
+# 2. Отправить (после завершения билда)
+eas submit --platform ios --profile preview --latest
+eas submit --platform android --profile preview --latest
+
+# Или одной командой (build + submit)
+eas build --platform ios --profile preview --auto-submit
+eas build --platform android --profile preview --auto-submit
+```
+
+Тестировщики iOS получат уведомление в TestFlight.  
+Тестировщики Android скачают по ссылке в Play Console → Internal Testing.
+
+#### В продакшн (релиз в магазины)
+
+```bash
+# 1. Убедись что dev протестирован
+# 2. Собрать prod
+eas build --platform all --profile production
+
+# 3. Отправить на ревью
+eas submit --platform ios --profile production --latest    # → App Store Review (1-3 дня)
+eas submit --platform android --profile production --latest # → Play Store (1-3 дня)
+```
+
+---
+
+### Required secrets для автосабмита (GitHub Actions)
+
+| Secret | Где взять |
+|--------|-----------|
+| `EXPO_TOKEN` | [expo.dev](https://expo.dev) → Settings → Access Tokens |
+| `APPLE_APP_SPECIFIC_PASSWORD` | [appleid.apple.com](https://appleid.apple.com) → App-Specific Passwords |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Play Console → Setup → API access → Service Account → JSON key |
+
+Добавить в GitHub: **repo → Settings → Secrets and variables → Actions → New repository secret**
+
+---
+
+### Посмотреть список сборок
+
+```bash
+eas build:list                          # все сборки
+eas build:list --platform ios           # только iOS
+eas build:list --profile preview        # только preview
+eas build:list --status finished        # завершённые
+```
+
+---
+
+### Rollback
+
+```bash
+# Посмотреть предыдущие сборки
+eas build:list --platform ios --status finished
+
+# Отправить предыдущую версию
+eas submit --platform ios --id <build-id>
+```
+
+---
+
 ## Deployment
 
 ### Dev deploy (automatic)
