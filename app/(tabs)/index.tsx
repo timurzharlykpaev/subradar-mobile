@@ -61,7 +61,12 @@ export default function DashboardScreen() {
         setMonthlyTrend(items.slice(-6));
       }
       if (categoryRes?.data) {
-        const items = Array.isArray(categoryRes.data) ? categoryRes.data : categoryRes.data.categories || [];
+        const raw = Array.isArray(categoryRes.data) ? categoryRes.data : categoryRes.data.categories || [];
+        // API returns { category: "STREAMING", total: 15.99 } — normalize to { category, amount }
+        const items = raw.map((d: any) => ({
+          category: d.category,
+          amount: Number(d.amount ?? d.total ?? 0),
+        })).filter((d: any) => d.amount > 0);
         setCategoryData(items.slice(0, 5));
       }
     } catch {
