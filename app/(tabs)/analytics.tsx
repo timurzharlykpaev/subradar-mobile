@@ -256,8 +256,8 @@ export default function AnalyticsScreen() {
                 {byCategory.map((cat) => (
                   <View key={cat.id} style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                    <Text style={styles.legendEmoji}>{cat.emoji}</Text>
-                    <Text style={styles.legendLabel} numberOfLines={1}>{cat.label}</Text>
+                    <Text style={styles.legendLabel} numberOfLines={1}>{cat.emoji} {cat.label}</Text>
+                    <Text style={styles.legendPercent}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
                     <Text style={styles.legendAmount}>${Number(cat.total).toFixed(0)}</Text>
                   </View>
                 ))}
@@ -516,10 +516,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendEmoji: { fontSize: 16, width: 22 },
+  legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
   legendLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: '#E5E7EB' },
-  legendAmount: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  legendPercent: { fontSize: 12, color: '#9CA3AF', width: 36, textAlign: 'right' },
+  legendAmount: { fontSize: 13, fontWeight: '700', color: COLORS.primary, width: 52, textAlign: 'right' },
 
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
