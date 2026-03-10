@@ -31,11 +31,57 @@ const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
   '140914936328-hftqahkh20bdie089g2mfdcnuuker4cm.apps.googleusercontent.com';
 
+// ─── Feature SVG Icons ───────────────────────────────────────────────────────
+function IconVoice() {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z" fill="#8B5CF6" />
+      <Path d="M5 10a1 1 0 0 1 2 0 5 5 0 0 0 10 0 1 1 0 1 1 2 0 7 7 0 0 1-6 6.93V19h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.07A7 7 0 0 1 5 10Z" fill="#8B5CF6" />
+    </Svg>
+  );
+}
+
+function IconCamera() {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 3H15L17 5H21C21.55 5 22 5.45 22 6V18C22 18.55 21.55 19 21 19H3C2.45 19 2 18.55 2 18V6C2 5.45 2.45 5 3 5H7L9 3Z" fill="#8B5CF6" opacity="0.2" />
+      <Path d="M9 3H15L17 5H21C21.55 5 22 5.45 22 6V18C22 18.55 21.55 19 21 19H3C2.45 19 2 18.55 2 18V6C2 5.45 2.45 5 3 5H7L9 3Z" stroke="#8B5CF6" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+      <Path d="M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8Z" fill="#8B5CF6" />
+      <Path d="M19 8H18" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function IconBell() {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 2C8.13 2 5 5.13 5 9V13L3 15V16H21V15L19 13V9C19 5.13 15.87 2 12 2Z" fill="#8B5CF6" opacity="0.2" />
+      <Path d="M12 2C8.13 2 5 5.13 5 9V13L3 15V16H21V15L19 13V9C19 5.13 15.87 2 12 2Z" stroke="#8B5CF6" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+      <Path d="M10 16C10 17.1 10.9 18 12 18C13.1 18 14 17.1 14 16" stroke="#8B5CF6" strokeWidth="1.5" strokeLinecap="round" />
+      <Path d="M12 2V1" stroke="#8B5CF6" strokeWidth="1.5" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function IconChart() {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 20H20" stroke="#8B5CF6" strokeWidth="1.5" strokeLinecap="round" />
+      <Path d="M4 14H7V20H4V14Z" fill="#8B5CF6" opacity="0.4" />
+      <Path d="M4 14H7V20H4V14Z" stroke="#8B5CF6" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+      <Path d="M10 9H13V20H10V9Z" fill="#8B5CF6" opacity="0.65" />
+      <Path d="M10 9H13V20H10V9Z" stroke="#8B5CF6" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+      <Path d="M16 4H19V20H16V4Z" fill="#8B5CF6" />
+      <Path d="M16 4H19V20H16V4Z" stroke="#8B5CF6" strokeWidth="1.5" strokeLinejoin="round" fill="none" />
+    </Svg>
+  );
+}
+
 const FEATURES = [
-  { emoji: '🎙', key: 'voice' },
-  { emoji: '📸', key: 'screenshot' },
-  { emoji: '🔔', key: 'reminders' },
-  { emoji: '📊', key: 'reports' },
+  { icon: IconVoice, key: 'voice' },
+  { icon: IconCamera, key: 'screenshot' },
+  { icon: IconBell, key: 'reminders' },
+  { icon: IconChart, key: 'reports' },
 ];
 
 function AppleIcon() {
@@ -351,7 +397,7 @@ export default function OnboardingScreen() {
       {FEATURES.map((f) => (
         <View key={f.key} style={styles.featureRow}>
           <View style={styles.featureIcon}>
-            <Text style={styles.featureEmoji}>{f.emoji}</Text>
+            <f.icon />
           </View>
           <View style={styles.featureText}>
             <Text style={styles.featureTitle}>{t(`features.${f.key}_title`)}</Text>
