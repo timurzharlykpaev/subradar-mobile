@@ -14,7 +14,7 @@
     "scheme": "subradar",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "io.subradar.mobile",
+      "bundleIdentifier": "com.goalin.subradar",
       "icon": "./assets/images/icon.png",
       "entitlements": {
         "aps-environment": "development"
@@ -25,8 +25,14 @@
             "CFBundleURLSchemes": [
               "com.googleusercontent.apps.140914936328-hftqahkh20bdie089g2mfdcnuuker4cm"
             ]
+          },
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.140914936328-hftqahkh20bdie089g2mfdcnuuker4cm"
+            ]
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -34,7 +40,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#8B5CF6"
       },
-      "package": "io.subradar.mobile"
+      "package": "com.goalin.subradar",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -60,6 +70,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b6fbf0f2-a22b-4eb7-8fb7-d03856c94551"
+      }
+    },
+    "owner": "timur98_zkharlyk"
   }
 }
