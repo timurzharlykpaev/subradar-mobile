@@ -311,6 +311,61 @@ function AuthHero() {
   );
 }
 
+// ─── Showcase card icons ────────────────────────────────────────────────────
+function ShowcaseAIIcon() {
+  return (
+    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
+      <Rect width="36" height="36" rx="10" fill="#EDE9FF" />
+      <Path d="M18 8C14.13 8 11 11.13 11 15v2l-2 2v1h18v-1l-2-2v-2c0-3.87-3.13-7-7-7z" fill="#8B5CF6" opacity="0.9"/>
+      <Circle cx="18" cy="26" r="2" fill="#8B5CF6" />
+      <Path d="M23 12.5c1.38.9 2.3 2.46 2.3 4.25" stroke="#8B5CF6" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+      <Circle cx="14" cy="15" r="1.5" fill="white" />
+      <Circle cx="18" cy="13.5" r="1.5" fill="white" />
+      <Circle cx="22" cy="15" r="1.5" fill="white" />
+      <Path d="M14 15l4-1.5 4 1.5" stroke="white" strokeWidth="1" opacity="0.6"/>
+    </Svg>
+  );
+}
+
+function ShowcaseBellIcon() {
+  return (
+    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
+      <Rect width="36" height="36" rx="10" fill="#FEF3C7" />
+      <Path d="M18 8a7 7 0 00-7 7v4l-2 2v1h18v-1l-2-2v-4a7 7 0 00-7-7z" fill="#F59E0B" opacity="0.85"/>
+      <Path d="M15.5 22c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+      <Circle cx="24" cy="11" r="4" fill="#EF4444" />
+      <Path d="M22.5 11h3M24 9.5v3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    </Svg>
+  );
+}
+
+function ShowcaseChartIcon() {
+  return (
+    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
+      <Rect width="36" height="36" rx="10" fill="#ECFDF5" />
+      <Rect x="9" y="19" width="5" height="9" rx="2" fill="#10B981" opacity="0.5"/>
+      <Rect x="15.5" y="14" width="5" height="14" rx="2" fill="#10B981" opacity="0.75"/>
+      <Rect x="22" y="9" width="5" height="19" rx="2" fill="#10B981"/>
+      <Path d="M9 26h18" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
+      <Path d="M10 19l6-7 6 4 5-6" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.9"/>
+      <Circle cx="22" cy="12" r="2" fill="white" />
+    </Svg>
+  );
+}
+
+function ShowcaseTeamIcon() {
+  return (
+    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
+      <Rect width="36" height="36" rx="10" fill="#EFF6FF" />
+      <Circle cx="14" cy="14" r="4" fill="#3B82F6" opacity="0.7"/>
+      <Circle cx="22" cy="14" r="4" fill="#3B82F6" opacity="0.9"/>
+      <Path d="M6 26c0-3.31 3.58-6 8-6" stroke="#3B82F6" strokeWidth="1.8" strokeLinecap="round" opacity="0.6"/>
+      <Path d="M30 26c0-3.31-3.58-6-8-6" stroke="#3B82F6" strokeWidth="1.8" strokeLinecap="round" opacity="0.8"/>
+      <Path d="M18 21c-2.76 0-5 1.57-5 3.5h10c0-1.93-2.24-3.5-5-3.5z" fill="#3B82F6" opacity="0.5"/>
+    </Svg>
+  );
+}
+
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState('');
@@ -526,10 +581,10 @@ export default function OnboardingScreen() {
   }, [step]);
 
   const SHOWCASE_FEATURES = [
-    { emoji: '🤖', title: t('onboarding.showcase_ai_title'), desc: t('onboarding.showcase_ai_desc'), scale: card1Scale },
-    { emoji: '🔔', title: t('onboarding.showcase_notify_title'), desc: t('onboarding.showcase_notify_desc'), scale: card2Scale },
-    { emoji: '📊', title: t('onboarding.showcase_analytics_title'), desc: t('onboarding.showcase_analytics_desc'), scale: card3Scale },
-    { emoji: '👥', title: t('onboarding.showcase_team_title'), desc: t('onboarding.showcase_team_desc'), scale: card4Scale },
+    { Icon: ShowcaseAIIcon,    title: t('onboarding.showcase_ai_title'),        desc: t('onboarding.showcase_ai_desc'),        scale: card1Scale },
+    { Icon: ShowcaseBellIcon,  title: t('onboarding.showcase_notify_title'),    desc: t('onboarding.showcase_notify_desc'),    scale: card2Scale },
+    { Icon: ShowcaseChartIcon, title: t('onboarding.showcase_analytics_title'), desc: t('onboarding.showcase_analytics_desc'), scale: card3Scale },
+    { Icon: ShowcaseTeamIcon,  title: t('onboarding.showcase_team_title'),      desc: t('onboarding.showcase_team_desc'),      scale: card4Scale },
   ];
 
   const steps = [
@@ -550,7 +605,7 @@ export default function OnboardingScreen() {
             key={f.title}
             style={[styles.showcaseCard, { transform: [{ scale: f.scale }] }]}
           >
-            <Text style={styles.showcaseEmoji}>{f.emoji}</Text>
+            <f.Icon />
             <Text style={styles.showcaseCardTitle}>{f.title}</Text>
             <Text style={styles.showcaseCardDesc}>{f.desc}</Text>
           </Animated.View>
