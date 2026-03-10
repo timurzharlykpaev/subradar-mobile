@@ -18,7 +18,7 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { cardsApi } from '../../src/api/cards';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
-import { COLORS, CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
+import { CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
@@ -53,9 +53,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleUpgrade = () => {
-    checkoutMutation.mutate('pro-monthly');
-  };
+  const handleUpgrade = () => { checkoutMutation.mutate('pro-monthly'); };
 
   const handleAddCard = async () => {
     if (!cardForm.nickname || cardForm.last4.length !== 4) {
@@ -71,77 +69,82 @@ export default function SettingsScreen() {
   };
 
   const toggleReminderDay = (day: number) => {
-    if (reminderDays.includes(day)) {
-      setReminderDays(reminderDays.filter((d) => d !== day));
-    } else {
-      setReminderDays([...reminderDays, day].sort());
-    }
+    if (reminderDays.includes(day)) setReminderDays(reminderDays.filter((d) => d !== day));
+    else setReminderDays([...reminderDays, day].sort());
   };
 
+  // Dynamic styles based on current theme
+  const card = { backgroundColor: colors.surface, borderRadius: 16, padding: 14, marginHorizontal: 20, borderWidth: 1, borderColor: colors.border };
+  const sectionLabel = { fontSize: 12, fontWeight: '700' as const, color: colors.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.8, paddingHorizontal: 20, paddingBottom: 8, paddingTop: 16 };
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('settings.title')}</Text>
+        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
+          <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
 
         {/* Profile */}
-        <Section title={t('settings.profile')}>
-          <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{user?.name?.[0] || 'U'}</Text>
+        <Text style={sectionLabel}>{t('settings.profile')}</Text>
+        <View style={[card, { gap: 0, padding: 16 }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 22, color: '#FFF', fontWeight: '800' }}>{user?.name?.[0] || 'U'}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.profileName}>{user?.name || 'User'}</Text>
-              <Text style={styles.profileEmail}>{user?.email || ''}</Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{user?.name || 'User'}</Text>
+              <Text style={{ fontSize: 13, color: colors.textSecondary }}>{user?.email || ''}</Text>
             </View>
-            <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/edit-profile' as any)}>
-              <Text style={styles.editBtnText}>{t('common.edit')}</Text>
+            <TouchableOpacity
+              style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: colors.primaryLight }}
+              onPress={() => router.push('/edit-profile' as any)}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>{t('common.edit')}</Text>
             </TouchableOpacity>
           </View>
-        </Section>
+        </View>
 
         {/* Currency */}
-        <Section title={t('settings.default_currency')}>
+        <Text style={sectionLabel}>{t('settings.default_currency')}</Text>
+        <View style={[card, { padding: 12 }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.chips}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               {CURRENCIES.map((cur) => (
                 <TouchableOpacity
                   key={cur}
-                  style={[styles.chip, currency === cur && styles.chipActive]}
+                  style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: currency === cur ? colors.primary : colors.surface2, borderWidth: 1, borderColor: currency === cur ? colors.primary : colors.border }}
                   onPress={() => setCurrency(cur)}
                 >
-                  <Text style={[styles.chipText, currency === cur && styles.chipTextActive]}>{cur}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </ScrollView>
-        </Section>
+        </View>
 
         {/* Language */}
-        <Section title={t('settings.language')}>
-          <View style={styles.langGrid}>
+        <Text style={sectionLabel}>{t('settings.language')}</Text>
+        <View style={[card, { gap: 8 }]}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {LANGUAGES.map((lang) => (
               <TouchableOpacity
                 key={lang.code}
-                style={[styles.langChip, language === lang.code && styles.langChipActive]}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: language === lang.code ? colors.primaryLight : colors.surface2, borderWidth: 1.5, borderColor: language === lang.code ? colors.primary : colors.border }}
                 onPress={() => setLanguage(lang.code)}
               >
-                <Text style={styles.langFlag}>{lang.flag}</Text>
-                <Text style={[styles.langLabel, language === lang.code && styles.langLabelActive]}>
-                  {lang.label}
-                </Text>
+                <Text style={{ fontSize: 16 }}>{lang.flag}</Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: language === lang.code ? colors.primary : colors.textSecondary }}>{lang.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
-        </Section>
+        </View>
 
-        {/* Notifications */}
-        {/* Theme Toggle */}
-        <Section title={t('settings.theme')}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16, backgroundColor: colors.card, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: colors.border }}>
+        {/* Theme */}
+        <Text style={sectionLabel}>{t('settings.theme')}</Text>
+        <View style={[card, { padding: 0 }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name={isDark ? 'moon' : 'sunny'} size={20} color={colors.primary} />
+              <Ionicons name={isDark ? 'moon' : 'sunny-outline'} size={20} color={colors.primary} />
               <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>
                 {isDark ? t('settings.dark_mode') : t('settings.light_mode')}
               </Text>
@@ -149,87 +152,97 @@ export default function SettingsScreen() {
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#E5E7EB', true: colors.primary }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor="#FFFFFF"
             />
           </View>
-        </Section>
+        </View>
 
-        <Section title={t('settings.notifications')}>
-          <SettingRow
-            label={t('settings.push_notifications')}
-            right={
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
-                trackColor={{ false: COLORS.border, true: COLORS.primary }}
-              />
-            }
-          />
-          <Text style={styles.sectionSubtitle}>{t('settings.remind_before')}</Text>
-          <View style={styles.chips}>
+        {/* Notifications */}
+        <Text style={sectionLabel}>{t('settings.notifications')}</Text>
+        <View style={[card, { gap: 12 }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 15, color: colors.text, fontWeight: '500' }}>{t('settings.push_notifications')}</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+          <Text style={{ fontSize: 13, color: colors.textSecondary }}>{t('settings.remind_before')}</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
             {[1, 3, 7].map((day) => (
               <TouchableOpacity
                 key={day}
-                style={[styles.chip, reminderDays.includes(day) && styles.chipActive]}
+                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: reminderDays.includes(day) ? colors.primary : colors.surface2, borderWidth: 1, borderColor: reminderDays.includes(day) ? colors.primary : colors.border }}
                 onPress={() => toggleReminderDay(day)}
               >
-                <Text style={[styles.chipText, reminderDays.includes(day) && styles.chipTextActive]}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: reminderDays.includes(day) ? '#FFF' : colors.text }}>
                   {t('settings.days_before', { count: day })}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
-        </Section>
+        </View>
 
         {/* Payment Cards */}
-        <Section title={t('settings.payment_cards')}>
-          {cards.map((card) => (
-            <View key={card.id} style={styles.cardRow}>
-              <View style={[styles.cardDot, { backgroundColor: card.color }]} />
+        <Text style={sectionLabel}>{t('settings.payment_cards')}</Text>
+        <View style={[card, { gap: 10 }]}>
+          {cards.map((card_item) => (
+            <View key={card_item.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: card_item.color }} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.cardNickname}>{card.nickname}</Text>
-                <Text style={styles.cardInfo}>••••{card.last4} · {card.brand}</Text>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>{card_item.nickname}</Text>
+                <Text style={{ fontSize: 12, color: colors.textSecondary }}>••••{card_item.last4} · {card_item.brand}</Text>
               </View>
-              <TouchableOpacity
-                onPress={() => Alert.alert(t('common.delete'), t('settings.remove_card', { name: card.nickname }), [
-                  { text: t('common.cancel'), style: 'cancel' },
-                  { text: t('common.delete'), style: 'destructive', onPress: async () => {
-                    try { await cardsApi.delete(card.id); } catch {}
-                    removeCard(card.id);
-                  }},
-                ])}
-              >
-                <Text style={styles.deleteBtn}>🗑</Text>
+              <TouchableOpacity onPress={() => Alert.alert(t('common.delete'), t('settings.remove_card', { name: card_item.nickname }), [
+                { text: t('common.cancel'), style: 'cancel' },
+                { text: t('common.delete'), style: 'destructive', onPress: async () => {
+                  try { await cardsApi.delete(card_item.id); } catch {}
+                  removeCard(card_item.id);
+                }},
+              ])}>
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
               </TouchableOpacity>
             </View>
           ))}
-          <TouchableOpacity style={styles.addCardBtn} onPress={() => setShowAddCard(true)}>
-            <Text style={styles.addCardBtnText}>{t('settings.add_payment_card')}</Text>
+          <TouchableOpacity
+            style={{ paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primaryLight, alignItems: 'center' }}
+            onPress={() => setShowAddCard(true)}
+          >
+            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primary }}>{t('settings.add_payment_card')}</Text>
           </TouchableOpacity>
-        </Section>
+        </View>
 
         {/* Reports */}
-        <Section title={t('settings.reports')}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/reports' as any)}>
-            <Text style={styles.menuItemText}>📄 {t('settings.generate_report')}</Text>
-            <Text style={styles.menuItemChevron}>›</Text>
+        <Text style={sectionLabel}>{t('settings.reports')}</Text>
+        <View style={[card, { padding: 0 }]}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
+            onPress={() => router.push('/reports' as any)}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="document-text-outline" size={18} color={colors.primary} />
+              <Text style={{ fontSize: 15, color: colors.text }}>{t('settings.generate_report')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
-        </Section>
+        </View>
 
         {/* Plan Card */}
-        <View style={styles.proCard}>
+        <View style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 8, marginBottom: 8, marginTop: 16, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}>
           {isPro ? (
             <>
-              <Text style={styles.proTitle}>
+              <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
                 {isTrialing ? `⏳ ${t('settings.pro_trial')}` : `✨ ${t('settings.subradar_pro')}`}
               </Text>
-              {isTrialing && billing?.trialDaysLeft !== null && (
-                <Text style={styles.proDesc}>{t('settings.days_remaining', { count: billing?.trialDaysLeft })}</Text>
+              {isTrialing && billing?.trialDaysLeft != null && (
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{t('settings.days_remaining', { count: billing.trialDaysLeft })}</Text>
               )}
               {billing && (
-                <View style={styles.usageRow}>
-                  <Text style={styles.usageText}>
+                <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 10, padding: 10 }}>
+                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }}>
                     {t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' })}
                   </Text>
                 </View>
@@ -237,117 +250,115 @@ export default function SettingsScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.proTitle}>✨ {t('settings.subradar_pro')}</Text>
-              <Text style={styles.proDesc}>
-                {t('settings.pro_features')}
-              </Text>
+              <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>✨ {t('settings.subradar_pro')}</Text>
+              <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 }}>{t('settings.pro_features')}</Text>
               {billing && (
-                <View style={styles.usageRow}>
-                  <Text style={styles.usageText}>
+                <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 10, padding: 10, gap: 4 }}>
+                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }}>
                     {t('settings.sub_usage', { used: billing.subscriptionCount, limit: billing.subscriptionLimit ?? '∞' })}
                   </Text>
-                  <Text style={styles.usageText}>
+                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }}>
                     {t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' })}
                   </Text>
                 </View>
               )}
-              {canTrial ? (
-                <TouchableOpacity
-                  style={styles.proBtn}
-                  onPress={handleStartTrial}
-                  disabled={startTrialMutation.isPending}
-                >
-                  {startTrialMutation.isPending ? (
-                    <ActivityIndicator color={COLORS.primary} />
-                  ) : (
-                    <Text style={styles.proBtnText}>{t('settings.start_trial')}</Text>
-                  )}
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={styles.proBtn}
-                  onPress={handleUpgrade}
-                  disabled={checkoutMutation.isPending}
-                >
-                  {checkoutMutation.isPending ? (
-                    <ActivityIndicator color={COLORS.primary} />
-                  ) : (
-                    <Text style={styles.proBtnText}>{t('settings.upgrade')}</Text>
-                  )}
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                style={{ backgroundColor: '#FFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 }}
+                onPress={canTrial ? handleStartTrial : handleUpgrade}
+                disabled={startTrialMutation.isPending || checkoutMutation.isPending}
+              >
+                {startTrialMutation.isPending || checkoutMutation.isPending ? (
+                  <ActivityIndicator color={colors.primary} />
+                ) : (
+                  <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>
+                    {canTrial ? t('settings.start_trial') : t('settings.upgrade')}
+                  </Text>
+                )}
+              </TouchableOpacity>
             </>
           )}
         </View>
 
-        {/* Danger zone */}
-        <Section title={t('settings.account')}>
+        {/* Account */}
+        <Text style={sectionLabel}>{t('settings.account')}</Text>
+        <View style={[card, { padding: 0, gap: 0 }]}>
           <TouchableOpacity
-            style={styles.menuItem}
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
             onPress={() => Alert.alert(t('settings.export_data'), t('settings.data_exported'))}
           >
-            <Text style={styles.menuItemText}>📤 {t('settings.export_data')}</Text>
-            <Text style={styles.menuItemChevron}>›</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="share-outline" size={18} color={colors.primary} />
+              <Text style={{ fontSize: 15, color: colors.text }}>{t('settings.export_data')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
+          <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 16 }} />
           <TouchableOpacity
-            style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: COLORS.border }]}
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
             onPress={() => Alert.alert(t('settings.logout'), t('common.are_you_sure'), [
               { text: t('common.cancel'), style: 'cancel' },
               { text: t('settings.logout'), style: 'destructive', onPress: () => { logout(); router.replace('/onboarding'); } },
             ])}
           >
-            <Text style={[styles.menuItemText, { color: COLORS.error }]}>🚪 {t('settings.logout')}</Text>
-            <Text style={styles.menuItemChevron}>›</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="log-out-outline" size={18} color={colors.error} />
+              <Text style={{ fontSize: 15, color: colors.error, fontWeight: '600' }}>{t('settings.logout')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
-        </Section>
+        </View>
 
-        <Text style={styles.version}>{t('settings.version')}</Text>
+        <Text style={{ textAlign: 'center', fontSize: 12, color: colors.textMuted, paddingVertical: 24 }}>{t('settings.version')}</Text>
       </ScrollView>
 
       {/* Add Card Modal */}
       <Modal visible={showAddCard} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('settings.add_card_title')}</Text>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 40 }}>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text }}>{t('settings.add_card_title')}</Text>
 
             <TextInput
-              style={styles.input}
+              style={{ backgroundColor: colors.surface2, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
               value={cardForm.nickname}
               onChangeText={(v) => setCardForm((f) => ({ ...f, nickname: v }))}
               placeholder={t('settings.card_nickname_placeholder')}
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor={colors.textMuted}
             />
             <TextInput
-              style={styles.input}
+              style={{ backgroundColor: colors.surface2, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
               value={cardForm.last4}
               onChangeText={(v) => setCardForm((f) => ({ ...f, last4: v.slice(0, 4) }))}
               placeholder={t('settings.card_last4_placeholder')}
               keyboardType="number-pad"
               maxLength={4}
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor={colors.textMuted}
             />
 
-            <Text style={styles.label}>{t('settings.card_brand')}</Text>
-            <View style={styles.chips}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>{t('settings.card_brand')}</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {CARD_BRANDS.map((brand) => (
                 <TouchableOpacity
                   key={brand}
-                  style={[styles.chip, cardForm.brand === brand && styles.chipActive]}
+                  style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: cardForm.brand === brand ? colors.primary : colors.surface2, borderWidth: 1, borderColor: cardForm.brand === brand ? colors.primary : colors.border }}
                   onPress={() => setCardForm((f) => ({ ...f, brand: brand as PaymentCard['brand'] }))}
                 >
-                  <Text style={[styles.chipText, cardForm.brand === brand && styles.chipTextActive]}>
-                    {brand}
-                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: cardForm.brand === brand ? '#FFF' : colors.textSecondary }}>{brand}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <View style={styles.modalBtns}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowAddCard(false)}>
-                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+              <TouchableOpacity
+                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.surface2, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                onPress={() => setShowAddCard(false)}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textSecondary }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleAddCard}>
-                <Text style={styles.saveBtnText}>{t('common.save')}</Text>
+              <TouchableOpacity
+                style={{ flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center' }}
+                onPress={handleAddCard}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFF' }}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -357,205 +368,7 @@ export default function SettingsScreen() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={sectionStyles.container}>
-      <Text style={sectionStyles.title}>{title}</Text>
-      <View style={sectionStyles.content}>{children}</View>
-    </View>
-  );
-}
-
-function SettingRow({ label, right }: { label: string; right: React.ReactNode }) {
-  return (
-    <View style={sectionStyles.row}>
-      <Text style={sectionStyles.rowLabel}>{label}</Text>
-      {right}
-    </View>
-  );
-}
-
-const sectionStyles = StyleSheet.create({
-  container: { marginBottom: 8 },
-  title: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-    paddingTop: 16,
-  },
-  content: {
-    backgroundColor: COLORS.surface,
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 14,
-    gap: 12,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rowLabel: { fontSize: 15, color: COLORS.text, fontWeight: '500' },
-});
-
+// Keep StyleSheet for non-themed utilities
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 },
-  title: { fontSize: 28, fontWeight: '900', color: COLORS.text },
-  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: { fontSize: 22, color: '#FFF', fontWeight: '800' },
-  profileName: { fontSize: 16, fontWeight: '700', color: COLORS.text },
-  profileEmail: { fontSize: 13, color: COLORS.textSecondary },
-  editBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
-    backgroundColor: COLORS.primaryLight,
-  },
-  editBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  chipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  chipText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
-  chipTextActive: { color: '#FFF' },
-  sectionSubtitle: { fontSize: 13, color: COLORS.textSecondary },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  cardDot: { width: 12, height: 12, borderRadius: 6 },
-  cardNickname: { fontSize: 14, fontWeight: '700', color: COLORS.text },
-  cardInfo: { fontSize: 12, color: COLORS.textSecondary },
-  deleteBtn: { fontSize: 18, padding: 4 },
-  addCardBtn: {
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-  },
-  addCardBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.primary },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  menuItemText: { fontSize: 15, color: COLORS.text },
-  menuItemChevron: { fontSize: 20, color: COLORS.textMuted },
-  proCard: {
-    marginHorizontal: 20,
-    backgroundColor: COLORS.primary,
-    borderRadius: 20,
-    padding: 20,
-    gap: 8,
-    marginBottom: 8,
-    marginTop: 8,
-  },
-  proTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
-  proDesc: { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 },
-  langGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  langChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: COLORS.background,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-  },
-  langChipActive: {
-    backgroundColor: COLORS.primaryLight,
-    borderColor: COLORS.primary,
-  },
-  langFlag: { fontSize: 16 },
-  langLabel: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
-  langLabelActive: { color: COLORS.primary },
-  usageRow: {
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    borderRadius: 10,
-    padding: 10,
-    gap: 4,
-  },
-  usageText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
-    fontWeight: '600',
-  },
-  proBtn: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  proBtnText: { fontSize: 15, fontWeight: '800', color: COLORS.primary },
-  version: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: COLORS.textMuted,
-    paddingVertical: 24,
-  },
-  // Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    gap: 14,
-    paddingBottom: 40,
-  },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: COLORS.text },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  label: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary },
-  modalBtns: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: COLORS.background,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  cancelBtnText: { fontSize: 15, fontWeight: '700', color: COLORS.textSecondary },
-  saveBtn: {
-    flex: 2,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-  },
-  saveBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  container: { flex: 1 },
 });
