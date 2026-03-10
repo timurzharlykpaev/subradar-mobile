@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -41,10 +42,11 @@
   "submit": {
     "preview": {
       "ios": {
-        "ascApiKeyIssuerId": "YOUR_ISSUER_ID",
-        "ascApiKeyId": "YOUR_KEY_ID",
-        "ascApiKeyPath": "./AuthKey.p8",
-        "appleTeamId": "KH4TZU35XL"
+        "ascApiKeyIssuerId": "8b7aa06e-9951-41f6-80f9-e877a63c4bf8",
+        "ascApiKeyId": "P4F4X7WXXW",
+        "ascApiKeyPath": "./AuthKey_P4F4X7WXXW.p8",
+        "appleTeamId": "KH4TZU35XL",
+        "ascAppId": "6760282723"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
@@ -53,10 +55,11 @@
     },
     "production": {
       "ios": {
-        "ascApiKeyIssuerId": "YOUR_ISSUER_ID",
-        "ascApiKeyId": "YOUR_KEY_ID",
-        "ascApiKeyPath": "./AuthKey.p8",
-        "appleTeamId": "KH4TZU35XL"
+        "ascApiKeyIssuerId": "8b7aa06e-9951-41f6-80f9-e877a63c4bf8",
+        "ascApiKeyId": "P4F4X7WXXW",
+        "ascApiKeyPath": "./AuthKey_P4F4X7WXXW.p8",
+        "appleTeamId": "KH4TZU35XL",
+        "ascAppId": "6760282723"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
