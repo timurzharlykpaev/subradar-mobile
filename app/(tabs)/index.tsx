@@ -368,7 +368,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const chartW = screenWidth - 80;
-  const chartH = 120;
+  const chartH = 130;
   const hasData = data.some((d) => Number(d.amount) > 0);
   const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
   const barW = Math.max(8, chartW / Math.max(data.length, 1) - 8);
@@ -391,7 +391,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
           const y = chartH - barH + 18;
           const isMax = val === maxVal;
           const labelX = x + barW / 2;
-          const labelY = y - 4;
+          const labelY = y - 6;
           return (
             <React.Fragment key={i}>
               <Rect
@@ -481,7 +481,7 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
         {slices.map((slice, idx) => (
           <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
-            <Text style={{ fontSize: 12, color: colors.text, flex: 1 }}>{slice.emoji} {slice.label}</Text>
+            <Text style={{ fontSize: 12, color: colors.text, flex: 1 }}>{slice.label}</Text>
             <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary }}>{slice.pct}%</Text>
           </View>
         ))}

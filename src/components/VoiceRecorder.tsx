@@ -48,8 +48,11 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
           Animated.timing(scaleAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
         ])
       ).start();
-    } catch (e) {
-      console.error('Recording error', e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // Ignore background audio session errors (iOS Expo Go limitation)
+      if (msg.includes('background') || msg.includes('audio session')) return;
+      console.warn('Recording error', msg);
     }
   };
 
