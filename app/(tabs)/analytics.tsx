@@ -92,13 +92,13 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
     }).filter(Boolean) as { d: string; color: string }[];
 
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 8 }}>
+    <View style={{ width: size, height: size, alignSelf: 'center', marginVertical: 8 }}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {slices.map((slice, idx) => (
           <SvgPath key={idx} d={slice.d} fill={slice.color} />
         ))}
       </Svg>
-      <View style={{ position: 'absolute', alignItems: 'center' }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFFFFF' }}>${Number(total).toFixed(0)}</Text>
         <Text style={{ fontSize: 11, color: '#9CA3AF' }}>{avgLabel}</Text>
       </View>
