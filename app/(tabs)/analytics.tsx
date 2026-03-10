@@ -40,7 +40,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
       {/* X labels */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 2 }}>
         {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
-          <Text key={i} style={{ fontSize: 10, color: '#9CA3AF' }}>{String(d.month || '').slice(-2)}</Text>
+          <Text key={i} style={{ fontSize: 10, color: COLORS.textMuted }}>{String(d.month || '').slice(-2)}</Text>
         ))}
       </View>
     </View>
@@ -99,14 +99,14 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
         ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFFFFF' }}>${Number(total).toFixed(0)}</Text>
-        <Text style={{ fontSize: 11, color: '#9CA3AF' }}>{avgLabel}</Text>
+        <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>${Number(total).toFixed(0)}</Text>
+        <Text style={{ fontSize: 11, color: COLORS.textMuted }}>{avgLabel}</Text>
       </View>
     </View>
   );
 }
 
-const CARD_BG = '#1A1A2E';
+const CARD_BG = COLORS.card;
 const CARD_RADIUS = 16;
 
 const PERIOD_SHORT: Record<string, string> = {
@@ -463,16 +463,16 @@ const statStyles = StyleSheet.create({
     borderColor: 'rgba(108, 71, 255, 0.2)',
     gap: 4,
   },
-  label: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
+  label: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
   value: { fontSize: 22, fontWeight: '900', color: COLORS.primary },
-  sub: { fontSize: 11, color: '#6B7280' },
+  sub: { fontSize: 11, color: COLORS.textSecondary },
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
+  container: { flex: 1, backgroundColor: COLORS.background },
   header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
-  title: { fontSize: 28, fontWeight: '900', color: '#FFFFFF' },
-  subtitle: { fontSize: 14, color: '#9CA3AF' },
+  title: { fontSize: 28, fontWeight: '900', color: COLORS.text },
+  subtitle: { fontSize: 14, color: COLORS.textMuted },
   statsRow: { paddingHorizontal: 20, paddingVertical: 12 },
   card: {
     backgroundColor: CARD_BG,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 12,
   },
-  cardTitle: { fontSize: 17, fontWeight: '800', color: '#FFFFFF' },
+  cardTitle: { fontSize: 17, fontWeight: '800', color: COLORS.text },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
   },
-  proBadgeText: { fontSize: 11, fontWeight: '900', color: '#FFFFFF' },
+  proBadgeText: { fontSize: 11, fontWeight: '900', color: COLORS.text },
 
   // Pie / Donut
   pieContainer: {
@@ -506,8 +506,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
   },
-  pieCenterAmount: { fontSize: 22, fontWeight: '900', color: '#FFFFFF' },
-  pieCenterSub: { fontSize: 11, color: '#9CA3AF' },
+  pieCenterAmount: { fontSize: 22, fontWeight: '900', color: COLORS.text },
+  pieCenterSub: { fontSize: 11, color: COLORS.textMuted },
 
   // Legend
   legendContainer: { gap: 8, marginTop: 4 },
@@ -517,15 +517,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  legendLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: '#E5E7EB' },
-  legendPercent: { fontSize: 12, color: '#9CA3AF', width: 36, textAlign: 'right' },
+  legendLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.text },
+  legendPercent: { fontSize: 12, color: COLORS.textMuted, width: 36, textAlign: 'right' },
   legendAmount: { fontSize: 13, fontWeight: '700', color: COLORS.primary, width: 52, textAlign: 'right' },
 
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   cardBreakdownIcon: { fontSize: 20, width: 28 },
   cardBreakdownLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  cardBreakdownLabel: { fontSize: 14, fontWeight: '700', color: '#E5E7EB', flex: 1 },
+  cardBreakdownLabel: { fontSize: 14, fontWeight: '700', color: COLORS.text, flex: 1 },
   cardBreakdownAmount: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
   barBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 6, borderRadius: 3 },
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   lockIcon: { fontSize: 32 },
-  lockedText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center' },
+  lockedText: { fontSize: 14, color: COLORS.textMuted, textAlign: 'center' },
 
   // Savings
   savingsHighlight: {
@@ -553,13 +553,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(76, 175, 80, 0.3)',
   },
   savingsAmount: { fontSize: 28, fontWeight: '900', color: '#4CAF50' },
-  savingsLabel: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
+  savingsLabel: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
   duplicatesSection: { gap: 8 },
-  duplicatesTitle: { fontSize: 14, fontWeight: '700', color: '#E5E7EB' },
+  duplicatesTitle: { fontSize: 14, fontWeight: '700', color: COLORS.text },
   duplicateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   duplicateIcon: { fontSize: 16 },
-  duplicateText: { flex: 1, fontSize: 13, color: '#9CA3AF' },
-  noDuplicates: { fontSize: 13, color: '#6B7280', textAlign: 'center', paddingVertical: 8 },
+  duplicateText: { flex: 1, fontSize: 13, color: COLORS.textMuted },
+  noDuplicates: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', paddingVertical: 8 },
 
   // Top 5
   top5Row: {
@@ -583,8 +583,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   top5Emoji: { fontSize: 18 },
-  top5Name: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
-  top5Period: { fontSize: 11, color: '#6B7280', marginTop: 1 },
+  top5Name: { fontSize: 14, fontWeight: '700', color: COLORS.text },
+  top5Period: { fontSize: 11, color: COLORS.textSecondary, marginTop: 1 },
   top5Monthly: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
 
   // All subs
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subIconText: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
-  subName: { flex: 1, fontSize: 14, fontWeight: '600', color: '#E5E7EB' },
-  subAmount: { fontSize: 13, fontWeight: '700', color: '#9CA3AF' },
-  empty: { color: '#6B7280', fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  subName: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.text },
+  subAmount: { fontSize: 13, fontWeight: '700', color: COLORS.textMuted },
+  empty: { color: COLORS.textSecondary, fontSize: 14, textAlign: 'center', paddingVertical: 20 },
 });

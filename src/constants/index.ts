@@ -1,19 +1,20 @@
 import { BillingPeriod, CardBrand } from '../types';
 
 export const COLORS = {
-  primary: '#6C47FF',
-  primaryLight: '#EDE9FF',
+  primary: '#7C5CFF',
+  primaryLight: '#2D2060',
   secondary: '#FF6B6B',
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#F44336',
-  background: '#F8F9FE',
-  surface: '#FFFFFF',
-  text: '#1A1A2E',
-  textSecondary: '#6B7280',
-  textMuted: '#9CA3AF',
-  border: '#E5E7EB',
-  card: '#FFFFFF',
+  success: '#34D399',
+  warning: '#FBBF24',
+  error: '#F87171',
+  background: '#0A0A14',
+  surface: '#12121F',
+  surface2: '#1A1A2E',
+  text: '#F1F0FF',
+  textSecondary: '#A89FD0',
+  textMuted: '#6B6690',
+  border: '#2A2A40',
+  card: '#16162A',
 };
 
 export const CATEGORIES = [

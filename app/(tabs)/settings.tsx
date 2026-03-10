@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   proBtn: {
-    backgroundColor: '#FFF',
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
