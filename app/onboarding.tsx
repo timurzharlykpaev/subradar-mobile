@@ -275,42 +275,42 @@ function AuthHero() {
 
   return (
     <View style={{ width: '100%', height: 260 + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4, overflow: 'hidden' }}>
-      {/* Glow blob */}
-      <View style={{
-        position: 'absolute', width: 180, height: 180, borderRadius: 90,
-        backgroundColor: 'rgba(139,92,246,0.12)',
-      }} />
-      {/* Pulse rings */}
-      <Animated.View style={{
-        position: 'absolute', width: 120, height: 120, borderRadius: 60,
-        borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
-        transform: [{ scale: ring1Scale }], opacity: ring1Opacity,
-      }} />
-      <Animated.View style={{
-        position: 'absolute', width: 120, height: 120, borderRadius: 60,
-        borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
-        transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
-      }} />
-      {/* Floating cards — behind logo */}
+      {/* Floating cards — за лого */}
       {FLOAT_CARDS.map((card) => (
         <FloatingCard key={card.name} {...card} topOffset={insets.top} />
       ))}
 
-      {/* Logo — оригинальная иконка приложения, абсолютно по центру */}
+      {/* Центральный блок: кольца + иконка — всё вместе через flexbox */}
       <Animated.View style={{
-        position: 'absolute',
-        width: 76, height: 76,
-        top: '50%', left: '50%',
-        marginTop: -38, marginLeft: -38,
-        shadowColor: '#8B5CF6', shadowOpacity: 0.4, shadowRadius: 18,
-        shadowOffset: { width: 0, height: 4 }, elevation: 14,
+        alignItems: 'center', justifyContent: 'center',
+        width: 180, height: 180,
         transform: [{ scale: logoScale }], opacity: logoOpacity,
         zIndex: 20,
       }}>
-        <Image
-          source={require('../assets/images/icon.png')}
-          style={{ width: 76, height: 76, borderRadius: 18 }}
-        />
+        {/* Glow */}
+        <View style={{ position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(139,92,246,0.12)' }} />
+        {/* Pulse ring 1 */}
+        <Animated.View style={{
+          position: 'absolute', width: 130, height: 130, borderRadius: 65,
+          borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.5)',
+          transform: [{ scale: ring1Scale }], opacity: ring1Opacity,
+        }} />
+        {/* Pulse ring 2 */}
+        <Animated.View style={{
+          position: 'absolute', width: 130, height: 130, borderRadius: 65,
+          borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.5)',
+          transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
+        }} />
+        {/* Иконка */}
+        <View style={{
+          shadowColor: '#8B5CF6', shadowOpacity: 0.4, shadowRadius: 18,
+          shadowOffset: { width: 0, height: 4 }, elevation: 14,
+        }}>
+          <Image
+            source={require('../assets/images/icon.png')}
+            style={{ width: 76, height: 76, borderRadius: 18 }}
+          />
+        </View>
       </Animated.View>
     </View>
   );
