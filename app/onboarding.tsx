@@ -154,16 +154,16 @@ function OpenAIIcon() {
 }
 
 const FLOAT_CARDS = [
-  { name: 'Netflix',  amount: '$15.99', bg: '#FFEAEA', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: -80 },
-  { name: 'Spotify',  amount: '$9.99',  bg: '#EAFAF1', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 90,   delay: 400,  duration: 2900, yPos: -40 },
-  { name: 'iCloud',   amount: '$2.99',  bg: '#EAF2FF', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 15  },
-  { name: 'YouTube',  amount: '$13.99', bg: '#FFEAEA', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 55  },
-  { name: 'ChatGPT',  amount: '$20.00', bg: '#EAF7F4', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 88  },
+  { name: 'Netflix',  amount: '$15.99', bg: '#FFEAEA', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10  },
+  { name: 'Spotify',  amount: '$9.99',  bg: '#EAFAF1', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50  },
+  { name: 'iCloud',   amount: '$2.99',  bg: '#EAF2FF', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95  },
+  { name: 'YouTube',  amount: '$13.99', bg: '#FFEAEA', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130 },
+  { name: 'ChatGPT',  amount: '$20.00', bg: '#EAF7F4', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165 },
 ];
 
-function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos }: {
+function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos, topOffset = 0 }: {
   name: string; amount: string; bg: string; iconBg: string; IconComponent: React.FC;
-  x: number; delay: number; duration: number; yPos: number;
+  x: number; delay: number; duration: number; yPos: number; topOffset?: number;
 }) {
   const entryY = useRef(new Animated.Value(30)).current;
   const entryOpacity = useRef(new Animated.Value(0)).current;
@@ -199,7 +199,7 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
   return (
     <Animated.View style={{
       position: 'absolute',
-      top: yPos,
+      top: yPos + topOffset,
       transform: [{ translateX: x }, { translateY: Animated.add(entryY, floatY) }],
       opacity: entryOpacity,
     }}>
@@ -274,7 +274,7 @@ function AuthHero() {
   }, []);
 
   return (
-    <View style={{ width: '100%', height: 230 + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+    <View style={{ width: '100%', height: 260 + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4, overflow: 'hidden' }}>
       {/* Glow blob */}
       <View style={{
         position: 'absolute', width: 180, height: 180, borderRadius: 90,
@@ -291,24 +291,31 @@ function AuthHero() {
         borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
         transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
       }} />
-      {/* Logo — real app icon */}
+      {/* Logo — SubRadar SVG brand mark */}
       <Animated.View style={{
         width: 90, height: 90, borderRadius: 22,
         shadowColor: '#8B5CF6', shadowOpacity: 0.5, shadowRadius: 24,
         shadowOffset: { width: 0, height: 6 }, elevation: 16,
         transform: [{ scale: logoScale }], opacity: logoOpacity,
-        zIndex: 10, overflow: 'hidden',
+        zIndex: 10,
+        alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#6C3BDB',
       }}>
-        <Image
-          source={require('../assets/images/icon.png')}
-          style={{ width: 90, height: 90, borderRadius: 22 }}
-          resizeMode="cover"
-        />
+        <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
+          {/* Radar circles */}
+          <Circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <Circle cx="28" cy="28" r="14" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+          <Circle cx="28" cy="28" r="6" fill="white" opacity="0.9" />
+          {/* Radar sweep line */}
+          <Path d="M28 28 L46 20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Dollar sign */}
+          <Path d="M28 18v20M23 22.5c0-2.5 2-4 5-4s5 1.5 5 3.5-2 3-5 3.5-5 2-5 4 2 4 5 4 5-1.5 5-4" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </Svg>
       </Animated.View>
 
-      {/* Floating cards */}
+      {/* Floating cards — yPos is relative to container start (after paddingTop) */}
       {FLOAT_CARDS.map((card) => (
-        <FloatingCard key={card.name} {...card} />
+        <FloatingCard key={card.name} {...card} topOffset={insets.top} />
       ))}
     </View>
   );
@@ -386,6 +393,7 @@ export default function OnboardingScreen() {
   const { setUser, setOnboarded } = useAuthStore();
   const { setLanguage, language, setCurrency } = useSettingsStore();
   const { colors, isDark, toggleTheme } = useTheme();
+  const safeInsets = useSafeAreaInsets();
 
   // Google OAuth
   const [, googleResponse, googlePromptAsync] = Google.useAuthRequest({
@@ -722,10 +730,10 @@ export default function OnboardingScreen() {
 
     // Step 5: Auth
     <View key="auth" style={[styles.step, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
-      {/* Theme toggle top-right */}
+      {/* Theme toggle top-right — use insets to stay below status bar */}
       <TouchableOpacity
         onPress={toggleTheme}
-        style={{ position: 'absolute', top: 16, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
+        style={{ position: 'absolute', top: (safeInsets.top || 0) + 8, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
       >
         <Text style={{ fontSize: 18 }}>{isDark ? '☀️' : '🌙'}</Text>
       </TouchableOpacity>

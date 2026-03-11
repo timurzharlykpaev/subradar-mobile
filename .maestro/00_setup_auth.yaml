@@ -42,9 +42,6 @@ name: "00 - Setup: Onboarding + Auth (demo account)"
 - tapOn:
     text: "✉️, Continue with Email"
     optional: true
-- tapOn:
-    text: "Continue with Email"
-    optional: true
 - waitForAnimationToEnd
 
 # Поле email
@@ -57,14 +54,12 @@ name: "00 - Setup: Onboarding + Auth (demo account)"
 - tapOn: "Send Code"
 - waitForAnimationToEnd
 
-# OTP экран — нажимаем Resend чтобы получить свежий код
+# OTP — вводим через testID первого бокса (принимает 6 цифр сразу)
 - tapOn:
-    text: "Resend Code"
-    optional: true
+    id: "otp-input-0"
+- inputText: "123456"
 - waitForAnimationToEnd
 
-# Вводим OTP
-- assertVisible: "Enter the code sent to"
-- inputText: "123456"
+# Верифицируем
 - tapOn: "Verify"
 - waitForAnimationToEnd
