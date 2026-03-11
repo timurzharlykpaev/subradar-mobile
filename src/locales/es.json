@@ -122,7 +122,11 @@
     "notes_placeholder": "Notas adicionales...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} planes",
-    "card_nickname_example": "Mi Visa"
+    "card_nickname_example": "Mi Visa",
+    "section_main": "Info principal",
+    "section_payment": "Pago",
+    "section_extra": "Adicional",
+    "section_trial": "Período de prueba"
   },
   "settings": {
     "title": "Configuración",
@@ -362,5 +366,13 @@
     "10": "Oct",
     "11": "Nov",
     "12": "Dic"
+  },
+  "periods": {
+    "WEEKLY": "Semanal",
+    "MONTHLY": "Mensual",
+    "QUARTERLY": "Trimestral",
+    "YEARLY": "Anual",
+    "LIFETIME": "De por vida",
+    "ONE_TIME": "Único"
   }
 }

@@ -122,7 +122,11 @@
     "notes_placeholder": "附加备注...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} 个方案",
-    "card_nickname_example": "我的 Visa"
+    "card_nickname_example": "我的 Visa",
+    "section_main": "基本信息",
+    "section_payment": "支付",
+    "section_extra": "附加",
+    "section_trial": "试用期"
   },
   "settings": {
     "title": "设置",
@@ -362,5 +366,13 @@
     "10": "10月",
     "11": "11月",
     "12": "12月"
+  },
+  "periods": {
+    "WEEKLY": "每周",
+    "MONTHLY": "每月",
+    "QUARTERLY": "每季度",
+    "YEARLY": "每年",
+    "LIFETIME": "终身",
+    "ONE_TIME": "一次性"
   }
 }

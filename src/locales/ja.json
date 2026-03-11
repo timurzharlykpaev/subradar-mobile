@@ -122,7 +122,11 @@
     "notes_placeholder": "追加メモ...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} プラン",
-    "card_nickname_example": "My Visa"
+    "card_nickname_example": "My Visa",
+    "section_main": "基本情報",
+    "section_payment": "支払い",
+    "section_extra": "追加",
+    "section_trial": "トライアル期間"
   },
   "settings": {
     "title": "設定",
@@ -362,5 +366,13 @@
     "10": "10月",
     "11": "11月",
     "12": "12月"
+  },
+  "periods": {
+    "WEEKLY": "毎週",
+    "MONTHLY": "毎月",
+    "QUARTERLY": "四半期",
+    "YEARLY": "毎年",
+    "LIFETIME": "生涯",
+    "ONE_TIME": "一回限り"
   }
 }

@@ -134,7 +134,19 @@
     "notes_placeholder": "Additional notes...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} plans",
-    "card_nickname_example": "My Visa"
+    "card_nickname_example": "My Visa",
+    "section_main": "Main Info",
+    "section_payment": "Payment",
+    "section_extra": "Additional",
+    "section_trial": "Trial Period"
+  },
+  "periods": {
+    "WEEKLY": "Weekly",
+    "MONTHLY": "Monthly",
+    "QUARTERLY": "Quarterly",
+    "YEARLY": "Yearly",
+    "LIFETIME": "Lifetime",
+    "ONE_TIME": "One-time"
   },
   "settings": {
     "title": "Settings",

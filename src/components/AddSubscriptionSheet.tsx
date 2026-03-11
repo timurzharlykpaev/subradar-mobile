@@ -512,7 +512,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         onPress={() => setF('billingPeriod', p)}
                       >
                         <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
-                          {p}
+                          {t(`periods.${p}`, { defaultValue: p })}
                         </Text>
                       </TouchableOpacity>
                     ))}

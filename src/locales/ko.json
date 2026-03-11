@@ -122,7 +122,11 @@
     "notes_placeholder": "추가 메모...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}}개 플랜",
-    "card_nickname_example": "내 Visa"
+    "card_nickname_example": "내 Visa",
+    "section_main": "기본 정보",
+    "section_payment": "결제",
+    "section_extra": "추가",
+    "section_trial": "체험 기간"
   },
   "settings": {
     "title": "설정",
@@ -362,5 +366,13 @@
     "10": "10월",
     "11": "11월",
     "12": "12월"
+  },
+  "periods": {
+    "WEEKLY": "매주",
+    "MONTHLY": "매월",
+    "QUARTERLY": "분기별",
+    "YEARLY": "매년",
+    "LIFETIME": "평생",
+    "ONE_TIME": "일회성"
   }
 }

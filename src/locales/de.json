@@ -122,7 +122,11 @@
     "notes_placeholder": "Zusätzliche Notizen...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} Pläne",
-    "card_nickname_example": "Meine Visa"
+    "card_nickname_example": "Meine Visa",
+    "section_main": "Hauptinfos",
+    "section_payment": "Zahlung",
+    "section_extra": "Zusätzlich",
+    "section_trial": "Testzeitraum"
   },
   "settings": {
     "title": "Einstellungen",
@@ -362,5 +366,13 @@
     "10": "Okt",
     "11": "Nov",
     "12": "Dez"
+  },
+  "periods": {
+    "WEEKLY": "Wöchentlich",
+    "MONTHLY": "Monatlich",
+    "QUARTERLY": "Vierteljährlich",
+    "YEARLY": "Jährlich",
+    "LIFETIME": "Lebenslang",
+    "ONE_TIME": "Einmalig"
   }
 }

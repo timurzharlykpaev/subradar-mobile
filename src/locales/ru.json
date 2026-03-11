@@ -134,7 +134,11 @@
     "notes_placeholder": "Дополнительные заметки...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} планов",
-    "card_nickname_example": "Моя Visa"
+    "card_nickname_example": "Моя Visa",
+    "section_main": "Основное",
+    "section_payment": "Оплата",
+    "section_extra": "Дополнительно",
+    "section_trial": "Пробный период"
   },
   "settings": {
     "title": "Настройки",
@@ -379,5 +383,13 @@
     "10": "Окт",
     "11": "Ноя",
     "12": "Дек"
+  },
+  "periods": {
+    "WEEKLY": "Еженедельно",
+    "MONTHLY": "Ежемесячно",
+    "QUARTERLY": "Ежеквартально",
+    "YEARLY": "Ежегодно",
+    "LIFETIME": "Навсегда",
+    "ONE_TIME": "Разовый"
   }
 }
