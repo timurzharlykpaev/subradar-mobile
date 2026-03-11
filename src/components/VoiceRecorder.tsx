@@ -1,12 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
   Animated,
+  AppState,
+  type AppStateStatus,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import {
+  useAudioRecorder,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  RecordingPresets,
+} from 'expo-audio';
 import { COLORS } from '../constants';
 
 interface Props {
@@ -17,26 +25,53 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
   const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
-  const recordingRef = useRef<any>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+
+  const stopRecording = useCallback(async () => {
+    if (!isRecording) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    scaleAnim.stopAnimation();
+    scaleAnim.setValue(1);
+
+    await recorder.stop();
+    setIsRecording(false);
+
+    if (recorder.uri) {
+      onRecordingComplete(recorder.uri);
+    }
+  }, [isRecording, recorder, scaleAnim, onRecordingComplete]);
+
+  // Stop recording when app goes to background
+  useEffect(() => {
+    const handleAppState = (nextState: AppStateStatus) => {
+      if (nextState !== 'active' && isRecording) {
+        stopRecording();
+      }
+    };
+
+    const sub = AppState.addEventListener('change', handleAppState);
+    return () => sub.remove();
+  }, [isRecording, stopRecording]);
+
   const startRecording = async () => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { Audio } = require('expo-av');
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') return;
+      const { granted } = await requestRecordingPermissionsAsync();
+      if (!granted) return;
 
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      recordingRef.current = recording;
+      await recorder.prepareToRecordAsync();
+      recorder.record();
       setIsRecording(true);
       setDuration(0);
 
@@ -50,24 +85,8 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
       ).start();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      // Ignore background audio session errors (iOS Expo Go limitation)
-      if (msg.includes('background') || msg.includes('audio session')) return;
       console.warn('Recording error', msg);
     }
-  };
-
-  const stopRecording = async () => {
-    if (!recordingRef.current) return;
-    clearInterval(timerRef.current!);
-    scaleAnim.stopAnimation();
-    scaleAnim.setValue(1);
-
-    await recordingRef.current.stopAndUnloadAsync();
-    const uri = recordingRef.current.getURI();
-    recordingRef.current = null;
-    setIsRecording(false);
-
-    if (uri) onRecordingComplete(uri);
   };
 
   const formatDuration = (s: number) =>
