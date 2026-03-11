@@ -1,6 +1,10 @@
 appId: io.subradar.mobile
 name: "16 - Settings Language"
 ---
+
+# Авторизация через demo аккаунт
+- runFlow: ./03_auth_email.yaml
+
 - tapOn:
     text: "Настройки"
 - assertNotVisible: "undefined"

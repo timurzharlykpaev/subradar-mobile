@@ -1,6 +1,10 @@
 appId: io.subradar.mobile
 name: "14 - Analytics Categories"
 ---
+
+# Авторизация через demo аккаунт
+- runFlow: ./03_auth_email.yaml
+
 - tapOn:
     text: "Аналитика"
 - assertNotVisible: "NaN"

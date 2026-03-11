@@ -1,5 +1,9 @@
 appId: io.subradar.mobile
 name: "19 - Paywall Upgrade Screen"
 ---
+
+# Авторизация через demo аккаунт
+- runFlow: ./03_auth_email.yaml
+
 - assertNotVisible: "Ошибка"
 - assertNotVisible: "undefined"

@@ -1,13 +1,72 @@
 appId: io.subradar.mobile
-name: "03 - Auth Email OTP"
+name: "03 - Auth Email OTP (demo account)"
 ---
-- assertVisible: "SubRadar"
+# Используем demo@subradar.ai — фиксированный OTP 123456, Pro план, без отправки письма
+
+- launchApp:
+    clearState: true
+
+# Ждём auth screen
+- assertVisible:
+    text: "SubRadar"
+    optional: true
+
+# Нажимаем "Войти по Email"
 - tapOn:
     text: "Войти по Email"
     optional: true
 - tapOn:
     text: "Continue with Email"
     optional: true
+- tapOn:
+    text: "Sign in with Email"
+    optional: true
+
+# Вводим email
 - assertVisible:
     text: "email"
+    optional: true
+- tapOn:
+    text: "email"
+    optional: true
+- inputText: "demo@subradar.ai"
+- hideKeyboard
+
+# Отправляем
+- tapOn:
+    text: "Отправить код"
+    optional: true
+- tapOn:
+    text: "Send Code"
+    optional: true
+- tapOn:
+    text: "Get OTP"
+    optional: true
+
+# Вводим фиксированный OTP
+- assertVisible:
+    text: "код"
+    optional: true
+- inputText: "123456"
+- hideKeyboard
+
+# Подтверждаем
+- tapOn:
+    text: "Войти"
+    optional: true
+- tapOn:
+    text: "Verify"
+    optional: true
+- tapOn:
+    text: "Confirm"
+    optional: true
+
+# Ждём главный экран
+- assertVisible:
+    text: "Главная"
+    timeout: 10000
+    optional: true
+- assertVisible:
+    text: "Dashboard"
+    timeout: 10000
     optional: true

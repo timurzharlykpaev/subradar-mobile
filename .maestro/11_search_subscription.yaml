@@ -1,6 +1,10 @@
 appId: io.subradar.mobile
 name: "Search Subscription by Name"
 ---
+
+# Авторизация через demo аккаунт
+- runFlow: ./03_auth_email.yaml
+
 - tapOn:
     text: "Подписки"
 - assertVisible: "Подписки"
