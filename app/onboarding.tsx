@@ -296,23 +296,21 @@ function AuthHero() {
         <FloatingCard key={card.name} {...card} topOffset={insets.top} />
       ))}
 
-      {/* Logo — SubRadar SVG brand mark — on top of cards */}
+      {/* Logo — оригинальная иконка приложения, абсолютно по центру */}
       <Animated.View style={{
-        width: 72, height: 72, borderRadius: 18,
-        shadowColor: '#8B5CF6', shadowOpacity: 0.45, shadowRadius: 20,
+        position: 'absolute',
+        width: 76, height: 76,
+        top: '50%', left: '50%',
+        marginTop: -38, marginLeft: -38,
+        shadowColor: '#8B5CF6', shadowOpacity: 0.4, shadowRadius: 18,
         shadowOffset: { width: 0, height: 4 }, elevation: 14,
         transform: [{ scale: logoScale }], opacity: logoOpacity,
         zIndex: 20,
-        alignItems: 'center', justifyContent: 'center',
-        backgroundColor: '#6C3BDB',
       }}>
-        <Svg width={44} height={44} viewBox="0 0 56 56" fill="none">
-          <Circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-          <Circle cx="28" cy="28" r="14" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-          <Circle cx="28" cy="28" r="6" fill="white" opacity="0.9" />
-          <Path d="M28 28 L46 20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" />
-          <Path d="M28 18v20M23 22.5c0-2.5 2-4 5-4s5 1.5 5 3.5-2 3-5 3.5-5 2-5 4 2 4 5 4 5-1.5 5-4" stroke="white" strokeWidth="2" strokeLinecap="round" />
-        </Svg>
+        <Image
+          source={require('../assets/images/icon.png')}
+          style={{ width: 76, height: 76, borderRadius: 18 }}
+        />
       </Animated.View>
     </View>
   );
