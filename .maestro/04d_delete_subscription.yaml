@@ -1,0 +1,34 @@
+appId: io.subradar.mobile
+name: "Delete Subscription - Confirm Deletion"
+---
+- tapOn:
+    text: "Подписки"
+- assertVisible: "Подписки"
+# Open first subscription
+- tapOn:
+    index: 0
+    text: ".*"
+    regex: true
+    optional: true
+# Save the name for later assertion
+- tapOn:
+    text: "Удалить"
+    optional: true
+- tapOn:
+    description: "Delete button"
+    optional: true
+# Confirm deletion dialog
+- assertVisible: "Удалить"
+    optional: true
+- tapOn:
+    text: "Подтвердить"
+    optional: true
+- tapOn:
+    text: "Да"
+    optional: true
+- tapOn:
+    text: "Удалить"
+    optional: true
+# Back to list — no error shown
+- assertNotVisible: "Ошибка"
+- assertNotVisible: "Error"

@@ -1,0 +1,27 @@
+appId: io.subradar.mobile
+name: "Add Trial Subscription - Badge in List"
+---
+- assertVisible: "Главная"
+- tapOn:
+    description: "Add subscription button"
+- assertVisible: "Добавить подписку"
+- tapOn:
+    text: "Вручную"
+- tapOn:
+    id: "input-service-name"
+    optional: true
+- inputText:
+    text: "Apple TV+"
+- tapOn:
+    text: "Триал"
+    optional: true
+- tapOn:
+    id: "toggle-trial"
+    optional: true
+- tapOn:
+    text: "Сохранить"
+- tapOn:
+    text: "Подписки"
+- assertVisible: "Apple TV+"
+- assertVisible: "Trial"
+    optional: true

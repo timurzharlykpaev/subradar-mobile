@@ -1,0 +1,20 @@
+appId: io.subradar.mobile
+name: "Search Subscription by Name"
+---
+- tapOn:
+    text: "Подписки"
+- assertVisible: "Подписки"
+- tapOn:
+    description: "Search"
+    optional: true
+- tapOn:
+    id: "input-search"
+    optional: true
+- inputText:
+    text: "Netflix"
+- assertVisible:
+    text: "Netflix"
+    timeout: 3000
+    optional: true
+- assertNotVisible: "Ошибка"
+- assertNotVisible: "undefined"

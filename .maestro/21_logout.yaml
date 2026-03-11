@@ -1,0 +1,25 @@
+appId: io.subradar.mobile
+name: "Logout - Returns to Auth Screen"
+---
+- tapOn:
+    text: "Настройки"
+- assertVisible: "Настройки"
+- tapOn:
+    text: "Выйти"
+    optional: true
+- tapOn:
+    text: "Logout"
+    optional: true
+- tapOn:
+    description: "Logout button"
+    optional: true
+# Confirm logout dialog if present
+- tapOn:
+    text: "Да"
+    optional: true
+- tapOn:
+    text: "Подтвердить"
+    optional: true
+# Should see welcome/auth screen
+- assertVisible: "SubRadar"
+    timeout: 5000

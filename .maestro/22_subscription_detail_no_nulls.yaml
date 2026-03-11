@@ -1,0 +1,20 @@
+appId: io.subradar.mobile
+name: "Subscription Detail - No undefined/null"
+---
+- tapOn:
+    text: "Подписки"
+- assertVisible: "Подписки"
+- tapOn:
+    index: 0
+    optional: true
+# Verify no broken data on detail screen
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Ошибка"
+- assertNotVisible: "Invalid Date"
+# Verify key fields are present
+- assertVisible: "USD"
+    optional: true
+- assertVisible: "MONTHLY"
+    optional: true

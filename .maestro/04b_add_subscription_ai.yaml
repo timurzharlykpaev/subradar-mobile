@@ -1,0 +1,29 @@
+appId: io.subradar.mobile
+name: "Add Subscription - AI Search"
+---
+- assertVisible: "Главная"
+- tapOn:
+    description: "Add subscription button"
+- assertVisible: "Добавить подписку"
+- tapOn:
+    text: "AI"
+    optional: true
+- tapOn:
+    text: "Поиск"
+    optional: true
+- inputText:
+    text: "Netflix"
+- assertVisible:
+    text: "Netflix"
+    timeout: 5000
+- tapOn:
+    text: "Netflix"
+- assertVisible: "Подтвердить"
+    optional: true
+- tapOn:
+    text: "Добавить"
+    optional: true
+- tapOn:
+    text: "Подтвердить"
+    optional: true
+- assertVisible: "Netflix"
