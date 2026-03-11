@@ -9,7 +9,8 @@ name: "04 - Add Subscription Manual"
     text: "Главная"
     optional: true
 - tapOn:
-    description: "add-subscription-fab"
+    id: "add-subscription-fab"
+    optional: true
     optional: true
 - assertVisible:
     text: "Добавить подписку"

@@ -9,7 +9,8 @@ name: "Search Subscription by Name"
     text: "Подписки"
 - assertVisible: "Подписки"
 - tapOn:
-    description: "Search"
+    id: "Search"
+    optional: true
     optional: true
 - tapOn:
     id: "input-search"

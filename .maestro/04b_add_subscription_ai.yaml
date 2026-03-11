@@ -6,7 +6,8 @@ name: "04b - Add Subscription AI"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    description: "add-subscription-fab"
+    id: "add-subscription-fab"
+    optional: true
     optional: true
 - assertVisible:
     text: "ИИ Ассистент"

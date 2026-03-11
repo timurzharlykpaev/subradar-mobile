@@ -52,10 +52,18 @@ name: "00 - Setup: Onboarding + Auth (demo account)"
     text: "your@email.com"
     optional: true
 - inputText: "demo@subradar.ai"
+
+# Отправляем код
 - tapOn: "Send Code"
 - waitForAnimationToEnd
 
-# OTP
+# OTP экран — нажимаем Resend чтобы получить свежий код
+- tapOn:
+    text: "Resend Code"
+    optional: true
+- waitForAnimationToEnd
+
+# Вводим OTP
 - assertVisible: "Enter the code sent to"
 - inputText: "123456"
 - tapOn: "Verify"

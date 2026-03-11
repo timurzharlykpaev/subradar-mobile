@@ -777,12 +777,21 @@ export default function OnboardingScreen() {
               <TextInput
                 key={index}
                 ref={(ref) => { otpInputRefs.current[index] = ref; }}
+                testID={`otp-input-${index}`}
                 style={[styles.otpDigitInput, otpCode[index] ? styles.otpDigitFilled : null]}
                 value={otpCode[index] || ''}
-                onChangeText={(text) => handleOtpDigitChange(text, index)}
+                onChangeText={(text) => {
+                  // Support paste of full 6-digit code
+                  if (text.length === 6 && /^\d{6}$/.test(text)) {
+                    setOtpCode(text);
+                    otpInputRefs.current[5]?.focus();
+                    return;
+                  }
+                  handleOtpDigitChange(text, index);
+                }}
                 onKeyPress={(e) => handleOtpKeyPress(e, index)}
                 keyboardType="number-pad"
-                maxLength={1}
+                maxLength={6}
                 selectTextOnFocus
               />
             ))}
