@@ -10,7 +10,10 @@
     "start:dev": "EXPO_PUBLIC_API_URL=https://api-dev.subradar.ai/api/v1 expo start --clear",
     "start:prod": "EXPO_PUBLIC_API_URL=https://api.subradar.ai/api/v1 expo start --clear",
     "test:e2e": "bash .maestro/run_all.sh",
-    "test:all": "bash scripts/test-all.sh"
+    "test:all": "bash scripts/test-all.sh",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -20,8 +23,8 @@
     "axios": "^1.9.0",
     "expo": "~54.0.0",
     "expo-apple-authentication": "~8.0.8",
-    "expo-auth-session": "~7.0.10",
     "expo-audio": "~1.0.16",
+    "expo-auth-session": "~7.0.10",
     "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",
@@ -49,5 +52,38 @@
     "zustand": "^5.0.11"
   },
   "private": true,
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "jest-expo": "^55.0.9",
+    "ts-jest": "^29.4.6"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "commonjs"
+          }
+        }
+      ]
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
+  }
 }
