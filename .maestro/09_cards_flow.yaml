@@ -12,6 +12,10 @@ name: "09 - Cards Flow"
     text: "Settings"
     optional: true
 - assertVisible:
-    text: "Настройки"
+    text: "Settings, tab"
+    optional: true
+- tapOn:
+    text: "Settings"
+    optional: true
     optional: true
 - assertNotVisible: "undefined"

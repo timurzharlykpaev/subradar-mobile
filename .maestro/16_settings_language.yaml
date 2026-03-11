@@ -2,7 +2,6 @@ appId: com.goalin.subradar
 name: "16 - Settings Language"
 ---
 
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
@@ -12,3 +11,12 @@ name: "16 - Settings Language"
     text: "Settings"
     optional: true
 - assertNotVisible: "undefined"
+
+# Сбрасываем язык обратно на English чтобы не ломать последующие flows
+- tapOn:
+    text: "Language"
+    optional: true
+- tapOn:
+    text: "English"
+    optional: true
+- waitForAnimationToEnd

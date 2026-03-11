@@ -1,25 +1,37 @@
 #!/bin/bash
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT"
+set -e
 
-echo ""
+export JAVA_HOME="${JAVA_HOME:-/opt/homebrew/opt/openjdk@17}"
+export PATH="$JAVA_HOME/bin:$HOME/.maestro/bin:$PATH"
+
 echo "╔══════════════════════════════════╗"
 echo "║  SubRadar Mobile Test Suite      ║"
 echo "╚══════════════════════════════════╝"
+
+# Unit тесты
 echo ""
+echo "📦 Unit Tests (Jest)"
+echo "--------------------"
+npm test --silent
+echo "✅ Unit tests passed"
 
-# Check maestro
+# E2E тесты (только если есть booted симулятор)
+echo ""
+echo "🎭 E2E Tests (Maestro)"
+echo "----------------------"
+
+DEVICE=$(xcrun simctl list devices booted 2>/dev/null | grep "Booted" | head -1 | grep -oE "[A-F0-9-]{36}" | head -1)
+
+if [ -z "$DEVICE" ]; then
+  echo "⚠️  No booted simulator found — skipping E2E"
+  echo "   Boot a simulator: xcrun simctl boot <UDID>"
+  exit 0
+fi
+
 if ! command -v maestro &>/dev/null; then
-  echo "⚠️  Maestro not installed."
+  echo "⚠️  Maestro not installed — skipping E2E"
   echo "   Install: curl -Ls https://get.maestro.mobile.dev | bash"
-  exit 1
+  exit 0
 fi
 
-# Check simulator/device
-if ! maestro hierarchy 2>/dev/null | grep -q "io.subradar.mobile"; then
-  echo "⚠️  SubRadar app not running on any device/simulator"
-  echo "   Launch app first, then run this script"
-  exit 1
-fi
-
-.maestro/run_all.sh
+bash "$(dirname "$0")/../.maestro/run_all.sh"
