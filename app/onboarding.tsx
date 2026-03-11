@@ -649,11 +649,15 @@ export default function OnboardingScreen() {
         {LANGUAGES.map((lang) => (
           <TouchableOpacity
             key={lang.code}
-            style={[styles.langChip, language === lang.code && styles.langChipActive]}
+            style={[
+              styles.langChip,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              language === lang.code && { backgroundColor: colors.primary + '22', borderColor: colors.primary },
+            ]}
             onPress={() => handleLanguageSelect(lang.code)}
           >
             <Text style={styles.langFlag}>{lang.flag}</Text>
-            <Text style={[styles.langLabel, language === lang.code && styles.langLabelActive]}>
+            <Text style={[styles.langLabel, { color: colors.text }, language === lang.code && { color: colors.primary, fontWeight: '700' }]}>
               {lang.label}
             </Text>
           </TouchableOpacity>
@@ -676,7 +680,7 @@ export default function OnboardingScreen() {
     <View key="features" style={styles.step}>
       <Text style={styles.sectionTitle}>{t('landing.features')}</Text>
       {FEATURES.map((f) => (
-        <View key={f.key} style={styles.featureRow}>
+        <View key={f.key} style={[styles.featureRow, { backgroundColor: colors.surface }]}>
           <View style={styles.featureIcon}>
             <f.icon />
           </View>
@@ -717,7 +721,7 @@ export default function OnboardingScreen() {
         {CURRENCIES.map((cur) => (
           <TouchableOpacity
             key={cur}
-            style={[styles.currencyChip, selectedCurrency === cur && styles.currencyChipActive]}
+            style={[styles.currencyChip, { backgroundColor: colors.surface, borderColor: colors.border }, selectedCurrency === cur && { backgroundColor: colors.primary + "22", borderColor: colors.primary }]}
             onPress={() => setSelectedCurrency(cur)}
           >
             <Text style={[styles.currencyText, selectedCurrency === cur && styles.currencyTextActive]}>
@@ -758,7 +762,7 @@ export default function OnboardingScreen() {
           )}
 
           <TouchableOpacity
-            style={[styles.socialBtn, styles.googleBtn]}
+            style={[styles.socialBtn, styles.googleBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => googlePromptAsync()}
             disabled={loading}
           >
@@ -767,7 +771,7 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.socialBtn, styles.emailOtpBtn]}
+            style={[styles.socialBtn, styles.emailOtpBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => setOtpMode(true)}
             disabled={loading}
           >
@@ -786,7 +790,7 @@ export default function OnboardingScreen() {
                 key={index}
                 ref={(ref) => { otpInputRefs.current[index] = ref; }}
                 testID={`otp-input-${index}`}
-                style={[styles.otpDigitInput, otpCode[index] ? styles.otpDigitFilled : null]}
+                style={[styles.otpDigitInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, otpCode[index] ? styles.otpDigitFilled : null]}
                 value={otpCode[index] || ''}
                 onChangeText={(text) => {
                   // Support paste of full 6-digit code
@@ -830,7 +834,7 @@ export default function OnboardingScreen() {
       ) : (
         <View style={styles.otpContainer}>
           <TextInput
-            style={styles.emailInput}
+            style={[styles.emailInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
             value={email}
             onChangeText={setEmail}
             placeholder={t('auth.email_placeholder')}
@@ -914,7 +918,7 @@ export default function OnboardingScreen() {
         {step > 0 && (
           <View style={styles.footerBtns}>
             {step > 1 && (
-              <TouchableOpacity style={styles.backBtn} onPress={() => setStep(step - 1)}>
+              <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
                 <Text style={styles.backBtnText}>{t('common.back')}</Text>
               </TouchableOpacity>
             )}
