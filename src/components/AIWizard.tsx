@@ -18,6 +18,8 @@ import { useTheme } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { aiApi } from '../api/ai';
 import { VoiceRecorder } from './VoiceRecorder';
+import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
+import { Pressable } from 'react-native';
 
 export interface ParsedSub {
   name?: string;
@@ -122,6 +124,86 @@ const QUICK = [
   { name: 'Apple TV+', Icon: AppleTVIcon,  amount: 9.99,  currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://support.apple.com/billing',   serviceUrl: 'https://tv.apple.com',   iconUrl: 'https://logo.clearbit.com/apple.com' },
   { name: 'Disney+',   Icon: DisneyIcon,   amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://www.disneyplus.com/account/subscription', serviceUrl: 'https://disneyplus.com', iconUrl: 'https://logo.clearbit.com/disneyplus.com' },
 ] as const;
+
+// ── MicButton ────────────────────────────────────────────────────────────────
+
+function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => void; loading: boolean; colors: any; t: any }) {
+  const { isRecording, durationFmt, start, stop } = useVoiceRecorder(onVoice);
+
+  const ring1 = useRef(new Animated.Value(1)).current;
+  const ring2 = useRef(new Animated.Value(1)).current;
+
+  // Пульс в покое
+  React.useEffect(() => {
+    if (isRecording) return;
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(ring1, { toValue: 1.18, duration: 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+      Animated.timing(ring1, { toValue: 1,    duration: 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [isRecording]);
+
+  // Пульс при записи — быстрее и с двумя кольцами
+  React.useEffect(() => {
+    if (!isRecording) { ring1.setValue(1); ring2.setValue(1); return; }
+    const l1 = Animated.loop(Animated.sequence([
+      Animated.timing(ring1, { toValue: 1.35, duration: 600, useNativeDriver: true }),
+      Animated.timing(ring1, { toValue: 1,    duration: 600, useNativeDriver: true }),
+    ]));
+    const l2 = Animated.loop(Animated.sequence([
+      Animated.timing(ring2, { toValue: 0,    duration: 0,   useNativeDriver: true }),
+      Animated.timing(ring2, { toValue: 1.55, duration: 1200, useNativeDriver: true }),
+      Animated.timing(ring2, { toValue: 0,    duration: 0,   useNativeDriver: true }),
+    ]));
+    l1.start(); l2.start();
+    return () => { l1.stop(); l2.stop(); };
+  }, [isRecording]);
+
+  const bg = isRecording ? '#EF4444' : colors.primary;
+
+  return (
+    <View style={micStyles.wrap}>
+      {/* Фоновые кольца */}
+      <Animated.View style={[micStyles.ring, { backgroundColor: bg + '18', transform: [{ scale: ring2 }] }]} />
+      <Animated.View style={[micStyles.ring, { backgroundColor: bg + '25', transform: [{ scale: ring1 }] }]} />
+
+      <Pressable onPressIn={start} onPressOut={stop} style={micStyles.pressable}>
+        <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
+          {loading
+            ? <ActivityIndicator color="#fff" size="large" />
+            : isRecording
+              ? <StopSvg />
+              : <MicSvg size={34} />}
+        </View>
+      </Pressable>
+
+      <Text style={[micStyles.label, { color: colors.textSecondary }]}>
+        {loading
+          ? t('common.loading', 'Распознаю...')
+          : isRecording
+            ? durationFmt
+            : t('add.hold_to_record', 'Держи и говори')}
+      </Text>
+    </View>
+  );
+}
+
+function StopSvg() {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24">
+      <Rect x="6" y="6" width="12" height="12" rx="2" fill="white" />
+    </Svg>
+  );
+}
+
+const micStyles = StyleSheet.create({
+  wrap:      { alignItems: 'center', marginVertical: 20 },
+  ring:      { position: 'absolute', width: 110, height: 110, borderRadius: 55, top: '50%', marginTop: -55 },
+  pressable: { zIndex: 2 },
+  btn:       { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
+  label:     { marginTop: 52, fontSize: 13, fontWeight: '500' },
+});
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -280,22 +362,7 @@ export function AIWizard({ onDone }: Props) {
             {!!hintText && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
 
             {/* Big mic */}
-            <View style={styles.micArea}>
-              <Animated.View style={[styles.micRing, { backgroundColor: colors.primary + '20', transform: [{ scale: pulseAnim }] }]} />
-              <VoiceRecorder
-                onRecordingComplete={handleVoice}
-                customButton={
-                  <View style={[styles.micBtn, { backgroundColor: loading ? colors.primary + 'AA' : colors.primary }]}>
-                    {loading
-                      ? <ActivityIndicator color="#fff" size="large" />
-                      : <MicSvg size={34} />}
-                  </View>
-                }
-              />
-              <Text style={[styles.micHint, { color: colors.textSecondary }]}>
-                {t('add.hold_to_record', 'Держи и говори')}
-              </Text>
-            </View>
+            <MicButton onVoice={handleVoice} loading={loading} colors={colors} t={t} />
 
             {/* OR divider */}
             <View style={styles.orRow}>
