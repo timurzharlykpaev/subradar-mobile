@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Text as SvgText } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import {
   View,
@@ -680,6 +680,27 @@ export default function OnboardingScreen() {
 
     // Step 4: Currency
     <View key="currency" style={styles.step}>
+      <View style={{ alignItems: 'center', marginBottom: 8 }}>
+        <Svg width={140} height={140} viewBox="0 0 140 140">
+          {/* Background circle */}
+          <Circle cx="70" cy="70" r="70" fill="rgba(139,92,246,0.1)" />
+          <Circle cx="70" cy="70" r="52" fill="rgba(139,92,246,0.15)" />
+          {/* Center coin */}
+          <Circle cx="70" cy="70" r="34" fill="#8B5CF6" />
+          <Circle cx="70" cy="70" r="28" fill="#7C3AED" />
+          {/* Dollar sign */}
+          <SvgText x="70" y="78" textAnchor="middle" fontSize="30" fontWeight="bold" fill="#FFFFFF">$</SvgText>
+          {/* Orbiting coins */}
+          <Circle cx="70" cy="18" r="14" fill="#8B5CF6" opacity="0.9" />
+          <SvgText x="70" y="23" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#FFF">€</SvgText>
+          <Circle cx="122" cy="70" r="12" fill="#8B5CF6" opacity="0.75" />
+          <SvgText x="122" y="75" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#FFF">£</SvgText>
+          <Circle cx="18" cy="70" r="12" fill="#8B5CF6" opacity="0.75" />
+          <SvgText x="18" y="75" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#FFF">¥</SvgText>
+          <Circle cx="70" cy="122" r="11" fill="#8B5CF6" opacity="0.6" />
+          <SvgText x="70" y="127" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#FFF">₸</SvgText>
+        </Svg>
+      </View>
       <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
       <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('onboarding.choose_currency')}</Text>
       <View style={styles.currencyGrid}>
