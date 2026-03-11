@@ -27,6 +27,7 @@ import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { VoiceRecorder } from './VoiceRecorder';
+import { AIWizard, ParsedSub } from './AIWizard';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useTheme } from '../theme';
 
@@ -345,121 +346,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
             {/* tab === 0 → AI Assistant */}
             {tab === 0 && (
-              <View style={styles.aiTab}>
-                {/* Service search */}
-                <Text style={[styles.aiSectionTitle, { color: colors.text }]}>🔍 {t('add.search_service')}</Text>
-                <Text style={[styles.aiHint, { color: colors.textSecondary }]}>{t('add.ai_lookup_hint')}</Text>
-                <View style={styles.aiRow}>
-                  <TextInput
-                    style={[inputStyle, { flex: 1, marginTop: 0 }]}
-                    value={aiQuery}
-                    onChangeText={setAiQuery}
-                    placeholder={t('add.search_placeholder')}
-                    placeholderTextColor={colors.textMuted}
-                    returnKeyType="search"
-                    onSubmitEditing={handleAILookup}
-                  />
-                  <TouchableOpacity
-                    style={[styles.aiSearchBtn, { backgroundColor: colors.primary }, aiLoading && { opacity: 0.6 }]}
-                    onPress={handleAILookup}
-                    disabled={aiLoading || !aiQuery.trim()}
-                  >
-                    {aiLoading
-                      ? <ActivityIndicator color="#FFF" size="small" />
-                      : <Text style={styles.aiSearchBtnText}>→</Text>}
-                  </TouchableOpacity>
-                </View>
-
-                {foundService ? (
-                  <View style={[styles.foundServiceCard, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
-                    {form.iconUrl ? (
-                      <Image source={{ uri: form.iconUrl }} style={styles.foundServiceIcon} onError={() => {}} />
-                    ) : null}
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.foundServiceName, { color: colors.text }]}>{foundService.name}</Text>
-                      <Text style={[styles.foundServiceMeta, { color: colors.primary }]}>
-                        {t('add.plans_count', { count: foundService.plans?.length ?? 0 })} · {t('add.form_filled')} ✓
-                      </Text>
-                    </View>
-                    <TouchableOpacity onPress={() => { setFoundService(null); setAiQuery(''); }}>
-                      <Text style={{ fontSize: 18, color: colors.textMuted }}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <>
-                    <Text style={[styles.popularTitle, { color: colors.textSecondary }]}>{t('add.popular')}</Text>
-                    <View style={styles.popularGrid}>
-                      {POPULAR_SERVICES.map((svc) => (
-                        <TouchableOpacity
-                          key={svc.name}
-                          style={[styles.popularChip, { backgroundColor: colors.background, borderColor: colors.border }]}
-                          onPress={() => {
-                            setAiQuery(svc.name);
-                            setTimeout(() => {
-                              aiApi.lookupService(svc.name).then((res) => {
-                                const result = res.data;
-                                setFoundService(result);
-                                const fp = result.plans?.[0];
-                                const amt = fp?.amount ?? fp?.price ?? 0;
-                                const period = ((fp?.billingCycle ?? fp?.period ?? 'MONTHLY') as string).toUpperCase();
-                                const icon = result.iconUrl ?? result.logoUrl ?? (result.serviceUrl
-                                  ? `https://www.google.com/s2/favicons?domain=${new URL(result.serviceUrl).hostname}&sz=64`
-                                  : '');
-                                setForm((f) => ({
-                                  ...f,
-                                  name: result.name ?? f.name,
-                                  category: (result.category as string)?.toLowerCase() ?? f.category,
-                                  amount: amt > 0 ? String(amt) : f.amount,
-                                  currency: fp?.currency ?? f.currency,
-                                  billingPeriod: period as any,
-                                  currentPlan: fp?.name ?? f.currentPlan,
-                                  serviceUrl: result.serviceUrl ?? f.serviceUrl,
-                                  cancelUrl: result.cancelUrl ?? f.cancelUrl,
-                                  iconUrl: icon,
-                                }));
-                                setTab(1); // switch to manual tab to review
-                              }).catch(() => {});
-                            }, 50);
-                          }}
-                        >
-                          <Text style={styles.popularEmoji}>{svc.emoji}</Text>
-                          <Text style={[styles.popularName, { color: colors.text }]} numberOfLines={1}>{svc.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </>
-                )}
-
-                <View style={styles.aiDivider}>
-                  <View style={[styles.aiDividerLine, { backgroundColor: colors.border }]} />
-                  <Text style={[styles.aiDividerText, { color: colors.textMuted }]}>{t('common.or')}</Text>
-                  <View style={[styles.aiDividerLine, { backgroundColor: colors.border }]} />
-                </View>
-
-                {/* Text parse */}
-                <Text style={[styles.aiSectionTitle, { color: colors.text }]}>✨ {t('add.parse_text')}</Text>
-                <TextInput
-                  style={[inputStyle, { minHeight: 100, textAlignVertical: 'top', paddingTop: 12 }]}
-                  value={aiText}
-                  onChangeText={setAiText}
-                  placeholder={t('add.paste_hint')}
-                  placeholderTextColor={colors.textMuted}
-                  multiline
-                />
-                <VoiceRecorder onRecordingComplete={handleVoiceDone} />
-                <TouchableOpacity
-                  style={[
-                    { backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8, flexDirection: 'row', justifyContent: 'center', gap: 8 },
-                    (aiLoading || !aiText.trim()) && { opacity: 0.6 },
-                  ]}
-                  onPress={handleRecognize}
-                  disabled={aiLoading || !aiText.trim()}
-                >
-                  {aiLoading
-                    ? <ActivityIndicator color="#FFF" size="small" />
-                    : <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>✨ {t('add.recognize')}</Text>
-                  }
-                </TouchableOpacity>
+              <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
+                <AIWizard onDone={(sub) => {
+                  setForm((f) => ({
+                    ...f,
+                    name: sub.name ?? f.name,
+                    amount: sub.amount != null ? String(sub.amount) : f.amount,
+                    currency: sub.currency ?? f.currency,
+                    billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
+                    category: sub.category?.toLowerCase() ?? f.category,
+                    serviceUrl: sub.serviceUrl ?? f.serviceUrl,
+                    cancelUrl: sub.cancelUrl ?? f.cancelUrl,
+                    iconUrl: sub.iconUrl ?? f.iconUrl,
+                  }));
+                  setTab(1);
+                }} />
               </View>
             )}
 
