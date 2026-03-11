@@ -721,7 +721,7 @@ export default function OnboardingScreen() {
             style={[styles.currencyChip, { backgroundColor: colors.surface, borderColor: colors.border }, selectedCurrency === cur && { backgroundColor: colors.primary + "22", borderColor: colors.primary }]}
             onPress={() => setSelectedCurrency(cur)}
           >
-            <Text style={[styles.currencyText, selectedCurrency === cur && styles.currencyTextActive]}>
+            <Text style={[styles.currencyText, { color: colors.text }, selectedCurrency === cur && { color: colors.primary, fontWeight: '800' }]}>
               {cur}
             </Text>
           </TouchableOpacity>
