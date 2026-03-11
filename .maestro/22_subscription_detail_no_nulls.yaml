@@ -18,7 +18,9 @@ name: "Subscription Detail - No undefined/null"
 - assertNotVisible: "Ошибка"
 - assertNotVisible: "Invalid Date"
 # Verify key fields are present
-- assertVisible: "USD"
+- assertVisible:
+    text: "USD"
     optional: true
-- assertVisible: "MONTHLY"
+- assertVisible:
+    text: "MONTHLY"
     optional: true

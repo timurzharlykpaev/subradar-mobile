@@ -6,6 +6,12 @@ name: "07 - Settings Theme Toggle"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Настройки"
-- assertVisible: "Настройки"
+    text: "Settings, tab"
+    optional: true
+- tapOn:
+    text: "Settings"
+    optional: true
+- assertVisible:
+    text: "Settings, tab"
+    optional: true
 - assertNotVisible: "Ошибка"

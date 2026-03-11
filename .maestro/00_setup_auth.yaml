@@ -3,63 +3,9 @@ name: "00 - Setup: Onboarding + Auth (demo account)"
 ---
 - launchApp
 
-# Шаг 0: Showcase
-- assertVisible: "Get started — it's free →"
-- tapOn: "Get started — it's free →"
-- waitForAnimationToEnd
+# Если уже на главном экране — пропускаем онбординг
+- runFlow:
+    when:
+      visible: "Get started — it's free →"
+    file: ./00_onboarding_flow.yaml
 
-# Шаги 1-6: листаем до экрана Auth
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Get Started →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Get Started →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-
-# Auth — Email
-- tapOn:
-    text: "✉️, Continue with Email"
-    optional: true
-- waitForAnimationToEnd
-
-# Поле email
-- tapOn:
-    text: "your@email.com"
-    optional: true
-- inputText: "demo@subradar.ai"
-
-# Отправляем код
-- tapOn: "Send Code"
-- waitForAnimationToEnd
-
-# OTP — вводим через testID первого бокса (принимает 6 цифр сразу)
-- tapOn:
-    id: "otp-input-0"
-- inputText: "123456"
-- waitForAnimationToEnd
-
-# Верифицируем
-- tapOn: "Verify"
-- waitForAnimationToEnd

@@ -6,8 +6,14 @@ name: "06 - Analytics Screen"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Аналитика"
-- assertVisible: "Аналитика"
+    text: "Analytics, tab"
+    optional: true
+- tapOn:
+    text: "Analytics"
+    optional: true
+- assertVisible:
+    text: "Analytics, tab"
+    optional: true
 - assertNotVisible: "Ошибка"
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

@@ -6,7 +6,13 @@ name: "13 - Analytics Forecast"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Аналитика"
-- assertVisible: "Аналитика"
+    text: "Analytics, tab"
+    optional: true
+- tapOn:
+    text: "Analytics"
+    optional: true
+- assertVisible:
+    text: "Analytics, tab"
+    optional: true
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"

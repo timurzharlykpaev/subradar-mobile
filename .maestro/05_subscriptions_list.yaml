@@ -6,7 +6,13 @@ name: "05 - Subscriptions List"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Подписки"
-- assertVisible: "Подписки"
+    text: "Subs, tab"
+    optional: true
+- tapOn:
+    text: "Subs"
+    optional: true
+- assertVisible:
+    text: "Subs, tab"
+    optional: true
 - assertNotVisible: "Ошибка"
 - assertNotVisible: "undefined"

@@ -1,0 +1,62 @@
+appId: com.goalin.subradar
+name: "00 - Onboarding + Auth flow"
+---
+# Шаг 0: Showcase
+- tapOn: "Get started — it's free →"
+- waitForAnimationToEnd
+
+# Шаги 1-6: листаем до экрана Auth
+- tapOn:
+    text: "Next →"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Next →"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Next →"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Get Started →"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Next →"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Get Started →"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Next →"
+    optional: true
+- waitForAnimationToEnd
+
+# Auth — Email
+- tapOn:
+    text: "✉️, Continue with Email"
+    optional: true
+- waitForAnimationToEnd
+
+# Поле email
+- tapOn:
+    text: "your@email.com"
+    optional: true
+- inputText: "demo@subradar.ai"
+
+# Отправляем код
+- tapOn: "Send Code"
+- waitForAnimationToEnd
+
+# OTP — вводим через testID (принимает 6 цифр сразу)
+- tapOn:
+    id: "otp-input-0"
+- inputText: "123456"
+- waitForAnimationToEnd
+
+# Верифицируем
+- tapOn: "Verify"
+- waitForAnimationToEnd

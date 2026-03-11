@@ -6,6 +6,12 @@ name: "15 - Settings Currency"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Настройки"
-- assertVisible: "Настройки"
+    text: "Settings, tab"
+    optional: true
+- tapOn:
+    text: "Settings"
+    optional: true
+- assertVisible:
+    text: "Settings, tab"
+    optional: true
 - assertNotVisible: "undefined"

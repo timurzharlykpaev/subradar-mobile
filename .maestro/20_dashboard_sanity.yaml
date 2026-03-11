@@ -8,7 +8,8 @@ name: "Dashboard - No NaN/undefined/Ошибка, has Прогноз"
 - tapOn:
     text: "Главная"
     optional: true
-- assertVisible: "Главная"
+- assertVisible:
+    text: "Главная"
     optional: true
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"
@@ -16,9 +17,12 @@ name: "Dashboard - No NaN/undefined/Ошибка, has Прогноз"
 - assertNotVisible: "Ошибка"
 - assertNotVisible: "Error"
 # Check forecast element exists on dashboard
-- assertVisible: "Прогноз"
+- assertVisible:
+    text: "Прогноз"
     optional: true
-- assertVisible: "₸"
+- assertVisible:
+    text: "₸"
     optional: true
-- assertVisible: "$"
+- assertVisible:
+    text: "$"
     optional: true

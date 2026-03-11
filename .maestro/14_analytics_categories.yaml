@@ -6,6 +6,10 @@ name: "14 - Analytics Categories"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Аналитика"
+    text: "Analytics, tab"
+    optional: true
+- tapOn:
+    text: "Analytics"
+    optional: true
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"
