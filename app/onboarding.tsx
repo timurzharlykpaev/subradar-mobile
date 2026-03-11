@@ -25,6 +25,7 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 import { useTheme } from '../src/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -226,6 +227,7 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
 }
 
 function AuthHero() {
+  const insets = useSafeAreaInsets();
   const logoScale = useRef(new Animated.Value(0.5)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const ring1Scale = useRef(new Animated.Value(1)).current;
@@ -272,7 +274,7 @@ function AuthHero() {
   }, []);
 
   return (
-    <View style={{ width: '100%', height: 230, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+    <View style={{ width: '100%', height: 230 + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
       {/* Glow blob */}
       <View style={{
         position: 'absolute', width: 180, height: 180, borderRadius: 90,
@@ -383,7 +385,7 @@ export default function OnboardingScreen() {
   const { t, i18n } = useTranslation();
   const { setUser, setOnboarded } = useAuthStore();
   const { setLanguage, language, setCurrency } = useSettingsStore();
-  const { colors } = useTheme();
+  const { colors, isDark, toggleTheme } = useTheme();
 
   // Google OAuth
   const [, googleResponse, googlePromptAsync] = Google.useAuthRequest({
@@ -720,6 +722,13 @@ export default function OnboardingScreen() {
 
     // Step 5: Auth
     <View key="auth" style={[styles.step, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
+      {/* Theme toggle top-right */}
+      <TouchableOpacity
+        onPress={toggleTheme}
+        style={{ position: 'absolute', top: 16, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Text style={{ fontSize: 18 }}>{isDark ? '☀️' : '🌙'}</Text>
+      </TouchableOpacity>
       <AuthHero />
 
       {loading && (

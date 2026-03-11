@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useColorScheme } from 'react-native';
 import { DarkTheme, LightTheme, ThemeColors } from './colors';
 
 type ThemeMode = 'dark' | 'light';
@@ -21,12 +22,18 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>('dark');
+  const systemScheme = useColorScheme();
+  const [mode, setMode] = useState<ThemeMode>(systemScheme === 'light' ? 'light' : 'dark');
 
-  // Load saved theme on mount
+  // Load saved theme on mount — user preference overrides system
   React.useEffect(() => {
     AsyncStorage.getItem('theme_mode').then((saved) => {
-      if (saved === 'light' || saved === 'dark') setMode(saved);
+      if (saved === 'light' || saved === 'dark') {
+        setMode(saved);
+      } else {
+        // No saved preference — follow system
+        setMode(systemScheme === 'light' ? 'light' : 'dark');
+      }
     });
   }, []);
 
