@@ -206,8 +206,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         amount: planAmount > 0 ? String(planAmount) : f.amount,
         currency: firstPlan?.currency ?? f.currency,
         billingPeriod: planPeriod as any,
-        plan: firstPlan?.name ?? f.plan,
-        websiteUrl: result.serviceUrl ?? f.websiteUrl,
+        currentPlan: firstPlan?.name ?? f.currentPlan,
+        serviceUrl: result.serviceUrl ?? f.serviceUrl,
         cancelUrl: result.cancelUrl ?? f.cancelUrl,
         iconUrl,
       }));
@@ -230,8 +230,62 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
   };
 
-  const handleVoiceDone = (_uri: string) => {
-    Alert.alert('', t('add.ai_processing'));
+  // Применяем распарсенные подписки от AI
+  const applyParsedSubscriptions = (subs: any[]) => {
+    if (!subs || subs.length === 0) return;
+    const first = subs[0];
+    const iconUrl = first.iconUrl ?? first.logoUrl ??
+      (first.websiteUrl ? `https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(first.websiteUrl).hostname; } catch { return ''; } })()}&sz=64` : '');
+    setForm(f => ({
+      ...f,
+      name: first.name ?? f.name,
+      amount: first.amount != null ? String(first.amount) : f.amount,
+      currency: first.currency ?? f.currency,
+      billingPeriod: (first.billingPeriod ?? f.billingPeriod) as any,
+      category: (first.category as string)?.toLowerCase() ?? f.category,
+      serviceUrl: first.websiteUrl ?? first.serviceUrl ?? f.serviceUrl,
+      cancelUrl: first.cancelUrl ?? f.cancelUrl,
+      iconUrl: iconUrl || f.iconUrl,
+    }));
+    setTab(1); // переходим на Manual для редактирования
+  };
+
+  // Распознать текст через AI
+  const handleRecognize = async () => {
+    const text = aiText.trim();
+    if (!text) return;
+    setAiLoading(true);
+    try {
+      const res = await aiApi.parseText(text);
+      const data = res.data;
+      // parseText может вернуть массив или объект
+      const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
+      applyParsedSubscriptions(subs);
+    } catch {
+      // silent — не ломаем UI
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Распознать голос через AI
+  const handleVoiceDone = async (uri: string) => {
+    if (!uri) return;
+    setAiLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('audio', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
+      const res = await aiApi.parseAudio(formData);
+      const data = res.data;
+      // Если сервер вернул транскрипт — показываем его в поле
+      if (data.text) setAiText(data.text);
+      const subs = Array.isArray(data.subscriptions) ? data.subscriptions : (data.subscriptions ? [data.subscriptions] : []);
+      if (subs.length > 0) applyParsedSubscriptions(subs);
+    } catch {
+      // silent
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   // Shared input style
@@ -358,8 +412,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                                   amount: amt > 0 ? String(amt) : f.amount,
                                   currency: fp?.currency ?? f.currency,
                                   billingPeriod: period as any,
-                                  plan: fp?.name ?? f.plan,
-                                  websiteUrl: result.serviceUrl ?? f.websiteUrl,
+                                  currentPlan: fp?.name ?? f.currentPlan,
+                                  serviceUrl: result.serviceUrl ?? f.serviceUrl,
                                   cancelUrl: result.cancelUrl ?? f.cancelUrl,
                                   iconUrl: icon,
                                 }));
@@ -394,10 +448,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 />
                 <VoiceRecorder onRecordingComplete={handleVoiceDone} />
                 <TouchableOpacity
-                  style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }}
-                  onPress={() => Alert.alert(t('add.ai_assistant'), t('add.ai_processing'))}
+                  style={[
+                    { backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8, flexDirection: 'row', justifyContent: 'center', gap: 8 },
+                    (aiLoading || !aiText.trim()) && { opacity: 0.6 },
+                  ]}
+                  onPress={handleRecognize}
+                  disabled={aiLoading || !aiText.trim()}
                 >
-                  <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>✨ {t('add.recognize')}</Text>
+                  {aiLoading
+                    ? <ActivityIndicator color="#FFF" size="small" />
+                    : <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>✨ {t('add.recognize')}</Text>
+                  }
                 </TouchableOpacity>
               </View>
             )}
