@@ -1,9 +1,9 @@
-appId: io.subradar.mobile
+appId: com.goalin.subradar
 name: "04b - Add Subscription AI"
 ---
 
 # Авторизация через demo аккаунт
-- runFlow: ./03_auth_email.yaml
+- runFlow: ./00_setup_auth.yaml
 
 - tapOn:
     description: "add-subscription-fab"

@@ -1,9 +1,9 @@
-appId: io.subradar.mobile
+appId: com.goalin.subradar
 name: "06 - Analytics Screen"
 ---
 
 # Авторизация через demo аккаунт
-- runFlow: ./03_auth_email.yaml
+- runFlow: ./00_setup_auth.yaml
 
 - tapOn:
     text: "Аналитика"

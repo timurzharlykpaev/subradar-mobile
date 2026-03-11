@@ -1,4 +1,4 @@
-appId: io.subradar.mobile
+appId: com.goalin.subradar
 name: "01 - Onboarding Language"
 ---
 - launchApp:

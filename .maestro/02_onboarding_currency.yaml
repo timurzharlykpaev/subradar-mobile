@@ -1,4 +1,4 @@
-appId: io.subradar.mobile
+appId: com.goalin.subradar
 name: "02 - Onboarding Currency"
 ---
 - assertVisible:

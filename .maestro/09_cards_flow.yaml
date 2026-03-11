@@ -1,9 +1,9 @@
-appId: io.subradar.mobile
+appId: com.goalin.subradar
 name: "09 - Cards Flow"
 ---
 
 # Авторизация через demo аккаунт
-- runFlow: ./03_auth_email.yaml
+- runFlow: ./00_setup_auth.yaml
 
 - tapOn:
     text: "Настройки"
