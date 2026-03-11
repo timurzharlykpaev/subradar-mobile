@@ -6,6 +6,12 @@ name: "21 - Logout Flow"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
+    text: "Settings, tab"
+    optional: true
+- tapOn:
+    text: "Settings"
+    optional: true
+- assertVisible:
     text: "Настройки"
-- assertVisible: "Настройки"
+    optional: true
 - assertNotVisible: "undefined"

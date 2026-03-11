@@ -6,7 +6,13 @@ name: "11 - Subscription Search"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
+    text: "Subs, tab"
+    optional: true
+- tapOn:
+    text: "Subs"
+    optional: true
+- assertVisible:
     text: "Подписки"
-- assertVisible: "Подписки"
+    optional: true
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

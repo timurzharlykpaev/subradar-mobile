@@ -6,6 +6,10 @@ name: "04f - Trial Subscription Badge"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Подписки"
+    text: "Subs, tab"
+    optional: true
+- tapOn:
+    text: "Subs"
+    optional: true
     optional: true
 - assertNotVisible: "Ошибка"

@@ -6,6 +6,10 @@ name: "10 - Reports Flow"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Настройки"
+    text: "Settings, tab"
+    optional: true
+- tapOn:
+    text: "Settings"
+    optional: true
     optional: true
 - assertNotVisible: "Ошибка"

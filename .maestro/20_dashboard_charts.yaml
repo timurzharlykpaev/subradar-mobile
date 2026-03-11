@@ -6,7 +6,11 @@ name: "20 - Dashboard Charts Sanity"
 - runFlow: ./00_setup_auth.yaml
 
 - tapOn:
-    text: "Главная"
+    text: "Home, tab"
+    optional: true
+- tapOn:
+    text: "Home"
+    optional: true
     optional: true
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"
