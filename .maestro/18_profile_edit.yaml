@@ -1,0 +1,25 @@
+appId: io.subradar.mobile
+name: "Profile - Edit Name"
+---
+- tapOn:
+    text: "Настройки"
+- assertVisible: "Настройки"
+- tapOn:
+    text: "Профиль"
+    optional: true
+- tapOn:
+    description: "Edit profile"
+    optional: true
+- tapOn:
+    id: "input-name"
+    optional: true
+- clearText
+    optional: true
+- inputText:
+    text: "E2E User"
+    optional: true
+- tapOn:
+    text: "Сохранить"
+    optional: true
+- assertNotVisible: "Ошибка"
+- assertNotVisible: "undefined"

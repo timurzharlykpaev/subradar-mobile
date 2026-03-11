@@ -1,0 +1,27 @@
+appId: io.subradar.mobile
+name: "Paywall - Upgrade Screen"
+---
+- assertVisible: "Главная"
+# Trigger paywall via settings or by exceeding limit
+- tapOn:
+    text: "Настройки"
+    optional: true
+- tapOn:
+    text: "Обновить план"
+    optional: true
+- tapOn:
+    text: "Upgrade"
+    optional: true
+- tapOn:
+    text: "Pro"
+    optional: true
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Ошибка"
+# Close paywall
+- tapOn:
+    description: "Close"
+    optional: true
+- tapOn:
+    text: "✕"
+    optional: true

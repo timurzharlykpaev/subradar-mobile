@@ -1,0 +1,23 @@
+appId: io.subradar.mobile
+name: "Filter Subscriptions by Status"
+---
+- tapOn:
+    text: "Подписки"
+- assertVisible: "Подписки"
+# Filter: Active
+- tapOn:
+    text: "Активные"
+    optional: true
+- assertNotVisible: "undefined"
+- assertNotVisible: "Ошибка"
+# Filter: Trial
+- tapOn:
+    text: "Триал"
+    optional: true
+- assertNotVisible: "undefined"
+- assertNotVisible: "Ошибка"
+# Filter: All
+- tapOn:
+    text: "Все"
+    optional: true
+- assertNotVisible: "undefined"

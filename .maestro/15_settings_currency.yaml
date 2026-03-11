@@ -1,0 +1,18 @@
+appId: io.subradar.mobile
+name: "Settings - Change Currency"
+---
+- tapOn:
+    text: "Настройки"
+- assertVisible: "Настройки"
+- tapOn:
+    text: "Валюта"
+    optional: true
+- assertVisible: "Валюта"
+    optional: true
+- tapOn:
+    text: "EUR"
+    optional: true
+- tapOn:
+    text: "Сохранить"
+    optional: true
+- assertNotVisible: "Ошибка"

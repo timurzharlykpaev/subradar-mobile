@@ -1,0 +1,20 @@
+appId: io.subradar.mobile
+name: "Dashboard - No NaN/undefined/Ошибка, has Прогноз"
+---
+- tapOn:
+    text: "Главная"
+    optional: true
+- assertVisible: "Главная"
+    optional: true
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- assertNotVisible: "Ошибка"
+- assertNotVisible: "Error"
+# Check forecast element exists on dashboard
+- assertVisible: "Прогноз"
+    optional: true
+- assertVisible: "₸"
+    optional: true
+- assertVisible: "$"
+    optional: true

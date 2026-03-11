@@ -1,0 +1,14 @@
+appId: io.subradar.mobile
+name: "Analytics - Forecast Screen - No NaN/undefined"
+---
+- tapOn:
+    text: "Аналитика"
+- assertVisible: "Аналитика"
+- tapOn:
+    text: "Прогноз"
+    optional: true
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- assertNotVisible: "Ошибка"
+- assertNotVisible: "Error"

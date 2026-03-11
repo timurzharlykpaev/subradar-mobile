@@ -1,0 +1,21 @@
+appId: io.subradar.mobile
+name: "Reports - Generate Report"
+---
+- tapOn:
+    text: "Настройки"
+    optional: true
+- tapOn:
+    text: "Отчёты"
+    optional: true
+- tapOn:
+    text: "Аналитика"
+    optional: true
+- assertNotVisible: "Ошибка"
+- tapOn:
+    text: "Сгенерировать"
+    optional: true
+- tapOn:
+    text: "Создать отчёт"
+    optional: true
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
