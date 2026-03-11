@@ -291,32 +291,29 @@ function AuthHero() {
         borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.6)',
         transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
       }} />
-      {/* Logo — SubRadar SVG brand mark */}
-      <Animated.View style={{
-        width: 90, height: 90, borderRadius: 22,
-        shadowColor: '#8B5CF6', shadowOpacity: 0.5, shadowRadius: 24,
-        shadowOffset: { width: 0, height: 6 }, elevation: 16,
-        transform: [{ scale: logoScale }], opacity: logoOpacity,
-        zIndex: 10,
-        alignItems: 'center', justifyContent: 'center',
-        backgroundColor: '#6C3BDB',
-      }}>
-        <Svg width={56} height={56} viewBox="0 0 56 56" fill="none">
-          {/* Radar circles */}
-          <Circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-          <Circle cx="28" cy="28" r="14" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-          <Circle cx="28" cy="28" r="6" fill="white" opacity="0.9" />
-          {/* Radar sweep line */}
-          <Path d="M28 28 L46 20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" />
-          {/* Dollar sign */}
-          <Path d="M28 18v20M23 22.5c0-2.5 2-4 5-4s5 1.5 5 3.5-2 3-5 3.5-5 2-5 4 2 4 5 4 5-1.5 5-4" stroke="white" strokeWidth="2" strokeLinecap="round" />
-        </Svg>
-      </Animated.View>
-
-      {/* Floating cards — yPos is relative to container start (after paddingTop) */}
+      {/* Floating cards — behind logo */}
       {FLOAT_CARDS.map((card) => (
         <FloatingCard key={card.name} {...card} topOffset={insets.top} />
       ))}
+
+      {/* Logo — SubRadar SVG brand mark — on top of cards */}
+      <Animated.View style={{
+        width: 72, height: 72, borderRadius: 18,
+        shadowColor: '#8B5CF6', shadowOpacity: 0.45, shadowRadius: 20,
+        shadowOffset: { width: 0, height: 4 }, elevation: 14,
+        transform: [{ scale: logoScale }], opacity: logoOpacity,
+        zIndex: 20,
+        alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#6C3BDB',
+      }}>
+        <Svg width={44} height={44} viewBox="0 0 56 56" fill="none">
+          <Circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <Circle cx="28" cy="28" r="14" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+          <Circle cx="28" cy="28" r="6" fill="white" opacity="0.9" />
+          <Path d="M28 28 L46 20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" />
+          <Path d="M28 18v20M23 22.5c0-2.5 2-4 5-4s5 1.5 5 3.5-2 3-5 3.5-5 2-5 4 2 4 5 4 5-1.5 5-4" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </Svg>
+      </Animated.View>
     </View>
   );
 }
