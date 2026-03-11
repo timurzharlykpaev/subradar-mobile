@@ -678,7 +678,7 @@ export default function OnboardingScreen() {
       <Text style={styles.sectionTitle}>{t('landing.features')}</Text>
       {FEATURES.map((f) => (
         <View key={f.key} style={[styles.featureRow, { backgroundColor: colors.surface }]}>
-          <View style={styles.featureIcon}>
+          <View style={[styles.featureIcon, { backgroundColor: colors.primary + '18' }]}>
             <f.icon />
           </View>
           <View style={styles.featureText}>
