@@ -19,9 +19,10 @@ import { COLORS } from '../constants';
 
 interface Props {
   onRecordingComplete: (uri: string) => void;
+  customButton?: React.ReactNode; // кастомная кнопка-обёртка
 }
 
-export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
+export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButton }) => {
   const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -94,19 +95,24 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete }) => {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        onPressIn={startRecording}
-        onPressOut={stopRecording}
-      >
-        <Animated.View
-          style={[styles.button, isRecording && styles.recording, { transform: [{ scale: scaleAnim }] }]}
-        >
-          <Text style={styles.icon}>{isRecording ? '⏹' : '🎙'}</Text>
-        </Animated.View>
+      <Pressable onPressIn={startRecording} onPressOut={stopRecording}>
+        {customButton ? (
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            {customButton}
+          </Animated.View>
+        ) : (
+          <Animated.View
+            style={[styles.button, isRecording && styles.recording, { transform: [{ scale: scaleAnim }] }]}
+          >
+            <Text style={styles.icon}>{isRecording ? '⏹' : '🎙'}</Text>
+          </Animated.View>
+        )}
       </Pressable>
-      <Text style={styles.label}>
-        {isRecording ? formatDuration(duration) : t('voice.hold_to_record')}
-      </Text>
+      {!customButton && (
+        <Text style={styles.label}>
+          {isRecording ? formatDuration(duration) : t('voice.hold_to_record')}
+        </Text>
+      )}
     </View>
   );
 };
