@@ -612,7 +612,7 @@ export default function OnboardingScreen() {
     >
       <View style={styles.logoContainer}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
-        <Text style={styles.logoTitle}>SubRadar</Text>
+        <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </View>
       <Text style={[styles.showcaseTitle, { color: colors.text }]}>{t('onboarding.showcase_title')}</Text>
@@ -641,7 +641,7 @@ export default function OnboardingScreen() {
     <View key="language" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
-        <Text style={styles.logoTitle}>SubRadar</Text>
+        <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </Animated.View>
       <Text style={styles.sectionTitle}>{t('onboarding.choose_language')}</Text>
@@ -665,7 +665,7 @@ export default function OnboardingScreen() {
     <View key="welcome" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImageLarge} />
-        <Text style={styles.logoTitle}>SubRadar</Text>
+        <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </Animated.View>
       <Text style={[styles.headline, { color: colors.text }]}>{t('landing.hero_title')}</Text>
@@ -681,8 +681,8 @@ export default function OnboardingScreen() {
             <f.icon />
           </View>
           <View style={styles.featureText}>
-            <Text style={styles.featureTitle}>{t(`features.${f.key}_title`)}</Text>
-            <Text style={styles.featureDesc}>{t(`features.${f.key}_desc`)}</Text>
+            <Text style={[styles.featureTitle, { color: colors.text }]}>{t(`features.${f.key}_title`)}</Text>
+            <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>{t(`features.${f.key}_desc`)}</Text>
           </View>
         </View>
       ))}
