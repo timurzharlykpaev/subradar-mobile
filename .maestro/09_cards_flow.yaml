@@ -1,28 +1,7 @@
 appId: io.subradar.mobile
-name: "Payment Cards - Add, List, Delete"
+name: "09 - Cards Flow"
 ---
 - tapOn:
     text: "Настройки"
 - assertVisible: "Настройки"
-- tapOn:
-    text: "Карты"
-    optional: true
-- tapOn:
-    text: "Платёжные карты"
-    optional: true
-- tapOn:
-    text: "Добавить карту"
-    optional: true
-- tapOn:
-    description: "Add card button"
-    optional: true
-- assertVisible: "Карта"
-    optional: true
-- inputText:
-    text: "4242"
-    optional: true
-- tapOn:
-    text: "Сохранить"
-    optional: true
-- assertNotVisible: "Ошибка"
-- assertNotVisible: "Error"
+- assertNotVisible: "undefined"

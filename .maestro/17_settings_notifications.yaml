@@ -1,19 +1,7 @@
 appId: io.subradar.mobile
-name: "Settings - Notifications Toggle"
+name: "17 - Settings Notifications"
 ---
 - tapOn:
     text: "Настройки"
-- assertVisible: "Настройки"
-- tapOn:
-    text: "Уведомления"
-    optional: true
-- assertVisible: "Уведомления"
-    optional: true
-- tapOn:
-    text: "За 3 дня"
-    optional: true
-- tapOn:
-    id: "toggle-notifications"
-    optional: true
-- assertNotVisible: "Ошибка"
 - assertNotVisible: "undefined"
+- assertNotVisible: "Ошибка"

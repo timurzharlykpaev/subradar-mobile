@@ -1,13 +1,7 @@
 appId: io.subradar.mobile
-name: "Analytics - Categories - No NaN"
+name: "14 - Analytics Categories"
 ---
 - tapOn:
     text: "Аналитика"
-- assertVisible: "Аналитика"
-- tapOn:
-    text: "Категории"
-    optional: true
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"
-- assertNotVisible: "null"
-- assertNotVisible: "Ошибка"

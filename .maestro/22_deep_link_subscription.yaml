@@ -1,8 +1,9 @@
 appId: io.subradar.mobile
-name: "04d - Delete Subscription"
+name: "22 - Subscription Detail Navigation"
 ---
 - tapOn:
     text: "Подписки"
     optional: true
-- assertNotVisible: "Ошибка"
 - assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- assertNotVisible: "NaN"

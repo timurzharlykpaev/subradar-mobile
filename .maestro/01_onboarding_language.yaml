@@ -1,0 +1,12 @@
+appId: io.subradar.mobile
+name: "01 - Onboarding Language"
+---
+- launchApp:
+    clearState: true
+- assertVisible: "SubRadar"
+- tapOn:
+    text: "English"
+    optional: true
+- tapOn:
+    text: "Далее"
+    optional: true

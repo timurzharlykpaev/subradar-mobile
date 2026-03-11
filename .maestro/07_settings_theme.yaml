@@ -1,7 +1,7 @@
 appId: io.subradar.mobile
-name: "15 - Settings Currency"
+name: "07 - Settings Theme Toggle"
 ---
 - tapOn:
     text: "Настройки"
 - assertVisible: "Настройки"
-- assertNotVisible: "undefined"
+- assertNotVisible: "Ошибка"

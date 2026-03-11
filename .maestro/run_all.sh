@@ -1,24 +1,28 @@
 #!/bin/bash
-set -e
-echo "🧪 Running Maestro E2E tests..."
+echo "🧪 SubRadar E2E Tests (Maestro)"
+echo "================================"
 
 PASS=0
 FAIL=0
-SKIPPED=0
+ERRORS=()
 
 for flow in "$(dirname "$0")"/*.yaml; do
-  echo "▶ Running $flow"
-  if maestro test "$flow" --format junit --output "/tmp/maestro-$(basename "$flow" .yaml).xml" 2>&1; then
-    echo "✅ PASS: $flow"
-    PASS=$((PASS + 1))
+  name=$(basename "$flow" .yaml)
+  echo -n "▶ $name ... "
+  if maestro test "$flow" --format junit --output "/tmp/maestro-${name}.xml" 2>/dev/null; then
+    echo "✅"
+    PASS=$((PASS+1))
   else
-    echo "❌ FAIL: $flow"
-    FAIL=$((FAIL + 1))
+    echo "❌"
+    FAIL=$((FAIL+1))
+    ERRORS+=("$name")
   fi
 done
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Results: ✅ $PASS passed  ❌ $FAIL failed"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if [ ${#ERRORS[@]} -gt 0 ]; then
+  echo "Failed flows:"
+  for e in "${ERRORS[@]}"; do echo "  - $e"; done
+fi
 exit $FAIL

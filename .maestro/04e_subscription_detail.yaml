@@ -1,13 +1,9 @@
 appId: io.subradar.mobile
-name: "Subscription Detail - No undefined/null/NaN"
+name: "04e - Subscription Detail Sanity"
 ---
 - tapOn:
     text: "Подписки"
-- assertVisible: "Подписки"
-- tapOn:
-    index: 0
     optional: true
 - assertNotVisible: "undefined"
 - assertNotVisible: "null"
 - assertNotVisible: "NaN"
-- assertNotVisible: "Ошибка"

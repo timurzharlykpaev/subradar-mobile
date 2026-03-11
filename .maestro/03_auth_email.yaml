@@ -1,0 +1,13 @@
+appId: io.subradar.mobile
+name: "03 - Auth Email OTP"
+---
+- assertVisible: "SubRadar"
+- tapOn:
+    text: "Войти по Email"
+    optional: true
+- tapOn:
+    text: "Continue with Email"
+    optional: true
+- assertVisible:
+    text: "email"
+    optional: true

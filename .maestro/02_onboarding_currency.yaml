@@ -1,0 +1,12 @@
+appId: io.subradar.mobile
+name: "02 - Onboarding Currency"
+---
+- assertVisible:
+    text: "Валюта"
+    optional: true
+- tapOn:
+    text: "USD"
+    optional: true
+- tapOn:
+    text: "Далее"
+    optional: true

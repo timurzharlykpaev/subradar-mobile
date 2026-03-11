@@ -1,0 +1,15 @@
+appId: io.subradar.mobile
+name: "04 - Add Subscription Manual"
+---
+- assertVisible:
+    text: "Главная"
+    optional: true
+- tapOn:
+    description: "add-subscription-fab"
+    optional: true
+- assertVisible:
+    text: "Добавить подписку"
+    optional: true
+- tapOn:
+    text: "Вручную"
+    optional: true

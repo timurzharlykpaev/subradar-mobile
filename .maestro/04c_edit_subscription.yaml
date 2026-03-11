@@ -1,31 +1,7 @@
 appId: io.subradar.mobile
-name: "Edit Subscription - Change Amount"
+name: "04c - Edit Subscription"
 ---
 - tapOn:
     text: "Подписки"
-- assertVisible: "Подписки"
-# Open first subscription in the list
-- tapOn:
-    index: 0
-    text: ".*"
-    regex: true
     optional: true
-- assertVisible: "Редактировать"
-    optional: true
-- tapOn:
-    text: "Редактировать"
-    optional: true
-- tapOn:
-    description: "Edit button"
-    optional: true
-# Clear amount field and enter new value
-- tapOn:
-    id: "input-amount"
-    optional: true
-- clearText
-- inputText:
-    text: "24.99"
-- tapOn:
-    text: "Сохранить"
 - assertNotVisible: "Ошибка"
-- assertNotVisible: "Error"

@@ -1,0 +1,9 @@
+appId: io.subradar.mobile
+name: "20 - Dashboard Charts Sanity"
+---
+- tapOn:
+    text: "Главная"
+    optional: true
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "Ошибка"

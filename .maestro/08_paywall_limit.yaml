@@ -1,7 +1,7 @@
 appId: io.subradar.mobile
-name: "10 - Reports Flow"
+name: "08 - Paywall Limit"
 ---
-- tapOn:
-    text: "Настройки"
+- assertVisible:
+    text: "Главная"
     optional: true
 - assertNotVisible: "Ошибка"

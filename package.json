@@ -8,7 +8,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "start:dev": "EXPO_PUBLIC_API_URL=https://api-dev.subradar.ai/api/v1 expo start --clear",
-    "start:prod": "EXPO_PUBLIC_API_URL=https://api.subradar.ai/api/v1 expo start --clear"
+    "start:prod": "EXPO_PUBLIC_API_URL=https://api.subradar.ai/api/v1 expo start --clear",
+    "test:e2e": "bash .maestro/run_all.sh",
+    "test:all": "bash scripts/test-all.sh"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

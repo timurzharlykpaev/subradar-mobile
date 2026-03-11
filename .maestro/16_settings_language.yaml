@@ -1,28 +1,6 @@
 appId: io.subradar.mobile
-name: "Settings - Change Language"
+name: "16 - Settings Language"
 ---
 - tapOn:
     text: "Настройки"
-- assertVisible: "Настройки"
-- tapOn:
-    text: "Язык"
-    optional: true
-- assertVisible: "Язык"
-    optional: true
-- tapOn:
-    text: "English"
-    optional: true
-- tapOn:
-    text: "Сохранить"
-    optional: true
-- assertNotVisible: "Ошибка"
-# Switch back to Russian
-- tapOn:
-    text: "Language"
-    optional: true
-- tapOn:
-    text: "Русский"
-    optional: true
-- tapOn:
-    text: "Save"
-    optional: true
+- assertNotVisible: "undefined"

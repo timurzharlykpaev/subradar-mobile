@@ -1,8 +1,9 @@
 appId: io.subradar.mobile
-name: "13 - Analytics Forecast"
+name: "06 - Analytics Screen"
 ---
 - tapOn:
     text: "Аналитика"
 - assertVisible: "Аналитика"
-- assertNotVisible: "NaN"
+- assertNotVisible: "Ошибка"
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
