@@ -890,7 +890,12 @@ export default function OnboardingScreen() {
 
       <TouchableOpacity
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
-        onPress={() => router.replace('/(tabs)')}
+        onPress={() => {
+          setOnboarded();
+          router.replace('/(tabs)');
+          // небольшая задержка чтобы tabs успели смонтироваться
+          setTimeout(() => router.push('/(tabs)/add'), 300);
+        }}
       >
         <Ionicons name="sparkles-outline" size={22} color={colors.primary} />
         <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_with_ai')}</Text>
@@ -965,8 +970,8 @@ const styles = StyleSheet.create({
   currencyText: { fontSize: 15, fontWeight: '600', color: COLORS.textSecondary },
   currencyTextActive: { color: COLORS.primary },
   loadingOverlay: { alignItems: 'center', paddingVertical: 8 },
-  socialBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#000', borderRadius: 14, paddingVertical: 16 },
-  googleBtn: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
+  socialBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#1C1C1E', borderRadius: 16, paddingVertical: 17 },
+  googleBtn: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: COLORS.border },
   socialText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
