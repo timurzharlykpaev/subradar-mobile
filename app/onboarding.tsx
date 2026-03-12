@@ -639,7 +639,7 @@ export default function OnboardingScreen() {
         <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
         <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
       </Animated.View>
-      <Text style={styles.sectionTitle}>{t('onboarding.choose_language')}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('onboarding.choose_language')}</Text>
       <View style={styles.langGrid}>
         {LANGUAGES.map((lang) => (
           <TouchableOpacity
@@ -673,7 +673,7 @@ export default function OnboardingScreen() {
 
     // Step 3: Features
     <View key="features" style={styles.step}>
-      <Text style={styles.sectionTitle}>{t('landing.features')}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('landing.features')}</Text>
       {FEATURES.map((f) => (
         <View key={f.key} style={[styles.featureRow, { backgroundColor: colors.surface }]}>
           <View style={[styles.featureIcon, { backgroundColor: colors.primary + '18' }]}>
@@ -710,7 +710,7 @@ export default function OnboardingScreen() {
           <SvgText x="70" y="127" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#FFF">₸</SvgText>
         </Svg>
       </View>
-      <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('settings.currency')}</Text>
       <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('onboarding.choose_currency')}</Text>
       <View style={styles.currencyGrid}>
         {CURRENCIES.map((cur) => (
