@@ -198,11 +198,11 @@ function StopSvg() {
 }
 
 const micStyles = StyleSheet.create({
-  wrap:      { alignItems: 'center', justifyContent: 'center', marginVertical: 20, height: 130 },
-  ring:      { position: 'absolute', width: 110, height: 110, borderRadius: 55 },
+  wrap:      { alignItems: 'center', justifyContent: 'center', marginVertical: 16, height: 150 },
+  ring:      { position: 'absolute', width: 120, height: 120, borderRadius: 60 },
   pressable: { zIndex: 2 },
-  btn:       { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
-  label:     { marginTop: 52, fontSize: 13, fontWeight: '500' },
+  btn:       { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
+  label:     { position: 'absolute', bottom: -4, fontSize: 13, fontWeight: '500' },
 });
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -371,15 +371,24 @@ export function AIWizard({ onDone }: Props) {
               <View style={[styles.line, { backgroundColor: colors.border }]} />
             </View>
 
-            {/* Text input */}
+            {/* Text input — multiline textarea */}
             <TextInput
-              style={[styles.textInput, { backgroundColor: bg, color: colors.text, borderColor: colors.border }]}
+              style={[styles.textInput, {
+                backgroundColor: bg,
+                color: colors.text,
+                borderColor: colors.border,
+                minHeight: 56,
+                maxHeight: 120,
+                textAlignVertical: 'top',
+                paddingTop: 14,
+              }]}
               value={input}
               onChangeText={setInput}
-              placeholder={ui.kind === 'idle' ? 'Netflix, Spotify...' : ''}
+              placeholder={ui.kind === 'idle' ? 'Netflix, Spotify, ChatGPT...' : ''}
               placeholderTextColor={colors.textMuted}
-              returnKeyType="send"
-              onSubmitEditing={() => callWizard(input)}
+              multiline
+              numberOfLines={2}
+              blurOnSubmit={false}
             />
 
             {/* Quick chips — only on idle */}
