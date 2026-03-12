@@ -728,7 +728,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 5: Auth
-    <View key="auth" style={[styles.step, { justifyContent: 'flex-end', paddingBottom: 8 }]}>
+    <View key="auth" style={[styles.step, { flex: 1, justifyContent: 'center', paddingBottom: 8 }]}>
       {/* Theme toggle top-right — use insets to stay below status bar */}
       <TouchableOpacity
         onPress={toggleTheme}
@@ -866,34 +866,37 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 6: Add first subscription
-    <View key="first_sub" style={[styles.step, { alignItems: 'center', justifyContent: 'center', gap: 20, paddingHorizontal: 24 }]}>
+    <View key="first_sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
       {/* Icon */}
-      <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-        <Ionicons name="add-circle" size={52} color={colors.primary} />
+      <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+        <Ionicons name="add-circle" size={56} color={colors.primary} />
       </View>
-      <Text style={[styles.headline, { textAlign: 'center', color: colors.text }]}>{t('onboarding.first_sub_title')}</Text>
-      <Text style={[styles.subheadline, { textAlign: 'center', marginBottom: 8, color: colors.textSecondary }]}>{t('onboarding.first_sub_subtitle')}</Text>
 
-      {/* Add manually */}
+      <Text style={[styles.headline, { textAlign: 'center', color: colors.text }]}>
+        {t('onboarding.first_sub_title')}
+      </Text>
+      <Text style={[styles.subheadline, { textAlign: 'center', color: colors.textSecondary, marginBottom: 16 }]}>
+        {t('onboarding.first_sub_subtitle')}
+      </Text>
+
+      {/* Buttons */}
       <TouchableOpacity
-        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
-        onPress={() => { router.replace('/(tabs)'); }}
+        style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
+        onPress={() => router.replace('/(tabs)')}
       >
-        <Ionicons name="create-outline" size={20} color="#FFF" />
-        <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_manually')}</Text>
+        <Ionicons name="create-outline" size={22} color="#FFF" />
+        <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_manually')}</Text>
       </TouchableOpacity>
 
-      {/* Add with AI */}
       <TouchableOpacity
-        style={{ width: '100%', paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: '#2D2060', borderWidth: 1, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 8 }}
-        onPress={() => { router.replace('/(tabs)'); }}
+        style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
+        onPress={() => router.replace('/(tabs)')}
       >
-        <Ionicons name="sparkles-outline" size={20} color={colors.primary} />
-        <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_with_ai')}</Text>
+        <Ionicons name="sparkles-outline" size={22} color={colors.primary} />
+        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_with_ai')}</Text>
       </TouchableOpacity>
 
-      {/* Skip */}
-      <TouchableOpacity onPress={() => navigateToApp()} style={{ paddingVertical: 8 }}>
+      <TouchableOpacity onPress={() => navigateToApp()} style={{ paddingVertical: 12 }}>
         <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
       </TouchableOpacity>
     </View>,
