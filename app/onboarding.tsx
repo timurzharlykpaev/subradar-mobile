@@ -910,14 +910,14 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {step > 0 && (
+        {step > 0 && step !== 4 && (
           <View style={styles.footerBtns}>
             {step > 1 && (
               <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
                 <Text style={styles.backBtnText}>{t('common.back')}</Text>
               </TouchableOpacity>
             )}
-            {step < steps.length - 1 && (
+            {step < steps.length - 1 && step !== 4 && (
               <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(step + 1)}>
                 <Text style={styles.nextBtnText}>
                   {step === 2 ? t('onboarding.get_started') : t('onboarding.next')}
