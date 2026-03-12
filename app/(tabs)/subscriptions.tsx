@@ -235,6 +235,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   filterText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
