@@ -198,8 +198,8 @@ function StopSvg() {
 }
 
 const micStyles = StyleSheet.create({
-  wrap:      { alignItems: 'center', marginVertical: 20 },
-  ring:      { position: 'absolute', width: 110, height: 110, borderRadius: 55, top: '50%', marginTop: -55 },
+  wrap:      { alignItems: 'center', justifyContent: 'center', marginVertical: 20, height: 130 },
+  ring:      { position: 'absolute', width: 110, height: 110, borderRadius: 55 },
   pressable: { zIndex: 2 },
   btn:       { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
   label:     { marginTop: 52, fontSize: 13, fontWeight: '500' },
