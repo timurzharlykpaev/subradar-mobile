@@ -41,7 +41,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#8B5CF6"
+        "backgroundColor": "#0F0F1A"
       },
       "package": "com.goalin.subradar",
       "permissions": [

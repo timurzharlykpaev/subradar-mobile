@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+// expo-auth-session/providers/google removed (requires native build)
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuthStore } from '../src/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
@@ -390,24 +390,25 @@ export default function OnboardingScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
 
-  // Google OAuth
-  const [, googleResponse, googlePromptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_WEB_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    androidClientId: GOOGLE_WEB_CLIENT_ID,
-  });
-
-  useEffect(() => {
-    if (googleResponse?.type === 'success') {
-      const accessToken = googleResponse.authentication?.accessToken;
-      if (accessToken) handleGoogleToken(accessToken);
-    } else if (googleResponse?.type === 'error') {
-      Alert.alert(
-        t('auth.google_signin_error'),
-        t('auth.google_setup_hint'),
-      );
+  // Google OAuth via web browser redirect (works without native build)
+  const googlePromptAsync = async () => {
+    try {
+      const redirectUri = 'https://api.subradar.ai/api/v1/auth/google/callback';
+      const authUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth` +
+        `?client_id=${GOOGLE_WEB_CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&response_type=token` +
+        `&scope=openid%20email%20profile`;
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'subradar://');
+      if (result.type === 'success' && result.url) {
+        const match = result.url.match(/access_token=([^&]+)/);
+        if (match) await handleGoogleToken(match[1]);
+      }
+    } catch (e: any) {
+      Alert.alert(t('auth.google_signin_error'), t('auth.google_setup_hint'));
     }
-  }, [googleResponse]);
+  };
 
   const handleLanguageSelect = (code: string) => {
     setLanguage(code);
