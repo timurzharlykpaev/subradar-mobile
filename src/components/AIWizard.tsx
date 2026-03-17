@@ -11,7 +11,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, ScrollView, Easing,
+  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { useTheme } from '../theme/ThemeContext';
@@ -270,19 +270,23 @@ export function AIWizard({ onDone }: Props) {
   // ── Voice handler ────────────────────────────────────────────────────────
   const handleVoice = async (uri: string) => {
     if (!uri) return;
+    Keyboard.dismiss();
     setLoading(true);
     try {
+      // Step 1: transcribe audio → text
       const fd = new FormData();
       fd.append('audio', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
-      const res = await aiApi.parseAudio(fd);
-      const text: string = res.data?.text ?? '';
-      if (text.trim()) {
-        setInput(text);
-        await callWizard(text);
+      const transcribeRes = await aiApi.parseAudio(fd);
+      const text: string = transcribeRes.data?.text ?? '';
+      if (!text.trim()) {
+        setLoading(false);
+        return;
       }
-    } catch {
-      // ignore
-    } finally {
+      setInput(text);
+      // Step 2: send transcribed text to wizard (same as typing)
+      await callWizard(text);
+    } catch (err) {
+      console.warn('AIWizard voice error:', err);
       setLoading(false);
     }
   };
@@ -311,6 +315,7 @@ export function AIWizard({ onDone }: Props) {
     : '';
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={{ flex: 1 }}>
       <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
@@ -388,7 +393,9 @@ export function AIWizard({ onDone }: Props) {
               placeholderTextColor={colors.textMuted}
               multiline
               numberOfLines={2}
-              blurOnSubmit={false}
+              blurOnSubmit={true}
+              returnKeyType="send"
+              onSubmitEditing={() => { if (input.trim()) { Keyboard.dismiss(); callWizard(input.trim()); } }}
             />
 
             {/* Quick chips — only on idle */}
@@ -434,6 +441,7 @@ export function AIWizard({ onDone }: Props) {
         )}
       </View>
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 

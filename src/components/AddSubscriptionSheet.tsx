@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   Switch,
   TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -312,6 +313,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       >
         <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
 
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1 }}
@@ -646,6 +648,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             )}
           </ScrollView>
         </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
       </Animated.View>
     </Modal>
   );
