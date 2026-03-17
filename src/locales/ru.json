@@ -456,7 +456,8 @@
     "invite_member_email": "Email участника",
     "send_invite": "Отправить",
     "remove_member_confirm": "Убрать участника из команды?",
-    "subscriptions_per_month": "подписок/мес"
+    "subscriptions_per_month": "подписок/мес",
+    "empty_subtitle": "Управляйте подписками командой.\nОтслеживайте общие расходы и отчёты."
   },
   "paywall": {
     "choose_plan": "Выбери план",

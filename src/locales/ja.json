@@ -456,7 +456,8 @@
     "invite_member_email": "メンバーのメール",
     "send_invite": "送信",
     "remove_member_confirm": "メンバーを削除？",
-    "subscriptions_per_month": "サブスク/月"
+    "subscriptions_per_month": "サブスク/月",
+    "empty_subtitle": "チームでサブスクを管理。\n共有支出を追跡。"
   },
   "paywall": {
     "choose_plan": "プランを選択",

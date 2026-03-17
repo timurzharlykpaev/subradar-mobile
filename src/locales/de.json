@@ -456,7 +456,8 @@
     "invite_member_email": "Mitglieds-E-Mail",
     "send_invite": "Senden",
     "remove_member_confirm": "Mitglied entfernen?",
-    "subscriptions_per_month": "Abos/Monat"
+    "subscriptions_per_month": "Abos/Monat",
+    "empty_subtitle": "Verwalten Sie Abos im Team.\nVerfolgen Sie gemeinsame Ausgaben."
   },
   "paywall": {
     "choose_plan": "Plan wählen",

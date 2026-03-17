@@ -456,7 +456,8 @@
     "invite_member_email": "멤버 이메일",
     "send_invite": "전송",
     "remove_member_confirm": "멤버를 제거할까요?",
-    "subscriptions_per_month": "구독/월"
+    "subscriptions_per_month": "구독/월",
+    "empty_subtitle": "팀으로 구독을 관리하세요.\n공유 지출을 추적하세요."
   },
   "paywall": {
     "choose_plan": "플랜 선택",

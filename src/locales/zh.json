@@ -456,7 +456,8 @@
     "invite_member_email": "成员邮箱",
     "send_invite": "发送",
     "remove_member_confirm": "移除成员？",
-    "subscriptions_per_month": "订阅/月"
+    "subscriptions_per_month": "订阅/月",
+    "empty_subtitle": "以团队方式管理订阅。\n追踪共享支出和报告。"
   },
   "paywall": {
     "choose_plan": "选择计划",

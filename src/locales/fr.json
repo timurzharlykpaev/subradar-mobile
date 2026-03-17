@@ -456,7 +456,8 @@
     "invite_member_email": "E-mail du membre",
     "send_invite": "Envoyer",
     "remove_member_confirm": "Retirer le membre?",
-    "subscriptions_per_month": "abos/mois"
+    "subscriptions_per_month": "abos/mois",
+    "empty_subtitle": "Gérez les abonnements en équipe.\nSuivez les dépenses communes."
   },
   "paywall": {
     "choose_plan": "Choisir un plan",

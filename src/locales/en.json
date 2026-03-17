@@ -456,7 +456,8 @@
     "invite_member_email": "Member email",
     "send_invite": "Send",
     "remove_member_confirm": "Remove member from team?",
-    "subscriptions_per_month": "subscriptions/month"
+    "subscriptions_per_month": "subscriptions/month",
+    "empty_subtitle": "Manage subscriptions as a team.\nTrack shared spending and reports."
   },
   "paywall": {
     "choose_plan": "Choose a Plan",

@@ -80,59 +80,65 @@ export default function WorkspaceScreen() {
           keyboardVerticalOffset={90}
         >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.emptyWrap}>
-          <Ionicons name="people-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('workspace.title')}</Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            Управляйте подписками командой.{'\n'}Отслеживайте общие расходы и отчёты.
-          </Text>
+        <View style={{ flex: 1 }}>
+          {/* Иконка + заголовок */}
+          <View style={styles.emptyWrap}>
+            <Ionicons name="people-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('workspace.title')}</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+              {t('workspace.empty_subtitle', 'Manage subscriptions as a team.\nTrack shared spending and reports.')}
+            </Text>
+          </View>
 
-          {!isPro ? (
-            <TouchableOpacity
-              style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
-              onPress={() => router.push('/paywall')}
-            >
-              <Ionicons name="star" size={18} color="#FFF" />
-              <Text style={styles.ctaBtnText}>{t('workspace.need_team_plan')}</Text>
-            </TouchableOpacity>
-          ) : showCreate ? (
-            <View style={[styles.createCard, { backgroundColor: card, borderColor: border }]}>
-              <Text style={[styles.createLabel, { color: colors.text }]}>{t('workspace.team_name_label')}</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
-                value={wsName}
-                onChangeText={setWsName}
-                placeholder={t('workspace.name_placeholder')}
-                placeholderTextColor={colors.textMuted}
-                autoFocus
-              />
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-                <TouchableOpacity
-                  style={[styles.btn, { backgroundColor: colors.surface, borderColor: border }]}
-                  onPress={() => setShowCreate(false)}
-                >
-                  <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Отмена</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.btn, { backgroundColor: colors.primary, flex: 1 }]}
-                  onPress={() => createMutation.mutate()}
-                  disabled={!wsName.trim() || createMutation.isPending}
-                >
-                  {createMutation.isPending
-                    ? <ActivityIndicator color="#FFF" size="small" />
-                    : <Text style={{ color: '#FFF', fontWeight: '700' }}>Создать</Text>}
-                </TouchableOpacity>
+          {/* Действия — полная ширина */}
+          <View style={{ paddingHorizontal: 20 }}>
+            {!isPro ? (
+              <TouchableOpacity
+                style={[styles.ctaBtn, { backgroundColor: colors.primary, width: '100%' }]}
+                onPress={() => router.push('/paywall')}
+              >
+                <Ionicons name="star" size={18} color="#FFF" />
+                <Text style={styles.ctaBtnText}>{t('workspace.need_team_plan')}</Text>
+              </TouchableOpacity>
+            ) : showCreate ? (
+              <View style={[styles.createCard, { backgroundColor: card, borderColor: border }]}>
+                <Text style={[styles.createLabel, { color: colors.text }]}>{t('workspace.team_name_label')}</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
+                  value={wsName}
+                  onChangeText={setWsName}
+                  placeholder={t('workspace.name_placeholder')}
+                  placeholderTextColor={colors.textMuted}
+                  autoFocus
+                />
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                  <TouchableOpacity
+                    style={[styles.btn, { backgroundColor: colors.surface, borderColor: border }]}
+                    onPress={() => setShowCreate(false)}
+                  >
+                    <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>{t('common.cancel')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.btn, { backgroundColor: colors.primary, flex: 1 }]}
+                    onPress={() => createMutation.mutate()}
+                    disabled={!wsName.trim() || createMutation.isPending}
+                  >
+                    {createMutation.isPending
+                      ? <ActivityIndicator color="#FFF" size="small" />
+                      : <Text style={{ color: '#FFF', fontWeight: '700' }}>{t('workspace.create_team')}</Text>}
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
-              onPress={() => setShowCreate(true)}
-            >
-              <Ionicons name="add-circle-outline" size={18} color="#FFF" />
-              <Text style={styles.ctaBtnText}>Создать команду</Text>
-            </TouchableOpacity>
-          )}
+            ) : (
+              <TouchableOpacity
+                style={[styles.ctaBtn, { backgroundColor: colors.primary, width: '100%' }]}
+                onPress={() => setShowCreate(true)}
+              >
+                <Ionicons name="add-circle-outline" size={18} color="#FFF" />
+                <Text style={styles.ctaBtnText}>{t('workspace.create_team')}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
         </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
@@ -337,8 +343,8 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginTop: 20, fontSize: 14 },
   ctaBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16 },
   ctaBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
-  createCard: { marginHorizontal: 16, marginVertical: 8, borderRadius: 16, padding: 20, borderWidth: 1 },
-  inviteCard: { marginHorizontal: 16, marginVertical: 8, borderRadius: 16, padding: 20, borderWidth: 1 },
+  createCard: { borderRadius: 16, padding: 20, borderWidth: 1 },
+  inviteCard: { marginHorizontal: 20, marginTop: 12, borderRadius: 16, padding: 20, borderWidth: 1 },
   createLabel: { fontSize: 14, fontWeight: '700', marginBottom: 8 },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   btn: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
