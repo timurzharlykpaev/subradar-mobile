@@ -19,7 +19,8 @@
     "home": "홈",
     "subs": "구독",
     "analytics": "분석",
-    "settings": "설정"
+    "settings": "설정",
+    "workspace": "팀"
   },
   "nav": {
     "dashboard": "대시보드",

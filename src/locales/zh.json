@@ -19,7 +19,8 @@
     "home": "首页",
     "subs": "订阅",
     "analytics": "分析",
-    "settings": "设置"
+    "settings": "设置",
+    "workspace": "团队"
   },
   "nav": {
     "dashboard": "仪表板",

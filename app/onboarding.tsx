@@ -176,7 +176,7 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
   });
 
   useEffect(() => {
-    let floatLoop: { stop: () => void } | null = null;
+    let floatLoop: ReturnType<typeof Animated.loop> | null = null;
     const entry = Animated.parallel([
       Animated.timing(entryY, {
         toValue: 0, duration: 650, delay,
@@ -261,7 +261,7 @@ function AuthHero() {
     loop1.start();
 
     // Ring 2 pulse (offset)
-    let loop2: { stop: () => void } | null = null;
+    let loop2: ReturnType<typeof Animated.loop> | null = null;
     const t2 = setTimeout(() => {
       loop2 = Animated.loop(
         Animated.sequence([

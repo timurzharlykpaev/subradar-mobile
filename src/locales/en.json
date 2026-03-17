@@ -19,7 +19,8 @@
     "home": "Home",
     "subs": "Subs",
     "analytics": "Analytics",
-    "settings": "Settings"
+    "settings": "Settings",
+    "workspace": "Team"
   },
   "nav": {
     "dashboard": "Dashboard",

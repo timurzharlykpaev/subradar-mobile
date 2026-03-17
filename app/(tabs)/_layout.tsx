@@ -76,6 +76,15 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="workspace"
+          options={{
+            title: t('tabs.workspace', 'Команда'),
+            tabBarIcon: ({ focused }) => (
+              <TabIcon name={focused ? 'people' : 'people-outline'} focused={focused} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="settings"
           options={{
             title: t('tabs.settings'),

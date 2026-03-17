@@ -40,9 +40,9 @@ export default function SubscriptionsScreen() {
 
   const FILTERS: { label: string; value: FilterType }[] = [
     { label: t('common.all'), value: 'all' },
-    { label: t('subscriptions.active'), value: 'ACTIVE' },
-    { label: t('subscriptions.trial'), value: 'TRIAL' },
-    { label: t('subscriptions.cancelled'), value: 'CANCELLED' },
+    { label: t('subscriptions.active'), value: 'active' },
+    { label: t('subscriptions.trial'), value: 'trial' },
+    { label: t('subscriptions.cancelled'), value: 'cancelled' },
     { label: t('add.category'), value: 'category' },
   ];
   const {
