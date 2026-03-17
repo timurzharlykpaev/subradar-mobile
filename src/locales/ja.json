@@ -418,5 +418,9 @@
       "メンバー分析",
       "最大10名"
     ]
+  },
+  "workspace": {
+    "name_placeholder": "例：私の会社",
+    "email_placeholder": "email@company.com"
   }
 }

@@ -418,5 +418,9 @@
       "멤버 분석",
       "최대 10명"
     ]
+  },
+  "workspace": {
+    "name_placeholder": "예: 내 회사",
+    "email_placeholder": "email@company.com"
   }
 }

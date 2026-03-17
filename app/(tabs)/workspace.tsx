@@ -102,7 +102,7 @@ export default function WorkspaceScreen() {
                 style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
                 value={wsName}
                 onChangeText={setWsName}
-                placeholder="Например: My Company"
+                placeholder={t('workspace.name_placeholder', 'My Company')}
                 placeholderTextColor={colors.textMuted}
                 autoFocus
               />
@@ -279,7 +279,7 @@ export default function WorkspaceScreen() {
               style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
               value={inviteEmail}
               onChangeText={setInviteEmail}
-              placeholder="email@company.com"
+              placeholder={t("workspace.email_placeholder")}
               placeholderTextColor={colors.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"

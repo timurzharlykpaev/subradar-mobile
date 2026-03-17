@@ -5,13 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
 import { COLORS } from '../../src/constants';
+import { useTheme } from '../../src/theme';
 
 function TabIcon({ name, focused }: { name: React.ComponentProps<typeof Ionicons>['name']; focused: boolean }) {
+  const { colors } = useTheme();
   return (
     <Ionicons
       name={name}
       size={22}
-      color={focused ? COLORS.primary : COLORS.textMuted}
+      color={focused ? colors.primary : colors.textMuted}
     />
   );
 }
@@ -19,16 +21,20 @@ function TabIcon({ name, focused }: { name: React.ComponentProps<typeof Ionicons
 export default function TabsLayout() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const { t } = useTranslation();
+  const { colors, isDark } = useTheme();
 
   return (
     <>
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: [styles.tabBar, {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          }],
           tabBarShowLabel: true,
-          tabBarActiveTintColor: COLORS.primary,
-          tabBarInactiveTintColor: COLORS.textMuted,
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textMuted,
           tabBarLabelStyle: styles.tabLabel,
         }}
       >

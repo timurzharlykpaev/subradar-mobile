@@ -435,5 +435,9 @@
       "Member analytics",
       "Up to 10 members"
     ]
+  },
+  "workspace": {
+    "name_placeholder": "e.g. My Company",
+    "email_placeholder": "email@company.com"
   }
 }

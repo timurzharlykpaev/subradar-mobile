@@ -418,5 +418,9 @@
       "Mitglieder-Analytik",
       "Bis 10 Mitglieder"
     ]
+  },
+  "workspace": {
+    "name_placeholder": "z.B. Mein Unternehmen",
+    "email_placeholder": "email@unternehmen.de"
   }
 }

@@ -15,7 +15,7 @@ export function useAIParseText() {
 
 export function useVoiceToSubscription() {
   return useMutation({
-    mutationFn: (formData: FormData) => aiApi.voice(formData).then((r) => r.data),
+    mutationFn: (formData: FormData) => aiApi.parseAudio(formData).then((r) => r.data),
   });
 }
 

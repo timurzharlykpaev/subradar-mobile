@@ -10,7 +10,7 @@ export const authApi = {
   sendMagicLink: (email: string) =>
     apiClient.post('/auth/magic-link', { email }),
   verifyMagicLink: (token: string) =>
-    apiClient.post('/auth/magic-link/verify', { token }),
+    apiClient.get(`/auth/magic?token=${token}`),
   sendOtp: (email: string) =>
     apiClient.post('/auth/otp/send', { email }),
   verifyOtp: (email: string, code: string) =>

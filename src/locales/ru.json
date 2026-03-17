@@ -435,5 +435,9 @@
       "Аналитика участников",
       "До 10 участников"
     ]
+  },
+  "workspace": {
+    "name_placeholder": "Например: My Company",
+    "email_placeholder": "email@company.com"
   }
 }
