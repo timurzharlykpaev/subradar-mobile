@@ -247,7 +247,11 @@ export default function SettingsScreen() {
         </View>
 
         {/* Plan Card */}
-        <View style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 8, marginBottom: 8, marginTop: 16, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push('/subscription-plan' as any)}
+          style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 8, marginBottom: 8, marginTop: 16, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
+        >
           {isPro ? (
             <>
               <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
@@ -293,7 +297,12 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </>
           )}
-        </View>
+          {/* Tap hint */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Управление подпиской</Text>
+            <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.6)" />
+          </View>
+        </TouchableOpacity>
 
         {/* Account */}
         <Text style={sectionLabel}>{t('settings.account')}</Text>
