@@ -463,7 +463,10 @@
     "most_popular": "最受欢迎",
     "maybe_later": "稍后再说",
     "free_trial_disclaimer": "7天免费。无需信用卡。随时取消。",
-    "paid_disclaimer": "通过App Store付款。随时可取消。"
+    "paid_disclaimer": "通过App Store付款。随时可取消。",
+    "continue_free": "免费继续",
+    "subtitle_trial": "7天免费·随时取消",
+    "subtitle_no_trial": "解锁所有功能"
   },
   "ai": {
     "or_type": "或输入",

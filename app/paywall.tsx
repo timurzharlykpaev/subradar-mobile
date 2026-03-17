@@ -63,53 +63,53 @@ export default function PaywallScreen() {
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
 
   const handleAction = async () => {
-    if (selected === 'free') {
-      router.back();
-      return;
-    }
+    if (selected === 'free') { router.back(); return; }
 
+    // Триал для Pro
     if (selected === 'pro' && canTrial) {
       try {
         await startTrialMutation.mutateAsync();
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
         Alert.alert(
-          '🎉 Триал активирован!',
-          '7 дней Pro-доступа. Пользуйся всеми функциями бесплатно.',
-          [{ text: 'Отлично!', onPress: () => router.back() }]
+          t('subscription_plan.trial_activated'),
+          t('subscription_plan.trial_activated_msg'),
+          [{ text: 'OK', onPress: () => router.back() }]
         );
       } catch (e: any) {
-        Alert.alert('Ошибка', e?.response?.data?.message || 'Не удалось активировать триал');
+        Alert.alert(t('common.error'), e?.response?.data?.message || '');
       }
       return;
     }
 
-    // Already trialing or pro — show info
-    if (isPro || isTrialing) {
-      Alert.alert(
-        'У тебя уже есть Pro',
-        isTrialing
-          ? `Триал активен. Осталось ${billing?.trialDaysLeft ?? 0} дней.`
-          : 'Твой план уже активен.',
-        [{ text: 'Ок', onPress: () => router.back() }]
-      );
+    // Уже на этом плане
+    const currentMatchesSelected =
+      (selected === 'pro' && billing?.plan === 'pro') ||
+      (selected === 'org' && billing?.plan === 'organization');
+
+    if (currentMatchesSelected && !isTrialing) {
+      Alert.alert(t('subscription_plan.active'), t('subscription_plan.active'), [{ text: 'OK' }]);
       return;
     }
 
-    // Trial used — show checkout link placeholder
-    Alert.alert(
-      'Оформить подписку',
-      'Для оплаты через App Store — скоро будет доступно. Сейчас можно активировать триал если не использован.',
-    );
+    // Для Team (org) — переход на страницу управления подпиской
+    if (selected === 'org') {
+      router.replace('/subscription-plan' as any);
+      return;
+    }
+
+    // Для Pro без триала — страница управления
+    router.replace('/subscription-plan' as any);
   };
 
   const isLoading = startTrialMutation.isPending || billingLoading;
   const selectedPlan = PLANS.find(p => p.id === selected)!;
 
   const getButtonLabel = () => {
-    if (selected === 'free') return 'Продолжить бесплатно';
-    if (isPro || isTrialing) return 'У тебя уже Pro ✓';
-    if (canTrial && selected === 'pro') return `Начать ${selectedPlan.trialDays}-дневный триал`;
-    return `Выбрать ${selectedPlan.name}`;
+    if (selected === 'free') return t('paywall.continue_free', 'Continue for free');
+    if (selected === 'org') return t('subscription_plan.upgrade_team');
+    if (canTrial && selected === 'pro') return t('subscription_plan.start_trial');
+    if (isPro || isTrialing) return `${t('subscription_plan.active')} ✓`;
+    return t('subscription_plan.upgrade_pro');
   };
 
   return (
@@ -125,7 +125,7 @@ export default function PaywallScreen() {
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>{t('paywall.choose_plan')}</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {canTrial ? '7 дней Pro бесплатно • Отмена в любой момент' : 'Разблокируй все возможности SubRadar'}
+            {canTrial ? t('paywall.subtitle_trial') : t('paywall.subtitle_no_trial')}
           </Text>
         </View>
 
@@ -221,8 +221,8 @@ export default function PaywallScreen() {
 
         <Text style={[styles.disclaimer, { color: colors.textMuted }]}>
           {canTrial
-            ? 'Триал на 7 дней. Без карты. Отмена в любой момент.'
-            : 'Оплата через App Store. Отмена в любой момент.'}
+            ? t('paywall.free_trial_disclaimer')
+            : t('paywall.paid_disclaimer')}
         </Text>
       </ScrollView>
     </SafeAreaView>

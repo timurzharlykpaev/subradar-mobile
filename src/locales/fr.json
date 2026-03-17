@@ -463,7 +463,10 @@
     "most_popular": "POPULAIRE",
     "maybe_later": "Peut-être plus tard",
     "free_trial_disclaimer": "7 jours gratuits. Sans carte. Annulez à tout moment.",
-    "paid_disclaimer": "Via App Store. Annulable à tout moment."
+    "paid_disclaimer": "Via App Store. Annulable à tout moment.",
+    "continue_free": "Continuer gratuitement",
+    "subtitle_trial": "7 jours gratuits · Annulable",
+    "subtitle_no_trial": "Débloquer toutes les fonctionnalités"
   },
   "ai": {
     "or_type": "ou tapez",

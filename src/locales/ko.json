@@ -463,7 +463,10 @@
     "most_popular": "가장 인기",
     "maybe_later": "나중에",
     "free_trial_disclaimer": "7일 무료. 카드 불필요. 언제든지 취소.",
-    "paid_disclaimer": "App Store 통해 결제. 언제든지 취소 가능."
+    "paid_disclaimer": "App Store 통해 결제. 언제든지 취소 가능.",
+    "continue_free": "무료로 계속",
+    "subtitle_trial": "7일 무료·언제든지 취소",
+    "subtitle_no_trial": "모든 기능 잠금 해제"
   },
   "ai": {
     "or_type": "또는 입력",

@@ -463,7 +463,10 @@
     "most_popular": "人気No.1",
     "maybe_later": "あとで",
     "free_trial_disclaimer": "7日間無料。カード不要。いつでも解約。",
-    "paid_disclaimer": "App Store経由。いつでも解約可能。"
+    "paid_disclaimer": "App Store経由。いつでも解約可能。",
+    "continue_free": "無料で続ける",
+    "subtitle_trial": "7日間無料·いつでも解約",
+    "subtitle_no_trial": "全機能を解放"
   },
   "ai": {
     "or_type": "または入力",
