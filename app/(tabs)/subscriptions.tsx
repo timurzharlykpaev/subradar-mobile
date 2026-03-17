@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -93,6 +95,7 @@ export default function SubscriptionsScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.text }]}>{t('subscriptions.title')}</Text>
@@ -194,6 +197,7 @@ export default function SubscriptionsScreen() {
           </View>
         }
       />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

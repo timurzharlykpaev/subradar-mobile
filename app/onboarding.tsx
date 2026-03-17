@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   Platform,
   Dimensions,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -916,6 +917,11 @@ export default function OnboardingScreen() {
   ];
 
   return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={0}
+    >
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>{steps[step]}</View>
 
@@ -944,6 +950,7 @@ export default function OnboardingScreen() {
         )}
       </View>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 
