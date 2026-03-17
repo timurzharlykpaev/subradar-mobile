@@ -275,7 +275,7 @@ export function AIWizard({ onDone }: Props) {
     try {
       // Step 1: transcribe audio → text
       const fd = new FormData();
-      fd.append('audio', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
+      fd.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
       const transcribeRes = await aiApi.parseAudio(fd);
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {

@@ -276,7 +276,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setAiLoading(true);
     try {
       const formData = new FormData();
-      formData.append('audio', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
+      formData.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
       const res = await aiApi.parseAudio(formData);
       const data = res.data;
       // Если сервер вернул транскрипт — показываем его в поле
