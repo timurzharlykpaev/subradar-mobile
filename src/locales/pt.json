@@ -375,5 +375,48 @@
     "YEARLY": "Anual",
     "LIFETIME": "Vitalício",
     "ONE_TIME": "Único"
+  },
+  "subscription_plan": {
+    "current_plan": "Plano atual",
+    "my_subscription": "Minha assinatura",
+    "included": "Incluído no plano",
+    "trial_active": "Teste · {{days}} dias restantes",
+    "active": "Ativo",
+    "manage": "Gerenciar assinatura",
+    "start_trial": "Iniciar teste 7 dias",
+    "upgrade_pro": "Atualizar para Pro",
+    "upgrade_team": "Atualizar para Team",
+    "max_plan": "Plano máximo",
+    "cancel_sub": "Cancelar assinatura",
+    "cancel_trial": "Cancelar teste",
+    "cancel_confirm_title": "Cancelar assinatura?",
+    "cancel_confirm_msg": "Acesso mantido até o fim do período.",
+    "cancelled_title": "Assinatura cancelada",
+    "cancelled_msg": "Acesso mantido até o fim.",
+    "trial_activated": "Teste ativado!",
+    "trial_activated_msg": "7 dias Pro grátis.",
+    "disclaimer": "Gerenciado via App Store.",
+    "billing_monthly": "Mensal",
+    "billing_yearly": "Anual",
+    "save_badge": "Economize 30%",
+    "subs_used": "Assinaturas",
+    "ai_used": "Requisições IA",
+    "feat_free": [
+      "3 assinaturas",
+      "5 requisições IA/mês",
+      "Análise básica"
+    ],
+    "feat_pro": [
+      "Assinaturas ilimitadas",
+      "200 requisições IA/mês",
+      "Análise avançada",
+      "Relatórios PDF"
+    ],
+    "feat_org": [
+      "Tudo do Pro",
+      "Acesso equipe",
+      "Análise membros",
+      "Até 10 membros"
+    ]
   }
 }

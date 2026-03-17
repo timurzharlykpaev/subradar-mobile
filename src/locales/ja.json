@@ -375,5 +375,48 @@
     "YEARLY": "毎年",
     "LIFETIME": "生涯",
     "ONE_TIME": "一回限り"
+  },
+  "subscription_plan": {
+    "current_plan": "現在のプラン",
+    "my_subscription": "マイサブスクリプション",
+    "included": "プランに含まれる",
+    "trial_active": "トライアル中・残り{{days}}日",
+    "active": "有効",
+    "manage": "サブスクリプション管理",
+    "start_trial": "7日間トライアル開始",
+    "upgrade_pro": "Proにアップグレード",
+    "upgrade_team": "Teamにアップグレード",
+    "max_plan": "最上位プラン",
+    "cancel_sub": "サブスクリプションをキャンセル",
+    "cancel_trial": "トライアルをキャンセル",
+    "cancel_confirm_title": "キャンセルしますか？",
+    "cancel_confirm_msg": "期間終了まで利用可能です。",
+    "cancelled_title": "キャンセルしました",
+    "cancelled_msg": "期間終了まで利用可能です。",
+    "trial_activated": "トライアル開始！",
+    "trial_activated_msg": "7日間無料Proアクセス。",
+    "disclaimer": "App Storeで管理。",
+    "billing_monthly": "月次",
+    "billing_yearly": "年次",
+    "save_badge": "30%節約",
+    "subs_used": "サブスク数",
+    "ai_used": "AIリクエスト",
+    "feat_free": [
+      "3つのサブスク",
+      "AIリクエスト5回/月",
+      "基本分析"
+    ],
+    "feat_pro": [
+      "無制限サブスク",
+      "AIリクエスト200回/月",
+      "高度な分析",
+      "PDFレポート"
+    ],
+    "feat_org": [
+      "Proの全機能",
+      "チームアクセス",
+      "メンバー分析",
+      "最大10名"
+    ]
   }
 }

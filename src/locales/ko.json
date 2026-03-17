@@ -375,5 +375,48 @@
     "YEARLY": "매년",
     "LIFETIME": "평생",
     "ONE_TIME": "일회성"
+  },
+  "subscription_plan": {
+    "current_plan": "현재 플랜",
+    "my_subscription": "내 구독",
+    "included": "플랜에 포함됨",
+    "trial_active": "체험판 · {{days}}일 남음",
+    "active": "활성",
+    "manage": "구독 관리",
+    "start_trial": "7일 체험 시작",
+    "upgrade_pro": "Pro로 업그레이드",
+    "upgrade_team": "Team으로 업그레이드",
+    "max_plan": "최고 플랜",
+    "cancel_sub": "구독 취소",
+    "cancel_trial": "체험판 취소",
+    "cancel_confirm_title": "구독을 취소할까요?",
+    "cancel_confirm_msg": "기간 종료까지 이용 가능합니다.",
+    "cancelled_title": "구독 취소됨",
+    "cancelled_msg": "기간 종료까지 이용 가능합니다.",
+    "trial_activated": "체험판 활성화!",
+    "trial_activated_msg": "7일 무료 Pro 이용.",
+    "disclaimer": "App Store에서 관리.",
+    "billing_monthly": "월간",
+    "billing_yearly": "연간",
+    "save_badge": "30% 절약",
+    "subs_used": "구독 수",
+    "ai_used": "AI 요청",
+    "feat_free": [
+      "구독 3개",
+      "AI 요청 5회/월",
+      "기본 분석"
+    ],
+    "feat_pro": [
+      "무제한 구독",
+      "AI 요청 200회/월",
+      "고급 분석",
+      "PDF 보고서"
+    ],
+    "feat_org": [
+      "Pro 모든 기능",
+      "팀 접근",
+      "멤버 분석",
+      "최대 10명"
+    ]
   }
 }

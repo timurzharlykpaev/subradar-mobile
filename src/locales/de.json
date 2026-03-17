@@ -375,5 +375,48 @@
     "YEARLY": "Jährlich",
     "LIFETIME": "Lebenslang",
     "ONE_TIME": "Einmalig"
+  },
+  "subscription_plan": {
+    "current_plan": "Aktueller Plan",
+    "my_subscription": "Mein Abonnement",
+    "included": "Im Plan enthalten",
+    "trial_active": "Testphase · noch {{days}} Tage",
+    "active": "Aktiv",
+    "manage": "Abonnement verwalten",
+    "start_trial": "7-Tage-Test starten",
+    "upgrade_pro": "Auf Pro upgraden",
+    "upgrade_team": "Auf Team upgraden",
+    "max_plan": "Maximaler Plan",
+    "cancel_sub": "Abonnement kündigen",
+    "cancel_trial": "Test abbrechen",
+    "cancel_confirm_title": "Abonnement kündigen?",
+    "cancel_confirm_msg": "Zugang bleibt bis Periodenende.",
+    "cancelled_title": "Abonnement gekündigt",
+    "cancelled_msg": "Zugang bleibt bis Periodenende.",
+    "trial_activated": "Test aktiviert!",
+    "trial_activated_msg": "7 Tage Pro kostenlos.",
+    "disclaimer": "Verwaltet über App Store.",
+    "billing_monthly": "Monatlich",
+    "billing_yearly": "Jährlich",
+    "save_badge": "30% sparen",
+    "subs_used": "Abos",
+    "ai_used": "KI-Anfragen",
+    "feat_free": [
+      "3 Abos",
+      "5 KI-Anfragen/Mo",
+      "Basis-Analytik"
+    ],
+    "feat_pro": [
+      "Unbegrenzte Abos",
+      "200 KI-Anfragen/Mo",
+      "Erweiterte Analytik",
+      "PDF-Berichte"
+    ],
+    "feat_org": [
+      "Alles aus Pro",
+      "Team-Zugang",
+      "Mitglieder-Analytik",
+      "Bis 10 Mitglieder"
+    ]
   }
 }

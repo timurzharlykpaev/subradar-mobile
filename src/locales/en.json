@@ -392,5 +392,48 @@
     "10": "Oct",
     "11": "Nov",
     "12": "Dec"
+  },
+  "subscription_plan": {
+    "current_plan": "Current Plan",
+    "my_subscription": "My Subscription",
+    "included": "Included in plan",
+    "trial_active": "Trial · {{days}} days left",
+    "active": "Active",
+    "manage": "Manage subscription",
+    "start_trial": "Start 7-day trial",
+    "upgrade_pro": "Upgrade to Pro",
+    "upgrade_team": "Upgrade to Team",
+    "max_plan": "Max plan",
+    "cancel_sub": "Cancel subscription",
+    "cancel_trial": "Cancel trial",
+    "cancel_confirm_title": "Cancel subscription?",
+    "cancel_confirm_msg": "Access will remain until end of billing period.",
+    "cancelled_title": "Subscription cancelled",
+    "cancelled_msg": "Access stays until end of period.",
+    "trial_activated": "Trial activated!",
+    "trial_activated_msg": "7 days of Pro access for free.",
+    "disclaimer": "Managed via App Store.\nCancellation takes effect at end of period.",
+    "billing_monthly": "Monthly",
+    "billing_yearly": "Yearly",
+    "save_badge": "Save 30%",
+    "subs_used": "Subscriptions",
+    "ai_used": "AI requests",
+    "feat_free": [
+      "3 subscriptions",
+      "5 AI requests/mo",
+      "Basic analytics"
+    ],
+    "feat_pro": [
+      "Unlimited subscriptions",
+      "200 AI requests/mo",
+      "Advanced analytics",
+      "PDF reports"
+    ],
+    "feat_org": [
+      "All from Pro",
+      "Team access",
+      "Member analytics",
+      "Up to 10 members"
+    ]
   }
 }

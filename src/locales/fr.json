@@ -375,5 +375,48 @@
     "YEARLY": "Annuel",
     "LIFETIME": "À vie",
     "ONE_TIME": "Unique"
+  },
+  "subscription_plan": {
+    "current_plan": "Plan actuel",
+    "my_subscription": "Mon abonnement",
+    "included": "Inclus dans le plan",
+    "trial_active": "Essai · {{days}} j. restants",
+    "active": "Actif",
+    "manage": "Gérer l'abonnement",
+    "start_trial": "Démarrer l'essai 7 jours",
+    "upgrade_pro": "Passer à Pro",
+    "upgrade_team": "Passer à Team",
+    "max_plan": "Plan maximum",
+    "cancel_sub": "Annuler l'abonnement",
+    "cancel_trial": "Annuler l'essai",
+    "cancel_confirm_title": "Annuler l'abonnement?",
+    "cancel_confirm_msg": "L'accès reste jusqu'à la fin de la période.",
+    "cancelled_title": "Abonnement annulé",
+    "cancelled_msg": "L'accès reste jusqu'à la fin.",
+    "trial_activated": "Essai activé!",
+    "trial_activated_msg": "7 jours Pro gratuits.",
+    "disclaimer": "Géré via App Store.",
+    "billing_monthly": "Mensuel",
+    "billing_yearly": "Annuel",
+    "save_badge": "30% économisés",
+    "subs_used": "Abonnements",
+    "ai_used": "Requêtes IA",
+    "feat_free": [
+      "3 abonnements",
+      "5 requêtes IA/mois",
+      "Analytique de base"
+    ],
+    "feat_pro": [
+      "Abonnements illimités",
+      "200 requêtes IA/mois",
+      "Analytique avancée",
+      "Rapports PDF"
+    ],
+    "feat_org": [
+      "Tout de Pro",
+      "Accès équipe",
+      "Analytique membres",
+      "Jusqu'à 10 membres"
+    ]
   }
 }

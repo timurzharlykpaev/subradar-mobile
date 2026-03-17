@@ -375,5 +375,48 @@
     "YEARLY": "每年",
     "LIFETIME": "终身",
     "ONE_TIME": "一次性"
+  },
+  "subscription_plan": {
+    "current_plan": "当前计划",
+    "my_subscription": "我的订阅",
+    "included": "计划包含",
+    "trial_active": "试用中 · 剩余{{days}}天",
+    "active": "有效",
+    "manage": "管理订阅",
+    "start_trial": "开始7天试用",
+    "upgrade_pro": "升级到Pro",
+    "upgrade_team": "升级到Team",
+    "max_plan": "最高计划",
+    "cancel_sub": "取消订阅",
+    "cancel_trial": "取消试用",
+    "cancel_confirm_title": "取消订阅？",
+    "cancel_confirm_msg": "访问权限保留至期末。",
+    "cancelled_title": "订阅已取消",
+    "cancelled_msg": "访问权限保留至期末。",
+    "trial_activated": "试用已激活！",
+    "trial_activated_msg": "7天免费Pro访问。",
+    "disclaimer": "通过App Store管理。",
+    "billing_monthly": "每月",
+    "billing_yearly": "每年",
+    "save_badge": "节省30%",
+    "subs_used": "订阅数",
+    "ai_used": "AI请求",
+    "feat_free": [
+      "3个订阅",
+      "5次AI请求/月",
+      "基础分析"
+    ],
+    "feat_pro": [
+      "无限订阅",
+      "200次AI请求/月",
+      "高级分析",
+      "PDF报告"
+    ],
+    "feat_org": [
+      "Pro全部功能",
+      "团队访问",
+      "成员分析",
+      "最多10名成员"
+    ]
   }
 }

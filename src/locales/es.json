@@ -375,5 +375,48 @@
     "YEARLY": "Anual",
     "LIFETIME": "De por vida",
     "ONE_TIME": "Único"
+  },
+  "subscription_plan": {
+    "current_plan": "Plan actual",
+    "my_subscription": "Mi suscripción",
+    "included": "Incluido en el plan",
+    "trial_active": "Prueba · {{days}} días restantes",
+    "active": "Activo",
+    "manage": "Gestionar suscripción",
+    "start_trial": "Iniciar prueba 7 días",
+    "upgrade_pro": "Actualizar a Pro",
+    "upgrade_team": "Actualizar a Team",
+    "max_plan": "Plan máximo",
+    "cancel_sub": "Cancelar suscripción",
+    "cancel_trial": "Cancelar prueba",
+    "cancel_confirm_title": "¿Cancelar suscripción?",
+    "cancel_confirm_msg": "El acceso se mantiene hasta el final del período.",
+    "cancelled_title": "Suscripción cancelada",
+    "cancelled_msg": "El acceso se mantiene hasta el final.",
+    "trial_activated": "¡Prueba activada!",
+    "trial_activated_msg": "7 días Pro gratis.",
+    "disclaimer": "Gestionado vía App Store.",
+    "billing_monthly": "Mensual",
+    "billing_yearly": "Anual",
+    "save_badge": "Ahorra 30%",
+    "subs_used": "Suscripciones",
+    "ai_used": "Solicitudes IA",
+    "feat_free": [
+      "3 suscripciones",
+      "5 solicitudes IA/mes",
+      "Analítica básica"
+    ],
+    "feat_pro": [
+      "Suscripciones ilimitadas",
+      "200 solicitudes IA/mes",
+      "Analítica avanzada",
+      "Informes PDF"
+    ],
+    "feat_org": [
+      "Todo de Pro",
+      "Acceso equipo",
+      "Analítica miembros",
+      "Hasta 10 miembros"
+    ]
   }
 }
