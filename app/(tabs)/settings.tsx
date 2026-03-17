@@ -340,9 +340,7 @@ export default function SettingsScreen() {
             style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
             onPress={() => Alert.alert(t('settings.reset_onboarding'), t('settings.reset_onboarding_confirm'), [
               { text: t('common.cancel'), style: 'cancel' },
-              { text: t('settings.reset_onboarding'), style: 'destructive', onPress: async () => {
-                const { clearOnboarding } = await import('../../src/stores/onboardingStore').catch(() => ({ clearOnboarding: null }));
-                if (clearOnboarding) (clearOnboarding as any)();
+              { text: t('settings.reset_onboarding'), style: 'destructive', onPress: () => {
                 logout();
                 router.replace('/onboarding' as any);
               }},
