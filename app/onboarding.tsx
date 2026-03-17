@@ -176,7 +176,8 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
   });
 
   useEffect(() => {
-    Animated.parallel([
+    let floatLoop: { stop: () => void } | null = null;
+    const entry = Animated.parallel([
       Animated.timing(entryY, {
         toValue: 0, duration: 650, delay,
         easing: Easing.out(Easing.cubic), useNativeDriver: true,
@@ -185,15 +186,17 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
         toValue: 1, duration: 650, delay,
         easing: Easing.out(Easing.quad), useNativeDriver: true,
       }),
-    ]).start(() => {
-      // Perfect loop: 0→1, outputRange[0]===outputRange[4] → no jump ever
-      Animated.loop(
+    ]);
+    entry.start(() => {
+      floatLoop = Animated.loop(
         Animated.timing(progress, {
           toValue: 1, duration,
           easing: Easing.linear, useNativeDriver: true,
         })
-      ).start();
+      );
+      floatLoop.start();
     });
+    return () => { entry.stop(); floatLoop?.stop(); };
   }, []);
 
   return (
@@ -243,7 +246,7 @@ function AuthHero() {
     ]).start();
 
     // Ring 1 pulse
-    Animated.loop(
+    const loop1 = Animated.loop(
       Animated.sequence([
         Animated.parallel([
           Animated.timing(ring1Scale, { toValue: 1.5, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
@@ -254,11 +257,13 @@ function AuthHero() {
           Animated.timing(ring1Opacity, { toValue: 0.4, duration: 0, useNativeDriver: true }),
         ]),
       ])
-    ).start();
+    );
+    loop1.start();
 
     // Ring 2 pulse (offset)
-    setTimeout(() => {
-      Animated.loop(
+    let loop2: { stop: () => void } | null = null;
+    const t2 = setTimeout(() => {
+      loop2 = Animated.loop(
         Animated.sequence([
           Animated.parallel([
             Animated.timing(ring2Scale, { toValue: 1.5, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
@@ -269,8 +274,10 @@ function AuthHero() {
             Animated.timing(ring2Opacity, { toValue: 0.25, duration: 0, useNativeDriver: true }),
           ]),
         ])
-      ).start();
+      );
+      loop2.start();
     }, 1000);
+    return () => { loop1.stop(); loop2?.stop(); clearTimeout(t2); };
   }, []);
 
   return (
