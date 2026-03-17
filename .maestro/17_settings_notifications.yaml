@@ -2,14 +2,20 @@ appId: com.goalin.subradar
 name: "17 - Settings Notifications"
 ---
 
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Открываем Settings
 - tapOn:
     text: "Settings"
     optional: true
+
+- waitForAnimationToEnd
+
+# Проверяем что Settings загрузился
 - assertNotVisible: "undefined"
-- assertNotVisible: "Ошибка"
+- assertNotVisible: "NaN"
+
+# Прокручиваем до уведомлений
+- scroll
+
+- assertNotVisible: "Error"

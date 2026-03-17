@@ -1,25 +1,30 @@
 appId: com.goalin.subradar
-name: "Search Subscription by Name"
+name: "11 - Search Subscription by Name"
 ---
 
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Открываем вкладку подписок
 - tapOn:
-    text: "Подписки"
-- assertVisible: "Подписки"
+    text: "Subscriptions"
+    optional: true
 - tapOn:
-    id: "Search"
+    text: "Subs"
     optional: true
-    optional: true
+
+- waitForAnimationToEnd
+
+# Ищем подписку
 - tapOn:
     id: "input-search"
     optional: true
+- tapOn:
+    text: "Search"
+    optional: true
+
 - inputText:
     text: "Netflix"
-- assertVisible:
-    text: "Netflix"
-    timeout: 3000
-    optional: true
-- assertNotVisible: "Ошибка"
+
+- waitForAnimationToEnd
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"

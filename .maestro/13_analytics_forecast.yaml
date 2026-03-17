@@ -2,17 +2,21 @@ appId: com.goalin.subradar
 name: "13 - Analytics Forecast"
 ---
 
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Analytics, tab"
-    optional: true
+# Открываем Analytics
 - tapOn:
     text: "Analytics"
     optional: true
-- assertVisible:
-    text: "Analytics, tab"
-    optional: true
+
+- waitForAnimationToEnd
+
+# Проверяем что нет NaN/undefined
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"
+- assertNotVisible: "Error"
+
+# Forecast секция должна быть видна
+- assertVisible:
+    text: "Forecast"
+    optional: true

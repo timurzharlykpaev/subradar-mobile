@@ -1,11 +1,14 @@
 appId: com.goalin.subradar
 name: "00 - Setup: Onboarding + Auth (demo account)"
 ---
+# Сбрасываем данные приложения для чистого прогона
+- clearState
+
+# Запускаем приложение
 - launchApp
 
-# Если уже на главном экране — пропускаем онбординг
-- runFlow:
-    when:
-      visible: "Get started — it's free →"
-    file: ./00_onboarding_flow.yaml
+# Ждём онбординг
+- waitForAnimationToEnd
 
+# Проходим онбординг (всегда — после clearState всегда показывается)
+- runFlow: ./00_onboarding_flow.yaml
