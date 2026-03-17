@@ -13,7 +13,9 @@
     "all": "Tous",
     "or": "ou",
     "are_you_sure": "Êtes-vous sûr ?",
-    "no_card": "Aucune carte"
+    "no_card": "Aucune carte",
+    "no_data_period": "Pas de données pour cette période",
+    "popular": "Populaires"
   },
   "tabs": {
     "home": "Accueil",
@@ -51,7 +53,19 @@
     "total_month": "Total ce mois",
     "per_month": "par mois",
     "active_subs_title": "Abonnements actifs",
-    "upcoming_7": "À venir (7 jours)"
+    "upcoming_7": "À venir (7 jours)",
+    "add_subscription": "Ajouter abonnement",
+    "annually": "annuellement",
+    "forecast_title": "Prévision",
+    "generate_report": "Générer rapport",
+    "next_30_days": "30 prochains jours",
+    "per_year": "par an",
+    "possible_duplicates": "doublons possibles",
+    "potential_savings": "Économies potentielles",
+    "quick_actions": "Actions rapides",
+    "review": "Vérifier",
+    "subscriptions_label": "abonnements",
+    "upgrade_pro": "Passer à Pro"
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -171,7 +185,14 @@
     "trial_started_desc": "7 jours d'accès Pro commencent maintenant. Profitez de toutes les fonctionnalités.",
     "failed_trial": "Impossible de démarrer l'essai.",
     "name_required": "Le nom est requis",
-    "save_error": "Échec de l'enregistrement"
+    "save_error": "Échec de l'enregistrement",
+    "manage_subscription": "Gérer l'abonnement",
+    "reset_onboarding": "Réinitialiser l'intégration",
+    "reset_onboarding_confirm": "L'intégration sera relancée. Continuer?",
+    "delete_account": "Supprimer le compte",
+    "delete_account_confirm": "Supprime définitivement votre compte et toutes les données.",
+    "delete_account_success": "Compte supprimé",
+    "danger_zone": "Zone dangereuse"
   },
   "auth": {
     "welcome": "Bon retour",
@@ -229,7 +250,12 @@
     "terms_prefix": "En continuant, vous acceptez nos",
     "terms_link": "Conditions d'utilisation",
     "terms_and": "et",
-    "privacy_link": "Politique de confidentialité"
+    "privacy_link": "Politique de confidentialité",
+    "add_manually": "Ajouter manuellement",
+    "add_with_ai": "Ajouter avec l'IA",
+    "first_sub_subtitle": "Suivez-le en secondes avec l'IA ou manuellement",
+    "first_sub_title": "Ajouter votre premier abonnement",
+    "skip_for_now": "Ignorer"
   },
   "analytics": {
     "title": "Analytique",
@@ -421,6 +447,26 @@
   },
   "workspace": {
     "name_placeholder": "ex. Mon Entreprise",
-    "email_placeholder": "email@entreprise.fr"
+    "email_placeholder": "email@entreprise.fr",
+    "title": "Espace d'équipe",
+    "need_team_plan": "Plan Team requis",
+    "team_name_label": "Nom de l'équipe",
+    "create_team": "Créer l'équipe",
+    "invite_member": "Inviter",
+    "invite_member_email": "E-mail du membre",
+    "send_invite": "Envoyer",
+    "remove_member_confirm": "Retirer le membre?",
+    "subscriptions_per_month": "abos/mois"
+  },
+  "paywall": {
+    "choose_plan": "Choisir un plan",
+    "most_popular": "POPULAIRE",
+    "maybe_later": "Peut-être plus tard",
+    "free_trial_disclaimer": "7 jours gratuits. Sans carte. Annulez à tout moment.",
+    "paid_disclaimer": "Via App Store. Annulable à tout moment."
+  },
+  "ai": {
+    "or_type": "ou tapez",
+    "popular_services": "Populaires"
   }
 }

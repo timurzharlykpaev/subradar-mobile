@@ -13,7 +13,9 @@
     "all": "Все",
     "or": "или",
     "are_you_sure": "Вы уверены?",
-    "no_card": "Без карты"
+    "no_card": "Без карты",
+    "no_data_period": "Нет данных за этот период",
+    "popular": "Популярные"
   },
   "tabs": {
     "home": "Главная",
@@ -54,11 +56,11 @@
     "upcoming_7": "Ближайшие (7 дней)",
     "forecast_title": "Прогноз",
     "next_30_days": "Следующие 30 дней",
-    "per_year": "В год",
+    "per_year": "в год",
     "subscriptions_label": "подписок",
-    "annually": "ежегодно",
-    "potential_savings": "Возможная экономия",
-    "possible_duplicates": "возможных дубликатов",
+    "annually": "в год",
+    "potential_savings": "Потенциальная экономия",
+    "possible_duplicates": "возможных дублей",
     "review": "Проверить",
     "quick_actions": "Быстрые действия",
     "add_subscription": "Добавить подписку",
@@ -183,7 +185,14 @@
     "trial_started_desc": "7 дней Pro-доступа. Пользуйтесь всеми функциями.",
     "failed_trial": "Не удалось начать триал.",
     "name_required": "Имя обязательно",
-    "save_error": "Не удалось сохранить"
+    "save_error": "Не удалось сохранить",
+    "manage_subscription": "Управление подпиской",
+    "reset_onboarding": "Сбросить онбординг",
+    "reset_onboarding_confirm": "Онбординг будет запущен заново. Продолжить?",
+    "delete_account": "Удалить аккаунт",
+    "delete_account_confirm": "Это безвозвратно удалит ваш аккаунт и все данные.",
+    "delete_account_success": "Аккаунт удалён",
+    "danger_zone": "Опасная зона"
   },
   "auth": {
     "welcome": "С возвращением",
@@ -238,10 +247,10 @@
     "showcase_analytics_desc": "Прогноз расходов, дубликаты, экономия",
     "showcase_team_title": "Командный план",
     "showcase_team_desc": "Управляй подписками вместе с командой",
-    "first_sub_title": "Добавь первую подписку",
-    "first_sub_subtitle": "Отслеживай за секунды с AI или вручную",
+    "first_sub_title": "Добавьте первую подписку",
+    "first_sub_subtitle": "Отслеживайте её за секунды с AI или вручную",
     "add_manually": "Добавить вручную",
-    "add_with_ai": "Добавить с AI",
+    "add_with_ai": "Добавить через AI",
     "skip_for_now": "Пропустить",
     "terms_prefix": "Продолжая, вы соглашаетесь с",
     "terms_link": "Условиями использования",
@@ -438,6 +447,26 @@
   },
   "workspace": {
     "name_placeholder": "Например: My Company",
-    "email_placeholder": "email@company.com"
+    "email_placeholder": "email@company.com",
+    "title": "Командное пространство",
+    "need_team_plan": "Нужен план Team",
+    "team_name_label": "Название команды",
+    "create_team": "Создать команду",
+    "invite_member": "Пригласить",
+    "invite_member_email": "Email участника",
+    "send_invite": "Отправить",
+    "remove_member_confirm": "Убрать участника из команды?",
+    "subscriptions_per_month": "подписок/мес"
+  },
+  "paywall": {
+    "choose_plan": "Выбери план",
+    "most_popular": "ПОПУЛЯРНЫЙ",
+    "maybe_later": "Может позже",
+    "free_trial_disclaimer": "7 дней бесплатно. Без карты. Отмена в любой момент.",
+    "paid_disclaimer": "Оплата через App Store. Отмена в любой момент."
+  },
+  "ai": {
+    "or_type": "или напечатай",
+    "popular_services": "Популярные"
   }
 }

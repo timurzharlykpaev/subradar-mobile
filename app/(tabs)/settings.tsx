@@ -299,7 +299,7 @@ export default function SettingsScreen() {
           )}
           {/* Tap hint */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Управление подпиской</Text>
+            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{t('settings.manage_subscription')}</Text>
             <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.6)" />
           </View>
         </TouchableOpacity>
@@ -328,6 +328,50 @@ export default function SettingsScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Ionicons name="log-out-outline" size={18} color={colors.error} />
               <Text style={{ fontSize: 15, color: colors.error, fontWeight: '600' }}>{t('settings.logout')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Danger Zone */}
+        <Text style={sectionLabel}>{t('settings.danger_zone')}</Text>
+        <View style={[card, { padding: 0, gap: 0 }]}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
+            onPress={() => Alert.alert(t('settings.reset_onboarding'), t('settings.reset_onboarding_confirm'), [
+              { text: t('common.cancel'), style: 'cancel' },
+              { text: t('settings.reset_onboarding'), style: 'destructive', onPress: async () => {
+                const { clearOnboarding } = await import('../../src/stores/onboardingStore').catch(() => ({ clearOnboarding: null }));
+                if (clearOnboarding) (clearOnboarding as any)();
+                logout();
+                router.replace('/onboarding' as any);
+              }},
+            ])}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="refresh-outline" size={18} color={colors.warning} />
+              <Text style={{ fontSize: 15, color: colors.warning, fontWeight: '600' }}>{t('settings.reset_onboarding')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+          <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 16 }} />
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
+            onPress={() => Alert.alert(t('settings.delete_account'), t('settings.delete_account_confirm'), [
+              { text: t('common.cancel'), style: 'cancel' },
+              { text: t('settings.delete_account'), style: 'destructive', onPress: async () => {
+                try {
+                  const { authApi } = await import('../../src/api/auth');
+                  await authApi.deleteAccount();
+                } catch {}
+                logout();
+                router.replace('/onboarding' as any);
+              }},
+            ])}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="trash-outline" size={18} color={colors.error} />
+              <Text style={{ fontSize: 15, color: colors.error, fontWeight: '600' }}>{t('settings.delete_account')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>

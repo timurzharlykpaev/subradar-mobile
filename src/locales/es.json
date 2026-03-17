@@ -13,7 +13,9 @@
     "all": "Todos",
     "or": "o",
     "are_you_sure": "¿Estás seguro?",
-    "no_card": "Sin tarjeta"
+    "no_card": "Sin tarjeta",
+    "no_data_period": "Sin datos para este período",
+    "popular": "Populares"
   },
   "tabs": {
     "home": "Inicio",
@@ -51,7 +53,19 @@
     "total_month": "Total este mes",
     "per_month": "por mes",
     "active_subs_title": "Suscripciones activas",
-    "upcoming_7": "Próximos (7 días)"
+    "upcoming_7": "Próximos (7 días)",
+    "add_subscription": "Añadir suscripción",
+    "annually": "anualmente",
+    "forecast_title": "Pronóstico",
+    "generate_report": "Generar informe",
+    "next_30_days": "Próximos 30 días",
+    "per_year": "por año",
+    "possible_duplicates": "posibles duplicados",
+    "potential_savings": "Ahorros potenciales",
+    "quick_actions": "Acciones rápidas",
+    "review": "Revisar",
+    "subscriptions_label": "suscripciones",
+    "upgrade_pro": "Actualizar a Pro"
   },
   "subscriptions": {
     "title": "Suscripciones",
@@ -171,7 +185,14 @@
     "trial_started_desc": "7 días de acceso Pro comienzan ahora. Disfruta todas las funciones.",
     "failed_trial": "No se pudo iniciar la prueba.",
     "name_required": "El nombre es obligatorio",
-    "save_error": "Error al guardar"
+    "save_error": "Error al guardar",
+    "manage_subscription": "Gestionar suscripción",
+    "reset_onboarding": "Restablecer incorporación",
+    "reset_onboarding_confirm": "El proceso de incorporación se reiniciará. ¿Continuar?",
+    "delete_account": "Eliminar cuenta",
+    "delete_account_confirm": "Esto eliminará permanentemente tu cuenta y todos los datos.",
+    "delete_account_success": "Cuenta eliminada",
+    "danger_zone": "Zona de peligro"
   },
   "auth": {
     "welcome": "Bienvenido de nuevo",
@@ -229,7 +250,12 @@
     "terms_prefix": "Al continuar, aceptas nuestros",
     "terms_link": "Términos de uso",
     "terms_and": "y",
-    "privacy_link": "Política de privacidad"
+    "privacy_link": "Política de privacidad",
+    "add_manually": "Añadir manualmente",
+    "add_with_ai": "Añadir con IA",
+    "first_sub_subtitle": "Rastréala en segundos con IA o manualmente",
+    "first_sub_title": "Añade tu primera suscripción",
+    "skip_for_now": "Omitir"
   },
   "analytics": {
     "title": "Analítica",
@@ -421,6 +447,26 @@
   },
   "workspace": {
     "name_placeholder": "ej. Mi Empresa",
-    "email_placeholder": "email@empresa.com"
+    "email_placeholder": "email@empresa.com",
+    "title": "Espacio de equipo",
+    "need_team_plan": "Necesitas plan Team",
+    "team_name_label": "Nombre del equipo",
+    "create_team": "Crear equipo",
+    "invite_member": "Invitar",
+    "invite_member_email": "Email del miembro",
+    "send_invite": "Enviar",
+    "remove_member_confirm": "¿Eliminar miembro?",
+    "subscriptions_per_month": "suscripciones/mes"
+  },
+  "paywall": {
+    "choose_plan": "Elige un plan",
+    "most_popular": "MÁS POPULAR",
+    "maybe_later": "Quizás después",
+    "free_trial_disclaimer": "7 días gratis. Sin tarjeta. Cancela cuando quieras.",
+    "paid_disclaimer": "Via App Store. Cancelable en cualquier momento."
+  },
+  "ai": {
+    "or_type": "o escribe",
+    "popular_services": "Populares"
   }
 }

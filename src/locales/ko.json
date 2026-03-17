@@ -13,7 +13,9 @@
     "all": "전체",
     "or": "또는",
     "are_you_sure": "정말이신가요?",
-    "no_card": "카드 없음"
+    "no_card": "카드 없음",
+    "no_data_period": "이 기간 데이터 없음",
+    "popular": "인기"
   },
   "tabs": {
     "home": "홈",
@@ -51,7 +53,19 @@
     "total_month": "이번 달 합계",
     "per_month": "매월",
     "active_subs_title": "활성 구독",
-    "upcoming_7": "예정된 결제 (7일)"
+    "upcoming_7": "예정된 결제 (7일)",
+    "add_subscription": "구독 추가",
+    "annually": "연간",
+    "forecast_title": "예측",
+    "generate_report": "보고서 생성",
+    "next_30_days": "향후 30일",
+    "per_year": "연간",
+    "possible_duplicates": "중복 가능",
+    "potential_savings": "잠재적 절약",
+    "quick_actions": "빠른 작업",
+    "review": "검토",
+    "subscriptions_label": "구독",
+    "upgrade_pro": "Pro로 업그레이드"
   },
   "subscriptions": {
     "title": "구독",
@@ -171,7 +185,14 @@
     "trial_started_desc": "지금부터 7일간 Pro 기능을 이용할 수 있습니다. 모든 기능을 즐기세요.",
     "failed_trial": "체험판 시작에 실패했습니다.",
     "name_required": "이름은 필수입니다",
-    "save_error": "저장에 실패했습니다"
+    "save_error": "저장에 실패했습니다",
+    "manage_subscription": "구독 관리",
+    "reset_onboarding": "온보딩 초기화",
+    "reset_onboarding_confirm": "온보딩이 다시 시작됩니다. 계속하시겠습니까?",
+    "delete_account": "계정 삭제",
+    "delete_account_confirm": "계정과 모든 데이터가 영구적으로 삭제됩니다.",
+    "delete_account_success": "계정이 삭제되었습니다",
+    "danger_zone": "위험 구역"
   },
   "auth": {
     "welcome": "다시 오셨군요",
@@ -229,7 +250,12 @@
     "terms_prefix": "계속하면 다음에 동의하게 됩니다",
     "terms_link": "이용약관",
     "terms_and": "및",
-    "privacy_link": "개인정보 처리방침"
+    "privacy_link": "개인정보 처리방침",
+    "add_manually": "수동으로 추가",
+    "add_with_ai": "AI로 추가",
+    "first_sub_subtitle": "AI 또는 수동으로 몇 초 만에 추적",
+    "first_sub_title": "첫 번째 구독 추가",
+    "skip_for_now": "건너뛰기"
   },
   "analytics": {
     "title": "분석",
@@ -421,6 +447,26 @@
   },
   "workspace": {
     "name_placeholder": "예: 내 회사",
-    "email_placeholder": "email@company.com"
+    "email_placeholder": "email@company.com",
+    "title": "팀 공간",
+    "need_team_plan": "Team 플랜 필요",
+    "team_name_label": "팀 이름",
+    "create_team": "팀 만들기",
+    "invite_member": "초대",
+    "invite_member_email": "멤버 이메일",
+    "send_invite": "전송",
+    "remove_member_confirm": "멤버를 제거할까요?",
+    "subscriptions_per_month": "구독/월"
+  },
+  "paywall": {
+    "choose_plan": "플랜 선택",
+    "most_popular": "가장 인기",
+    "maybe_later": "나중에",
+    "free_trial_disclaimer": "7일 무료. 카드 불필요. 언제든지 취소.",
+    "paid_disclaimer": "App Store 통해 결제. 언제든지 취소 가능."
+  },
+  "ai": {
+    "or_type": "또는 입력",
+    "popular_services": "인기"
   }
 }

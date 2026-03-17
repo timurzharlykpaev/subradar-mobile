@@ -17,4 +17,5 @@ export const authApi = {
     apiClient.post('/auth/otp/verify', { email, code }),
   getProfile: () => apiClient.get('/auth/me'),
   updateProfile: (data: any) => apiClient.post('/auth/profile', data),
+  deleteAccount: () => apiClient.delete('/users/me'),
 };

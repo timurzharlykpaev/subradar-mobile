@@ -13,7 +13,9 @@
     "all": "Alle",
     "or": "oder",
     "are_you_sure": "Bist du sicher?",
-    "no_card": "Keine Karte"
+    "no_card": "Keine Karte",
+    "no_data_period": "Keine Daten für diesen Zeitraum",
+    "popular": "Beliebt"
   },
   "tabs": {
     "home": "Start",
@@ -51,7 +53,19 @@
     "total_month": "Gesamt diesen Monat",
     "per_month": "pro Monat",
     "active_subs_title": "Aktive Abonnements",
-    "upcoming_7": "Bevorstehend (7 Tage)"
+    "upcoming_7": "Bevorstehend (7 Tage)",
+    "add_subscription": "Abo hinzufügen",
+    "annually": "jährlich",
+    "forecast_title": "Prognose",
+    "generate_report": "Bericht erstellen",
+    "next_30_days": "Nächste 30 Tage",
+    "per_year": "pro Jahr",
+    "possible_duplicates": "mögliche Duplikate",
+    "potential_savings": "Potenzielle Einsparungen",
+    "quick_actions": "Schnellaktionen",
+    "review": "Prüfen",
+    "subscriptions_label": "Abos",
+    "upgrade_pro": "Auf Pro upgraden"
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -171,7 +185,14 @@
     "trial_started_desc": "7 Tage Pro-Zugang beginnen jetzt. Genieße alle Funktionen.",
     "failed_trial": "Testphase konnte nicht gestartet werden.",
     "name_required": "Name ist erforderlich",
-    "save_error": "Speichern fehlgeschlagen"
+    "save_error": "Speichern fehlgeschlagen",
+    "manage_subscription": "Abo verwalten",
+    "reset_onboarding": "Onboarding zurücksetzen",
+    "reset_onboarding_confirm": "Onboarding wird neu gestartet. Weiter?",
+    "delete_account": "Konto löschen",
+    "delete_account_confirm": "Konto und alle Daten werden unwiderruflich gelöscht.",
+    "delete_account_success": "Konto gelöscht",
+    "danger_zone": "Gefahrenzone"
   },
   "auth": {
     "welcome": "Willkommen zurück",
@@ -229,7 +250,12 @@
     "terms_prefix": "Mit dem Fortfahren stimmen Sie unseren",
     "terms_link": "Nutzungsbedingungen",
     "terms_and": "und",
-    "privacy_link": "Datenschutzrichtlinien"
+    "privacy_link": "Datenschutzrichtlinien",
+    "add_manually": "Manuell hinzufügen",
+    "add_with_ai": "Mit KI hinzufügen",
+    "first_sub_subtitle": "In Sekunden mit KI oder manuell verfolgen",
+    "first_sub_title": "Erstes Abo hinzufügen",
+    "skip_for_now": "Überspringen"
   },
   "analytics": {
     "title": "Analytik",
@@ -421,6 +447,26 @@
   },
   "workspace": {
     "name_placeholder": "z.B. Mein Unternehmen",
-    "email_placeholder": "email@unternehmen.de"
+    "email_placeholder": "email@unternehmen.de",
+    "title": "Team-Arbeitsbereich",
+    "need_team_plan": "Team-Plan benötigt",
+    "team_name_label": "Teamname",
+    "create_team": "Team erstellen",
+    "invite_member": "Einladen",
+    "invite_member_email": "Mitglieds-E-Mail",
+    "send_invite": "Senden",
+    "remove_member_confirm": "Mitglied entfernen?",
+    "subscriptions_per_month": "Abos/Monat"
+  },
+  "paywall": {
+    "choose_plan": "Plan wählen",
+    "most_popular": "BELIEBT",
+    "maybe_later": "Vielleicht später",
+    "free_trial_disclaimer": "7 Tage kostenlos. Keine Karte. Jederzeit kündigen.",
+    "paid_disclaimer": "Über App Store. Jederzeit kündbar."
+  },
+  "ai": {
+    "or_type": "oder eingeben",
+    "popular_services": "Beliebt"
   }
 }

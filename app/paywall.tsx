@@ -123,7 +123,7 @@ export default function PaywallScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Выбери план</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('paywall.choose_plan')}</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             {canTrial ? '7 дней Pro бесплатно • Отмена в любой момент' : 'Разблокируй все возможности SubRadar'}
           </Text>
@@ -155,7 +155,7 @@ export default function PaywallScreen() {
             >
               {plan.popular && (
                 <View style={[styles.popularBadge, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.popularText}>ПОПУЛЯРНЫЙ</Text>
+                  <Text style={styles.popularText}>{t('paywall.most_popular')}</Text>
                 </View>
               )}
 
@@ -216,7 +216,7 @@ export default function PaywallScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.laterBtn} onPress={() => router.back()}>
-          <Text style={[styles.laterText, { color: colors.textMuted }]}>Может позже</Text>
+          <Text style={[styles.laterText, { color: colors.textMuted }]}>{t('paywall.maybe_later')}</Text>
         </TouchableOpacity>
 
         <Text style={[styles.disclaimer, { color: colors.textMuted }]}>

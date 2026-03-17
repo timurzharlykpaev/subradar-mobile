@@ -13,7 +13,9 @@
     "all": "全部",
     "or": "或",
     "are_you_sure": "确定吗？",
-    "no_card": "无卡"
+    "no_card": "无卡",
+    "no_data_period": "此期间无数据",
+    "popular": "热门"
   },
   "tabs": {
     "home": "首页",
@@ -51,7 +53,19 @@
     "total_month": "本月总计",
     "per_month": "每月",
     "active_subs_title": "活跃订阅",
-    "upcoming_7": "即将到来（7天）"
+    "upcoming_7": "即将到来（7天）",
+    "add_subscription": "添加订阅",
+    "annually": "每年",
+    "forecast_title": "预测",
+    "generate_report": "生成报告",
+    "next_30_days": "未来30天",
+    "per_year": "每年",
+    "possible_duplicates": "可能的重复项",
+    "potential_savings": "潜在节省",
+    "quick_actions": "快速操作",
+    "review": "查看",
+    "subscriptions_label": "订阅",
+    "upgrade_pro": "升级到Pro"
   },
   "subscriptions": {
     "title": "订阅",
@@ -171,7 +185,14 @@
     "trial_started_desc": "7天Pro体验现在开始，尽情使用所有功能。",
     "failed_trial": "启动试用失败。",
     "name_required": "名称为必填项",
-    "save_error": "保存失败"
+    "save_error": "保存失败",
+    "manage_subscription": "管理订阅",
+    "reset_onboarding": "重置引导",
+    "reset_onboarding_confirm": "引导流程将重新开始。继续？",
+    "delete_account": "删除账户",
+    "delete_account_confirm": "这将永久删除您的账户和所有数据。",
+    "delete_account_success": "账户已删除",
+    "danger_zone": "危险区域"
   },
   "auth": {
     "welcome": "欢迎回来",
@@ -229,7 +250,12 @@
     "terms_prefix": "继续即表示您同意我们的",
     "terms_link": "使用条款",
     "terms_and": "和",
-    "privacy_link": "隐私政策"
+    "privacy_link": "隐私政策",
+    "add_manually": "手动添加",
+    "add_with_ai": "用AI添加",
+    "first_sub_subtitle": "用AI或手动在几秒内跟踪",
+    "first_sub_title": "添加第一个订阅",
+    "skip_for_now": "跳过"
   },
   "analytics": {
     "title": "分析",
@@ -420,7 +446,27 @@
     ]
   },
   "workspace": {
-    "name_placeholder": "例如：我的公司",
-    "email_placeholder": "email@company.com"
+    "name_placeholder": "例：我的公司",
+    "email_placeholder": "email@company.com",
+    "title": "团队空间",
+    "need_team_plan": "需要Team计划",
+    "team_name_label": "团队名称",
+    "create_team": "创建团队",
+    "invite_member": "邀请",
+    "invite_member_email": "成员邮箱",
+    "send_invite": "发送",
+    "remove_member_confirm": "移除成员？",
+    "subscriptions_per_month": "订阅/月"
+  },
+  "paywall": {
+    "choose_plan": "选择计划",
+    "most_popular": "最受欢迎",
+    "maybe_later": "稍后再说",
+    "free_trial_disclaimer": "7天免费。无需信用卡。随时取消。",
+    "paid_disclaimer": "通过App Store付款。随时可取消。"
+  },
+  "ai": {
+    "or_type": "或输入",
+    "popular_services": "热门"
   }
 }

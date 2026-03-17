@@ -376,7 +376,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
   if (!hasData) {
     return (
       <View style={{ height: chartH + 24, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 13, color: colors.textMuted }}>Нет данных за этот период</Text>
+        <Text style={{ fontSize: 13, color: colors.textMuted }}>{t('common.no_data_period')}</Text>
       </View>
     );
   }

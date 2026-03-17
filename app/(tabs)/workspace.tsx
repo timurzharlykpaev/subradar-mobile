@@ -82,7 +82,7 @@ export default function WorkspaceScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={styles.emptyWrap}>
           <Ionicons name="people-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>Командное пространство</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('workspace.title')}</Text>
           <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
             Управляйте подписками командой.{'\n'}Отслеживайте общие расходы и отчёты.
           </Text>
@@ -93,16 +93,16 @@ export default function WorkspaceScreen() {
               onPress={() => router.push('/paywall')}
             >
               <Ionicons name="star" size={18} color="#FFF" />
-              <Text style={styles.ctaBtnText}>Нужен план Team</Text>
+              <Text style={styles.ctaBtnText}>{t('workspace.need_team_plan')}</Text>
             </TouchableOpacity>
           ) : showCreate ? (
             <View style={[styles.createCard, { backgroundColor: card, borderColor: border }]}>
-              <Text style={[styles.createLabel, { color: colors.text }]}>Название команды</Text>
+              <Text style={[styles.createLabel, { color: colors.text }]}>{t('workspace.team_name_label')}</Text>
               <TextInput
                 style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
                 value={wsName}
                 onChangeText={setWsName}
-                placeholder={t('workspace.name_placeholder', 'My Company')}
+                placeholder={t('workspace.name_placeholder')}
                 placeholderTextColor={colors.textMuted}
                 autoFocus
               />
@@ -299,7 +299,7 @@ export default function WorkspaceScreen() {
               >
                 {inviteMutation.isPending
                   ? <ActivityIndicator color="#FFF" size="small" />
-                  : <Text style={{ color: '#FFF', fontWeight: '700' }}>Отправить</Text>}
+                  : <Text style={{ color: '#FFF', fontWeight: '700' }}>{t('workspace.send_invite')}</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -337,8 +337,8 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginTop: 20, fontSize: 14 },
   ctaBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16 },
   ctaBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
-  createCard: { margin: 20, borderRadius: 16, padding: 16, borderWidth: 1 },
-  inviteCard: { margin: 20, borderRadius: 16, padding: 16, borderWidth: 1 },
+  createCard: { marginHorizontal: 16, marginVertical: 8, borderRadius: 16, padding: 20, borderWidth: 1 },
+  inviteCard: { marginHorizontal: 16, marginVertical: 8, borderRadius: 16, padding: 20, borderWidth: 1 },
   createLabel: { fontSize: 14, fontWeight: '700', marginBottom: 8 },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   btn: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },

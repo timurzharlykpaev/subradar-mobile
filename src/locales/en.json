@@ -13,7 +13,9 @@
     "all": "All",
     "or": "or",
     "are_you_sure": "Are you sure?",
-    "no_card": "No card"
+    "no_card": "No card",
+    "no_data_period": "No data for this period",
+    "popular": "Popular"
   },
   "tabs": {
     "home": "Home",
@@ -191,7 +193,14 @@
     "trial_started_desc": "7 days of Pro access begins now. Enjoy all features.",
     "failed_trial": "Failed to start trial.",
     "name_required": "Name is required",
-    "save_error": "Failed to save"
+    "save_error": "Failed to save",
+    "manage_subscription": "Manage subscription",
+    "reset_onboarding": "Reset Onboarding",
+    "reset_onboarding_confirm": "This will restart the onboarding flow. Continue?",
+    "delete_account": "Delete Account",
+    "delete_account_confirm": "This will permanently delete your account and all data. This cannot be undone.",
+    "delete_account_success": "Account deleted",
+    "danger_zone": "Danger Zone"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -438,6 +447,26 @@
   },
   "workspace": {
     "name_placeholder": "e.g. My Company",
-    "email_placeholder": "email@company.com"
+    "email_placeholder": "email@company.com",
+    "title": "Team Workspace",
+    "need_team_plan": "Need Team Plan",
+    "team_name_label": "Team name",
+    "create_team": "Create Team",
+    "invite_member": "Invite Member",
+    "invite_member_email": "Member email",
+    "send_invite": "Send",
+    "remove_member_confirm": "Remove member from team?",
+    "subscriptions_per_month": "subscriptions/month"
+  },
+  "paywall": {
+    "choose_plan": "Choose a Plan",
+    "most_popular": "MOST POPULAR",
+    "maybe_later": "Maybe Later",
+    "free_trial_disclaimer": "7-day free trial. No card required. Cancel anytime.",
+    "paid_disclaimer": "Billed via App Store. Cancel anytime."
+  },
+  "ai": {
+    "or_type": "or type",
+    "popular_services": "Popular"
   }
 }

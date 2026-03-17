@@ -372,7 +372,7 @@ export function AIWizard({ onDone }: Props) {
             {/* OR divider */}
             <View style={styles.orRow}>
               <View style={[styles.line, { backgroundColor: colors.border }]} />
-              <Text style={[styles.orText, { color: colors.textMuted }]}>или</Text>
+              <Text style={[styles.orText, { color: colors.textMuted }]}>{t('common.or')}</Text>
               <View style={[styles.line, { backgroundColor: colors.border }]} />
             </View>
 
@@ -401,7 +401,7 @@ export function AIWizard({ onDone }: Props) {
             {/* Quick chips — only on idle */}
             {ui.kind === 'idle' && (
               <>
-                <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>Популярные</Text>
+                <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>{t('ai.popular_services')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {QUICK.map(svc => (
                     <TouchableOpacity
