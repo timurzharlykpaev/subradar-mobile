@@ -23,6 +23,7 @@ import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
+import { notificationsApi } from '../../src/api/notifications';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -68,9 +69,21 @@ export default function SettingsScreen() {
     setShowAddCard(false);
   };
 
+  const syncNotifications = (enabled: boolean, days: number[]) => {
+    notificationsApi.updateSettings({ enabled, daysBefore: days[0] ?? 3 }).catch(() => {});
+  };
+
   const toggleReminderDay = (day: number) => {
-    if (reminderDays.includes(day)) setReminderDays(reminderDays.filter((d) => d !== day));
-    else setReminderDays([...reminderDays, day].sort());
+    const newDays = reminderDays.includes(day)
+      ? reminderDays.filter((d) => d !== day)
+      : [...reminderDays, day].sort();
+    setReminderDays(newDays);
+    syncNotifications(notificationsEnabled, newDays);
+  };
+
+  const handleNotificationsToggle = (val: boolean) => {
+    setNotificationsEnabled(val);
+    syncNotifications(val, reminderDays);
   };
 
   // Dynamic styles based on current theme
@@ -165,7 +178,7 @@ export default function SettingsScreen() {
             <Text style={{ fontSize: 15, color: colors.text, fontWeight: '500' }}>{t('settings.push_notifications')}</Text>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={handleNotificationsToggle}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor="#FFFFFF"
             />

@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
@@ -76,7 +76,7 @@ export default function ReportsScreen() {
       if (!reportId) throw new Error('No report ID returned');
 
       const filename = `subradar-${reportType}-${from}.pdf`;
-      const localPath = `${FileSystem.documentDirectory}${filename}`;
+      const localPath = `${FileSystem.documentDirectory ?? ''}${filename}`;
 
       const download = await FileSystem.downloadAsync(
         `${API_URL}/api/v1/reports/${reportId}/download`,
