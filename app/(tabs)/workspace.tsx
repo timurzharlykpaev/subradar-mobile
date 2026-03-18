@@ -76,9 +76,9 @@ export default function WorkspaceScreen() {
           keyboardVerticalOffset={90}
         >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           {/* Icon + title */}
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, minHeight: 300 }}>
             <View style={{
               width: 80,
               height: 80,
@@ -112,7 +112,7 @@ export default function WorkspaceScreen() {
           </View>
 
           {/* Actions */}
-          <View style={{ paddingHorizontal: 20, paddingBottom: 24 }}>
+          <View style={{ paddingHorizontal: 20, paddingBottom: 120 }}>
             {!isPro ? (
               <TouchableOpacity
                 style={{
@@ -216,7 +216,7 @@ export default function WorkspaceScreen() {
               </TouchableOpacity>
             )}
           </View>
-        </View>
+        </ScrollView>
         </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </SafeAreaView>
