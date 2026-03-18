@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Subscription } from '../stores/subscriptionsStore';
+import { Subscription } from '../types';
 import { CATEGORIES } from '../constants';
 import { useTheme } from '../theme';
 

@@ -16,10 +16,13 @@ export interface Subscription {
   currency: string;
   billingPeriod: BillingPeriod;
   billingDay?: number;
-  nextBillingDate?: string;
+  nextPaymentDate?: string;
   startDate?: string;
   status: SubscriptionStatus;
   currentPlan?: string;
+  availablePlans?: Record<string, unknown>[];
+  trialEndDate?: string;
+  cancelledAt?: string;
   paymentCardId?: string;
   paymentCard?: PaymentCard;
   iconUrl?: string;
@@ -30,7 +33,7 @@ export interface Subscription {
   isBusinessExpense?: boolean;
   taxCategory?: string;
   reminderEnabled?: boolean;
-  reminderDaysBefore?: number;
+  reminderDaysBefore?: number[];
   addedVia?: SourceType;
   aiMetadata?: Record<string, unknown>;
   createdAt?: string;
@@ -51,7 +54,7 @@ export interface User {
   email: string;
   name: string;
   avatarUrl?: string;
-  currency?: string;
+  defaultCurrency?: string;
   locale?: string;
   timezone?: string;
   dateFormat?: string;
@@ -62,20 +65,22 @@ export interface User {
 
 export interface Receipt {
   id: string;
-  subscriptionId: string;
-  url: string;
+  subscriptionId?: string;
+  filename: string;
+  fileUrl: string;
   amount?: number;
-  date: string;
-  createdAt: string;
+  currency?: string;
+  receiptDate?: string;
+  uploadedAt: string;
 }
 
 export interface Report {
   id: string;
   type: ReportType;
   status: ReportStatus;
-  startDate: string;
-  endDate: string;
-  url?: string;
+  from: string;
+  to: string;
+  fileUrl?: string;
   createdAt: string;
 }
 
@@ -83,10 +88,16 @@ export interface AnalyticsSummary {
   totalMonthly: number;
   totalYearly: number;
   renewingSoon: number;
-  savings?: number;
+  savingsPossible?: number;
   byCategory: { category: string; amount: number }[];
   monthlyTrend: { month: string; amount: number }[];
   topSubscriptions: Subscription[];
+}
+
+export interface BillingPlanFeature {
+  key: string;
+  value: number | boolean | null;
+  label: string;
 }
 
 export interface BillingPlan {
@@ -94,8 +105,10 @@ export interface BillingPlan {
   name: string;
   price: number;
   currency: string;
-  period: BillingPeriod;
-  features: string[];
+  period: string | null;
+  trialDays?: number;
+  variantId?: string;
+  features: BillingPlanFeature[];
 }
 
 export interface BillingStatus {

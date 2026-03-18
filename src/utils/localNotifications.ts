@@ -3,7 +3,7 @@
  * Works without internet. Called after subscriptions are loaded/updated.
  */
 import * as Notifications from 'expo-notifications';
-import { Subscription } from '../stores/subscriptionsStore';
+import { Subscription } from '../types';
 
 const CHANNEL_ID = 'payment-reminders';
 

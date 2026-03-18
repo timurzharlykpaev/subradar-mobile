@@ -1,25 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export interface Subscription {
-  id: string;
-  name: string;
-  category: string;
-  amount: number;
-  currency: string;
-  billingPeriod: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'LIFETIME' | 'ONE_TIME';
-  billingDay?: number;
-  nextPaymentDate?: string;
-  status: 'ACTIVE' | 'TRIAL' | 'PAUSED' | 'CANCELLED';
-  paymentCardId?: string;
-  plan?: string;
-  websiteUrl?: string;
-  cancelUrl?: string;
-  notes?: string;
-  iconUrl?: string;
-  createdAt: string;
-}
+import { Subscription } from '../types';
 
 export type FilterType = 'all' | 'active' | 'trial' | 'cancelled' | 'category';
 
@@ -79,7 +61,6 @@ export const useSubscriptionsStore = create<SubscriptionsState>()(
     {
       name: 'subradar-subscriptions',
       storage: createJSONStorage(() => AsyncStorage),
-      // Не кэшируем filter/search — только данные
       partialize: (state) => ({ subscriptions: state.subscriptions }),
     },
   ),

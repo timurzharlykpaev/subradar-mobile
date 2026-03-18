@@ -237,7 +237,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (!subs || subs.length === 0) return;
     const first = subs[0];
     const iconUrl = first.iconUrl ?? first.logoUrl ??
-      (first.websiteUrl ? `https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(first.websiteUrl).hostname; } catch { return ''; } })()}&sz=64` : '');
+      (first.serviceUrl ? `https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(first.serviceUrl).hostname; } catch { return ''; } })()}&sz=64` : '');
     setForm(f => ({
       ...f,
       name: first.name ?? f.name,
@@ -245,7 +245,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       currency: first.currency ?? f.currency,
       billingPeriod: (first.billingPeriod ?? f.billingPeriod) as any,
       category: (first.category as string)?.toLowerCase() ?? f.category,
-      serviceUrl: first.websiteUrl ?? first.serviceUrl ?? f.serviceUrl,
+      serviceUrl: first.serviceUrl ?? f.serviceUrl,
       cancelUrl: first.cancelUrl ?? f.cancelUrl,
       iconUrl: iconUrl || f.iconUrl,
     }));

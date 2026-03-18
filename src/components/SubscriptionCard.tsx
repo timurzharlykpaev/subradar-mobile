@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Subscription } from '../stores/subscriptionsStore';
+import { Subscription } from '../types';
 import { STATUS_COLORS } from '../constants';
 import { CategoryBadge } from './CategoryBadge';
 import { CardBadge } from './CardBadge';
@@ -63,8 +63,8 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
           </View>
         </View>
 
-        {subscription.plan && (
-          <Text style={[styles.plan, { color: colors.textSecondary }]} numberOfLines={1}>{subscription.plan}</Text>
+        {subscription.currentPlan && (
+          <Text style={[styles.plan, { color: colors.textSecondary }]} numberOfLines={1}>{subscription.currentPlan}</Text>
         )}
 
         <View style={styles.tagsRow}>

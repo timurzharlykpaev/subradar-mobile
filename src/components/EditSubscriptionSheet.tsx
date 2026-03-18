@@ -16,7 +16,8 @@ import {
 import { COLORS, CATEGORIES, CURRENCIES, BILLING_PERIODS, CARD_BRANDS } from '../constants';
 import { subscriptionsApi } from '../api/subscriptions';
 import { cardsApi } from '../api/cards';
-import { useSubscriptionsStore, Subscription } from '../stores/subscriptionsStore';
+import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import { Subscription } from '../types';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { CardBrand } from '../types';
 

@@ -5,8 +5,8 @@ export const authApi = {
     apiClient.post('/auth/google/token', { idToken }),
   loginWithGoogleMobile: (accessToken: string) =>
     apiClient.post('/auth/google/mobile', { accessToken }),
-  loginWithApple: (identityToken: string) =>
-    apiClient.post('/auth/apple', { idToken: identityToken }),
+  loginWithApple: (identityToken: string, name?: string) =>
+    apiClient.post('/auth/apple', { idToken: identityToken, name }),
   sendMagicLink: (email: string) =>
     apiClient.post('/auth/magic-link', { email }),
   verifyMagicLink: (token: string) =>
@@ -16,6 +16,9 @@ export const authApi = {
   verifyOtp: (email: string, code: string) =>
     apiClient.post('/auth/otp/verify', { email, code }),
   getProfile: () => apiClient.get('/auth/me'),
-  updateProfile: (data: any) => apiClient.post('/auth/profile', data),
+  updateProfile: (data: { name?: string; avatarUrl?: string }) =>
+    apiClient.post('/auth/profile', data),
+  refresh: (refreshToken: string) =>
+    apiClient.post('/auth/refresh', { refreshToken }),
   deleteAccount: () => apiClient.delete('/users/me'),
 };
