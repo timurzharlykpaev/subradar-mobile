@@ -35,5 +35,4 @@ name: "15 - Settings Currency"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

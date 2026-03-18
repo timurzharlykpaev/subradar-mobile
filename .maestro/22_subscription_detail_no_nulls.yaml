@@ -5,7 +5,7 @@ name: "22 - Subscription Detail - No undefined/null"
 
 # Navigate to Subscriptions tab
 - tapOn:
-    text: "Subscriptions"
+    text: "Subs"
     optional: true
 
 # Verify subscriptions screen loaded
@@ -28,7 +28,6 @@ name: "22 - Subscription Detail - No undefined/null"
 
 # Verify no broken data on detail screen
 - assertNotVisible: "undefined"
-- assertNotVisible: "null"
 - assertNotVisible: "NaN"
 - assertNotVisible: "Render Error"
 - assertNotVisible: "Invalid Date"

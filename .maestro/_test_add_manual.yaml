@@ -1,0 +1,57 @@
+appId: com.goalin.subradar
+name: "Test Add Subscription Manual Flow"
+---
+# Full auth from clean state
+- runFlow: ./00_onboarding_flow.yaml
+
+# Open add sheet
+- tapOn:
+    point: "50%,94%"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 5000
+- takeScreenshot: flow_add_01_sheet_opened
+
+# Switch to Manual tab
+- tapOn:
+    id: "tab-manual"
+- takeScreenshot: flow_add_02_manual_tab
+
+# Fill name
+- tapOn:
+    id: "name-input"
+- inputText: "Spotify"
+- tapOn:
+    point: "50%,18%"
+- takeScreenshot: flow_add_03_name_filled
+
+# Fill amount
+- tapOn:
+    id: "amount-input"
+- inputText: "9.99"
+- tapOn:
+    point: "50%,18%"
+- takeScreenshot: flow_add_04_amount_filled
+
+# Scroll to button and submit
+- scrollUntilVisible:
+    element:
+      id: "btn-save-sub"
+    direction: DOWN
+    timeout: 5000
+- takeScreenshot: flow_add_05_bottom
+- tapOn:
+    id: "btn-save-sub"
+
+# Wait for sheet to close
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- takeScreenshot: flow_add_06_result
+
+# Sanity
+- assertNotVisible: "Render Error"
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"

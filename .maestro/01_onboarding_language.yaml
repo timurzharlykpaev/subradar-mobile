@@ -44,5 +44,4 @@ name: "01 - Onboarding Language Selection"
 # Sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

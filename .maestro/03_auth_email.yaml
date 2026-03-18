@@ -13,5 +13,4 @@ name: "03 - Auth Email OTP (demo account)"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

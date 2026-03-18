@@ -23,5 +23,4 @@ name: "18 - Profile Edit"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

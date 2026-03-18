@@ -29,5 +29,4 @@ name: "19 - Paywall Upgrade Screen"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

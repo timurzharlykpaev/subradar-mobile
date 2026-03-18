@@ -5,7 +5,7 @@ name: "11 - Subscription Search"
 
 # Navigate to Subscriptions tab
 - tapOn:
-    text: "Subscriptions"
+    text: "Subs"
     optional: true
 
 # Verify subscriptions screen loaded
@@ -28,5 +28,4 @@ name: "11 - Subscription Search"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

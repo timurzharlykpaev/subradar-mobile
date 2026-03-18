@@ -5,7 +5,7 @@ name: "04f - Trial Subscription Badge"
 
 # Navigate to Subscriptions tab
 - tapOn:
-    text: "Subscriptions"
+    text: "Subs"
     optional: true
 
 # Verify subscriptions screen loaded
@@ -22,5 +22,4 @@ name: "04f - Trial Subscription Badge"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

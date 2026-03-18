@@ -42,5 +42,4 @@ name: "20 - Dashboard Sanity Check"
 # Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"

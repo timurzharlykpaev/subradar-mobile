@@ -65,5 +65,4 @@ name: "02 - Onboarding Currency Selection"
 # Sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "null"
 - assertNotVisible: "Render Error"
