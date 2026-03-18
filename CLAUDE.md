@@ -69,6 +69,13 @@ src/
 - Поддержка `KeyboardAvoidingView` для форм.
 - Bottom sheet через `@gorhom/bottom-sheet` для модальных действий.
 
+### Тема (КРИТИЧНО)
+- Все цвета ТОЛЬКО через `useTheme()` → `colors.xxx` (inline стили).
+- **ЗАПРЕЩЕНО** использовать `COLORS.xxx` из constants в StyleSheet.create — это статичные dark-only значения.
+- **ЗАПРЕЩЕНО** `isDark ? '#hex1' : '#hex2'` — вместо этого использовать `colors.surface`, `colors.card` и т.д.
+- StyleSheet.create должен содержать ТОЛЬКО layout (flex, padding, margin, borderRadius, fontSize, fontWeight, gap).
+- Допустимые хардкод цвета: `#FFF` на кнопках с primary bg, rgba для теней/overlay.
+
 ### Стейт
 - **Zustand** — authStore (токены в AsyncStorage), appStore (тема, валюта, язык).
 - **TanStack Query** — все серверные данные.

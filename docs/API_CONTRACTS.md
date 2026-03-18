@@ -141,8 +141,22 @@ Response: { "id": "uuid", "status": "PENDING" }
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/notifications/push-token` | Register push token (FCM) |
-| PATCH | `/notifications/settings` | Update notification preferences |
+| POST | `/notifications/push-token` | Register native FCM/APNs push token → saves to `user.fcmToken` |
+| GET | `/notifications/settings` | Get notification preferences (`enabled`, `daysBefore`) from user profile |
+| PUT | `/notifications/settings` | Update notification preferences → persists `notificationsEnabled`, `reminderDaysBefore` |
+| POST | `/notifications/test` | Send test push notification to current user's device |
+
+### Push Token Flow
+1. Mobile app calls `getDevicePushTokenAsync()` → native FCM (Android) / APNs (iOS) token
+2. Sends `POST /notifications/push-token { token, platform }` to backend
+3. Backend saves token to `user.fcmToken`
+4. Daily cron at 09:00 UTC uses saved token to send reminders via `firebase-admin`
+
+### Local Notifications (Offline)
+- `schedulePaymentReminders()` schedules local notifications via `expo-notifications`
+- Triggered on app launch after subscriptions load
+- Uses `reminderDays` from settingsStore (default: `[1, 3, 7]`)
+- Works offline, no backend dependency
 
 ## Billing
 

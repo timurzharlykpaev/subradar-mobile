@@ -9,12 +9,12 @@ import {
   ActivityIndicator,
   ScrollView,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../src/stores/authStore';
 import { authApi } from '../src/api/auth';
-import { COLORS } from '../src/constants';
 import { useTheme } from '../src/theme';
 import { useTranslation } from 'react-i18next';
 
@@ -68,51 +68,59 @@ export default function EditProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
       >
-        {/* Avatar */}
-        <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.name')}</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.text }]}
-              value={name}
-              onChangeText={handleChangeName}
-              placeholder={t('edit_profile.name_placeholder')}
-              placeholderTextColor={colors.textMuted}
-              returnKeyType="done"
-              onSubmitEditing={handleSave}
-              maxLength={50}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.email')}</Text>
-            <View style={[styles.inputDisabled, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.inputDisabledText, { color: colors.textMuted }]}>{user?.email || ''}</Text>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Avatar */}
+          <View style={styles.avatarSection}>
+            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+              <Text style={styles.avatarText}>{initials}</Text>
             </View>
           </View>
-        </View>
-      </ScrollView>
+
+          {/* Form */}
+          <View style={styles.form}>
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.name')}</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.text }]}
+                value={name}
+                onChangeText={handleChangeName}
+                placeholder={t('edit_profile.name_placeholder')}
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="done"
+                onSubmitEditing={handleSave}
+                maxLength={50}
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.email')}</Text>
+              <View style={[styles.inputDisabled, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.inputDisabledText, { color: colors.textMuted }]}>{user?.email || ''}</Text>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0F0F1A',
   },
   header: {
     flexDirection: 'row',
@@ -121,19 +129,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   cancel: {
-    color: 'rgba(255,255,255,0.5)',
     fontSize: 16,
   },
   title: {
-    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '600',
   },
   save: {
-    color: COLORS.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -148,7 +152,6 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -165,7 +168,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    color: 'rgba(255,255,255,0.5)',
     fontSize: 12,
     fontWeight: '500',
     textTransform: 'uppercase',
@@ -173,25 +175,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
-    color: '#FFFFFF',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   inputDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 15,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
   },
   inputDisabledText: {
-    color: 'rgba(255,255,255,0.35)',
     fontSize: 16,
   },
 });

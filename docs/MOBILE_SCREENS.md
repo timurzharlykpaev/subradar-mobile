@@ -373,15 +373,63 @@ Month range, category, status, currency, workspace/personal scope
 
 ---
 
-## 17. Billing / Paywall Screen
+## 17. Billing / Paywall Screen (`app/paywall.tsx`)
 
-**Purpose:** Clear plan comparison and upgrade path.
+**Purpose:** Premium plan comparison and upgrade path with animated cards.
 
-**Shows:** Free vs Pro vs Team features, pricing, upgrade CTA, current plan status.
+**UI Components:**
+- Header with diamond icon and animated entrance (fade + slide)
+- Billing period toggle (Monthly / Yearly with -30% badge)
+- Current status badge (trial countdown / Pro active)
+- 3 plan cards (Free / Pro / Team) with staggered animation:
+  - Icon circle with plan-specific color
+  - Radio button selection
+  - Expandable feature list (checkmarks for included, X for missing)
+  - "MOST POPULAR" badge on Pro, "CURRENT PLAN" badge on active
+- Dynamic CTA button (color matches selected plan)
+- Trial start / Upgrade / Continue for free actions
+- Disclaimer text
+
+**Navigation triggers:**
+- Settings → plan card tap
+- Subscriptions → "Upgrade" chip when limit reached
+- AddSubscription → redirect when Free limit hit
+- Analytics → locked sections tap
+- Workspace → "Need Team Plan" button
 
 **Events:** `paywall_viewed`, `paywall_upgrade_clicked`, `paywall_plan_selected`
+**Backend:** `GET /billing/plans`, `POST /billing/checkout`, `POST /billing/trial`
 
-**Backend:** `GET /billing/plans`, `POST /billing/checkout`
+## 17a. Subscription Plan Screen (`app/subscription-plan.tsx`)
+
+**Purpose:** Current plan details, usage, and management.
+
+**UI Components:**
+- Hero card with plan color, decorative circles, plan name + price
+  - Status badges (trial countdown / active)
+  - Usage progress bars (subscriptions + AI requests) with red warning at 90%+
+- Billing period toggle (if Pro/Team)
+- Features card with green checkmark circles
+- Action buttons: Start trial / Upgrade / Cancel subscription
+- Disclaimer
+
+**Backend:** `GET /billing/me`, `POST /billing/trial`, `POST /billing/cancel`
+
+## 17b. Pro Feature Modal (`src/components/ProFeatureModal.tsx`)
+
+**Purpose:** Beautiful popup when user taps a Pro-gated feature.
+
+**UI Components:**
+- Animated overlay with scale + fade entrance
+- Feature-specific icon circle and gradient colors
+- Title + description specific to the blocked feature
+- Pro benefits list (4 items with checkmarks)
+- CTA: "Start 7-day Free Trial" (if eligible) or "Upgrade — $2.99/mo"
+- "Maybe Later" dismiss
+
+**Supported features:** `forecast`, `savings`, `ai_text`, `ai_photo`, `unlimited_subs`, `workspace`, `reports`
+
+**Replaces:** old inline "🔒 Upgrade to Pro" text blocks in analytics
 
 ---
 

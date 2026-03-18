@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   useWindowDimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -18,9 +19,9 @@ import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
-import { COLORS, CATEGORIES } from '../../src/constants';
+import { useBillingStatus } from '../../src/hooks/useBilling';
+import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
-import { UpcomingPaymentCard } from '../../src/components/UpcomingPaymentCard';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 
 export default function DashboardScreen() {
@@ -29,7 +30,8 @@ export default function DashboardScreen() {
   const user = useAuthStore((s) => s.user);
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const { currency } = useSettingsStore();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const { data: billing } = useBillingStatus();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [monthlyTrend, setMonthlyTrend] = React.useState<{ month: string; amount: number }[]>([]);
@@ -40,9 +42,7 @@ export default function DashboardScreen() {
     try {
       const res = await subscriptionsApi.getAll();
       setSubscriptions(res.data || []);
-    } catch {
-      // keep existing data on error
-    } finally {
+    } catch {} finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -70,15 +70,13 @@ export default function DashboardScreen() {
         })).filter((d: any) => d.amount > 0);
         setCategoryData(items.slice(0, 5));
       }
-    } catch {
-      // analytics is non-critical
-    }
+    } catch {}
   };
 
   useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, []);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
-  const trialCount = subscriptions.filter((s) => s.status === 'TRIAL').length;
+  const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
   const cancelledCount = subscriptions.filter((s) => s.status === 'CANCELLED').length;
 
   const totalMonthly = activeSubs.reduce((sum, s) => {
@@ -86,25 +84,11 @@ export default function DashboardScreen() {
     return sum + (Number(s.amount) || 0) * mult;
   }, 0);
 
-  const upcomingNext30 = subscriptions.filter((s) => {
-    if (!s.nextPaymentDate) return false;
-    const date = new Date(s.nextPaymentDate);
-    const now = new Date();
-    const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    return date >= now && date <= in30;
-  });
-  const forecast30 = Number(upcomingNext30.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)) || 0;
+  // Previous month estimate from trend data
+  const prevMonthAmount = monthlyTrend.length >= 2 ? monthlyTrend[monthlyTrend.length - 2]?.amount || 0 : 0;
+  const delta = prevMonthAmount > 0 ? ((totalMonthly - prevMonthAmount) / prevMonthAmount * 100) : 0;
 
-  const categoryCounts = subscriptions.reduce((acc, s) => {
-    if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return acc;
-    acc[s.category] = (acc[s.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  const duplicateCategories = Object.entries(categoryCounts).filter(([, count]) => count > 1);
-
-  const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
-
-  const upcoming = subscriptions
+  const upcomingNext7 = subscriptions
     .filter((s) => {
       if (!s.nextPaymentDate) return false;
       const days = (new Date(s.nextPaymentDate).getTime() - Date.now()) / 86400000;
@@ -112,12 +96,31 @@ export default function DashboardScreen() {
     })
     .sort((a, b) => new Date(a.nextPaymentDate!).getTime() - new Date(b.nextPaymentDate!).getTime());
 
+  const upcomingNext30 = subscriptions.filter((s) => {
+    if (!s.nextPaymentDate) return false;
+    const date = new Date(s.nextPaymentDate);
+    const now = new Date();
+    const in30 = new Date(now.getTime() + 30 * 86400000);
+    return date >= now && date <= in30;
+  });
+  const forecast30 = upcomingNext30.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+
+  const duplicateCategories = Object.entries(
+    subscriptions.reduce((acc, s) => {
+      if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return acc;
+      acc[s.category] = (acc[s.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  ).filter(([, count]) => count > 1);
+
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 12) return t('dashboard.good_morning');
     if (h < 17) return t('dashboard.good_afternoon');
     return t('dashboard.good_evening');
   };
+
+  const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
 
   if (loading) {
     return (
@@ -136,112 +139,209 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); }} />
         }
       >
-        {/* Header */}
+        {/* ── Header ────────────────────────────────────────────── */}
         <View style={styles.header}>
-          <View>
-            <Text style={[styles.greeting, { color: colors.text }]}>{greeting()}, {user?.name?.split(' ')[0] || ''} 👋</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t('dashboard.subtitle')}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.greeting, { color: colors.text }]}>{greeting()}</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>{user?.name?.split(' ')[0] || ''} 👋</Text>
           </View>
-          <TouchableOpacity style={[styles.avatar, { backgroundColor: colors.primary }]} onPress={() => router.push('/(tabs)/settings')}>
-            <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'U'}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Big Number */}
-        <View style={styles.totalCard}>
-          <Text style={styles.totalLabel}>{t('dashboard.total_month')}</Text>
-          <Text style={styles.totalAmount}>{currency} {totalMonthly.toFixed(2)}</Text>
-          <Text style={styles.totalSub}>
-            {t('dashboard.per_month')} · {activeSubs.length} {t('dashboard.active_subscriptions')}
-          </Text>
-          <View style={styles.categoryRow}>
-            {CATEGORIES.slice(0, 4).map((cat) => {
-              const catSubs = subscriptions.filter((s) => s.category === cat.id);
-              if (catSubs.length === 0) return null;
-              return (
-                <View key={cat.id} style={styles.catChip}>
-                  <Text style={styles.catEmoji}>{cat.emoji}</Text>
-                  <Text style={styles.catLabel}>{cat.label}</Text>
-                </View>
-              );
-            })}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            {isPro && (
+              <View style={[styles.planBadge, { backgroundColor: colors.primary + '20' }]}>
+                <Ionicons name="diamond" size={12} color={colors.primary} />
+                <Text style={[styles.planBadgeText, { color: colors.primary }]}>PRO</Text>
+              </View>
+            )}
+            <TouchableOpacity style={[styles.avatar, { backgroundColor: colors.primary }]} onPress={() => router.push('/(tabs)/settings')}>
+              <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'U'}</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Quick Stats */}
+        {/* ── Hero Card: Total Spend ────────────────────────────── */}
+        <View style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
+          <View style={styles.heroDecor1} />
+          <View style={styles.heroDecor2} />
+          <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
+          <View style={styles.heroAmountRow}>
+            <Text style={styles.heroAmount}>{currency} {totalMonthly.toFixed(2)}</Text>
+            {delta !== 0 && (
+              <View style={[styles.deltaBadge, { backgroundColor: delta > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)' }]}>
+                <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={10} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
+                <Text style={[styles.deltaText, { color: delta > 0 ? '#FCA5A5' : '#86EFAC' }]}>
+                  {Math.abs(delta).toFixed(0)}%
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.heroMeta}>
+            <View style={styles.heroMetaItem}>
+              <Ionicons name="repeat-outline" size={14} color="rgba(255,255,255,0.7)" />
+              <Text style={styles.heroMetaText}>{activeSubs.length} {t('dashboard.active_subscriptions')}</Text>
+            </View>
+            <View style={styles.heroMetaDivider} />
+            <View style={styles.heroMetaItem}>
+              <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" />
+              <Text style={styles.heroMetaText}>{currency} {(totalMonthly * 12).toFixed(0)}/{t('paywall.year', 'yr')}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ── Quick Stats ────────────────────────────────────── */}
         <View style={styles.statsRow}>
-          <StatCard label={t('subscriptions.active')} value={subscriptions.filter((s) => s.status === 'ACTIVE').length} color={COLORS.success} />
-          <StatCard label={t('subscriptions.trial')} value={trialCount} color={COLORS.warning} />
-          <StatCard label={t('subscriptions.cancelled')} value={cancelledCount} color={COLORS.error} />
+          <StatCard icon="checkmark-circle" label={t('subscriptions.active')} value={activeSubs.length} color={colors.success} />
+          <StatCard icon="time" label={t('subscriptions.trial')} value={trialSubs.length} color={colors.warning} />
+          <StatCard icon="close-circle" label={t('subscriptions.cancelled')} value={cancelledCount} color={colors.error} />
         </View>
 
-        {/* Upcoming */}
-        {upcoming.length > 0 && (
+        {/* ── Upcoming 7 Days ────────────────────────────────── */}
+        {upcomingNext7.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.upcoming_7')}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {upcoming.map((sub) => (
-                <UpcomingPaymentCard key={sub.id} subscription={sub} />
-              ))}
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.upcoming_7')}</Text>
+              <Text style={[styles.sectionCount, { color: colors.primary }]}>{upcomingNext7.length}</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
+              {upcomingNext7.map((sub) => {
+                const days = Math.ceil((new Date(sub.nextPaymentDate!).getTime() - Date.now()) / 86400000);
+                const cat = CATEGORIES.find((c) => c.id === sub.category);
+                const urgent = days <= 1;
+                return (
+                  <TouchableOpacity
+                    key={sub.id}
+                    style={[styles.upcomingCard, { backgroundColor: colors.card, borderColor: urgent ? colors.warning + '60' : colors.border }]}
+                    onPress={() => router.push(`/subscription/${sub.id}` as any)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.upcomingTop}>
+                      <Text style={styles.upcomingEmoji}>{cat?.emoji || '📦'}</Text>
+                      {urgent && <View style={[styles.urgentDot, { backgroundColor: colors.warning }]} />}
+                    </View>
+                    <Text style={[styles.upcomingName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                    <Text style={[styles.upcomingAmount, { color: colors.primary }]}>{sub.currency} {Number(sub.amount).toFixed(0)}</Text>
+                    <Text style={[styles.upcomingDays, { color: urgent ? colors.warning : colors.textSecondary }]}>
+                      {days === 0 ? t('upcoming.today') : days === 1 ? t('upcoming.tomorrow') : t('upcoming.in_days', { count: days })}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         )}
 
-        {/* Active subs */}
-        {activeSubs.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.active_subs_title')}</Text>
-            {activeSubs.slice(0, 5).map((sub) => (
-              <View key={sub.id} style={[styles.miniCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.miniIcon, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[styles.miniIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.miniName, { color: colors.text }]}>{sub.name}</Text>
-                  <Text style={[styles.miniPlan, { color: colors.textSecondary }]}>{sub.plan || sub.category}</Text>
-                </View>
-                <Text style={[styles.miniAmount, { color: colors.text }]}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Forecast Block */}
+        {/* ── Forecast ────────────────────────────────────────── */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
           <View style={styles.forecastRow}>
-            <View style={[styles.forecastCard, { flex: 1, backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-              <Text style={[styles.forecastLabel, { color: colors.textSecondary }]}>{t('dashboard.next_30_days')}</Text>
-              <Text style={[styles.forecastAmount, { color: colors.text }]}>{currency} {(forecast30 || 0).toFixed(2)}</Text>
-              <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{upcomingNext30.length} {t('dashboard.subscriptions_label')}</Text>
-            </View>
-            <View style={[styles.forecastCard, { flex: 1, backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Ionicons name="trending-up-outline" size={20} color={colors.success} />
-              <Text style={[styles.forecastLabel, { color: colors.textSecondary }]}>{t('dashboard.per_year')}</Text>
-              <Text style={[styles.forecastAmount, { color: colors.text }]}>{currency} {(totalMonthly * 12).toFixed(2)}</Text>
-              <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{t('dashboard.annually')}</Text>
-            </View>
+            <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={`${currency} ${forecast30.toFixed(0)}`} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
+            <ForecastBox icon="trending-up" label="6 {t('paywall.month', 'mo')}" amount={`${currency} ${(totalMonthly * 6).toFixed(0)}`} sub={t('dashboard.forecast_title')} color={colors.success} />
+            <ForecastBox icon="analytics" label="12 {t('paywall.month', 'mo')}" amount={`${currency} ${(totalMonthly * 12).toFixed(0)}`} sub={t('dashboard.annually')} color={colors.warning} />
           </View>
         </View>
 
-        {/* Potential Savings */}
-        {duplicateCategories.length > 0 && (
+        {/* ── Trial Tracker ──────────────────────────────────── */}
+        {trialSubs.length > 0 && (
           <View style={styles.section}>
-            <View style={[styles.savingsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Ionicons name="bulb-outline" size={22} color={colors.warning} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.savingsTitle, { color: colors.text }]}>{t('dashboard.potential_savings')}</Text>
-                <Text style={[styles.savingsSub, { color: colors.textSecondary }]}>{duplicateCategories.length} {t('dashboard.possible_duplicates')}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('trials.title')}</Text>
+              <View style={[styles.sectionCountBadge, { backgroundColor: colors.warning + '20' }]}>
+                <Text style={[styles.sectionCountBadgeText, { color: colors.warning }]}>{trialSubs.length}</Text>
               </View>
-              <TouchableOpacity onPress={() => router.push('/(tabs)/analytics')} style={[styles.reviewBtn, { backgroundColor: colors.primaryLight }]}>
-                <Text style={[styles.reviewBtnText, { color: colors.primary }]}>{t('dashboard.review')}</Text>
-              </TouchableOpacity>
             </View>
+            {trialSubs.map((sub) => {
+              const endDate = sub.nextPaymentDate;
+              const daysLeft = endDate ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000)) : null;
+              const dotColor = daysLeft === null ? colors.textSecondary : daysLeft < 3 ? colors.error : daysLeft <= 7 ? colors.warning : colors.success;
+              return (
+                <TouchableOpacity
+                  key={sub.id}
+                  style={[styles.trialCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  onPress={() => router.push(`/subscription/${sub.id}` as any)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.trialDot, { backgroundColor: dotColor }]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.trialName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                    <Text style={[styles.trialMeta, { color: colors.textSecondary }]}>
+                      {daysLeft !== null
+                        ? daysLeft === 0 ? t('trials.ends_today') : daysLeft === 1 ? t('trials.ends_tomorrow') : t('trials.days_left', { count: daysLeft })
+                        : t('subscriptions.trial')}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[styles.trialPrice, { color: colors.text }]}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
+                    <Text style={[styles.trialPriceSub, { color: colors.textMuted }]}>{t('trials.then')}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
 
-        {/* Monthly Trend Chart */}
+        {/* ── Active Subscriptions ──────────────────────────── */}
+        {activeSubs.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.active_subs_title')}</Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/subscriptions')}>
+                <Text style={[styles.seeAll, { color: colors.primary }]}>{t('common.all')}</Text>
+              </TouchableOpacity>
+            </View>
+            {activeSubs.slice(0, 4).map((sub) => {
+              const cat = CATEGORIES.find((c) => c.id === sub.category);
+              return (
+                <TouchableOpacity
+                  key={sub.id}
+                  style={[styles.subCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  onPress={() => router.push(`/subscription/${sub.id}` as any)}
+                  activeOpacity={0.8}
+                >
+                  {sub.iconUrl ? (
+                    <Image source={{ uri: sub.iconUrl }} style={styles.subIcon} />
+                  ) : (
+                    <View style={[styles.subIconPlaceholder, { backgroundColor: colors.primaryLight }]}>
+                      <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
+                    </View>
+                  )}
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                    <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {cat?.emoji} {sub.plan || cat?.label || sub.category}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+                    <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
+                    <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{sub.billingPeriod?.toLowerCase()?.replace('monthly', t('paywall.month', 'mo'))?.replace('yearly', t('paywall.year', 'yr'))}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {/* ── Potential Savings ──────────────────────────────── */}
+        {duplicateCategories.length > 0 && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={[styles.savingsCard, { backgroundColor: isDark ? '#1C2A20' : '#ECFDF5', borderColor: isDark ? '#22543D' : '#A7F3D0' }]}
+              onPress={() => router.push('/(tabs)/analytics')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.savingsIcon, { backgroundColor: isDark ? '#22543D' : '#D1FAE5' }]}>
+                <Ionicons name="bulb" size={20} color={colors.success} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.savingsTitle, { color: colors.text }]}>{t('dashboard.potential_savings')}</Text>
+                <Text style={[styles.savingsSub, { color: colors.textSecondary }]}>
+                  {duplicateCategories.length} {t('dashboard.possible_duplicates')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* ── Monthly Trend ─────────────────────────────────── */}
         {monthlyTrend.length > 0 && monthlyTrend.some(d => d.amount > 0) && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.monthly_trend')}</Text>
@@ -251,113 +351,79 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Category Breakdown Donut */}
+        {/* ── Category Breakdown ─────────────────────────────── */}
         {categoryData.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.by_category')}</Text>
-            <View style={[styles.donutCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <CategoryDonut categories={categoryData} />
             </View>
           </View>
         )}
 
-        {/* Trial Tracker */}
-        {trialSubs.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('trials.title')}</Text>
-            {trialSubs.map((sub) => {
-              const endDate = sub.nextPaymentDate;
-              const daysLeft = endDate
-                ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000))
-                : null;
-              const dotColor =
-                daysLeft === null ? colors.textSecondary :
-                daysLeft < 3 ? colors.error :
-                daysLeft <= 7 ? colors.warning :
-                colors.success;
-              const monthlyAmount = (() => {
-                const mult = sub.billingPeriod === 'WEEKLY' ? 4 : sub.billingPeriod === 'QUARTERLY' ? 1 / 3 : sub.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
-                return Number(sub.amount * mult).toFixed(2);
-              })();
-              return (
-                <View key={sub.id} style={[styles.trialCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={[styles.trialDot, { backgroundColor: dotColor }]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.trialName, { color: colors.text }]}>{sub.name}</Text>
-                    <Text style={[styles.trialMeta, { color: colors.textSecondary }]}>
-                      {daysLeft !== null
-                        ? daysLeft === 0
-                          ? t('trials.ends_today')
-                          : daysLeft === 1
-                            ? t('trials.ends_tomorrow')
-                            : t('trials.days_left', { count: daysLeft })
-                        : t('subscriptions.trial')}
-                    </Text>
-                  </View>
-                  <Text style={[styles.trialPrice, { color: colors.textSecondary }]}>
-                    {t('trials.then')} {sub.currency} {monthlyAmount}{t('subscriptions.per_month')}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
+        {/* ── Empty State ────────────────────────────────────── */}
         {subscriptions.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>📭</Text>
+            <View style={[styles.emptyIcon, { backgroundColor: colors.primaryLight }]}>
+              <Ionicons name="add-circle" size={48} color={colors.primary} />
+            </View>
             <Text style={[styles.emptyText, { color: colors.text }]}>{t('subscriptions.empty')}</Text>
             <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>{t('subscriptions.empty_hint')}</Text>
           </View>
         )}
 
-        {/* Quick Actions */}
+        {/* ── Quick Actions ──────────────────────────────────── */}
         <View style={[styles.section, { paddingBottom: 20 }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.quick_actions')}</Text>
-          <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-            <QuickAction
-              icon="add-circle-outline"
-              label={t('dashboard.add_subscription')}
-              onPress={() => router.push('/(tabs)/add')}
-              color={colors.primary}
-            />
-            <QuickAction
-              icon="document-text-outline"
-              label={t('dashboard.generate_report')}
-              onPress={() => router.push('/reports')}
-              color="#34D399"
-            />
-            <QuickAction
-              icon="star-outline"
-              label={t('dashboard.upgrade_pro')}
-              onPress={() => router.push('/paywall')}
-              color={colors.warning}
-            />
+          <View style={styles.actionsRow}>
+            <QuickAction icon="add-circle-outline" label={t('dashboard.add_subscription')} onPress={() => router.push('/(tabs)/subscriptions')} color={colors.primary} />
+            <QuickAction icon="document-text-outline" label={t('dashboard.generate_report')} onPress={() => router.push('/reports')} color={colors.success} />
+            {!isPro && (
+              <QuickAction icon="diamond-outline" label={t('dashboard.upgrade_pro')} onPress={() => router.push('/paywall')} color={colors.warning} />
+            )}
           </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ForecastBox({ icon, label, amount, sub, color }: { icon: string; label: string; amount: string; sub: string; color: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.forecastCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[styles.forecastIconCircle, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon as any} size={16} color={color} />
+      </View>
+      <Text style={[styles.forecastAmount, { color: colors.text }]}>{amount}</Text>
+      <Text style={[styles.forecastSub, { color: colors.textMuted }]} numberOfLines={1}>{sub}</Text>
+    </View>
   );
 }
 
 function QuickAction({ icon, label, onPress, color }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void; color: string }) {
   const { colors } = useTheme();
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{ flex: 1, minWidth: '45%', backgroundColor: colors.card, borderRadius: 14, padding: 14, alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.border }}
-    >
-      <Ionicons name={icon} size={24} color={color} />
-      <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text, textAlign: 'center' }}>{label}</Text>
+    <TouchableOpacity onPress={onPress} style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]} activeOpacity={0.8}>
+      <View style={[styles.actionIcon, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
+      <Text style={[styles.actionLabel, { color: colors.text }]} numberOfLines={2}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+function StatCard({ icon, label, value, color }: { icon: string; label: string; value: number; color: string }) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.statCard, { borderTopColor: color, backgroundColor: colors.card, borderColor: colors.border }]}>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
+    <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[styles.statIconCircle, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon as any} size={16} color={color} />
+      </View>
+      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
       <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
     </View>
   );
@@ -390,23 +456,11 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
           const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
           const y = chartH - barH + 18;
           const isMax = val === maxVal;
-          const labelX = x + barW / 2;
-          const labelY = y - 6;
           return (
             <React.Fragment key={i}>
-              <Rect
-                x={x} y={y} width={barW} height={barH} rx={5}
-                fill={isMax ? colors.primary : 'rgba(139,92,246,0.35)'}
-              />
+              <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
               {val > 0 && (
-                <SvgText
-                  x={labelX}
-                  y={labelY}
-                  fontSize={9}
-                  fontWeight="700"
-                  fill={isMax ? colors.primary : colors.textSecondary}
-                  textAnchor="middle"
-                >
+                <SvgText x={x + barW / 2} y={y - 6} fontSize={10} fontWeight="700" fill={isMax ? colors.primary : colors.textSecondary} textAnchor="middle">
                   ${val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val.toFixed(0)}
                 </SvgText>
               )}
@@ -432,9 +486,9 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
   const total = categories.reduce((sum, c) => sum + (isFinite(Number(c.amount)) ? Number(c.amount) : 0), 0);
   if (!total || !isFinite(total)) return null;
 
-  const size = 160;
-  const radius = 60;
-  const innerRadius = 40;
+  const size = 140;
+  const radius = 56;
+  const innerRadius = 38;
   const cx = size / 2;
   const cy = size / 2;
 
@@ -442,47 +496,36 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
   const slices = categories
     .filter((c) => isFinite(Number(c.amount)) && Number(c.amount) > 0)
     .map((cat) => {
-    const fraction = Number(cat.amount) / total;
-    const sweep = fraction * 2 * Math.PI;
-    if (!isFinite(sweep) || sweep <= 0) return null;
-    const catInfo = CATEGORIES.find((c) => c.id === cat.category);
-    const color = catInfo?.color || '#757575';
-
-    const x1 = cx + radius * Math.cos(startAngle);
-    const y1 = cy + radius * Math.sin(startAngle);
-    const x2 = cx + radius * Math.cos(startAngle + sweep);
-    const y2 = cy + radius * Math.sin(startAngle + sweep);
-    const ix1 = cx + innerRadius * Math.cos(startAngle + sweep);
-    const iy1 = cy + innerRadius * Math.sin(startAngle + sweep);
-    const ix2 = cx + innerRadius * Math.cos(startAngle);
-    const iy2 = cy + innerRadius * Math.sin(startAngle);
-    const largeArc = sweep > Math.PI ? 1 : 0;
-
-    const d = [
-      `M ${x1} ${y1}`,
-      `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
-      `L ${ix1} ${iy1}`,
-      `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2}`,
-      'Z',
-    ].join(' ');
-
-    startAngle += sweep;
-    return { d, color, category: cat.category, emoji: catInfo?.emoji || '', label: catInfo?.label || cat.category, pct: Math.round(fraction * 100) };
-  }).filter(Boolean) as { d: string; color: string; category: string; emoji: string; label: string; pct: number }[];
+      const fraction = Number(cat.amount) / total;
+      const sweep = fraction * 2 * Math.PI;
+      if (!isFinite(sweep) || sweep <= 0) return null;
+      const catInfo = CATEGORIES.find((c) => c.id === cat.category);
+      const color = catInfo?.color || '#757575';
+      const x1 = cx + radius * Math.cos(startAngle);
+      const y1 = cy + radius * Math.sin(startAngle);
+      const x2 = cx + radius * Math.cos(startAngle + sweep);
+      const y2 = cy + radius * Math.sin(startAngle + sweep);
+      const ix1 = cx + innerRadius * Math.cos(startAngle + sweep);
+      const iy1 = cy + innerRadius * Math.sin(startAngle + sweep);
+      const ix2 = cx + innerRadius * Math.cos(startAngle);
+      const iy2 = cy + innerRadius * Math.sin(startAngle);
+      const largeArc = sweep > Math.PI ? 1 : 0;
+      const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2} Z`;
+      startAngle += sweep;
+      return { d, color, emoji: catInfo?.emoji || '', label: catInfo?.label || cat.category, pct: Math.round(fraction * 100) };
+    }).filter(Boolean) as { d: string; color: string; emoji: string; label: string; pct: number }[];
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {slices.map((slice, idx) => (
-          <SvgPath key={idx} d={slice.d} fill={slice.color} />
-        ))}
+        {slices.map((slice, idx) => <SvgPath key={idx} d={slice.d} fill={slice.color} />)}
       </Svg>
-      <View style={{ flex: 1, gap: 6 }}>
+      <View style={{ flex: 1, gap: 8 }}>
         {slices.map((slice, idx) => (
-          <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
-            <Text style={{ fontSize: 12, color: colors.text, flex: 1 }}>{slice.label}</Text>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary }}>{slice.pct}%</Text>
+            <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>{slice.emoji} {slice.label}</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary }}>{slice.pct}%</Text>
           </View>
         ))}
       </View>
@@ -490,52 +533,102 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
   );
 }
 
+// ── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
-  greeting: { fontSize: 20, fontWeight: '800', color: COLORS.text },
-  subtitle: { fontSize: 13, color: COLORS.textSecondary, marginTop: 2 },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1 },
+
+  // Header
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  greeting: { fontSize: 14, fontWeight: '600' },
+  userName: { fontSize: 22, fontWeight: '900', letterSpacing: -0.3 },
+  planBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
+  planBadgeText: { fontSize: 11, fontWeight: '800' },
+  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
-  totalCard: { marginHorizontal: 20, backgroundColor: COLORS.primary, borderRadius: 24, padding: 24, gap: 6, shadowColor: COLORS.primary, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
-  totalLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
-  totalAmount: { fontSize: 40, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
-  totalSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
-  categoryRow: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
-  catChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  catEmoji: { fontSize: 12 },
-  catLabel: { fontSize: 11, color: '#FFF', fontWeight: '600' },
-  statsRow: { flexDirection: 'row', gap: 10, padding: 20, paddingBottom: 0 },
-  statCard: { flex: 1, backgroundColor: COLORS.card, borderRadius: 14, padding: 14, borderTopWidth: 3, alignItems: 'center', borderWidth: 1, borderColor: COLORS.border },
-  statValue: { fontSize: 24, fontWeight: '900', color: COLORS.text },
-  statLabel: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '600', marginTop: 2 },
-  section: { padding: 20, paddingBottom: 0 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: COLORS.text, marginBottom: 12 },
-  miniCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.card, borderRadius: 16, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: COLORS.border },
-  miniIcon: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  miniIconText: { fontSize: 16, fontWeight: '800', color: COLORS.primary },
-  miniName: { fontSize: 14, fontWeight: '700', color: COLORS.text },
-  miniPlan: { fontSize: 11, color: COLORS.textSecondary, textTransform: 'capitalize' },
-  miniAmount: { fontSize: 14, fontWeight: '800', color: COLORS.text },
-  emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
-  emptyEmoji: { fontSize: 48 },
-  emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  emptyHint: { fontSize: 14, color: COLORS.textSecondary },
-  chartCard: { backgroundColor: COLORS.card, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: COLORS.border },
-  donutCard: { backgroundColor: COLORS.card, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: COLORS.border },
-  trialCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.card, borderRadius: 16, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: COLORS.border },
+
+  // Hero card
+  heroCard: { marginHorizontal: 20, marginTop: 8, borderRadius: 24, padding: 22, gap: 4, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10, overflow: 'hidden' },
+  heroDecor1: { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(255,255,255,0.06)', top: -60, right: -30 },
+  heroDecor2: { position: 'absolute', width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.04)', bottom: -40, left: -20 },
+  heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
+  heroAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  heroAmount: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
+  deltaBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+  deltaText: { fontSize: 12, fontWeight: '800' },
+  heroMeta: { flexDirection: 'row', alignItems: 'center', marginTop: 8, backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 12, padding: 10 },
+  heroMetaItem: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  heroMetaDivider: { width: 1, height: 16, backgroundColor: 'rgba(255,255,255,0.2)' },
+  heroMetaText: { fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
+
+  // Stats
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 16 },
+  statCard: { flex: 1, borderRadius: 16, padding: 12, alignItems: 'center', gap: 4, borderWidth: 1 },
+  statIconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  statValue: { fontSize: 20, fontWeight: '900' },
+  statLabel: { fontSize: 11, fontWeight: '600' },
+
+  // Section
+  section: { paddingHorizontal: 20, paddingTop: 20 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  sectionTitle: { fontSize: 17, fontWeight: '800' },
+  sectionCount: { fontSize: 14, fontWeight: '700' },
+  sectionCountBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  sectionCountBadgeText: { fontSize: 12, fontWeight: '800' },
+  seeAll: { fontSize: 14, fontWeight: '700' },
+
+  // Upcoming cards
+  upcomingCard: { width: 130, borderRadius: 16, padding: 14, marginRight: 10, borderWidth: 1, gap: 4 },
+  upcomingTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  upcomingEmoji: { fontSize: 24 },
+  urgentDot: { width: 8, height: 8, borderRadius: 4 },
+  upcomingName: { fontSize: 13, fontWeight: '700', marginTop: 4 },
+  upcomingAmount: { fontSize: 15, fontWeight: '800' },
+  upcomingDays: { fontSize: 11, fontWeight: '600' },
+
+  // Forecast
+  forecastRow: { flexDirection: 'row', gap: 8 },
+  forecastCard: { flex: 1, borderRadius: 16, padding: 12, borderWidth: 1, alignItems: 'center', gap: 6 },
+  forecastIconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  forecastAmount: { fontSize: 16, fontWeight: '900' },
+  forecastSub: { fontSize: 10, fontWeight: '600' },
+
+  // Trials
+  trialCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 14, marginBottom: 8, borderWidth: 1 },
   trialDot: { width: 10, height: 10, borderRadius: 5 },
-  trialName: { fontSize: 15, fontWeight: '700', color: COLORS.text },
-  trialMeta: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  trialPrice: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary },
-  forecastRow: { flexDirection: 'row', gap: 10 },
-  forecastCard: { backgroundColor: COLORS.card, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: COLORS.border, gap: 6 },
-  forecastLabel: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '600', marginTop: 4 },
-  forecastAmount: { fontSize: 20, fontWeight: '900', color: COLORS.text },
-  forecastSub: { fontSize: 11, color: COLORS.textMuted },
-  savingsCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: COLORS.border },
-  savingsTitle: { fontSize: 14, fontWeight: '700', color: COLORS.text },
-  savingsSub: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  reviewBtn: { backgroundColor: COLORS.primaryLight, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 },
-  reviewBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  trialName: { fontSize: 15, fontWeight: '700' },
+  trialMeta: { fontSize: 12, marginTop: 2 },
+  trialPrice: { fontSize: 14, fontWeight: '700' },
+  trialPriceSub: { fontSize: 10 },
+
+  // Active subs
+  subCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 14, marginBottom: 8, borderWidth: 1 },
+  subIcon: { width: 40, height: 40, borderRadius: 12 },
+  subIconPlaceholder: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  subIconText: { fontSize: 16, fontWeight: '800' },
+  subName: { fontSize: 14, fontWeight: '700' },
+  subPlan: { fontSize: 12, marginTop: 1 },
+  subAmount: { fontSize: 14, fontWeight: '800' },
+  subPeriod: { fontSize: 10 },
+
+  // Savings
+  savingsCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 16, padding: 16, borderWidth: 1 },
+  savingsIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  savingsTitle: { fontSize: 14, fontWeight: '700' },
+  savingsSub: { fontSize: 12, marginTop: 2 },
+
+  // Charts
+  chartCard: { borderRadius: 20, padding: 16, borderWidth: 1 },
+
+  // Empty
+  emptyState: { alignItems: 'center', paddingTop: 60, gap: 10 },
+  emptyIcon: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  emptyText: { fontSize: 18, fontWeight: '700' },
+  emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
+
+  // Actions
+  actionsRow: { flexDirection: 'row', gap: 10 },
+  actionCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center', gap: 8, borderWidth: 1 },
+  actionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  actionLabel: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
 });

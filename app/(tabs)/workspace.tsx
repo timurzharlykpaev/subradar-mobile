@@ -46,7 +46,7 @@ export default function WorkspaceScreen() {
       setShowCreate(false);
       setWsName('');
     },
-    onError: (e: any) => Alert.alert('Ошибка', e?.response?.data?.message || 'Не удалось создать'),
+    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_create')),
   });
 
   const inviteMutation = useMutation({
@@ -55,25 +55,21 @@ export default function WorkspaceScreen() {
       queryClient.invalidateQueries({ queryKey: ['workspace'] });
       setShowInvite(false);
       setInviteEmail('');
-      Alert.alert('✅', 'Приглашение отправлено');
+      Alert.alert('✅', t('workspace.invite_sent'));
     },
-    onError: (e: any) => Alert.alert('Ошибка', e?.response?.data?.message || 'Не удалось отправить'),
+    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_invite')),
   });
 
   const removeMutation = useMutation({
     mutationFn: (memberId: string) => workspaceApi.removeMember(workspace.id, memberId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workspace'] }),
-    onError: (e: any) => Alert.alert('Ошибка', e?.response?.data?.message || 'Не удалось удалить'),
+    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_remove')),
   });
-
-  const bg = colors.background;
-  const card = isDark ? '#1C1C2E' : '#FFFFFF';
-  const border = colors.border;
 
   // ── No workspace yet ────────────────────────────────────────────────────
   if (!isLoading && !workspace) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
@@ -81,61 +77,142 @@ export default function WorkspaceScreen() {
         >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ flex: 1 }}>
-          {/* Иконка + заголовок */}
-          <View style={styles.emptyWrap}>
-            <Ionicons name="people-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('workspace.title')}</Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+          {/* Icon + title */}
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+            <View style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: colors.primary + '18',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 20,
+            }}>
+              <Ionicons name="people-outline" size={40} color={colors.primary} />
+            </View>
+            <Text style={{
+              fontSize: 24,
+              fontWeight: '900',
+              color: colors.text,
+              textAlign: 'center',
+              marginBottom: 10,
+              letterSpacing: -0.5,
+            }}>
+              {t('workspace.title')}
+            </Text>
+            <Text style={{
+              fontSize: 15,
+              color: colors.textSecondary,
+              textAlign: 'center',
+              lineHeight: 22,
+              marginBottom: 32,
+            }}>
               {t('workspace.empty_subtitle', 'Manage subscriptions as a team.\nTrack shared spending and reports.')}
             </Text>
           </View>
 
-          {/* Действия — полная ширина */}
-          <View style={{ paddingHorizontal: 20 }}>
+          {/* Actions */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 24 }}>
             {!isPro ? (
               <TouchableOpacity
-                style={[styles.ctaBtn, { backgroundColor: colors.primary, width: '100%' }]}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  backgroundColor: colors.primary,
+                  paddingVertical: 16,
+                  borderRadius: 16,
+                }}
                 onPress={() => router.push('/paywall')}
               >
                 <Ionicons name="star" size={18} color="#FFF" />
-                <Text style={styles.ctaBtnText}>{t('workspace.need_team_plan')}</Text>
+                <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 16 }}>
+                  {t('workspace.need_team_plan')}
+                </Text>
               </TouchableOpacity>
             ) : showCreate ? (
-              <View style={[styles.createCard, { backgroundColor: card, borderColor: border }]}>
-                <Text style={[styles.createLabel, { color: colors.text }]}>{t('workspace.team_name_label')}</Text>
+              <View style={{
+                backgroundColor: colors.card,
+                borderRadius: 20,
+                padding: 20,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 10 }}>
+                  {t('workspace.team_name_label')}
+                </Text>
                 <TextInput
-                  style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 14,
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    fontSize: 16,
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                  }}
                   value={wsName}
                   onChangeText={setWsName}
                   placeholder={t('workspace.name_placeholder')}
                   placeholderTextColor={colors.textMuted}
                   autoFocus
                 />
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
                   <TouchableOpacity
-                    style={[styles.btn, { backgroundColor: colors.surface, borderColor: border }]}
+                    style={{
+                      flex: 1,
+                      borderRadius: 14,
+                      paddingVertical: 14,
+                      alignItems: 'center',
+                      backgroundColor: colors.surface,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
                     onPress={() => setShowCreate(false)}
                   >
-                    <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>{t('common.cancel')}</Text>
+                    <Text style={{ color: colors.textSecondary, fontWeight: '600', fontSize: 15 }}>
+                      {t('common.cancel')}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.btn, { backgroundColor: colors.primary, flex: 1 }]}
+                    style={{
+                      flex: 1.5,
+                      borderRadius: 14,
+                      paddingVertical: 14,
+                      alignItems: 'center',
+                      backgroundColor: colors.primary,
+                      opacity: (!wsName.trim() || createMutation.isPending) ? 0.5 : 1,
+                    }}
                     onPress={() => createMutation.mutate()}
                     disabled={!wsName.trim() || createMutation.isPending}
                   >
                     {createMutation.isPending
                       ? <ActivityIndicator color="#FFF" size="small" />
-                      : <Text style={{ color: '#FFF', fontWeight: '700' }}>{t('workspace.create_team')}</Text>}
+                      : <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 15 }}>
+                          {t('workspace.create_team')}
+                        </Text>}
                   </TouchableOpacity>
                 </View>
               </View>
             ) : (
               <TouchableOpacity
-                style={[styles.ctaBtn, { backgroundColor: colors.primary, width: '100%' }]}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  backgroundColor: colors.primary,
+                  paddingVertical: 16,
+                  borderRadius: 16,
+                }}
                 onPress={() => setShowCreate(true)}
               >
-                <Ionicons name="add-circle-outline" size={18} color="#FFF" />
-                <Text style={styles.ctaBtnText}>{t('workspace.create_team')}</Text>
+                <Ionicons name="add-circle-outline" size={20} color="#FFF" />
+                <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 16 }}>
+                  {t('workspace.create_team')}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -151,201 +228,423 @@ export default function WorkspaceScreen() {
   const totalMembers = members.length;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
         keyboardVerticalOffset={90}
       >
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
-        <View style={styles.header}>
+        {/* ── Header ── */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingTop: 8,
+          paddingBottom: 20,
+        }}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.screenTitle, { color: colors.text }]}>{workspace?.name ?? 'Команда'}</Text>
-            <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-              {totalMembers} {totalMembers === 1 ? 'участник' : 'участников'} • {workspace?.plan ?? 'TEAM'}
+            <Text style={{
+              fontSize: 28,
+              fontWeight: '900',
+              color: colors.text,
+              letterSpacing: -0.5,
+            }}>
+              {workspace?.name ?? t('workspace.title')}
             </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+                {totalMembers} {totalMembers === 1 ? t('workspace.members_one') : t('workspace.members_other')}
+              </Text>
+              <View style={{
+                backgroundColor: colors.primary + '22',
+                paddingHorizontal: 10,
+                paddingVertical: 3,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary }}>
+                  {workspace?.plan ?? 'TEAM'}
+                </Text>
+              </View>
+            </View>
           </View>
           <TouchableOpacity
-            style={[styles.inviteBtn, { backgroundColor: colors.primary }]}
-            onPress={() => setShowInvite(true)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              backgroundColor: colors.primary,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderRadius: 14,
+            }}
+            onPress={() => setShowInvite(!showInvite)}
           >
             <Ionicons name="person-add-outline" size={16} color="#FFF" />
-            <Text style={styles.inviteBtnText}>Пригласить</Text>
+            <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 13 }}>
+              {t('workspace.invite_btn')}
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Analytics cards */}
+        {/* ── Analytics cards ── */}
         {analytics && (
-          <View style={styles.analyticsRow}>
-            <View style={[styles.analyticsCard, { backgroundColor: card, borderColor: border }]}>
-              <Ionicons name="card-outline" size={22} color={colors.primary} />
-              <Text style={[styles.analyticsValue, { color: colors.text }]}>
+          <View style={{
+            flexDirection: 'row',
+            gap: 10,
+            paddingHorizontal: 20,
+            marginBottom: 24,
+          }}>
+            {/* Monthly spend */}
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.card,
+              borderRadius: 18,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: 'center',
+              gap: 6,
+            }}>
+              <View style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: colors.primary + '18',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Ionicons name="card-outline" size={18} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
                 ${analytics.totalMonthly?.toFixed(2) ?? '0.00'}
               </Text>
-              <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>в месяц</Text>
+              <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                {t('workspace.per_month_label')}
+              </Text>
             </View>
-            <View style={[styles.analyticsCard, { backgroundColor: card, borderColor: border }]}>
-              <Ionicons name="receipt-outline" size={22} color="#22C55E" />
-              <Text style={[styles.analyticsValue, { color: colors.text }]}>
+
+            {/* Total subs */}
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.card,
+              borderRadius: 18,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: 'center',
+              gap: 6,
+            }}>
+              <View style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: '#22C55E18',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Ionicons name="receipt-outline" size={18} color="#22C55E" />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
                 {analytics.totalSubscriptions ?? 0}
               </Text>
-              <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>подписок</Text>
+              <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                {t('workspace.subs_label')}
+              </Text>
             </View>
-            <View style={[styles.analyticsCard, { backgroundColor: card, borderColor: border }]}>
-              <Ionicons name="people-outline" size={22} color="#F59E0B" />
-              <Text style={[styles.analyticsValue, { color: colors.text }]}>{totalMembers}</Text>
-              <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>участников</Text>
+
+            {/* Members */}
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.card,
+              borderRadius: 18,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: 'center',
+              gap: 6,
+            }}>
+              <View style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: '#F59E0B18',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Ionicons name="people-outline" size={18} color="#F59E0B" />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
+                {totalMembers}
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                {t('workspace.members_label')}
+              </Text>
             </View>
           </View>
         )}
 
-        {/* Per-member breakdown */}
-        {analytics?.members && analytics.members.length > 0 && (
-          <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Расходы участников</Text>
-            {analytics.members.map((m: any) => (
-              <View key={m.userId} style={[styles.memberRow, { backgroundColor: card, borderColor: border }]}>
-                <View style={[styles.avatar, { backgroundColor: colors.primary + '22' }]}>
-                  <Text style={[styles.avatarText, { color: colors.primary }]}>
-                    {(m.name ?? m.email ?? '?')[0].toUpperCase()}
-                  </Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.memberName, { color: colors.text }]}>{m.name ?? m.email}</Text>
-                  <Text style={[styles.memberSubs, { color: colors.textSecondary }]}>
-                    {m.subscriptionCount ?? 0} подписок
-                  </Text>
-                </View>
-                <Text style={[styles.memberAmount, { color: colors.text }]}>
-                  ${m.totalMonthly?.toFixed(2) ?? '0.00'}/мес
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Members list */}
-        <View style={{ paddingHorizontal: 20 }}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Участники</Text>
-          {isLoading ? (
-            <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
-          ) : members.length === 0 ? (
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>Пока нет участников</Text>
-          ) : (
-            members.map((m: any) => (
-              <View key={m.id} style={[styles.memberRow, { backgroundColor: card, borderColor: border }]}>
-                <View style={[styles.avatar, { backgroundColor: colors.primary + '22' }]}>
-                  <Text style={[styles.avatarText, { color: colors.primary }]}>
-                    {(m.user?.name ?? m.email ?? '?')[0].toUpperCase()}
-                  </Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.memberName, { color: colors.text }]}>
-                    {m.user?.name ?? m.email ?? 'Участник'}
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                    <View style={[styles.roleBadge, {
-                      backgroundColor: m.role === 'OWNER' ? colors.primary + '22' : colors.surface,
-                    }]}>
-                      <Text style={[styles.roleText, {
-                        color: m.role === 'OWNER' ? colors.primary : colors.textSecondary,
-                      }]}>{m.role}</Text>
-                    </View>
-                    <Text style={[styles.memberStatus, {
-                      color: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted,
-                    }]}>{m.status}</Text>
-                  </View>
-                </View>
-                {m.role !== 'OWNER' && (
-                  <TouchableOpacity
-                    onPress={() => Alert.alert('Удалить?', `Убрать ${m.user?.name ?? m.email} из команды?`, [
-                      { text: 'Отмена', style: 'cancel' },
-                      { text: 'Удалить', style: 'destructive', onPress: () => removeMutation.mutate(m.id) },
-                    ])}
-                    style={{ padding: 8 }}
-                  >
-                    <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            ))
-          )}
-        </View>
-
-        {/* Invite modal inline */}
+        {/* ── Invite card (inline) ── */}
         {showInvite && (
-          <View style={[styles.inviteCard, { backgroundColor: card, borderColor: border }]}>
-            <Text style={[styles.createLabel, { color: colors.text }]}>Email участника</Text>
+          <View style={{
+            marginHorizontal: 20,
+            marginBottom: 20,
+            backgroundColor: colors.card,
+            borderRadius: 20,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 10 }}>
+              {t('workspace.invite_member_email')}
+            </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: bg, color: colors.text, borderColor: border }]}
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 14,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                fontSize: 16,
+                backgroundColor: colors.background,
+                color: colors.text,
+              }}
               value={inviteEmail}
               onChangeText={setInviteEmail}
-              placeholder={t("workspace.email_placeholder")}
+              placeholder={t('workspace.email_placeholder')}
               placeholderTextColor={colors.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
               autoFocus
             />
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
               <TouchableOpacity
-                style={[styles.btn, { backgroundColor: colors.surface, borderColor: border }]}
+                style={{
+                  flex: 1,
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  alignItems: 'center',
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
                 onPress={() => { setShowInvite(false); setInviteEmail(''); }}
               >
-                <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Отмена</Text>
+                <Text style={{ color: colors.textSecondary, fontWeight: '600', fontSize: 15 }}>
+                  {t('common.cancel')}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.btn, { backgroundColor: colors.primary, flex: 1 }]}
+                style={{
+                  flex: 1.5,
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  alignItems: 'center',
+                  backgroundColor: colors.primary,
+                  opacity: (!inviteEmail.includes('@') || inviteMutation.isPending) ? 0.5 : 1,
+                }}
                 onPress={() => inviteMutation.mutate()}
                 disabled={!inviteEmail.includes('@') || inviteMutation.isPending}
               >
                 {inviteMutation.isPending
                   ? <ActivityIndicator color="#FFF" size="small" />
-                  : <Text style={{ color: '#FFF', fontWeight: '700' }}>{t('workspace.send_invite')}</Text>}
+                  : <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 15 }}>
+                      {t('workspace.send_invite')}
+                    </Text>}
               </TouchableOpacity>
             </View>
           </View>
         )}
+
+        {/* ── Member spending ── */}
+        {analytics?.members && analytics.members.length > 0 && (
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <Text style={{
+              fontSize: 17,
+              fontWeight: '800',
+              color: colors.text,
+              marginBottom: 12,
+            }}>
+              {t('workspace.member_spending_title')}
+            </Text>
+            <View style={{
+              backgroundColor: colors.card,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              overflow: 'hidden',
+            }}>
+              {analytics.members.map((m: any, idx: number) => (
+                <View
+                  key={m.userId}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    gap: 12,
+                    borderBottomWidth: idx < analytics.members.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <View style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 21,
+                    backgroundColor: colors.primary + '18',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Text style={{ fontSize: 17, fontWeight: '800', color: colors.primary }}>
+                      {(m.name ?? m.email ?? '?')[0].toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                      {m.name ?? m.email}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                      {t('workspace.member_subs_count', { count: m.subscriptionCount ?? 0 })}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>
+                    ${m.totalMonthly?.toFixed(2) ?? '0.00'}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                    {t('workspace.per_month_label')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ── Members list ── */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          <Text style={{
+            fontSize: 17,
+            fontWeight: '800',
+            color: colors.text,
+            marginBottom: 12,
+          }}>
+            {t('workspace.members_section_title')}
+          </Text>
+
+          {isLoading ? (
+            <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
+          ) : members.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: colors.textMuted }}>
+              {t('workspace.no_members_yet')}
+            </Text>
+          ) : (
+            <View style={{
+              backgroundColor: colors.card,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              overflow: 'hidden',
+            }}>
+              {members.map((m: any, idx: number) => (
+                <View
+                  key={m.id}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    gap: 12,
+                    borderBottomWidth: idx < members.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <View style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 21,
+                    backgroundColor: m.role === 'OWNER'
+                      ? colors.primary + '18'
+                      : (isDark ? '#ffffff10' : '#00000008'),
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Text style={{
+                      fontSize: 17,
+                      fontWeight: '800',
+                      color: m.role === 'OWNER' ? colors.primary : colors.textSecondary,
+                    }}>
+                      {(m.user?.name ?? m.email ?? '?')[0].toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                      {m.user?.name ?? m.email ?? t('workspace.members_one')}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <View style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        borderRadius: 6,
+                        backgroundColor: m.role === 'OWNER'
+                          ? colors.primary + '18'
+                          : (isDark ? '#ffffff0D' : '#0000000A'),
+                      }}>
+                        <Text style={{
+                          fontSize: 10,
+                          fontWeight: '800',
+                          color: m.role === 'OWNER' ? colors.primary : colors.textSecondary,
+                          letterSpacing: 0.5,
+                        }}>
+                          {m.role}
+                        </Text>
+                      </View>
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}>
+                        <View style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted,
+                        }} />
+                        <Text style={{
+                          fontSize: 11,
+                          fontWeight: '600',
+                          color: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted,
+                        }}>
+                          {m.status}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  {m.role !== 'OWNER' && (
+                    <TouchableOpacity
+                      onPress={() => Alert.alert(t('workspace.remove_confirm_title'), t('workspace.remove_member_confirm'), [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('workspace.remove_btn'), style: 'destructive', onPress: () => removeMutation.mutate(m.id) },
+                      ])}
+                      style={{
+                        padding: 10,
+                        borderRadius: 12,
+                        backgroundColor: '#EF444412',
+                      }}
+                    >
+                      <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
       </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
-  screenTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
-  screenSubtitle: { fontSize: 13, marginTop: 2 },
-  inviteBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  inviteBtnText: { color: '#FFF', fontWeight: '700', fontSize: 13 },
-  analyticsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 20 },
-  analyticsCard: { flex: 1, borderRadius: 16, padding: 14, borderWidth: 1, alignItems: 'center', gap: 4 },
-  analyticsValue: { fontSize: 20, fontWeight: '900' },
-  analyticsLabel: { fontSize: 11 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', marginBottom: 10 },
-  memberRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1, marginBottom: 8 },
-  avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 16, fontWeight: '800' },
-  memberName: { fontSize: 15, fontWeight: '700' },
-  memberSubs: { fontSize: 12, marginTop: 1 },
-  memberAmount: { fontSize: 14, fontWeight: '700' },
-  memberStatus: { fontSize: 11, fontWeight: '600' },
-  roleBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  roleText: { fontSize: 10, fontWeight: '700' },
-  emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  emptyTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8 },
-  emptySubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 28 },
-  emptyText: { textAlign: 'center', marginTop: 20, fontSize: 14 },
-  ctaBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16 },
-  ctaBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
-  createCard: { borderRadius: 16, padding: 20, borderWidth: 1 },
-  inviteCard: { marginHorizontal: 20, marginTop: 12, borderRadius: 16, padding: 20, borderWidth: 1 },
-  createLabel: { fontSize: 14, fontWeight: '700', marginBottom: 8 },
-  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
-  btn: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 1 },
-});

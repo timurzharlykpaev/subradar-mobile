@@ -154,17 +154,25 @@ function OpenAIIcon() {
   );
 }
 
-const FLOAT_CARDS = [
+const FLOAT_CARDS_LIGHT = [
   { name: 'Netflix',  amount: '$15.99', bg: '#FFEAEA', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10  },
   { name: 'Spotify',  amount: '$9.99',  bg: '#EAFAF1', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50  },
   { name: 'iCloud',   amount: '$2.99',  bg: '#EAF2FF', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95  },
   { name: 'YouTube',  amount: '$13.99', bg: '#FFEAEA', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130 },
   { name: 'ChatGPT',  amount: '$20.00', bg: '#EAF7F4', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165 },
 ];
+const FLOAT_CARDS_DARK = [
+  { name: 'Netflix',  amount: '$15.99', bg: '#2A1520', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10  },
+  { name: 'Spotify',  amount: '$9.99',  bg: '#152A20', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50  },
+  { name: 'iCloud',   amount: '$2.99',  bg: '#152030', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95  },
+  { name: 'YouTube',  amount: '$13.99', bg: '#2A1520', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130 },
+  { name: 'ChatGPT',  amount: '$20.00', bg: '#152A25', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165 },
+];
 
-function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos, topOffset = 0 }: {
+function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos, topOffset = 0, textColor, subColor }: {
   name: string; amount: string; bg: string; iconBg: string; IconComponent: React.FC;
   x: number; delay: number; duration: number; yPos: number; topOffset?: number;
+  textColor: string; subColor: string;
 }) {
   const entryY = useRef(new Animated.Value(30)).current;
   const entryOpacity = useRef(new Animated.Value(0)).current;
@@ -222,8 +230,8 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
           <IconComponent />
         </View>
         <View>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: '#1a1a2e', letterSpacing: -0.2 }}>{name}</Text>
-          <Text style={{ fontSize: 10, color: '#666', marginTop: 1 }}>{amount}/mo</Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: textColor, letterSpacing: -0.2 }}>{name}</Text>
+          <Text style={{ fontSize: 10, color: subColor, marginTop: 1 }}>{amount}/mo</Text>
         </View>
       </View>
     </Animated.View>
@@ -231,6 +239,7 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
 }
 
 function AuthHero() {
+  const { isDark, colors } = useTheme();
   const insets = useSafeAreaInsets();
   const logoScale = useRef(new Animated.Value(0.5)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -284,8 +293,8 @@ function AuthHero() {
   return (
     <View style={{ width: '100%', height: 260 + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4, overflow: 'hidden' }}>
       {/* Floating cards — за лого */}
-      {FLOAT_CARDS.map((card) => (
-        <FloatingCard key={card.name} {...card} topOffset={insets.top} />
+      {(isDark ? FLOAT_CARDS_DARK : FLOAT_CARDS_LIGHT).map((card) => (
+        <FloatingCard key={card.name} {...card} topOffset={insets.top} textColor={colors.text} subColor={colors.textSecondary} />
       ))}
 
       {/* Центральный блок: кольца + иконка — всё вместе через flexbox */}
@@ -617,7 +626,7 @@ export default function OnboardingScreen() {
       <View style={styles.logoContainer}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
         <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
-        <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
+        <View style={[styles.aiBadge, { backgroundColor: colors.primary }]}><Text style={styles.aiBadgeText}>AI</Text></View>
       </View>
       <Text style={[styles.showcaseTitle, { color: colors.text }]}>{t('onboarding.showcase_title')}</Text>
       <View style={styles.showcaseGrid}>
@@ -636,7 +645,7 @@ export default function OnboardingScreen() {
           </Animated.View>
         ))}
       </View>
-      <TouchableOpacity style={styles.showcaseBtn} onPress={() => setStep(1)}>
+      <TouchableOpacity style={[styles.showcaseBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(1)}>
         <Text style={styles.showcaseBtnText}>{t('onboarding.showcase_start')}</Text>
       </TouchableOpacity>
     </Animated.View>,
@@ -646,7 +655,7 @@ export default function OnboardingScreen() {
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
         <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
-        <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
+        <View style={[styles.aiBadge, { backgroundColor: colors.primary }]}><Text style={styles.aiBadgeText}>AI</Text></View>
       </Animated.View>
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('onboarding.choose_language')}</Text>
       <View style={styles.langGrid}>
@@ -674,7 +683,7 @@ export default function OnboardingScreen() {
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImageLarge} />
         <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
-        <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>AI</Text></View>
+        <View style={[styles.aiBadge, { backgroundColor: colors.primary }]}><Text style={styles.aiBadgeText}>AI</Text></View>
       </Animated.View>
       <Text style={[styles.headline, { color: colors.text }]}>{t('landing.hero_title')}</Text>
       <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('landing.hero_sub')}</Text>
@@ -759,7 +768,7 @@ export default function OnboardingScreen() {
             SubRadar
           </Text>
           {Platform.OS === 'ios' && (
-            <TouchableOpacity style={styles.socialBtn} onPress={handleAppleLogin} disabled={loading}>
+            <TouchableOpacity style={[styles.socialBtn, { backgroundColor: isDark ? '#1C1C1E' : '#000' }]} onPress={handleAppleLogin} disabled={loading}>
               <AppleIcon />
               <Text style={styles.socialText}>{t('onboarding.continue_apple')}</Text>
             </TouchableOpacity>
@@ -814,7 +823,7 @@ export default function OnboardingScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.emailBtn, otpCode.length < 6 && styles.emailBtnDisabled]}
+            style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }, otpCode.length < 6 && styles.emailBtnDisabled]}
             onPress={handleVerifyOtp}
             disabled={loading || otpCode.length < 6}
           >
@@ -822,17 +831,17 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
 
           {otpTimer > 0 ? (
-            <Text style={styles.otpTimerText}>
+            <Text style={[styles.otpTimerText, { color: colors.textMuted }]}>
               {t('auth.resend_in', { seconds: otpTimer })}
             </Text>
           ) : (
             <TouchableOpacity onPress={handleSendOtp} disabled={loading}>
-              <Text style={styles.otpResendText}>{t('auth.resend_code')}</Text>
+              <Text style={[styles.otpResendText, { color: colors.primary }]}>{t('auth.resend_code')}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity onPress={() => { setOtpMode(false); setOtpSent(false); setOtpCode(''); }}>
-            <Text style={styles.otpBackText}>{t('common.back')}</Text>
+            <Text style={[styles.otpBackText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -846,12 +855,12 @@ export default function OnboardingScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <TouchableOpacity style={styles.emailBtn} onPress={handleSendOtp} disabled={loading}>
+          <TouchableOpacity style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={handleSendOtp} disabled={loading}>
             <Text style={styles.emailBtnText}>{t('auth.send_code')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => setOtpMode(false)}>
-            <Text style={styles.otpBackText}>{t('common.back')}</Text>
+            <Text style={[styles.otpBackText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -928,7 +937,7 @@ export default function OnboardingScreen() {
       <View style={styles.footer}>
         <View style={styles.dots}>
           {steps.map((_, i) => (
-            <View key={i} style={[styles.dot, step === i && styles.dotActive]} />
+            <View key={i} style={[styles.dot, { backgroundColor: colors.border }, step === i && [styles.dotActive, { backgroundColor: colors.primary }]]} />
           ))}
         </View>
 
@@ -936,11 +945,11 @@ export default function OnboardingScreen() {
           <View style={styles.footerBtns}>
             {step > 1 && (
               <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
-                <Text style={styles.backBtnText}>{t('common.back')}</Text>
+                <Text style={[styles.backBtnText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
               </TouchableOpacity>
             )}
             {step < steps.length - 1 && step !== 5 && (
-              <TouchableOpacity style={styles.nextBtn} onPress={() => setStep(step + 1)}>
+              <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
                 <Text style={styles.nextBtnText}>
                   {step === 2 ? t('onboarding.get_started') : t('onboarding.next')}
                 </Text>
@@ -954,99 +963,95 @@ export default function OnboardingScreen() {
   );
 }
 
+// All colors removed from static styles — applied inline via colors from useTheme()
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1 },
   content: { flex: 1, padding: 24, justifyContent: 'center' },
   step: { gap: 16 },
   logoContainer: { alignItems: 'center', gap: 8, marginBottom: 16 },
   logoImage: { width: 80, height: 80, borderRadius: 20 },
   logoImageLarge: { width: 110, height: 110, borderRadius: 28 },
-  logoTitle: { fontSize: 34, fontWeight: '900', color: COLORS.text, letterSpacing: -1 },
-  aiBadge: { backgroundColor: COLORS.primary, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
+  logoTitle: { fontSize: 34, fontWeight: '900', letterSpacing: -1 },
+  aiBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
   aiBadgeText: { color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
-  headline: { fontSize: 30, fontWeight: '900', color: COLORS.text, textAlign: 'center', lineHeight: 38, letterSpacing: -0.5 },
-  subheadline: { fontSize: 15, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 22 },
-  sectionTitle: { fontSize: 26, fontWeight: '900', color: COLORS.text, letterSpacing: -0.5 },
+  headline: { fontSize: 30, fontWeight: '900', textAlign: 'center', lineHeight: 38, letterSpacing: -0.5 },
+  subheadline: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
+  sectionTitle: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
   langGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  langChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border },
-  langChipActive: { backgroundColor: COLORS.primaryLight, borderColor: COLORS.primary },
+  langChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1.5 },
+  langChipActive: {},
   langFlag: { fontSize: 18 },
-  langLabel: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
-  langLabelActive: { color: COLORS.primary },
-  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: COLORS.surface, borderRadius: 16, padding: 14 },
-  featureIcon: { width: 48, height: 48, borderRadius: 14, backgroundColor: COLORS.primaryLight, alignItems: 'center', justifyContent: 'center' },
+  langLabel: { fontSize: 13, fontWeight: '600' },
+  langLabelActive: {},
+  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 16, padding: 14 },
+  featureIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   featureEmoji: { fontSize: 24 },
   featureText: { flex: 1 },
-  featureTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text },
-  featureDesc: { fontSize: 13, color: COLORS.textSecondary, marginTop: 2 },
+  featureTitle: { fontSize: 15, fontWeight: '700' },
+  featureDesc: { fontSize: 13, marginTop: 2 },
   currencyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  currencyChip: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, backgroundColor: COLORS.surface, borderWidth: 2, borderColor: COLORS.border },
-  currencyChipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
-  currencyText: { fontSize: 15, fontWeight: '600', color: COLORS.textSecondary },
-  currencyTextActive: { color: COLORS.primary },
+  currencyChip: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, borderWidth: 2 },
+  currencyChipActive: {},
+  currencyText: { fontSize: 15, fontWeight: '600' },
+  currencyTextActive: {},
   loadingOverlay: { alignItems: 'center', paddingVertical: 8 },
-  socialBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#1C1C1E', borderRadius: 16, paddingVertical: 17 },
-  googleBtn: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: COLORS.border },
+  socialBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 16, paddingVertical: 17 },
+  googleBtn: { borderWidth: 1.5 },
   socialText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
-  dividerText: { fontSize: 13, color: COLORS.textSecondary },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 13 },
   emailInput: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 18,
     fontSize: 16,
-    color: COLORS.text,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
     width: '100%',
   },
   emailBtn: {
-    backgroundColor: COLORS.primary,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
     width: '100%',
-    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 6,
   },
   emailBtnText: { color: '#FFF', fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
-  magicSentBox: { alignItems: 'center', gap: 8, padding: 20, backgroundColor: COLORS.surface, borderRadius: 16 },
+  magicSentBox: { alignItems: 'center', gap: 8, padding: 20, borderRadius: 16 },
   magicSentEmoji: { fontSize: 40 },
-  magicSentTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
-  magicSentSub: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
-  terms: { fontSize: 11, color: COLORS.textMuted, textAlign: 'center', lineHeight: 16 },
+  magicSentTitle: { fontSize: 18, fontWeight: '800' },
+  magicSentSub: { fontSize: 14, textAlign: 'center' },
+  terms: { fontSize: 11, textAlign: 'center', lineHeight: 16 },
   footer: { padding: 24, paddingBottom: 40, gap: 16 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.border },
-  dotActive: { width: 20, backgroundColor: COLORS.primary },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  dotActive: { width: 20 },
   footerBtns: { flexDirection: 'row', gap: 10 },
-  backBtn: { flex: 1, paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
-  backBtnText: { fontSize: 15, fontWeight: '700', color: COLORS.textSecondary },
-  nextBtn: { flex: 2, paddingVertical: 16, borderRadius: 14, alignItems: 'center', backgroundColor: COLORS.primary },
+  backBtn: { flex: 1, paddingVertical: 16, borderRadius: 14, alignItems: 'center', borderWidth: 1 },
+  backBtnText: { fontSize: 15, fontWeight: '700' },
+  nextBtn: { flex: 2, paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
   nextBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
-  showcaseTitle: { fontSize: 20, fontWeight: '800', color: COLORS.text, textAlign: 'center', lineHeight: 26, letterSpacing: -0.3, marginBottom: 4 },
+  showcaseTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center', lineHeight: 26, letterSpacing: -0.3, marginBottom: 4 },
   showcaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   showcaseCard: { width: '47%', backgroundColor: 'rgba(139,92,246,0.15)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.3)', padding: 14, gap: 6 },
   showcaseEmoji: { fontSize: 28 },
-  showcaseCardTitle: { fontSize: 13, fontWeight: '800', color: COLORS.text },
-  showcaseCardDesc: { fontSize: 11, color: COLORS.textSecondary, lineHeight: 15 },
-  showcaseBtn: { backgroundColor: COLORS.primary, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
+  showcaseCardTitle: { fontSize: 13, fontWeight: '800' },
+  showcaseCardDesc: { fontSize: 11, lineHeight: 15 },
+  showcaseBtn: { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
   showcaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
-  emailOtpBtn: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border },
+  emailOtpBtn: { borderWidth: 1 },
   emailOtpIcon: { fontSize: 18 },
   otpContainer: { gap: 14, alignItems: 'center' },
-  otpSubtitle: { fontSize: 15, color: COLORS.textSecondary, textAlign: 'center' },
-  otpEmail: { fontSize: 15, fontWeight: '700', color: COLORS.text, textAlign: 'center' },
+  otpSubtitle: { fontSize: 15, textAlign: 'center' },
+  otpEmail: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
   otpInputRow: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
-  otpDigitInput: { width: 48, height: 56, borderRadius: 12, borderWidth: 1.5, borderColor: COLORS.border, backgroundColor: COLORS.surface, textAlign: 'center', fontSize: 22, fontWeight: '700', color: COLORS.text },
-  otpDigitFilled: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
+  otpDigitInput: { width: 48, height: 56, borderRadius: 12, borderWidth: 1.5, textAlign: 'center', fontSize: 22, fontWeight: '700' },
+  otpDigitFilled: {},
   emailBtnDisabled: { opacity: 0.5 },
-  otpTimerText: { fontSize: 13, color: COLORS.textMuted, textAlign: 'center' },
-  otpResendText: { fontSize: 14, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
-  otpBackText: { fontSize: 14, fontWeight: '600', color: COLORS.textSecondary, textAlign: 'center', marginTop: 4 },
+  otpTimerText: { fontSize: 13, textAlign: 'center' },
+  otpResendText: { fontSize: 14, fontWeight: '700', textAlign: 'center' },
+  otpBackText: { fontSize: 14, fontWeight: '600', textAlign: 'center', marginTop: 4 },
 });

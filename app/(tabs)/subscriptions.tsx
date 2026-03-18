@@ -15,19 +15,24 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptionsStore, FilterType } from '../../src/stores/subscriptionsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
-import { COLORS, CATEGORIES } from '../../src/constants';
+import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { usePlanLimits } from '../../src/hooks/usePlanLimits';
+
+type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 
 export default function SubscriptionsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { subsLimitReached } = usePlanLimits();
-  const { colors } = useTheme();
+  const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
+  const { colors, isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
+  const [sortBy, setSortBy] = useState<SortType>('next_date');
+  const [showSearch, setShowSearch] = useState(false);
 
   const fetchSubs = useCallback(async () => {
     setRefreshing(true);
@@ -40,232 +45,246 @@ export default function SubscriptionsScreen() {
 
   useEffect(() => { fetchSubs(); }, []);
 
-  const FILTERS: { label: string; value: FilterType }[] = [
-    { label: t('common.all'), value: 'all' },
-    { label: t('subscriptions.active'), value: 'active' },
-    { label: t('subscriptions.trial'), value: 'trial' },
-    { label: t('subscriptions.cancelled'), value: 'cancelled' },
-    { label: t('add.category'), value: 'category' },
+  const FILTERS: { label: string; value: FilterType; icon: string }[] = [
+    { label: t('common.all'), value: 'all', icon: 'apps-outline' },
+    { label: t('subscriptions.active'), value: 'active', icon: 'checkmark-circle-outline' },
+    { label: t('subscriptions.trial'), value: 'trial', icon: 'time-outline' },
+    { label: t('subscriptions.cancelled'), value: 'cancelled', icon: 'close-circle-outline' },
+    { label: t('add.category'), value: 'category', icon: 'grid-outline' },
   ];
+
+  const SORTS: { label: string; value: SortType }[] = [
+    { label: t('subscriptions.sort_date', 'Date'), value: 'next_date' },
+    { label: t('subscriptions.sort_high', 'Price ↓'), value: 'amount_high' },
+    { label: t('subscriptions.sort_low', 'Price ↑'), value: 'amount_low' },
+    { label: t('subscriptions.sort_name', 'A-Z'), value: 'name' },
+  ];
+
   const {
-    searchQuery,
-    filter,
-    setFilter,
-    setSearchQuery,
-    getFiltered,
-    removeSubscription,
-    updateSubscription,
-    selectedCategory,
-    setSelectedCategory,
-    setSubscriptions,
+    searchQuery, filter, setFilter, setSearchQuery,
+    getFiltered, removeSubscription, updateSubscription,
+    selectedCategory, setSelectedCategory, setSubscriptions, subscriptions,
   } = useSubscriptionsStore();
 
-  const subs = getFiltered();
+  const filtered = getFiltered();
+
+  // Apply sorting
+  const subs = [...filtered].sort((a, b) => {
+    switch (sortBy) {
+      case 'amount_high': return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+      case 'amount_low': return (Number(a.amount) || 0) - (Number(b.amount) || 0);
+      case 'name': return (a.name || '').localeCompare(b.name || '');
+      case 'next_date':
+      default:
+        const da = a.nextPaymentDate ? new Date(a.nextPaymentDate).getTime() : Infinity;
+        const db = b.nextPaymentDate ? new Date(b.nextPaymentDate).getTime() : Infinity;
+        return da - db;
+    }
+  });
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
-        try {
-          await subscriptionsApi.delete(id);
-          removeSubscription(id);
-        } catch { removeSubscription(id); }
+        try { await subscriptionsApi.delete(id); removeSubscription(id); }
+        catch { removeSubscription(id); }
       }},
     ]);
   };
 
-  const handleCancel = (id: string, name: string) => {
-    Alert.alert(t('subscriptions.cancel_title'), `${name}?`, [
-      { text: t('common.no'), style: 'cancel' },
-      { text: t('common.yes'), onPress: async () => {
-        try {
-          await subscriptionsApi.cancel(id);
-          updateSubscription(id, { status: 'CANCELLED' });
-        } catch { updateSubscription(id, { status: 'CANCELLED' }); }
-      }},
-    ]);
-  };
-
-  const handleAdd = () => {
-    if (subsLimitReached) {
-      router.push('/paywall');
-    }
-    // If not limit reached, FAB in _layout.tsx handles adding
-  };
+  // Stats
+  const totalActive = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL').length;
+  const totalMonthly = subscriptions
+    .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
+    .reduce((sum, s) => {
+      const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
+      return sum + (Number(s.amount) || 0) * mult;
+    }, 0);
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>{t('subscriptions.title')}</Text>
-        <Text style={[styles.count, { color: colors.textSecondary }]}>{subs.length} {t('subscriptions.total')}</Text>
-        {subsLimitReached && (
-          <TouchableOpacity onPress={handleAdd} style={[styles.upgradeChip, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
-            <Text style={[styles.upgradeChipText, { color: colors.primary }]}>⭐ Upgrade</Text>
-          </TouchableOpacity>
-        )}
-      </View>
 
-      {/* Search */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
-        <Text style={styles.searchIcon}>🔍</Text>
-        <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          {...{placeholder: t('subscriptions.search')}}
-          placeholderTextColor={colors.textMuted}
-        />
-        {searchQuery ? (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Text style={[styles.clearIcon, { color: colors.textMuted }]}>✕</Text>
-          </TouchableOpacity>
-        ) : null}
-      </View>
-
-      {/* Filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersScroll}
-        contentContainerStyle={styles.filters}
-      >
-        {FILTERS.map((f) => (
+        {/* ── Header ────────────────────────────────────────── */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: colors.text }]}>{t('subscriptions.title')}</Text>
+          </View>
           <TouchableOpacity
-            key={f.value}
-            style={[
-              styles.filterChip,
-              { backgroundColor: colors.surface2, borderColor: colors.border },
-              filter === f.value && { backgroundColor: colors.primary, borderColor: colors.primary },
-            ]}
-            onPress={() => setFilter(f.value)}
+            style={[styles.headerBtn, { backgroundColor: colors.surface2 }]}
+            onPress={() => setShowSearch(!showSearch)}
           >
-            <Text style={[
-              styles.filterText,
-              { color: colors.textSecondary },
-              filter === f.value && styles.filterTextActive,
-            ]}>
-              {f.label}
-            </Text>
+            <Ionicons name={showSearch ? 'close' : 'search'} size={18} color={colors.textSecondary} />
           </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Category sub-filter */}
-      {filter === 'category' && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filtersScroll}
-          contentContainerStyle={styles.filters}
-        >
-          {CATEGORIES.map((cat) => (
+          {subsLimitReached && (
             <TouchableOpacity
-              key={cat.id}
-              style={[
-                styles.catChip,
-                { backgroundColor: colors.surface2, borderColor: colors.border },
-                selectedCategory === cat.id && { backgroundColor: cat.color },
-              ]}
-              onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+              style={[styles.upgradeBtn, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/paywall')}
             >
-              <Text style={{ color: selectedCategory === cat.id ? '#FFF' : colors.text }}>{cat.emoji} {cat.label}</Text>
+              <Ionicons name="diamond" size={14} color="#FFF" />
+              <Text style={styles.upgradeBtnText}>PRO</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* ── Summary strip ──────────────────────────────────── */}
+        <View style={styles.summaryStrip}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.summaryValue, { color: colors.primary }]}>{totalActive}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('subscriptions.active')}</Text>
+          </View>
+          <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.summaryValue, { color: colors.text }]}>${totalMonthly.toFixed(0)}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>/{t('paywall.month', 'mo')}</Text>
+          </View>
+          {!isPro && (
+            <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.summaryValue, { color: activeCount >= maxSubscriptions ? colors.error : colors.text }]}>{activeCount}/{maxSubscriptions}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('subscription_plan.subs_used')}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* ── Search ─────────────────────────────────────────── */}
+        {showSearch && (
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+            <Ionicons name="search" size={16} color={colors.textMuted} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={t('subscriptions.search')}
+              placeholderTextColor={colors.textMuted}
+              autoFocus
+            />
+            {searchQuery ? (
+              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        )}
+
+        {/* ── Filters ────────────────────────────────────────── */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll} contentContainerStyle={styles.filters}>
+          {FILTERS.map((f) => {
+            const active = filter === f.value;
+            return (
+              <TouchableOpacity
+                key={f.value}
+                style={[
+                  styles.filterChip,
+                  { backgroundColor: active ? colors.primary : colors.surface2, borderColor: active ? colors.primary : colors.border },
+                ]}
+                onPress={() => setFilter(f.value)}
+              >
+                <Ionicons name={f.icon as any} size={14} color={active ? '#FFF' : colors.textSecondary} />
+                <Text style={[styles.filterText, { color: active ? '#FFF' : colors.textSecondary }]}>{f.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* ── Sort row ───────────────────────────────────────── */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortScroll} contentContainerStyle={styles.filters}>
+          {SORTS.map((s) => (
+            <TouchableOpacity
+              key={s.value}
+              onPress={() => setSortBy(s.value)}
+              style={[styles.sortChip, sortBy === s.value && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            >
+              <Text style={[styles.sortText, { color: sortBy === s.value ? colors.primary : colors.textMuted }]}>{s.label}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
 
-      {/* List */}
-      <FlatList
-        data={subs}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchSubs} />}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <SubscriptionCard
-            subscription={item}
-            onSwipeDelete={() => handleDelete(item.id, item.name)}
-          />
+        {/* ── Category sub-filter ────────────────────────────── */}
+        {filter === 'category' && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll} contentContainerStyle={styles.filters}>
+            {CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={[
+                  styles.catChip,
+                  { backgroundColor: selectedCategory === cat.id ? cat.color : colors.surface2, borderColor: selectedCategory === cat.id ? cat.color : colors.border },
+                ]}
+                onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+              >
+                <Text style={{ fontSize: 13, color: selectedCategory === cat.id ? '#FFF' : colors.text }}>{cat.emoji} {cat.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         )}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📭</Text>
-            <Text style={[styles.emptyText, { color: colors.text }]}>{t('subscriptions.empty')}</Text>
-            <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>{t('subscriptions.empty_hint')}</Text>
-          </View>
-        }
-      />
+
+        {/* ── List ───────────────────────────────────────────── */}
+        <FlatList
+          data={subs}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchSubs} />}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
+          )}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <View style={[styles.emptyIcon, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name={searchQuery ? 'search' : 'albums-outline'} size={36} color={colors.primary} />
+              </View>
+              <Text style={[styles.emptyText, { color: colors.text }]}>
+                {searchQuery ? t('subscriptions.no_results', 'No results') : t('subscriptions.empty')}
+              </Text>
+              <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+                {searchQuery ? t('subscriptions.try_different', 'Try a different search') : t('subscriptions.empty_hint')}
+              </Text>
+            </View>
+          }
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  title: { fontSize: 28, fontWeight: '900', color: COLORS.text },
-  count: { fontSize: 14, color: COLORS.textSecondary, fontWeight: '600' },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 12,
-  },
-  searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, fontSize: 15, color: COLORS.text },
-  clearIcon: { fontSize: 14, color: COLORS.textMuted, padding: 4 },
-  filtersScroll: { maxHeight: 48 },
-  filters: { paddingHorizontal: 20, gap: 8, paddingBottom: 8 },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  filterText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
-  filterTextActive: { color: '#FFF' },
-  catChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  list: { padding: 20, paddingTop: 8, paddingBottom: 100 },
-  empty: { alignItems: 'center', paddingTop: 80, gap: 8 },
-  emptyEmoji: { fontSize: 48 },
-  emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text },
-  emptyHint: { fontSize: 14, color: COLORS.textSecondary },
-  upgradeChip: {
-    marginLeft: 'auto',
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  upgradeChipText: { fontSize: 12, fontWeight: '700', color: COLORS.primary },
+  container: { flex: 1 },
+
+  // Header
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, gap: 10 },
+  title: { fontSize: 28, fontWeight: '900', letterSpacing: -0.3 },
+  headerBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12 },
+  upgradeBtnText: { fontSize: 12, fontWeight: '800', color: '#FFF' },
+
+  // Summary
+  summaryStrip: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 12 },
+  summaryCard: { flex: 1, borderRadius: 14, padding: 10, alignItems: 'center', borderWidth: 1 },
+  summaryValue: { fontSize: 18, fontWeight: '900' },
+  summaryLabel: { fontSize: 10, fontWeight: '600', marginTop: 2 },
+
+  // Search
+  searchContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, gap: 8, borderWidth: 1, marginBottom: 8 },
+  searchInput: { flex: 1, fontSize: 15, padding: 0 },
+
+  // Filters
+  filtersScroll: { maxHeight: 44 },
+  filters: { paddingHorizontal: 20, gap: 8, paddingBottom: 6 },
+  filterChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+  filterText: { fontSize: 13, fontWeight: '600' },
+
+  // Sort
+  sortScroll: { maxHeight: 36 },
+  sortChip: { paddingHorizontal: 12, paddingVertical: 4, marginBottom: 4 },
+  sortText: { fontSize: 12, fontWeight: '700' },
+
+  // Category
+  catChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+
+  // List
+  list: { padding: 20, paddingTop: 4, paddingBottom: 100 },
+
+  // Empty
+  empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  emptyText: { fontSize: 18, fontWeight: '700' },
+  emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
 });

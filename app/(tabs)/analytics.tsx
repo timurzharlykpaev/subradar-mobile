@@ -5,15 +5,19 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
   useWindowDimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
-import { COLORS, CATEGORIES } from '../../src/constants';
+import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
+import ProFeatureModal from '../../src/components/ProFeatureModal';
 
 const CHART_HEIGHT = 180;
 
@@ -46,11 +50,11 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
           const labelX = x + barW / 2;
           return (
             <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={4} fill={isMax ? colors.primary : 'rgba(139,92,246,0.4)'} />
+              <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
               {d.total > 0 && (
                 <SvgText
-                  x={labelX} y={y - 3}
-                  fontSize={9} fontWeight="700"
+                  x={labelX} y={y - 4}
+                  fontSize={10} fontWeight="700"
                   fill={isMax ? colors.primary : colors.textMuted}
                   textAnchor="middle"
                 >
@@ -124,15 +128,12 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
         ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 20, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
         <Text style={{ fontSize: 11, color: colors.textMuted }}>{avgLabel}</Text>
       </View>
     </View>
   );
 }
-
-const CARD_BG = COLORS.card;
-const CARD_RADIUS = 16;
 
 const PERIOD_SHORT: Record<string, string> = {
   WEEKLY: 'wk',
@@ -148,7 +149,7 @@ export default function AnalyticsScreen() {
   const { subscriptions } = useSubscriptionsStore();
   const { data: billingStatus } = useBillingStatus();
   const isPro = billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization';
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const [summary, setSummary] = useState<any>(null);
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
@@ -156,6 +157,7 @@ export default function AnalyticsScreen() {
   const [byCardData, setByCardData] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any>(null);
   const [savings, setSavings] = useState<any>(null);
+  const [proModal, setProModal] = useState<{ visible: boolean; feature: string }>({ visible: false, feature: 'forecast' });
 
   useEffect(() => {
     analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => {});
@@ -215,9 +217,6 @@ export default function AnalyticsScreen() {
 
   const categoryTotal = byCategory.reduce((sum, c) => sum + c.total, 0);
 
-  // Pie chart data (unused - kept for reference)
-  // const pieData = byCategory.map(cat => ({ value: cat.total, color: cat.color, label: cat.label }));
-
   // Top 5 most expensive
   const top5 = [...activeSubs]
     .sort((a, b) => getMonthlyAmount(b) - getMonthlyAmount(a))
@@ -248,134 +247,224 @@ export default function AnalyticsScreen() {
   return (
     <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+
+        {/* ── Header ────────────────────────────────────────────── */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>{t('analytics.title')}</Text>
-          <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('analytics.subtitle')}</Text>
+          <View style={styles.headerRow}>
+            <View style={[styles.headerIconCircle, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="analytics" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.title, { color: colors.text }]}>{t('analytics.title')}</Text>
+              <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('analytics.subtitle')}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Summary Cards */}
+        {/* ── Summary Strip ─────────────────────────────────────── */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
-          <StatCard label={t('analytics.avg_month')} value={`$${Number(totalMonthly).toFixed(0)}`} />
-          <StatCard label={t('analytics.total_year')} value={`$${Number(totalYearly).toFixed(0)}`} />
+          <StatCard
+            icon="wallet-outline"
+            label={t('analytics.avg_month')}
+            value={`$${Number(totalMonthly).toFixed(0)}`}
+            color={colors.primary}
+          />
+          <StatCard
+            icon="calendar-outline"
+            label={t('analytics.total_year')}
+            value={`$${Number(totalYearly).toFixed(0)}`}
+            color={colors.success}
+          />
           {mostExpensive && (
-            <StatCard label={t('analytics.most_expensive')} value={mostExpensive.name} sub={`$${Number(mostExpensive.amount).toFixed(0)}/mo`} />
+            <StatCard
+              icon="flame-outline"
+              label={t('analytics.most_expensive')}
+              value={mostExpensive.name}
+              sub={`$${Number(mostExpensive.amount).toFixed(0)}/mo`}
+              color={colors.warning}
+            />
           )}
         </ScrollView>
 
-        {/* 1. Monthly Bar Chart (custom SVG) */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.monthly_spend')}</Text>
-          {monthlyData.length > 0 ? (
-            <MonthlyBarChart data={monthlyData} />
-          ) : (
-            <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
-          )}
+        {/* ── 1. Monthly Bar Chart ───────────────────────────────── */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconCircle, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="bar-chart-outline" size={14} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.monthly_spend')}</Text>
+          </View>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {monthlyData.length > 0 ? (
+              <MonthlyBarChart data={monthlyData} />
+            ) : (
+              <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
+            )}
+          </View>
         </View>
 
-        {/* 2. Category Donut Chart (custom SVG) */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.by_category')}</Text>
-          {byCategory.length > 0 ? (
-            <>
-              <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
-              <View style={styles.legendContainer}>
-                {byCategory.map((cat) => (
-                  <View key={cat.id} style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                    <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.emoji} {cat.label}</Text>
-                    <Text style={[styles.legendPercent, { color: colors.textMuted }]}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
-                    <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
-                  </View>
-                ))}
+        {/* ── 2. Category Donut Chart ────────────────────────────── */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconCircle, { backgroundColor: colors.warning + '18' }]}>
+              <Ionicons name="pie-chart-outline" size={14} color={colors.warning} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.by_category')}</Text>
+            {byCategory.length > 0 && (
+              <View style={[styles.sectionBadge, { backgroundColor: colors.primary + '18' }]}>
+                <Text style={[styles.sectionBadgeText, { color: colors.primary }]}>{byCategory.length}</Text>
               </View>
-            </>
-          ) : (
-            <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
-          )}
+            )}
+          </View>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {byCategory.length > 0 ? (
+              <>
+                <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
+                <View style={styles.legendContainer}>
+                  {byCategory.map((cat) => (
+                    <View key={cat.id} style={[styles.legendRow, { borderColor: colors.border }]}>
+                      <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
+                      <Text style={[styles.legendEmoji]}>{cat.emoji}</Text>
+                      <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.label}</Text>
+                      <Text style={[styles.legendPercent, { color: colors.textMuted }]}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
+                      <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : (
+              <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
+            )}
+          </View>
         </View>
 
-        {/* 3. Card Breakdown */}
+        {/* ── 3. Card Breakdown ──────────────────────────────────── */}
         {cardBreakdown.length > 0 && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.card_breakdown')}</Text>
-            {cardBreakdown.map((card: any, i: number) => {
-              const amount = card.total ?? card.amount ?? 0;
-              return (
-                <View key={card.label || i} style={styles.cardBreakdownRow}>
-                  <Text style={styles.cardBreakdownIcon}>💳</Text>
-                  <View style={{ flex: 1, gap: 4 }}>
-                    <View style={styles.cardBreakdownLabelRow}>
-                      <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
-                      <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${Number(amount).toFixed(2)}</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIconCircle, { backgroundColor: colors.secondary + '18' }]}>
+                <Ionicons name="card-outline" size={14} color={colors.secondary} />
+              </View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.card_breakdown')}</Text>
+            </View>
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {cardBreakdown.map((card: any, i: number) => {
+                const amount = card.total ?? card.amount ?? 0;
+                return (
+                  <View key={card.label || i} style={styles.cardBreakdownRow}>
+                    <View style={[styles.cardBreakdownIconCircle, { backgroundColor: colors.primary + '18' }]}>
+                      <Ionicons name="card" size={16} color={colors.primary} />
                     </View>
-                    <View style={styles.barBg}>
-                      <View
-                        style={[
-                          styles.barFill,
-                          {
-                            width: `${(amount / cardMax) * 100}%`,
-                            backgroundColor: colors.primary,
-                          },
-                        ]}
-                      />
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <View style={styles.cardBreakdownLabelRow}>
+                        <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
+                        <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${Number(amount).toFixed(2)}</Text>
+                      </View>
+                      <View style={[styles.barBg, { backgroundColor: colors.border }]}>
+                        <View
+                          style={[
+                            styles.barFill,
+                            {
+                              width: `${(amount / cardMax) * 100}%`,
+                              backgroundColor: colors.primary,
+                            },
+                          ]}
+                        />
+                      </View>
                     </View>
                   </View>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </View>
         )}
 
-        {/* 4. Forecast Section (Pro-gated) */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+        {/* ── 4. Forecast Section (Pro-gated) ────────────────────── */}
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.forecast')}</Text>
-            {!isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>}
+            <View style={[styles.sectionIconCircle, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="trending-up-outline" size={14} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.forecast')}</Text>
+            {!isPro && (
+              <View style={[styles.proBadge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.proBadgeText}>PRO</Text>
+              </View>
+            )}
           </View>
           {isPro ? (
             <View style={styles.forecastRow}>
               <ForecastCard
+                icon="calendar"
                 label={t('analytics.forecast_30d')}
                 value={forecast?.day30 ?? Number(totalMonthly).toFixed(0)}
+                color={colors.primary}
               />
               <ForecastCard
+                icon="trending-up"
                 label={t('analytics.forecast_6m')}
                 value={forecast?.month6 ?? Number(totalMonthly * 6).toFixed(0)}
+                color={colors.success}
               />
               <ForecastCard
+                icon="analytics"
                 label={t('analytics.forecast_12m')}
                 value={forecast?.month12 ?? Number(totalYearly).toFixed(0)}
+                color={colors.warning}
               />
             </View>
           ) : (
-            <View style={[styles.lockedContainer, { backgroundColor: colors.surface2 }]}>
-              <Text style={styles.lockIcon}>🔒</Text>
+            <TouchableOpacity
+              style={[styles.lockedContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => setProModal({ visible: true, feature: 'forecast' })}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.lockIconCircle, { backgroundColor: isDark ? 'rgba(124,92,255,0.12)' : 'rgba(108,71,255,0.08)' }]}>
+                <Ionicons name="trending-up" size={24} color={colors.primary} />
+              </View>
+              <Text style={[styles.lockedTitle, { color: colors.text }]}>{t('analytics.forecast')}</Text>
               <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_forecast')}</Text>
-            </View>
+              <View style={[styles.lockedCta, { backgroundColor: colors.primary + '15' }]}>
+                <Text style={[styles.lockedCtaText, { color: colors.primary }]}>{t('pro_modal.unlock', 'Unlock')}</Text>
+                <Ionicons name="arrow-forward" size={14} color={colors.primary} />
+              </View>
+            </TouchableOpacity>
           )}
         </View>
 
-        {/* 5. Savings Analysis (Pro-gated) */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+        {/* ── 5. Savings Analysis (Pro-gated) ────────────────────── */}
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.savings')}</Text>
-            {!isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>}
+            <View style={[styles.sectionIconCircle, { backgroundColor: colors.success + '18' }]}>
+              <Ionicons name="cash-outline" size={14} color={colors.success} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.savings')}</Text>
+            {!isPro && (
+              <View style={[styles.proBadge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.proBadgeText}>PRO</Text>
+              </View>
+            )}
           </View>
           {isPro ? (
-            <>
-              <View style={styles.savingsHighlight}>
-                <Text style={styles.savingsAmount}>
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.savingsHighlight, { backgroundColor: isDark ? 'rgba(52,211,153,0.10)' : 'rgba(5,150,105,0.06)', borderColor: isDark ? 'rgba(52,211,153,0.25)' : 'rgba(5,150,105,0.15)' }]}>
+                <View style={[styles.savingsIconCircle, { backgroundColor: colors.success + '18' }]}>
+                  <Ionicons name="leaf" size={20} color={colors.success} />
+                </View>
+                <Text style={[styles.savingsAmount, { color: colors.success }]}>
                   ${Number(savings?.potentialMonthlySavings ?? 0).toFixed(2)}
                 </Text>
-                <Text style={styles.savingsLabel}>{t('analytics.potential_savings')}</Text>
+                <Text style={[styles.savingsLabel, { color: colors.textMuted }]}>{t('analytics.potential_savings')}</Text>
               </View>
               {(savings?.duplicates && savings.duplicates.length > 0) ? (
                 <View style={styles.duplicatesSection}>
                   <Text style={[styles.duplicatesTitle, { color: colors.text }]}>{t('analytics.duplicates')}</Text>
                   {savings.duplicates.map((dup: any, i: number) => (
-                    <View key={i} style={styles.duplicateRow}>
-                      <Text style={styles.duplicateIcon}>⚠️</Text>
-                      <Text style={[styles.duplicateText, { color: colors.textMuted }]} numberOfLines={2}>
+                    <View key={i} style={[styles.duplicateRow, { backgroundColor: colors.surface2 }]}>
+                      <View style={[styles.duplicateIconCircle, { backgroundColor: colors.warning + '18' }]}>
+                        <Ionicons name="alert" size={14} color={colors.warning} />
+                      </View>
+                      <Text style={[styles.duplicateText, { color: colors.textSecondary }]} numberOfLines={2}>
                         {dup.name || dup.names?.join(' & ') || t('analytics.duplicate_label', { number: i + 1 })}
                       </Text>
                     </View>
@@ -384,58 +473,109 @@ export default function AnalyticsScreen() {
               ) : (
                 <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
               )}
-            </>
-          ) : (
-            <View style={[styles.lockedContainer, { backgroundColor: colors.surface2 }]}>
-              <Text style={styles.lockIcon}>🔒</Text>
-              <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_savings')}</Text>
             </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.lockedContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => setProModal({ visible: true, feature: 'savings' })}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.lockIconCircle, { backgroundColor: isDark ? 'rgba(52,211,153,0.12)' : 'rgba(5,150,105,0.08)' }]}>
+                <Ionicons name="cash-outline" size={24} color={colors.success} />
+              </View>
+              <Text style={[styles.lockedTitle, { color: colors.text }]}>{t('analytics.savings')}</Text>
+              <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_savings')}</Text>
+              <View style={[styles.lockedCta, { backgroundColor: colors.success + '15' }]}>
+                <Text style={[styles.lockedCtaText, { color: colors.success }]}>{t('pro_modal.unlock', 'Unlock')}</Text>
+                <Ionicons name="arrow-forward" size={14} color={colors.success} />
+              </View>
+            </TouchableOpacity>
           )}
         </View>
 
-        {/* 6. Top 5 Most Expensive */}
+        <ProFeatureModal
+          visible={proModal.visible}
+          onClose={() => setProModal({ ...proModal, visible: false })}
+          feature={proModal.feature}
+        />
+
+        {/* ── 6. Top 5 Most Expensive ────────────────────────────── */}
         {top5.length > 0 && (
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.top5')}</Text>
-            {top5.map((sub, index) => {
-              const catInfo = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
-              const monthly = getMonthlyAmount(sub);
-              return (
-                <View key={sub.id} style={styles.top5Row}>
-                  <Text style={styles.top5Rank}>{index + 1}</Text>
-                  <View style={[styles.top5Icon, { backgroundColor: catInfo?.color || colors.primary }]}>
-                    <Text style={styles.top5Emoji}>{catInfo?.emoji || '📦'}</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIconCircle, { backgroundColor: colors.error + '18' }]}>
+                <Ionicons name="trophy-outline" size={14} color={colors.error} />
+              </View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.top5')}</Text>
+              <View style={[styles.sectionBadge, { backgroundColor: colors.error + '18' }]}>
+                <Text style={[styles.sectionBadgeText, { color: colors.error }]}>{top5.length}</Text>
+              </View>
+            </View>
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {top5.map((sub, index) => {
+                const catInfo = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
+                const monthly = getMonthlyAmount(sub);
+                return (
+                  <View key={sub.id} style={[styles.top5Row, index < top5.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
+                    <View style={[styles.top5RankBadge, { backgroundColor: index === 0 ? colors.warning + '20' : index === 1 ? colors.textMuted + '20' : colors.secondary + '15' }]}>
+                      <Text style={[styles.top5Rank, { color: index === 0 ? colors.warning : index === 1 ? colors.textMuted : colors.textSecondary }]}>{index + 1}</Text>
+                    </View>
+                    <View style={[styles.top5Icon, { backgroundColor: (catInfo?.color || colors.primary) + '18' }]}>
+                      <Text style={styles.top5Emoji}>{catInfo?.emoji || '📦'}</Text>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                      <Text style={[styles.top5Period, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
+                      </Text>
+                    </View>
+                    <Text style={[styles.top5Monthly, { color: colors.primary }]}>${Number(monthly).toFixed(0)}/mo</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                    <Text style={[styles.top5Period, { color: colors.textSecondary }]}>
-                      {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
-                    </Text>
-                  </View>
-                  <Text style={styles.top5Monthly}>${Number(monthly).toFixed(0)}/mo</Text>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </View>
         )}
 
-        {/* All Subscriptions */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>{t('analytics.all_subscriptions')}</Text>
-          {activeSubs.map((sub) => (
-            <View key={sub.id} style={styles.subRow}>
-              <View style={[styles.subIcon, { backgroundColor: colors.primaryLight }]}>
-                <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
-              </View>
-              <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-              <Text style={[styles.subAmount, { color: colors.textMuted }]}>
-                {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
-              </Text>
+        {/* ── 7. All Subscriptions ───────────────────────────────── */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconCircle, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="list-outline" size={14} color={colors.primary} />
             </View>
-          ))}
-          {activeSubs.length === 0 && (
-            <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
-          )}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.all_subscriptions')}</Text>
+            {activeSubs.length > 0 && (
+              <View style={[styles.sectionBadge, { backgroundColor: colors.primary + '18' }]}>
+                <Text style={[styles.sectionBadgeText, { color: colors.primary }]}>{activeSubs.length}</Text>
+              </View>
+            )}
+          </View>
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {activeSubs.map((sub, index) => (
+              <View key={sub.id} style={[styles.subRow, index < activeSubs.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
+                {sub.iconUrl ? (
+                  <Image source={{ uri: sub.iconUrl }} style={styles.subIconImage} />
+                ) : (
+                  <View style={[styles.subIcon, { backgroundColor: colors.primaryLight }]}>
+                    <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
+                  </View>
+                )}
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                  <Text style={[styles.subCategory, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.emoji || '📦'}{' '}
+                    {CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.label || sub.category}
+                  </Text>
+                </View>
+                <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
+                  {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
+                </Text>
+              </View>
+            ))}
+            {activeSubs.length === 0 && (
+              <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
+            )}
+          </View>
         </View>
 
         <View style={{ height: 40 }} />
@@ -444,118 +584,165 @@ export default function AnalyticsScreen() {
   );
 }
 
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+// ── StatCard ────────────────────────────────────────────────────────────────
+function StatCard({ icon, label, value, sub, color }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; value: string; sub?: string; color: string }) {
   const { colors } = useTheme();
   return (
-    <View style={[statStyles.card, { backgroundColor: colors.card, borderColor: 'rgba(108,71,255,0.2)' }]}>
-      <Text style={[statStyles.label, { color: colors.textMuted }]}>{label}</Text>
-      <Text style={[statStyles.value, { color: colors.primary }]} numberOfLines={1}>{value}</Text>
-      {sub && <Text style={[statStyles.sub, { color: colors.textSecondary }]}>{sub}</Text>}
+    <View style={[statStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[statStyles.iconCircle, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
+      <Text style={[statStyles.label, { color: colors.textMuted }]} numberOfLines={1}>{label}</Text>
+      <Text style={[statStyles.value, { color }]} numberOfLines={1}>{value}</Text>
+      {sub && <Text style={[statStyles.sub, { color: colors.textSecondary }]} numberOfLines={1}>{sub}</Text>}
     </View>
   );
 }
 
-function ForecastCard({ label, value }: { label: string; value: string | number }) {
+// ── ForecastCard ────────────────────────────────────────────────────────────
+function ForecastCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
   const { colors } = useTheme();
   return (
-    <View style={forecastStyles.card}>
-      <Text style={[forecastStyles.value, { color: colors.primary }]}>${value}</Text>
-      <Text style={[forecastStyles.label, { color: colors.textSecondary }]}>{label}</Text>
+    <View style={[forecastStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[forecastStyles.iconCircle, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon as any} size={16} color={color} />
+      </View>
+      <Text style={[forecastStyles.value, { color }]}>${value}</Text>
+      <Text style={[forecastStyles.label, { color: colors.textSecondary }]} numberOfLines={2}>{label}</Text>
     </View>
   );
 }
+
+// ── StyleSheets ─────────────────────────────────────────────────────────────
 
 const forecastStyles = StyleSheet.create({
   card: {
     flex: 1,
-    backgroundColor: 'rgba(108, 71, 255, 0.15)',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(108, 71, 255, 0.3)',
   },
-  value: { fontSize: 20, fontWeight: '900', color: COLORS.primary },
-  label: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '600' },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  value: { fontSize: 18, fontWeight: '900' },
+  label: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
 });
 
 const statStyles = StyleSheet.create({
   card: {
-    backgroundColor: CARD_BG,
-    borderRadius: CARD_RADIUS,
+    borderRadius: 20,
     padding: 16,
-    minWidth: 130,
+    minWidth: 140,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: 'rgba(108, 71, 255, 0.2)',
     gap: 4,
   },
-  label: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
-  value: { fontSize: 22, fontWeight: '900', color: COLORS.primary },
-  sub: { fontSize: 11, color: COLORS.textSecondary },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  label: { fontSize: 12, fontWeight: '600' },
+  value: { fontSize: 22, fontWeight: '900' },
+  sub: { fontSize: 11 },
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
-  title: { fontSize: 28, fontWeight: '900', color: COLORS.text },
-  subtitle: { fontSize: 14, color: COLORS.textMuted },
-  statsRow: { paddingHorizontal: 20, paddingVertical: 12 },
-  card: {
-    backgroundColor: CARD_BG,
-    marginHorizontal: 20,
-    marginBottom: 16,
+  container: { flex: 1 },
+
+  // Header
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerIconCircle: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    padding: 18,
-    gap: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  cardTitle: { fontSize: 17, fontWeight: '800', color: COLORS.text },
+  title: { fontSize: 28, fontWeight: '900', letterSpacing: -0.3 },
+  subtitle: { fontSize: 14, marginTop: 2 },
+
+  // Stats row
+  statsRow: { paddingHorizontal: 20, paddingVertical: 14 },
+
+  // Sections
+  section: { paddingHorizontal: 20, paddingTop: 16 },
   sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
   },
+  sectionIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: { fontSize: 17, fontWeight: '800', flex: 1 },
+  sectionBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  sectionBadgeText: { fontSize: 12, fontWeight: '800' },
+
+  // Card
+  card: {
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    gap: 12,
+  },
+
+  // Pro badge
   proBadge: {
-    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 3,
   },
-  proBadgeText: { fontSize: 11, fontWeight: '900', color: COLORS.text },
-
-  // Pie / Donut
-  pieContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 8,
-  },
-  pieCenterLabel: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  pieCenterAmount: { fontSize: 22, fontWeight: '900', color: COLORS.text },
-  pieCenterSub: { fontSize: 11, color: COLORS.textMuted },
+  proBadgeText: { fontSize: 11, fontWeight: '900', color: '#fff' },
 
   // Legend
-  legendContainer: { gap: 8, marginTop: 4 },
-  legendItem: {
+  legendContainer: { gap: 6, marginTop: 4 },
+  legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    paddingVertical: 6,
+    borderBottomWidth: 0.5,
   },
   legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  legendLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: COLORS.text },
-  legendPercent: { fontSize: 12, color: COLORS.textMuted, width: 36, textAlign: 'right' },
-  legendAmount: { fontSize: 13, fontWeight: '700', color: COLORS.primary, width: 52, textAlign: 'right' },
+  legendEmoji: { fontSize: 16, width: 22, textAlign: 'center' },
+  legendLabel: { flex: 1, fontSize: 13, fontWeight: '600' },
+  legendPercent: { fontSize: 12, width: 36, textAlign: 'right', fontWeight: '600' },
+  legendAmount: { fontSize: 13, fontWeight: '700', width: 56, textAlign: 'right' },
 
   // Card Breakdown
-  cardBreakdownRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  cardBreakdownIcon: { fontSize: 20, width: 28 },
+  cardBreakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
+  cardBreakdownIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardBreakdownLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  cardBreakdownLabel: { fontSize: 14, fontWeight: '700', color: COLORS.text, flex: 1 },
-  cardBreakdownAmount: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
-  barBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' },
+  cardBreakdownLabel: { fontSize: 14, fontWeight: '700', flex: 1 },
+  cardBreakdownAmount: { fontSize: 14, fontWeight: '800' },
+  barBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 6, borderRadius: 3 },
 
   // Forecast
@@ -564,73 +751,123 @@ const styles = StyleSheet.create({
   // Locked / Pro gate
   lockedContainer: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 32,
+    paddingHorizontal: 20,
     gap: 8,
+    borderRadius: 20,
+    borderWidth: 1,
   },
-  lockIcon: { fontSize: 32 },
-  lockedText: { fontSize: 14, color: COLORS.textMuted, textAlign: 'center' },
+  lockIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  lockedTitle: { fontSize: 17, fontWeight: '800' },
+  lockedText: { fontSize: 13, textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },
+  lockedCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  lockedCtaText: { fontSize: 14, fontWeight: '700' },
 
   // Savings
   savingsHighlight: {
-    backgroundColor: 'rgba(76, 175, 80, 0.15)',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(76, 175, 80, 0.3)',
   },
-  savingsAmount: { fontSize: 28, fontWeight: '900', color: '#4CAF50' },
-  savingsLabel: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
+  savingsIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  savingsAmount: { fontSize: 32, fontWeight: '900' },
+  savingsLabel: { fontSize: 12, fontWeight: '600' },
   duplicatesSection: { gap: 8 },
-  duplicatesTitle: { fontSize: 14, fontWeight: '700', color: COLORS.text },
-  duplicateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  duplicateIcon: { fontSize: 16 },
-  duplicateText: { flex: 1, fontSize: 13, color: COLORS.textMuted },
-  noDuplicates: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', paddingVertical: 8 },
+  duplicatesTitle: { fontSize: 14, fontWeight: '700' },
+  duplicateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    borderRadius: 12,
+  },
+  duplicateIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  duplicateText: { flex: 1, fontSize: 13 },
+  noDuplicates: { fontSize: 13, textAlign: 'center', paddingVertical: 8 },
 
   // Top 5
   top5Row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 6,
+    paddingVertical: 10,
+  },
+  top5RankBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   top5Rank: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '900',
-    color: COLORS.primary,
-    width: 20,
-    textAlign: 'center',
   },
   top5Icon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   top5Emoji: { fontSize: 18 },
-  top5Name: { fontSize: 14, fontWeight: '700', color: COLORS.text },
-  top5Period: { fontSize: 11, color: COLORS.textSecondary, marginTop: 1 },
-  top5Monthly: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
+  top5Name: { fontSize: 14, fontWeight: '700' },
+  top5Period: { fontSize: 11, marginTop: 2 },
+  top5Monthly: { fontSize: 14, fontWeight: '800', flexShrink: 0 },
 
   // All subs
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 4,
+    gap: 12,
+    paddingVertical: 8,
   },
   subIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  subIconText: { fontSize: 14, fontWeight: '800', color: COLORS.primary },
-  subName: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.text },
-  subAmount: { fontSize: 13, fontWeight: '700', color: COLORS.textMuted },
-  empty: { color: COLORS.textSecondary, fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  subIconImage: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+  },
+  subIconText: { fontSize: 16, fontWeight: '800' },
+  subName: { fontSize: 14, fontWeight: '700' },
+  subCategory: { fontSize: 11, marginTop: 2 },
+  subAmount: { fontSize: 13, fontWeight: '700', flexShrink: 0 },
+  empty: { fontSize: 14, textAlign: 'center', paddingVertical: 20 },
 });

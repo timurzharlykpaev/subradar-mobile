@@ -90,7 +90,53 @@ export default function SettingsScreen() {
 
   // Dynamic styles based on current theme
   const card = { backgroundColor: colors.surface, borderRadius: 16, padding: 14, marginHorizontal: 20, borderWidth: 1, borderColor: colors.border };
-  const sectionLabel = { fontSize: 12, fontWeight: '700' as const, color: colors.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.8, paddingHorizontal: 20, paddingBottom: 8, paddingTop: 16 };
+  const sectionLabel = { fontSize: 12, fontWeight: '700' as const, color: colors.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.8, paddingHorizontal: 20, paddingBottom: 8, paddingTop: 20 };
+
+  // Progress bar helper
+  const renderProgressBar = (used: number, limit: number | string, label: string) => {
+    const numLimit = typeof limit === 'string' ? 999 : limit;
+    const progress = numLimit > 0 ? Math.min(used / numLimit, 1) : 0;
+    return (
+      <View style={{ gap: 4 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.85)' }}>{label}</Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.95)' }}>{used}/{limit}</Text>
+        </View>
+        <View style={{ height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>
+          <View style={{ height: 6, borderRadius: 3, backgroundColor: progress > 0.85 ? '#FF6B6B' : 'rgba(255,255,255,0.85)', width: `${progress * 100}%` }} />
+        </View>
+      </View>
+    );
+  };
+
+  // Setting row helper
+  const renderSettingRow = (
+    icon: React.ComponentProps<typeof Ionicons>['name'],
+    iconBg: string,
+    label: string,
+    description: string | undefined,
+    right: React.ReactNode,
+    onPress?: () => void,
+    showDivider = true,
+  ) => (
+    <>
+      <TouchableOpacity
+        activeOpacity={onPress ? 0.6 : 1}
+        onPress={onPress}
+        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
+      >
+        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name={icon} size={18} color="#FFF" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>{label}</Text>
+          {description ? <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 1 }}>{description}</Text> : null}
+        </View>
+        {right}
+      </TouchableOpacity>
+      {showDivider && <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 64, marginRight: 16 }} />}
+    </>
+  );
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
@@ -102,17 +148,21 @@ export default function SettingsScreen() {
 
         {/* Profile */}
         <Text style={sectionLabel}>{t('settings.profile')}</Text>
-        <View style={[card, { gap: 0, padding: 16 }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 22, color: '#FFF', fontWeight: '800' }}>{user?.name?.[0] || 'U'}</Text>
+        <View style={[card, { padding: 16, overflow: 'hidden' }]}>
+          {/* Subtle decorative circles */}
+          <View style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary, opacity: 0.06 }} />
+          <View style={{ position: 'absolute', bottom: -30, right: 20, width: 60, height: 60, borderRadius: 30, backgroundColor: colors.primary, opacity: 0.04 }} />
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', shadowColor: colors.primary, shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 }}>
+              <Text style={{ fontSize: 24, color: '#FFF', fontWeight: '800' }}>{user?.name?.[0] || 'U'}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{user?.name || 'User'}</Text>
-              <Text style={{ fontSize: 13, color: colors.textSecondary }}>{user?.email || ''}</Text>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text }}>{user?.name || 'User'}</Text>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>{user?.email || ''}</Text>
             </View>
             <TouchableOpacity
-              style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: colors.primaryLight }}
+              style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.primaryLight, borderWidth: 1, borderColor: colors.primary + '30' }}
               onPress={() => router.push('/edit-profile' as any)}
             >
               <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>{t('common.edit')}</Text>
@@ -120,242 +170,298 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Currency */}
-        <Text style={sectionLabel}>{t('settings.default_currency')}</Text>
-        <View style={[card, { padding: 12 }]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {CURRENCIES.map((cur) => (
+        {/* Plan Card */}
+        <View style={{ marginTop: 20 }}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push('/subscription-plan' as any)}
+            style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 10, overflow: 'hidden', shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
+          >
+            {/* Decorative circles */}
+            <View style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+            <View style={{ position: 'absolute', bottom: -20, left: -20, width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.06)' }} />
+            <View style={{ position: 'absolute', top: 20, right: 40, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' }} />
+
+            {isPro ? (
+              <>
+                <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
+                  {isTrialing ? `⏳ ${t('settings.pro_trial')}` : `✨ ${t('settings.subradar_pro')}`}
+                </Text>
+                {isTrialing && billing?.trialDaysLeft != null && (
+                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{t('settings.days_remaining', { count: billing.trialDaysLeft })}</Text>
+                )}
+                {billing && (
+                  <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 12, padding: 12, gap: 10 }}>
+                    {renderProgressBar(
+                      billing.subscriptionCount,
+                      billing.subscriptionLimit ?? '∞',
+                      t('settings.sub_usage', { used: billing.subscriptionCount, limit: billing.subscriptionLimit ?? '∞' }),
+                    )}
+                    {renderProgressBar(
+                      billing.aiRequestsUsed,
+                      billing.aiRequestsLimit ?? '∞',
+                      t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' }),
+                    )}
+                  </View>
+                )}
+              </>
+            ) : (
+              <>
+                <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>✨ {t('settings.subradar_pro')}</Text>
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 }}>{t('settings.pro_features')}</Text>
+                {billing && (
+                  <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 12, padding: 12, gap: 10 }}>
+                    {renderProgressBar(
+                      billing.subscriptionCount,
+                      billing.subscriptionLimit ?? '∞',
+                      t('settings.sub_usage', { used: billing.subscriptionCount, limit: billing.subscriptionLimit ?? '∞' }),
+                    )}
+                    {renderProgressBar(
+                      billing.aiRequestsUsed,
+                      billing.aiRequestsLimit ?? '∞',
+                      t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' }),
+                    )}
+                  </View>
+                )}
                 <TouchableOpacity
-                  key={cur}
-                  style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: currency === cur ? colors.primary : colors.surface2, borderWidth: 1, borderColor: currency === cur ? colors.primary : colors.border }}
-                  onPress={() => setCurrency(cur)}
+                  style={{ backgroundColor: '#FFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 }}
+                  onPress={canTrial ? handleStartTrial : handleUpgrade}
+                  disabled={startTrialMutation.isPending || checkoutMutation.isPending}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
+                  {startTrialMutation.isPending || checkoutMutation.isPending ? (
+                    <ActivityIndicator color={colors.primary} />
+                  ) : (
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>
+                      {canTrial ? t('settings.start_trial') : t('settings.upgrade')}
+                    </Text>
+                  )}
                 </TouchableOpacity>
-              ))}
+              </>
+            )}
+            {/* Tap hint */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{t('settings.manage_subscription')}</Text>
+              <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.6)" />
             </View>
-          </ScrollView>
+          </TouchableOpacity>
+        </View>
+
+        {/* Preferences */}
+        <Text style={sectionLabel}>{t('settings.default_currency')}</Text>
+        <View style={[card, { padding: 0 }]}>
+          {renderSettingRow(
+            'cash-outline',
+            colors.success,
+            t('settings.default_currency'),
+            undefined,
+            null,
+            undefined,
+            false,
+          )}
+          <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {CURRENCIES.map((cur) => (
+                  <TouchableOpacity
+                    key={cur}
+                    style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: currency === cur ? colors.primary : colors.surface2, borderWidth: 1, borderColor: currency === cur ? colors.primary : colors.border }}
+                    onPress={() => setCurrency(cur)}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
         </View>
 
         {/* Language */}
         <Text style={sectionLabel}>{t('settings.language')}</Text>
-        <View style={[card, { gap: 8 }]}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {LANGUAGES.map((lang) => (
-              <TouchableOpacity
-                key={lang.code}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: language === lang.code ? colors.primaryLight : colors.surface2, borderWidth: 1.5, borderColor: language === lang.code ? colors.primary : colors.border }}
-                onPress={() => setLanguage(lang.code)}
-              >
-                <Text style={{ fontSize: 16 }}>{lang.flag}</Text>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: language === lang.code ? colors.primary : colors.textSecondary }}>{lang.label}</Text>
-              </TouchableOpacity>
-            ))}
+        <View style={[card, { padding: 0 }]}>
+          {renderSettingRow(
+            'language-outline',
+            '#3B82F6',
+            t('settings.language'),
+            undefined,
+            null,
+            undefined,
+            false,
+          )}
+          <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {LANGUAGES.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: language === lang.code ? colors.primaryLight : colors.surface2, borderWidth: 1.5, borderColor: language === lang.code ? colors.primary : colors.border }}
+                  onPress={() => setLanguage(lang.code)}
+                >
+                  <Text style={{ fontSize: 16 }}>{lang.flag}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: language === lang.code ? colors.primary : colors.textSecondary }}>{lang.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 
-        {/* Theme */}
+        {/* Appearance & Notifications */}
         <Text style={sectionLabel}>{t('settings.theme')}</Text>
         <View style={[card, { padding: 0 }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name={isDark ? 'moon' : 'sunny-outline'} size={20} color={colors.primary} />
-              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>
-                {isDark ? t('settings.dark_mode') : t('settings.light_mode')}
-              </Text>
-            </View>
+          {renderSettingRow(
+            isDark ? 'moon' : 'sunny-outline',
+            '#8B5CF6',
+            isDark ? t('settings.dark_mode') : t('settings.light_mode'),
+            undefined,
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor="#FFFFFF"
-            />
-          </View>
+            />,
+            undefined,
+            false,
+          )}
         </View>
 
         {/* Notifications */}
         <Text style={sectionLabel}>{t('settings.notifications')}</Text>
-        <View style={[card, { gap: 12 }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 15, color: colors.text, fontWeight: '500' }}>{t('settings.push_notifications')}</Text>
+        <View style={[card, { padding: 0 }]}>
+          {renderSettingRow(
+            'notifications-outline',
+            colors.warning,
+            t('settings.push_notifications'),
+            undefined,
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationsToggle}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor="#FFFFFF"
-            />
-          </View>
-          <Text style={{ fontSize: 13, color: colors.textSecondary }}>{t('settings.remind_before')}</Text>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {[1, 3, 7].map((day) => (
-              <TouchableOpacity
-                key={day}
-                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: reminderDays.includes(day) ? colors.primary : colors.surface2, borderWidth: 1, borderColor: reminderDays.includes(day) ? colors.primary : colors.border }}
-                onPress={() => toggleReminderDay(day)}
-              >
-                <Text style={{ fontSize: 13, fontWeight: '600', color: reminderDays.includes(day) ? '#FFF' : colors.text }}>
-                  {t('settings.days_before', { count: day })}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            />,
+            undefined,
+            true,
+          )}
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10 }}>
+            <Text style={{ fontSize: 13, color: colors.textSecondary }}>{t('settings.remind_before')}</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {[1, 3, 7].map((day) => (
+                <TouchableOpacity
+                  key={day}
+                  style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: reminderDays.includes(day) ? colors.primary : colors.surface2, borderWidth: 1, borderColor: reminderDays.includes(day) ? colors.primary : colors.border }}
+                  onPress={() => toggleReminderDay(day)}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: reminderDays.includes(day) ? '#FFF' : colors.text }}>
+                    {t('settings.days_before', { count: day })}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 
         {/* Payment Cards */}
         <Text style={sectionLabel}>{t('settings.payment_cards')}</Text>
-        <View style={[card, { gap: 10 }]}>
-          {cards.map((card_item) => (
-            <View key={card_item.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: card_item.color }} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>{card_item.nickname}</Text>
-                <Text style={{ fontSize: 12, color: colors.textSecondary }}>••••{card_item.last4} · {card_item.brand}</Text>
+        <View style={[card, { padding: 0 }]}>
+          {cards.map((card_item, index) => (
+            <React.Fragment key={card_item.id}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, gap: 12 }}>
+                <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: card_item.color + '20', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: card_item.color }} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>{card_item.nickname}</Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 1 }}>
+                    ••••{card_item.last4} · {card_item.brand}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.error + '15', alignItems: 'center', justifyContent: 'center' }}
+                  onPress={() => Alert.alert(t('common.delete'), t('settings.remove_card', { name: card_item.nickname }), [
+                    { text: t('common.cancel'), style: 'cancel' },
+                    { text: t('common.delete'), style: 'destructive', onPress: async () => {
+                      try { await cardsApi.delete(card_item.id); } catch {}
+                      removeCard(card_item.id);
+                    }},
+                  ])}
+                >
+                  <Ionicons name="trash-outline" size={15} color={colors.error} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => Alert.alert(t('common.delete'), t('settings.remove_card', { name: card_item.nickname }), [
-                { text: t('common.cancel'), style: 'cancel' },
-                { text: t('common.delete'), style: 'destructive', onPress: async () => {
-                  try { await cardsApi.delete(card_item.id); } catch {}
-                  removeCard(card_item.id);
-                }},
-              ])}>
-                <Ionicons name="trash-outline" size={18} color={colors.error} />
-              </TouchableOpacity>
-            </View>
+              {index < cards.length - 1 && (
+                <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 64, marginRight: 16 }} />
+              )}
+            </React.Fragment>
           ))}
+          {cards.length > 0 && (
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
+          )}
           <TouchableOpacity
-            style={{ paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primaryLight, alignItems: 'center' }}
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, gap: 6 }}
             onPress={() => setShowAddCard(true)}
           >
+            <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
             <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primary }}>{t('settings.add_payment_card')}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Reports */}
+        {/* Reports & Data */}
         <Text style={sectionLabel}>{t('settings.reports')}</Text>
         <View style={[card, { padding: 0 }]}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
-            onPress={() => router.push('/reports' as any)}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Ionicons name="document-text-outline" size={18} color={colors.primary} />
-              <Text style={{ fontSize: 15, color: colors.text }}>{t('settings.generate_report')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Plan Card */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => router.push('/subscription-plan' as any)}
-          style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 8, marginBottom: 8, marginTop: 16, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
-        >
-          {isPro ? (
-            <>
-              <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
-                {isTrialing ? `⏳ ${t('settings.pro_trial')}` : `✨ ${t('settings.subradar_pro')}`}
-              </Text>
-              {isTrialing && billing?.trialDaysLeft != null && (
-                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{t('settings.days_remaining', { count: billing.trialDaysLeft })}</Text>
-              )}
-              {billing && (
-                <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 10, padding: 10 }}>
-                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }}>
-                    {t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' })}
-                  </Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <>
-              <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>✨ {t('settings.subradar_pro')}</Text>
-              <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 }}>{t('settings.pro_features')}</Text>
-              {billing && (
-                <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 10, padding: 10, gap: 4 }}>
-                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }}>
-                    {t('settings.sub_usage', { used: billing.subscriptionCount, limit: billing.subscriptionLimit ?? '∞' })}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' }}>
-                    {t('settings.ai_usage', { used: billing.aiRequestsUsed, limit: billing.aiRequestsLimit ?? '∞' })}
-                  </Text>
-                </View>
-              )}
-              <TouchableOpacity
-                style={{ backgroundColor: '#FFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 }}
-                onPress={canTrial ? handleStartTrial : handleUpgrade}
-                disabled={startTrialMutation.isPending || checkoutMutation.isPending}
-              >
-                {startTrialMutation.isPending || checkoutMutation.isPending ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : (
-                  <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>
-                    {canTrial ? t('settings.start_trial') : t('settings.upgrade')}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </>
+          {renderSettingRow(
+            'document-text-outline',
+            '#3B82F6',
+            t('settings.generate_report'),
+            undefined,
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => router.push('/reports' as any),
+            true,
           )}
-          {/* Tap hint */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{t('settings.manage_subscription')}</Text>
-            <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.6)" />
-          </View>
-        </TouchableOpacity>
+          {renderSettingRow(
+            'share-outline',
+            colors.success,
+            t('settings.export_data'),
+            undefined,
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => Alert.alert(t('settings.export_data'), t('settings.data_exported')),
+            false,
+          )}
+        </View>
 
         {/* Account */}
         <Text style={sectionLabel}>{t('settings.account')}</Text>
-        <View style={[card, { padding: 0, gap: 0 }]}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
-            onPress={() => Alert.alert(t('settings.export_data'), t('settings.data_exported'))}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Ionicons name="share-outline" size={18} color={colors.primary} />
-              <Text style={{ fontSize: 15, color: colors.text }}>{t('settings.export_data')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
-          <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 16 }} />
-          <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
-            onPress={() => Alert.alert(t('settings.logout'), t('common.are_you_sure'), [
+        <View style={[card, { padding: 0, backgroundColor: colors.error + '08', borderColor: colors.error + '20' }]}>
+          {renderSettingRow(
+            'log-out-outline',
+            colors.error,
+            t('settings.logout'),
+            undefined,
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => Alert.alert(t('settings.logout'), t('common.are_you_sure'), [
               { text: t('common.cancel'), style: 'cancel' },
               { text: t('settings.logout'), style: 'destructive', onPress: () => { logout(); router.replace('/onboarding'); } },
-            ])}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Ionicons name="log-out-outline" size={18} color={colors.error} />
-              <Text style={{ fontSize: 15, color: colors.error, fontWeight: '600' }}>{t('settings.logout')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Danger Zone */}
-        <Text style={sectionLabel}>{t('settings.danger_zone')}</Text>
-        <View style={[card, { padding: 0, gap: 0 }]}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
-            onPress={() => Alert.alert(t('settings.reset_onboarding'), t('settings.reset_onboarding_confirm'), [
+            ]),
+            true,
+          )}
+          {renderSettingRow(
+            'refresh-outline',
+            colors.warning,
+            t('settings.reset_onboarding'),
+            undefined,
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => Alert.alert(t('settings.reset_onboarding'), t('settings.reset_onboarding_confirm'), [
               { text: t('common.cancel'), style: 'cancel' },
               { text: t('settings.reset_onboarding'), style: 'destructive', onPress: () => {
                 logout();
                 router.replace('/onboarding' as any);
               }},
-            ])}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Ionicons name="refresh-outline" size={18} color={colors.warning} />
-              <Text style={{ fontSize: 15, color: colors.warning, fontWeight: '600' }}>{t('settings.reset_onboarding')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
-          <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 16 }} />
-          <TouchableOpacity
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}
-            onPress={() => Alert.alert(t('settings.delete_account'), t('settings.delete_account_confirm'), [
+            ]),
+            true,
+          )}
+          {renderSettingRow(
+            'trash-outline',
+            colors.error,
+            t('settings.delete_account'),
+            undefined,
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => Alert.alert(t('settings.delete_account'), t('settings.delete_account_confirm'), [
               { text: t('common.cancel'), style: 'cancel' },
               { text: t('settings.delete_account'), style: 'destructive', onPress: async () => {
                 try {
@@ -365,34 +471,31 @@ export default function SettingsScreen() {
                 logout();
                 router.replace('/onboarding' as any);
               }},
-            ])}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Ionicons name="trash-outline" size={18} color={colors.error} />
-              <Text style={{ fontSize: 15, color: colors.error, fontWeight: '600' }}>{t('settings.delete_account')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
+            ]),
+            false,
+          )}
         </View>
 
-        <Text style={{ textAlign: 'center', fontSize: 12, color: colors.textMuted, paddingVertical: 24 }}>{t('settings.version')}</Text>
+        {/* Version */}
+        <Text style={{ textAlign: 'center', fontSize: 11, color: colors.textMuted, paddingVertical: 28, letterSpacing: 0.3 }}>{t('settings.version')}</Text>
       </ScrollView>
 
       {/* Add Card Modal */}
       <Modal visible={showAddCard} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 40 }}>
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 4 }} />
             <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text }}>{t('settings.add_card_title')}</Text>
 
             <TextInput
-              style={{ backgroundColor: colors.surface2, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
+              style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
               value={cardForm.nickname}
               onChangeText={(v) => setCardForm((f) => ({ ...f, nickname: v }))}
               placeholder={t('settings.card_nickname_placeholder')}
               placeholderTextColor={colors.textMuted}
             />
             <TextInput
-              style={{ backgroundColor: colors.surface2, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
+              style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
               value={cardForm.last4}
               onChangeText={(v) => setCardForm((f) => ({ ...f, last4: v.slice(0, 4) }))}
               placeholder={t('settings.card_last4_placeholder')}
@@ -401,7 +504,7 @@ export default function SettingsScreen() {
               placeholderTextColor={colors.textMuted}
             />
 
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>{t('settings.card_brand')}</Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 }}>{t('settings.card_brand')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {CARD_BRANDS.map((brand) => (
                 <TouchableOpacity
@@ -414,7 +517,7 @@ export default function SettingsScreen() {
               ))}
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
               <TouchableOpacity
                 style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.surface2, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
                 onPress={() => setShowAddCard(false)}

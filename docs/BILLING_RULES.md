@@ -76,12 +76,33 @@ This ensures user sees value before trial starts, preventing wasted trial days.
 
 ## Paywall Display
 
-Paywall screen must clearly show:
-- What's included in Free
-- What's included in Pro
-- What's included in Team
-- Why to upgrade
-- What result user gets
+### Paywall Screen (`app/paywall.tsx`)
+Premium plan selection with animated cards, billing period toggle, radio selection.
+- 3 plan cards (Free/Pro/Team) with staggered entrance animation
+- Plan-specific icons and colors: Free=gray, Pro=purple, Team=cyan
+- Expandable feature list per card (included + missing)
+- Dynamic CTA: trial start / upgrade / continue free
+- Monthly/Yearly toggle with -30% save badge
+
+### Subscription Plan Screen (`app/subscription-plan.tsx`)
+Current plan details with usage bars, status badges, cancel flow.
+- Hero card in plan color with decorative circles
+- Progress bars for subscriptions + AI usage (red at 90%+)
+- Action buttons: trial/upgrade/cancel
+
+### Pro Feature Modal (`src/components/ProFeatureModal.tsx`)
+Animated popup shown when user taps a Pro-gated section.
+- Feature-specific icon + description (forecast, savings, AI, workspace)
+- Pro benefits list + trial/upgrade CTA
+- Replaces old "🔒 Upgrade" inline text
+
+### Feature Gating Triggers
+Paywall appears when:
+- Free user hits subscription limit (AddSubscriptionSheet)
+- Free user taps locked analytics section (ProFeatureModal)
+- User taps "Upgrade" chip on subscriptions tab
+- User taps plan card in Settings
+- User enters Workspace without Team plan
 
 ## Billing Provider
 - Lemon Squeezy (Merchant of Record)
