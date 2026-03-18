@@ -156,7 +156,6 @@ export default function AnalyticsScreen() {
   const [byCategoryData, setByCategoryData] = useState<any[]>([]);
   const [byCardData, setByCardData] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any>(null);
-  const [savings, setSavings] = useState<any>(null);
   const [proModal, setProModal] = useState<{ visible: boolean; feature: string }>({ visible: false, feature: 'forecast' });
 
   useEffect(() => {
@@ -176,7 +175,6 @@ export default function AnalyticsScreen() {
       setByCardData(r.data || []);
     }).catch(() => {});
     analyticsApi.getForecast().then((r) => setForecast(r.data)).catch(() => {});
-    analyticsApi.getSavings().then((r) => setSavings(r.data)).catch(() => {});
   }, []);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
@@ -452,27 +450,11 @@ export default function AnalyticsScreen() {
                   <Ionicons name="leaf" size={20} color={colors.success} />
                 </View>
                 <Text style={[styles.savingsAmount, { color: colors.success }]}>
-                  ${Number(savings?.potentialMonthlySavings ?? 0).toFixed(2)}
+                  ${Number(summary?.savingsPossible ?? 0).toFixed(2)}
                 </Text>
                 <Text style={[styles.savingsLabel, { color: colors.textMuted }]}>{t('analytics.potential_savings')}</Text>
               </View>
-              {(savings?.duplicates && savings.duplicates.length > 0) ? (
-                <View style={styles.duplicatesSection}>
-                  <Text style={[styles.duplicatesTitle, { color: colors.text }]}>{t('analytics.duplicates')}</Text>
-                  {savings.duplicates.map((dup: any, i: number) => (
-                    <View key={i} style={[styles.duplicateRow, { backgroundColor: colors.surface2 }]}>
-                      <View style={[styles.duplicateIconCircle, { backgroundColor: colors.warning + '18' }]}>
-                        <Ionicons name="alert" size={14} color={colors.warning} />
-                      </View>
-                      <Text style={[styles.duplicateText, { color: colors.textSecondary }]} numberOfLines={2}>
-                        {dup.name || dup.names?.join(' & ') || t('analytics.duplicate_label', { number: i + 1 })}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
-              )}
+              <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
             </View>
           ) : (
             <TouchableOpacity
