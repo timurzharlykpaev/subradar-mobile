@@ -1,17 +1,35 @@
 appId: com.goalin.subradar
 name: "04b - Add Subscription AI"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Open add subscription sheet
 - tapOn:
-    id: "add-subscription-fab"
+    id: "add-sub-sheet"
     optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
     optional: true
+
+# Switch to AI tab
+- tapOn:
+    id: "tab-ai"
+    optional: true
+- takeScreenshot: 04b_ai_tab
+
+# Verify AI wizard is visible
 - assertVisible:
-    text: "ИИ Ассистент"
+    id: "ai-wizard"
     optional: true
-- tapOn:
-    text: "ИИ Ассистент"
+
+# Verify AI input is available
+- assertVisible:
+    id: "ai-wizard-input"
     optional: true
+- takeScreenshot: 04b_ai_wizard
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

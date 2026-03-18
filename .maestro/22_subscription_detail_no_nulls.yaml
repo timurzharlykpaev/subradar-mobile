@@ -1,32 +1,40 @@
 appId: com.goalin.subradar
-name: "Subscription Detail - No undefined/null"
+name: "22 - Subscription Detail - No undefined/null"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Subs, tab"
+    text: "Subscriptions"
     optional: true
-- tapOn:
-    text: "Subs"
-    optional: true
+
+# Verify subscriptions screen loaded
 - assertVisible:
-    text: "Подписки"
+    id: "subscriptions-screen"
     optional: true
+
+# Verify subscription list
+- assertVisible:
+    id: "subscription-list"
+    optional: true
+- takeScreenshot: 22n_subscriptions_list
+
+# Tap first subscription to open detail
 - tapOn:
-    index: 0
+    id: "subscription-list"
     optional: true
+    index: 0
+- takeScreenshot: 22n_subscription_detail
+
 # Verify no broken data on detail screen
 - assertNotVisible: "undefined"
 - assertNotVisible: "null"
 - assertNotVisible: "NaN"
-- assertNotVisible: "Ошибка"
+- assertNotVisible: "Render Error"
 - assertNotVisible: "Invalid Date"
+
 # Verify key fields are present
 - assertVisible:
     text: "USD"
     optional: true
-- assertVisible:
-    text: "MONTHLY"
-    optional: true
+- takeScreenshot: 22n_detail_verified

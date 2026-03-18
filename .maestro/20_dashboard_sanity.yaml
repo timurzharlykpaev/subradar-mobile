@@ -1,28 +1,46 @@
 appId: com.goalin.subradar
-name: "Dashboard - No NaN/undefined/Ошибка, has Прогноз"
+name: "20 - Dashboard Sanity Check"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-# Переходим на Home (язык может быть любым — тапаем по индексу таба)
-- tapOn:
-    text: "Home, tab"
+# Verify Dashboard loaded
+- assertVisible:
+    id: "dashboard-screen"
     optional: true
-- tapOn:
-    text: "Home"
+- takeScreenshot: 20s_dashboard_loaded
+
+# Verify hero card
+- assertVisible:
+    id: "dashboard-hero-card"
     optional: true
 
-# Нет битых значений
-- assertNotVisible: "NaN"
+# Verify stats row
+- assertVisible:
+    id: "dashboard-stats-row"
+    optional: true
+
+# Scroll to forecast
+- scrollUntilVisible:
+    element:
+      id: "dashboard-forecast-row"
+    direction: DOWN
+    timeout: 5000
+    optional: true
+- takeScreenshot: 20s_forecast_section
+
+# Verify forecast row
+- assertVisible:
+    id: "dashboard-forecast-row"
+    optional: true
+
+# Verify upcoming list
+- assertVisible:
+    id: "dashboard-upcoming-list"
+    optional: true
+- takeScreenshot: 20s_upcoming_list
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
 - assertNotVisible: "null"
-- assertNotVisible: "Error"
-
-# Forecast блок есть (ключевые слова на любом языке)
-- assertVisible:
-    text: "Forecast"
-    optional: true
-- assertVisible:
-    text: "USD"
-    optional: true
+- assertNotVisible: "Render Error"

@@ -69,14 +69,14 @@ export default function WorkspaceScreen() {
   // ── No workspace yet ────────────────────────────────────────────────────
   if (!isLoading && !workspace) {
     return (
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView testID="workspace-screen-empty" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
           keyboardVerticalOffset={90}
         >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <ScrollView testID="workspace-scroll-empty" contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           {/* Icon + title */}
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, minHeight: 300 }}>
             <View style={{
@@ -115,6 +115,7 @@ export default function WorkspaceScreen() {
           <View style={{ paddingHorizontal: 20, paddingBottom: 120 }}>
             {!isPro ? (
               <TouchableOpacity
+                testID="btn-workspace-upgrade"
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -143,6 +144,7 @@ export default function WorkspaceScreen() {
                   {t('workspace.team_name_label')}
                 </Text>
                 <TextInput
+                  testID="input-workspace-name"
                   style={{
                     borderWidth: 1,
                     borderColor: colors.border,
@@ -161,6 +163,7 @@ export default function WorkspaceScreen() {
                 />
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
                   <TouchableOpacity
+                    testID="btn-cancel-create-workspace"
                     style={{
                       flex: 1,
                       borderRadius: 14,
@@ -177,6 +180,7 @@ export default function WorkspaceScreen() {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    testID="btn-confirm-create-workspace"
                     style={{
                       flex: 1.5,
                       borderRadius: 14,
@@ -198,6 +202,7 @@ export default function WorkspaceScreen() {
               </View>
             ) : (
               <TouchableOpacity
+                testID="btn-create-workspace"
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -228,13 +233,14 @@ export default function WorkspaceScreen() {
   const totalMembers = members.length;
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView testID="workspace-screen" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
         keyboardVerticalOffset={90}
       >
       <ScrollView
+        testID="workspace-scroll"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
@@ -274,6 +280,7 @@ export default function WorkspaceScreen() {
             </View>
           </View>
           <TouchableOpacity
+            testID="btn-invite-member"
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -404,6 +411,7 @@ export default function WorkspaceScreen() {
               {t('workspace.invite_member_email')}
             </Text>
             <TextInput
+              testID="input-invite-email"
               style={{
                 borderWidth: 1,
                 borderColor: colors.border,
@@ -424,6 +432,7 @@ export default function WorkspaceScreen() {
             />
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
               <TouchableOpacity
+                testID="btn-cancel-invite"
                 style={{
                   flex: 1,
                   borderRadius: 14,
@@ -440,6 +449,7 @@ export default function WorkspaceScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                testID="btn-send-invite"
                 style={{
                   flex: 1.5,
                   borderRadius: 14,
@@ -625,6 +635,7 @@ export default function WorkspaceScreen() {
                   </View>
                   {m.role !== 'OWNER' && (
                     <TouchableOpacity
+                      testID={`btn-remove-member-${m.id}`}
                       onPress={() => Alert.alert(t('workspace.remove_confirm_title'), t('workspace.remove_member_confirm'), [
                         { text: t('common.cancel'), style: 'cancel' },
                         { text: t('workspace.remove_btn'), style: 'destructive', onPress: () => removeMutation.mutate(m.id) },

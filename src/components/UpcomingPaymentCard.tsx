@@ -18,7 +18,7 @@ export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
     : 0;
 
   return (
-    <TouchableOpacity style={[styles.card, { backgroundColor: colors.surface, borderTopColor: cat?.color || colors.primary }]}>
+    <TouchableOpacity testID={`upcoming-card-${subscription.id}`} style={[styles.card, { backgroundColor: colors.surface, borderTopColor: cat?.color || colors.primary }]}>
       <Text style={styles.emoji}>{cat?.emoji || '📦'}</Text>
       <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{subscription.name}</Text>
       <Text style={[styles.amount, { color: colors.primary }]} numberOfLines={1}>

@@ -131,8 +131,8 @@ export default function SubscriptionDetailScreen() {
 
           <Text style={[styles.serviceName, { color: colors.text }]}>{subscription.name}</Text>
 
-          {subscription.plan && (
-            <Text style={[styles.plan, { color: colors.textSecondary }]}>{subscription.plan}</Text>
+          {subscription.currentPlan && (
+            <Text style={[styles.plan, { color: colors.textSecondary }]}>{subscription.currentPlan}</Text>
           )}
 
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>

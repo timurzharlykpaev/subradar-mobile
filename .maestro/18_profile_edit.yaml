@@ -1,14 +1,27 @@
 appId: com.goalin.subradar
 name: "18 - Profile Edit"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Navigate to Settings tab
 - tapOn:
     text: "Settings"
     optional: true
+
+# Verify settings screen loaded
+- assertVisible:
+    id: "settings-screen"
+    optional: true
+- takeScreenshot: 18_settings_screen
+
+# Tap Edit Profile
+- tapOn:
+    id: "btn-edit-profile"
+    optional: true
+- takeScreenshot: 18_edit_profile
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

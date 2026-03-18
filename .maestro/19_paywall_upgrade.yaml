@@ -1,9 +1,33 @@
 appId: com.goalin.subradar
 name: "19 - Paywall Upgrade Screen"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- assertNotVisible: "Ошибка"
+# Verify Dashboard loaded
+- assertVisible:
+    id: "dashboard-screen"
+    optional: true
+- takeScreenshot: 19_dashboard
+
+# Navigate to Settings to find plan card
+- tapOn:
+    text: "Settings"
+    optional: true
+
+# Tap on plan card to trigger paywall
+- tapOn:
+    id: "btn-plan-card"
+    optional: true
+- takeScreenshot: 19_paywall_screen
+
+# Check for upgrade button
+- assertVisible:
+    id: "btn-upgrade"
+    optional: true
+- takeScreenshot: 19_upgrade_button
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

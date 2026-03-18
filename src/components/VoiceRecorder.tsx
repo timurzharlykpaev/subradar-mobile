@@ -94,8 +94,8 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
     `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   return (
-    <View style={styles.container}>
-      <Pressable onPressIn={startRecording} onPressOut={stopRecording}>
+    <View testID="voice-recorder" style={styles.container}>
+      <Pressable testID="btn-record" onPressIn={startRecording} onPressOut={stopRecording}>
         {customButton ? (
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
             {customButton}

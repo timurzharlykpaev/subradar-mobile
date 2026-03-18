@@ -82,7 +82,7 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
           <TouchableWithoutFeedback>
-            <Animated.View style={[
+            <Animated.View testID="pro-modal" style={[
               styles.sheet,
               { backgroundColor: isDark ? '#1C1C2E' : '#FFFFFF', transform: [{ scale: scaleAnim }] },
             ]}>
@@ -112,6 +112,7 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
               {/* CTA */}
               {canTrial ? (
                 <TouchableOpacity
+                  testID="btn-upgrade"
                   style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
                   onPress={handleTrial}
                   disabled={startTrialMutation.isPending}
@@ -123,6 +124,7 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
+                  testID="btn-upgrade"
                   style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
                   onPress={handleUpgrade}
                 >

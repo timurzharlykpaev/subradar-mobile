@@ -1,12 +1,21 @@
 appId: com.goalin.subradar
 name: "04d - Delete Subscription"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Подписки"
+    text: "Subscriptions"
     optional: true
-- assertNotVisible: "Ошибка"
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+- takeScreenshot: 04d_subscriptions_list
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

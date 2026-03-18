@@ -1,62 +1,106 @@
 appId: com.goalin.subradar
 name: "00 - Onboarding + Auth flow"
 ---
-# Шаг 0: Showcase
-- tapOn: "Get started — it's free →"
-- waitForAnimationToEnd
+# Clean start
+- clearState
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
 
-# Шаги 1-6: листаем до экрана Auth
+# Step 0: Showcase
 - tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Get Started →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Get Started →"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Next →"
-    optional: true
-- waitForAnimationToEnd
+    id: "btn-get-started"
 
-# Auth — Email
+# Step 1: Language
+- extendedWaitUntil:
+    visible:
+      id: "step-language"
+    timeout: 5000
 - tapOn:
-    text: "✉️, Continue with Email"
+    id: "lang-en"
     optional: true
-- waitForAnimationToEnd
+- tapOn:
+    id: "btn-next"
 
-# Поле email
+# Step 2: Welcome
+- extendedWaitUntil:
+    visible:
+      id: "step-welcome"
+    timeout: 5000
 - tapOn:
-    text: "your@email.com"
-    optional: true
+    id: "btn-next"
+
+# Step 3: Features
+- extendedWaitUntil:
+    visible:
+      id: "step-features"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Step 4: Currency
+- extendedWaitUntil:
+    visible:
+      id: "step-currency"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Step 5: Auth
+- extendedWaitUntil:
+    visible:
+      id: "step-auth"
+    timeout: 5000
+- tapOn:
+    id: "btn-email"
+
+# Email input
+- extendedWaitUntil:
+    visible:
+      id: "email-input"
+    timeout: 5000
+- tapOn:
+    id: "email-input"
 - inputText: "demo@subradar.ai"
+- tapOn:
+    id: "btn-send-code"
 
-# Отправляем код
-- tapOn: "Send Code"
-- waitForAnimationToEnd
-
-# OTP — вводим через testID (принимает 6 цифр сразу)
+# OTP — enter digits one by one
+- extendedWaitUntil:
+    visible:
+      id: "otp-input-0"
+    timeout: 15000
 - tapOn:
     id: "otp-input-0"
-- inputText: "123456"
-- waitForAnimationToEnd
+- inputText: "1"
+- inputText: "2"
+- inputText: "3"
+- inputText: "4"
+- inputText: "5"
+- inputText: "6"
 
-# Верифицируем
-- tapOn: "Verify"
-- waitForAnimationToEnd
+# Verify
+- extendedWaitUntil:
+    visible:
+      id: "btn-verify"
+    timeout: 5000
+- tapOn:
+    id: "btn-verify"
+
+# Wait for auth to complete — Step 6: "Add first subscription"
+- extendedWaitUntil:
+    notVisible:
+      id: "btn-verify"
+    timeout: 15000
+
+# Step 6: Skip first subscription — go to dashboard
+- tapOn:
+    text: "Skip for now"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 10000
+    optional: true

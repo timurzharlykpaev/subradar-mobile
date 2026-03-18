@@ -309,6 +309,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       </TouchableWithoutFeedback>
 
       <Animated.View
+        testID="add-sub-sheet"
         style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}
       >
         <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
@@ -329,6 +330,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {TAB_KEYS.map((tabKey, i) => (
               <TouchableOpacity
                 key={tabKey}
+                testID={i === 0 ? 'tab-ai' : i === 1 ? 'tab-manual' : 'tab-screenshot'}
                 style={[
                   styles.tab,
                   { backgroundColor: colors.background },
@@ -375,6 +377,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     {t('add.name')} *
                   </Text>
                   <TextInput
+                    testID="name-input"
                     style={inputStyle}
                     value={form.name}
                     onChangeText={(v) => setF('name', v)}
@@ -421,6 +424,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         {t('add.amount')} *
                       </Text>
                       <TextInput
+                        testID="amount-input"
                         style={inputStyle}
                         value={form.amount}
                         onChangeText={(v) => setF('amount', v)}
@@ -609,6 +613,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </FormSection>
 
                 <TouchableOpacity
+                  testID="btn-save-sub"
                   style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }}
                   onPress={handleSave}
                 >

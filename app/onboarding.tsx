@@ -645,13 +645,13 @@ export default function OnboardingScreen() {
           </Animated.View>
         ))}
       </View>
-      <TouchableOpacity style={[styles.showcaseBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(1)}>
+      <TouchableOpacity testID="btn-get-started" style={[styles.showcaseBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(1)}>
         <Text style={styles.showcaseBtnText}>{t('onboarding.showcase_start')}</Text>
       </TouchableOpacity>
     </Animated.View>,
 
     // Step 1: Language (was Step 0)
-    <View key="language" style={styles.step}>
+    <View key="language" testID="step-language" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
         <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
@@ -662,6 +662,7 @@ export default function OnboardingScreen() {
         {LANGUAGES.map((lang) => (
           <TouchableOpacity
             key={lang.code}
+            testID={`lang-${lang.code}`}
             style={[
               styles.langChip,
               { backgroundColor: colors.surface, borderColor: colors.border },
@@ -679,7 +680,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 2: Welcome
-    <View key="welcome" style={styles.step}>
+    <View key="welcome" testID="step-welcome" style={styles.step}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImageLarge} />
         <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
@@ -690,7 +691,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 3: Features
-    <View key="features" style={styles.step}>
+    <View key="features" testID="step-features" style={styles.step}>
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('landing.features')}</Text>
       {FEATURES.map((f) => (
         <View key={f.key} style={[styles.featureRow, { backgroundColor: colors.surface }]}>
@@ -706,7 +707,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 4: Currency
-    <View key="currency" style={styles.step}>
+    <View key="currency" testID="step-currency" style={styles.step}>
       <View style={{ alignItems: 'center', marginBottom: 8 }}>
         <Svg width={140} height={140} viewBox="0 0 140 140">
           {/* Background circle */}
@@ -746,7 +747,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 5: Auth
-    <View key="auth" style={[styles.step, { flex: 1, justifyContent: 'center', paddingBottom: 8 }]}>
+    <View key="auth" testID="step-auth" style={[styles.step, { flex: 1, justifyContent: 'center', paddingBottom: 8 }]}>
       {/* Theme toggle top-right — use insets to stay below status bar */}
       <TouchableOpacity
         onPress={toggleTheme}
@@ -768,13 +769,14 @@ export default function OnboardingScreen() {
             SubRadar
           </Text>
           {Platform.OS === 'ios' && (
-            <TouchableOpacity style={[styles.socialBtn, { backgroundColor: isDark ? '#1C1C1E' : '#000' }]} onPress={handleAppleLogin} disabled={loading}>
+            <TouchableOpacity testID="btn-apple" style={[styles.socialBtn, { backgroundColor: isDark ? '#1C1C1E' : '#000' }]} onPress={handleAppleLogin} disabled={loading}>
               <AppleIcon />
               <Text style={styles.socialText}>{t('onboarding.continue_apple')}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
+            testID="btn-google"
             style={[styles.socialBtn, styles.googleBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => googlePromptAsync()}
             disabled={loading}
@@ -784,6 +786,7 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            testID="btn-email"
             style={[styles.socialBtn, styles.emailOtpBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => setOtpMode(true)}
             disabled={loading}
@@ -823,6 +826,7 @@ export default function OnboardingScreen() {
           </View>
 
           <TouchableOpacity
+            testID="btn-verify"
             style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }, otpCode.length < 6 && styles.emailBtnDisabled]}
             onPress={handleVerifyOtp}
             disabled={loading || otpCode.length < 6}
@@ -847,6 +851,7 @@ export default function OnboardingScreen() {
       ) : (
         <View style={styles.otpContainer}>
           <TextInput
+            testID="email-input"
             style={[styles.emailInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
             value={email}
             onChangeText={setEmail}
@@ -855,7 +860,7 @@ export default function OnboardingScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <TouchableOpacity style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={handleSendOtp} disabled={loading}>
+          <TouchableOpacity testID="btn-send-code" style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={handleSendOtp} disabled={loading}>
             <Text style={styles.emailBtnText}>{t('auth.send_code')}</Text>
           </TouchableOpacity>
 
@@ -944,12 +949,12 @@ export default function OnboardingScreen() {
         {step > 0 && step !== 5 && step !== 6 && (
           <View style={styles.footerBtns}>
             {step > 1 && (
-              <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
+              <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
                 <Text style={[styles.backBtnText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
               </TouchableOpacity>
             )}
             {step < steps.length - 1 && step !== 5 && (
-              <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
+              <TouchableOpacity testID="btn-next" style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
                 <Text style={styles.nextBtnText}>
                   {step === 2 ? t('onboarding.get_started') : t('onboarding.next')}
                 </Text>

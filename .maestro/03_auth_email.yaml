@@ -1,4 +1,17 @@
 appId: com.goalin.subradar
 name: "03 - Auth Email OTP (demo account)"
 ---
+# Full onboarding + auth via demo account
 - runFlow: ./00_setup_auth.yaml
+
+# Verify we landed on Dashboard after auth
+- assertVisible:
+    id: "dashboard-screen"
+    optional: true
+- takeScreenshot: 03_auth_complete
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

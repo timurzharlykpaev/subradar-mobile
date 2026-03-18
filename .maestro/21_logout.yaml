@@ -1,21 +1,38 @@
 appId: com.goalin.subradar
 name: "21 - Logout Flow"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Navigate to Settings tab
 - tapOn:
     text: "Settings"
     optional: true
+
+# Verify settings screen loaded
 - assertVisible:
-    text: "Settings, tab"
+    id: "settings-screen"
+    optional: true
+- takeScreenshot: 21_settings_screen
+
+# Scroll down to find Sign Out button
+- scrollUntilVisible:
+    element:
+      text: "Sign Out"
+    direction: DOWN
+    timeout: 5000
+    optional: true
+
+# Tap Sign Out / Log Out
+- tapOn:
+    text: "Sign Out"
     optional: true
 - tapOn:
-    text: "Settings"
+    text: "Log Out"
     optional: true
-    optional: true
+- takeScreenshot: 21_after_logout
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

@@ -124,15 +124,16 @@ export default function DashboardScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
+      <SafeAreaView testID="dashboard-screen-loading" style={[styles.container, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="dashboard-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
+        testID="dashboard-scroll"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
@@ -152,14 +153,14 @@ export default function DashboardScreen() {
                 <Text style={[styles.planBadgeText, { color: colors.primary }]}>PRO</Text>
               </View>
             )}
-            <TouchableOpacity style={[styles.avatar, { backgroundColor: colors.primary }]} onPress={() => router.push('/(tabs)/settings')}>
+            <TouchableOpacity testID="btn-avatar" style={[styles.avatar, { backgroundColor: colors.primary }]} onPress={() => router.push('/(tabs)/settings')}>
               <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'U'}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* ── Hero Card: Total Spend ────────────────────────────── */}
-        <View style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
+        <View testID="dashboard-hero-card" style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
           <View style={styles.heroDecor1} />
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
@@ -188,7 +189,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* ── Quick Stats ────────────────────────────────────── */}
-        <View style={styles.statsRow}>
+        <View testID="dashboard-stats-row" style={styles.statsRow}>
           <StatCard icon="checkmark-circle" label={t('subscriptions.active')} value={activeSubs.length} color={colors.success} />
           <StatCard icon="time" label={t('subscriptions.trial')} value={trialSubs.length} color={colors.warning} />
           <StatCard icon="close-circle" label={t('subscriptions.cancelled')} value={cancelledCount} color={colors.error} />
@@ -201,13 +202,14 @@ export default function DashboardScreen() {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.upcoming_7')}</Text>
               <Text style={[styles.sectionCount, { color: colors.primary }]}>{upcomingNext7.length}</Text>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
+            <ScrollView testID="dashboard-upcoming-list" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
               {upcomingNext7.map((sub) => {
                 const days = Math.ceil((new Date(sub.nextPaymentDate!).getTime() - Date.now()) / 86400000);
                 const cat = CATEGORIES.find((c) => c.id === sub.category);
                 const urgent = days <= 1;
                 return (
                   <TouchableOpacity
+                    testID={`dashboard-upcoming-${sub.id}`}
                     key={sub.id}
                     style={[styles.upcomingCard, { backgroundColor: colors.card, borderColor: urgent ? colors.warning + '60' : colors.border }]}
                     onPress={() => router.push(`/subscription/${sub.id}` as any)}
@@ -232,7 +234,7 @@ export default function DashboardScreen() {
         {/* ── Forecast ────────────────────────────────────────── */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
-          <View style={styles.forecastRow}>
+          <View testID="dashboard-forecast-row" style={styles.forecastRow}>
             <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={`${currency} ${forecast30.toFixed(0)}`} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
             <ForecastBox icon="trending-up" label="6 {t('paywall.month', 'mo')}" amount={`${currency} ${(totalMonthly * 6).toFixed(0)}`} sub={t('dashboard.forecast_title')} color={colors.success} />
             <ForecastBox icon="analytics" label="12 {t('paywall.month', 'mo')}" amount={`${currency} ${(totalMonthly * 12).toFixed(0)}`} sub={t('dashboard.annually')} color={colors.warning} />
@@ -254,6 +256,7 @@ export default function DashboardScreen() {
               const dotColor = daysLeft === null ? colors.textSecondary : daysLeft < 3 ? colors.error : daysLeft <= 7 ? colors.warning : colors.success;
               return (
                 <TouchableOpacity
+                  testID={`dashboard-trial-${sub.id}`}
                   key={sub.id}
                   style={[styles.trialCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                   onPress={() => router.push(`/subscription/${sub.id}` as any)}
@@ -283,7 +286,7 @@ export default function DashboardScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.active_subs_title')}</Text>
-              <TouchableOpacity onPress={() => router.push('/(tabs)/subscriptions')}>
+              <TouchableOpacity testID="btn-see-all-subs" onPress={() => router.push('/(tabs)/subscriptions')}>
                 <Text style={[styles.seeAll, { color: colors.primary }]}>{t('common.all')}</Text>
               </TouchableOpacity>
             </View>
@@ -291,6 +294,7 @@ export default function DashboardScreen() {
               const cat = CATEGORIES.find((c) => c.id === sub.category);
               return (
                 <TouchableOpacity
+                  testID={`dashboard-sub-${sub.id}`}
                   key={sub.id}
                   style={[styles.subCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                   onPress={() => router.push(`/subscription/${sub.id}` as any)}
@@ -306,7 +310,7 @@ export default function DashboardScreen() {
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {cat?.emoji} {sub.plan || cat?.label || sub.category}
+                      {cat?.emoji} {sub.currentPlan || cat?.label || sub.category}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
@@ -323,6 +327,7 @@ export default function DashboardScreen() {
         {duplicateCategories.length > 0 && (
           <View style={styles.section}>
             <TouchableOpacity
+              testID="btn-potential-savings"
               style={[styles.savingsCard, { backgroundColor: isDark ? '#1C2A20' : '#ECFDF5', borderColor: isDark ? '#22543D' : '#A7F3D0' }]}
               onPress={() => router.push('/(tabs)/analytics')}
               activeOpacity={0.8}
@@ -345,7 +350,7 @@ export default function DashboardScreen() {
         {monthlyTrend.length > 0 && monthlyTrend.some(d => d.amount > 0) && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.monthly_trend')}</Text>
-            <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View testID="dashboard-monthly-chart" style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <MonthlyBarChart data={monthlyTrend} />
             </View>
           </View>
@@ -355,7 +360,7 @@ export default function DashboardScreen() {
         {categoryData.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.by_category')}</Text>
-            <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View testID="dashboard-category-chart" style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <CategoryDonut categories={categoryData} />
             </View>
           </View>
@@ -375,7 +380,7 @@ export default function DashboardScreen() {
         {/* ── Quick Actions ──────────────────────────────────── */}
         <View style={[styles.section, { paddingBottom: 20 }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.quick_actions')}</Text>
-          <View style={styles.actionsRow}>
+          <View testID="dashboard-quick-actions" style={styles.actionsRow}>
             <QuickAction icon="add-circle-outline" label={t('dashboard.add_subscription')} onPress={() => router.push('/(tabs)/subscriptions')} color={colors.primary} />
             <QuickAction icon="document-text-outline" label={t('dashboard.generate_report')} onPress={() => router.push('/reports')} color={colors.success} />
             {!isPro && (

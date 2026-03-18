@@ -139,9 +139,9 @@ export default function SettingsScreen() {
   );
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView testID="settings-screen" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
+      <ScrollView testID="settings-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
@@ -162,6 +162,7 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>{user?.email || ''}</Text>
             </View>
             <TouchableOpacity
+              testID="btn-edit-profile"
               style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.primaryLight, borderWidth: 1, borderColor: colors.primary + '30' }}
               onPress={() => router.push('/edit-profile' as any)}
             >
@@ -173,6 +174,7 @@ export default function SettingsScreen() {
         {/* Plan Card */}
         <View style={{ marginTop: 20 }}>
           <TouchableOpacity
+            testID="btn-plan-card"
             activeOpacity={0.9}
             onPress={() => router.push('/subscription-plan' as any)}
             style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 10, overflow: 'hidden', shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
@@ -263,6 +265,7 @@ export default function SettingsScreen() {
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {CURRENCIES.map((cur) => (
                   <TouchableOpacity
+                    testID={`btn-currency-${cur}`}
                     key={cur}
                     style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: currency === cur ? colors.primary : colors.surface2, borderWidth: 1, borderColor: currency === cur ? colors.primary : colors.border }}
                     onPress={() => setCurrency(cur)}
@@ -291,6 +294,7 @@ export default function SettingsScreen() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {LANGUAGES.map((lang) => (
                 <TouchableOpacity
+                  testID={`btn-language-${lang.code}`}
                   key={lang.code}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: language === lang.code ? colors.primaryLight : colors.surface2, borderWidth: 1.5, borderColor: language === lang.code ? colors.primary : colors.border }}
                   onPress={() => setLanguage(lang.code)}
@@ -312,6 +316,7 @@ export default function SettingsScreen() {
             isDark ? t('settings.dark_mode') : t('settings.light_mode'),
             undefined,
             <Switch
+              testID="btn-theme-toggle"
               value={isDark}
               onValueChange={toggleTheme}
               trackColor={{ false: colors.border, true: colors.primary }}
@@ -331,6 +336,7 @@ export default function SettingsScreen() {
             t('settings.push_notifications'),
             undefined,
             <Switch
+              testID="btn-notifications-toggle"
               value={notificationsEnabled}
               onValueChange={handleNotificationsToggle}
               trackColor={{ false: colors.border, true: colors.primary }}
@@ -344,6 +350,7 @@ export default function SettingsScreen() {
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {[1, 3, 7].map((day) => (
                 <TouchableOpacity
+                  testID={`btn-reminder-${day}d`}
                   key={day}
                   style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: reminderDays.includes(day) ? colors.primary : colors.surface2, borderWidth: 1, borderColor: reminderDays.includes(day) ? colors.primary : colors.border }}
                   onPress={() => toggleReminderDay(day)}
@@ -394,6 +401,7 @@ export default function SettingsScreen() {
             <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
           )}
           <TouchableOpacity
+            testID="btn-add-card"
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, gap: 6 }}
             onPress={() => setShowAddCard(true)}
           >
@@ -488,6 +496,7 @@ export default function SettingsScreen() {
             <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text }}>{t('settings.add_card_title')}</Text>
 
             <TextInput
+              testID="input-card-nickname"
               style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
               value={cardForm.nickname}
               onChangeText={(v) => setCardForm((f) => ({ ...f, nickname: v }))}
@@ -495,6 +504,7 @@ export default function SettingsScreen() {
               placeholderTextColor={colors.textMuted}
             />
             <TextInput
+              testID="input-card-last4"
               style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
               value={cardForm.last4}
               onChangeText={(v) => setCardForm((f) => ({ ...f, last4: v.slice(0, 4) }))}
@@ -519,12 +529,14 @@ export default function SettingsScreen() {
 
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
               <TouchableOpacity
+                testID="btn-cancel-add-card"
                 style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.surface2, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
                 onPress={() => setShowAddCard(false)}
               >
                 <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textSecondary }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                testID="btn-save-card"
                 style={{ flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center' }}
                 onPress={handleAddCard}
               >

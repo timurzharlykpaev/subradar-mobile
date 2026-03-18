@@ -1,12 +1,69 @@
 appId: com.goalin.subradar
-name: "02 - Onboarding Currency"
+name: "02 - Onboarding Currency Selection"
 ---
-- assertVisible:
-    text: "Валюта"
+# Clean start — tests onboarding itself
+- clearState
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
+
+# Step 0: Showcase
+- tapOn:
+    id: "btn-get-started"
+
+# Step 1: Language
+- extendedWaitUntil:
+    visible:
+      id: "step-language"
+    timeout: 5000
+- tapOn:
+    id: "lang-en"
     optional: true
+- tapOn:
+    id: "btn-next"
+
+# Step 2: Welcome
+- extendedWaitUntil:
+    visible:
+      id: "step-welcome"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Step 3: Features
+- extendedWaitUntil:
+    visible:
+      id: "step-features"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Step 4: Currency
+- extendedWaitUntil:
+    visible:
+      id: "step-currency"
+    timeout: 5000
+- takeScreenshot: 02_currency_screen
+
+# Select EUR then back to USD
+- tapOn:
+    text: "EUR"
+    optional: true
+- takeScreenshot: 02_currency_eur
 - tapOn:
     text: "USD"
     optional: true
+- takeScreenshot: 02_currency_usd
+
+# Tap Next
 - tapOn:
-    text: "Далее"
-    optional: true
+    id: "btn-next"
+- takeScreenshot: 02_after_currency
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

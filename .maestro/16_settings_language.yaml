@@ -1,22 +1,39 @@
 appId: com.goalin.subradar
 name: "16 - Settings Language"
 ---
-
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Navigate to Settings tab
 - tapOn:
     text: "Settings"
     optional: true
-- assertNotVisible: "undefined"
 
-# Сбрасываем язык обратно на English чтобы не ломать последующие flows
-- tapOn:
-    text: "Language"
+# Verify settings screen loaded
+- assertVisible:
+    id: "settings-screen"
     optional: true
+- takeScreenshot: 16_settings_screen
+
+# Verify language button is present
+- assertVisible:
+    id: "btn-language-en"
+    optional: true
+
+# Tap a different language to test
 - tapOn:
-    text: "English"
+    id: "btn-language-es"
+    optional: true
+- takeScreenshot: 16_language_switched
+
+# Reset language back to English
+- tapOn:
+    id: "btn-language-en"
     optional: true
 - waitForAnimationToEnd
+- takeScreenshot: 16_language_restored
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

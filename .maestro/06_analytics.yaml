@@ -1,19 +1,32 @@
 appId: com.goalin.subradar
 name: "06 - Analytics Screen"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Analytics, tab"
-    optional: true
+# Navigate to Analytics tab
 - tapOn:
     text: "Analytics"
     optional: true
+
+# Verify analytics screen loaded
 - assertVisible:
-    text: "Analytics, tab"
+    id: "analytics-screen"
     optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 06_analytics_screen
+
+# Verify stats row is visible
+- assertVisible:
+    id: "analytics-stats-row"
+    optional: true
+
+# Verify monthly chart
+- assertVisible:
+    id: "analytics-monthly-chart"
+    optional: true
+- takeScreenshot: 06_analytics_charts
+
+# Render sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

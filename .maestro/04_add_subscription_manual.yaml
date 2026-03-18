@@ -1,20 +1,43 @@
 appId: com.goalin.subradar
 name: "04 - Add Subscription Manual"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Verify Dashboard loaded
 - assertVisible:
-    text: "Главная"
+    id: "dashboard-screen"
+    optional: true
+- takeScreenshot: 04_dashboard_loaded
+
+# Open add subscription sheet
+- tapOn:
+    id: "add-sub-sheet"
     optional: true
 - tapOn:
-    id: "add-subscription-fab"
+    id: "dashboard-quick-actions"
     optional: true
-    optional: true
-- assertVisible:
-    text: "Добавить подписку"
-    optional: true
+
+# Switch to Manual tab
 - tapOn:
-    text: "Вручную"
+    id: "tab-manual"
     optional: true
+- takeScreenshot: 04_manual_tab
+
+# Fill subscription name
+- tapOn:
+    id: "name-input"
+    optional: true
+- inputText: "Netflix"
+
+# Fill amount
+- tapOn:
+    id: "amount-input"
+    optional: true
+- inputText: "15.99"
+- takeScreenshot: 04_manual_form_filled
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

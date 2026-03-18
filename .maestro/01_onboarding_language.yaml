@@ -1,12 +1,48 @@
 appId: com.goalin.subradar
-name: "01 - Onboarding Language"
+name: "01 - Onboarding Language Selection"
 ---
-- launchApp:
-    clearState: true
+# Clean start
+- clearState
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
+
+# Feature Showcase
 - assertVisible: "SubRadar"
+- takeScreenshot: 01_feature_showcase
+
+# Tap Get Started
 - tapOn:
-    text: "English"
-    optional: true
+    id: "btn-get-started"
+
+# Language selection screen
+- extendedWaitUntil:
+    visible:
+      id: "step-language"
+    timeout: 5000
+- assertVisible: "Choose your language"
+- takeScreenshot: 01_language_select
+
+# Select English
 - tapOn:
-    text: "Далее"
+    id: "lang-en"
     optional: true
+
+# Tap Next
+- tapOn:
+    id: "btn-next"
+
+# Welcome step should appear
+- extendedWaitUntil:
+    visible:
+      id: "step-welcome"
+    timeout: 5000
+- takeScreenshot: 01_after_language
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

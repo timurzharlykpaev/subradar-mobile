@@ -1,15 +1,27 @@
 appId: com.goalin.subradar
 name: "14 - Analytics Categories"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Analytics, tab"
-    optional: true
+# Navigate to Analytics tab
 - tapOn:
     text: "Analytics"
     optional: true
-- assertNotVisible: "NaN"
+
+# Verify analytics screen loaded
+- assertVisible:
+    id: "analytics-screen"
+    optional: true
+- takeScreenshot: 14_analytics_screen
+
+# Verify category chart
+- assertVisible:
+    id: "analytics-category-chart"
+    optional: true
+- takeScreenshot: 14_category_chart
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

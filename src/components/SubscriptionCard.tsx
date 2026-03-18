@@ -39,6 +39,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
 
   return (
     <TouchableOpacity
+      testID={`subscription-card-${subscription.id}`}
       style={[styles.card, { backgroundColor: colors.surface }]}
       activeOpacity={0.85}
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}

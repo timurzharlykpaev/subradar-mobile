@@ -130,7 +130,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.sheetContainer}
         >
-          <View style={styles.sheet}>
+          <View testID="edit-sub-sheet" style={styles.sheet}>
             <View style={styles.handleBar} />
 
             <View style={styles.header}>
@@ -338,6 +338,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
 
                 {/* Actions */}
                 <TouchableOpacity
+                  testID="btn-save-edit"
                   style={[styles.saveBtn, saving && { opacity: 0.6 }]}
                   onPress={handleSave}
                   disabled={saving}
@@ -349,7 +350,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                <TouchableOpacity testID="btn-cancel-edit" style={styles.cancelBtn} onPress={onClose}>
                   <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>

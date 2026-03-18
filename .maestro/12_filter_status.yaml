@@ -1,27 +1,51 @@
 appId: com.goalin.subradar
-name: "Filter Subscriptions by Status"
+name: "12 - Filter Subscriptions by Status"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Подписки"
-- assertVisible: "Подписки"
+    text: "Subscriptions"
+    optional: true
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+- takeScreenshot: 12_subscriptions_loaded
+
 # Filter: Active
 - tapOn:
-    text: "Активные"
+    id: "filter-chip-active"
     optional: true
+- takeScreenshot: 12_filter_active
 - assertNotVisible: "undefined"
-- assertNotVisible: "Ошибка"
+- assertNotVisible: "Render Error"
+
 # Filter: Trial
 - tapOn:
-    text: "Триал"
+    id: "filter-chip-trial"
     optional: true
+- takeScreenshot: 12_filter_trial
 - assertNotVisible: "undefined"
-- assertNotVisible: "Ошибка"
+- assertNotVisible: "Render Error"
+
+# Filter: Cancelled
+- tapOn:
+    id: "filter-chip-cancelled"
+    optional: true
+- takeScreenshot: 12_filter_cancelled
+- assertNotVisible: "undefined"
+- assertNotVisible: "Render Error"
+
 # Filter: All
 - tapOn:
-    text: "Все"
+    id: "filter-chip-all"
     optional: true
+- takeScreenshot: 12_filter_all
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

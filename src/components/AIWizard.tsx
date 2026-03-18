@@ -316,7 +316,7 @@ export function AIWizard({ onDone }: Props) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-    <View style={{ flex: 1 }}>
+    <View testID="ai-wizard" style={{ flex: 1 }}>
       <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
         {/* ── Confirm screen ───────────────────────────────────────────── */}
@@ -378,6 +378,7 @@ export function AIWizard({ onDone }: Props) {
 
             {/* Text input — multiline textarea */}
             <TextInput
+              testID="ai-wizard-input"
               style={[styles.textInput, {
                 backgroundColor: bg,
                 color: colors.text,

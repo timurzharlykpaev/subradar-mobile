@@ -1,18 +1,32 @@
 appId: com.goalin.subradar
 name: "05 - Subscriptions List"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Subs, tab"
+    text: "Subscriptions"
     optional: true
-- tapOn:
-    text: "Subs"
-    optional: true
+
+# Verify subscriptions screen loaded
 - assertVisible:
-    text: "Subs, tab"
+    id: "subscriptions-screen"
     optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 05_subscriptions_screen
+
+# Verify subscription list is present
+- assertVisible:
+    id: "subscription-list"
+    optional: true
+
+# Verify filter chips are visible
+- assertVisible:
+    id: "filter-chips"
+    optional: true
+- takeScreenshot: 05_filter_chips
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

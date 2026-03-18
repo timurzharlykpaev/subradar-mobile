@@ -1,14 +1,26 @@
 appId: com.goalin.subradar
 name: "12 - Subscription Filter"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Subs, tab"
+    text: "Subscriptions"
     optional: true
-- tapOn:
-    text: "Subs"
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
     optional: true
-- assertNotVisible: "Ошибка"
+
+# Verify filter chips are present
+- assertVisible:
+    id: "filter-chips"
+    optional: true
+- takeScreenshot: 12b_filter_chips
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

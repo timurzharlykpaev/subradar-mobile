@@ -1,17 +1,33 @@
 appId: com.goalin.subradar
 name: "22 - Subscription Detail Navigation"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Subs, tab"
+    text: "Subscriptions"
     optional: true
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+- takeScreenshot: 22_subscriptions_list
+
+# Verify subscription list is present
+- assertVisible:
+    id: "subscription-list"
+    optional: true
+
+# Tap first subscription to open detail
 - tapOn:
-    text: "Subs"
+    id: "subscription-list"
     optional: true
-    optional: true
+    index: 0
+- takeScreenshot: 22_subscription_detail
+
+# Render sanity checks
 - assertNotVisible: "undefined"
-- assertNotVisible: "null"
 - assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

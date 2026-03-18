@@ -1,15 +1,25 @@
 appId: com.goalin.subradar
 name: "10 - Reports Flow"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Navigate to Settings tab
 - tapOn:
     text: "Settings"
     optional: true
+
+# Verify settings screen loaded
+- assertVisible:
+    id: "settings-screen"
     optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 10_settings_screen
+
+# Look for Reports section
+- scroll
+- takeScreenshot: 10_settings_scrolled
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

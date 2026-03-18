@@ -1,21 +1,48 @@
 appId: com.goalin.subradar
 name: "09 - Cards Flow"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Navigate to Settings tab
 - tapOn:
     text: "Settings"
     optional: true
+
+# Verify settings screen loaded
 - assertVisible:
-    text: "Settings, tab"
+    id: "settings-screen"
     optional: true
+- takeScreenshot: 09_settings_screen
+
+# Scroll to Payment Cards section
+- scrollUntilVisible:
+    element:
+      id: "btn-add-card"
+    direction: DOWN
+    timeout: 5000
+    optional: true
+
+# Tap Add Card
 - tapOn:
-    text: "Settings"
+    id: "btn-add-card"
     optional: true
+- takeScreenshot: 09_add_card_form
+
+# Fill card nickname
+- tapOn:
+    id: "input-card-nickname"
     optional: true
+- inputText: "My Visa"
+
+# Fill last 4 digits
+- tapOn:
+    id: "input-card-last4"
+    optional: true
+- inputText: "4242"
+- takeScreenshot: 09_card_form_filled
+
+# Render sanity checks
 - assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

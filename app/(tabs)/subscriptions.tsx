@@ -102,7 +102,7 @@ export default function SubscriptionsScreen() {
     }, 0);
 
   return (
-    <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="subscriptions-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
 
         {/* ── Header ────────────────────────────────────────── */}
@@ -111,6 +111,7 @@ export default function SubscriptionsScreen() {
             <Text style={[styles.title, { color: colors.text }]}>{t('subscriptions.title')}</Text>
           </View>
           <TouchableOpacity
+            testID="btn-toggle-search"
             style={[styles.headerBtn, { backgroundColor: colors.surface2 }]}
             onPress={() => setShowSearch(!showSearch)}
           >
@@ -118,6 +119,7 @@ export default function SubscriptionsScreen() {
           </TouchableOpacity>
           {subsLimitReached && (
             <TouchableOpacity
+              testID="btn-upgrade-pro"
               style={[styles.upgradeBtn, { backgroundColor: colors.primary }]}
               onPress={() => router.push('/paywall')}
             >
@@ -128,7 +130,7 @@ export default function SubscriptionsScreen() {
         </View>
 
         {/* ── Summary strip ──────────────────────────────────── */}
-        <View style={styles.summaryStrip}>
+        <View testID="subscriptions-summary" style={styles.summaryStrip}>
           <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.summaryValue, { color: colors.primary }]}>{totalActive}</Text>
             <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('subscriptions.active')}</Text>
@@ -150,6 +152,7 @@ export default function SubscriptionsScreen() {
           <View style={[styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
             <Ionicons name="search" size={16} color={colors.textMuted} />
             <TextInput
+              testID="search-input"
               style={[styles.searchInput, { color: colors.text }]}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -158,7 +161,7 @@ export default function SubscriptionsScreen() {
               autoFocus
             />
             {searchQuery ? (
-              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity testID="btn-clear-search" onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons name="close-circle" size={18} color={colors.textMuted} />
               </TouchableOpacity>
             ) : null}
@@ -166,11 +169,12 @@ export default function SubscriptionsScreen() {
         )}
 
         {/* ── Filters ────────────────────────────────────────── */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll} contentContainerStyle={styles.filters}>
+        <ScrollView testID="filter-chips" horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll} contentContainerStyle={styles.filters}>
           {FILTERS.map((f) => {
             const active = filter === f.value;
             return (
               <TouchableOpacity
+                testID={`filter-chip-${f.value}`}
                 key={f.value}
                 style={[
                   styles.filterChip,
@@ -186,9 +190,10 @@ export default function SubscriptionsScreen() {
         </ScrollView>
 
         {/* ── Sort row ───────────────────────────────────────── */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortScroll} contentContainerStyle={styles.filters}>
+        <ScrollView testID="sort-chips" horizontal showsHorizontalScrollIndicator={false} style={styles.sortScroll} contentContainerStyle={styles.filters}>
           {SORTS.map((s) => (
             <TouchableOpacity
+              testID={`sort-chip-${s.value}`}
               key={s.value}
               onPress={() => setSortBy(s.value)}
               style={[styles.sortChip, sortBy === s.value && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
@@ -218,6 +223,7 @@ export default function SubscriptionsScreen() {
 
         {/* ── List ───────────────────────────────────────────── */}
         <FlatList
+          testID="subscription-list"
           data={subs}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchSubs} />}
           keyExtractor={(item) => item.id}

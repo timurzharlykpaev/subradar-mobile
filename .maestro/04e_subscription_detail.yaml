@@ -1,17 +1,26 @@
 appId: com.goalin.subradar
 name: "04e - Subscription Detail Sanity"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Subs, tab"
+    text: "Subscriptions"
     optional: true
-- tapOn:
-    text: "Subs"
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
     optional: true
+- takeScreenshot: 04e_subscriptions_list
+
+# Verify subscription list is present
+- assertVisible:
+    id: "subscription-list"
     optional: true
+
+# Render sanity checks
 - assertNotVisible: "undefined"
-- assertNotVisible: "null"
 - assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

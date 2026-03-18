@@ -1,17 +1,41 @@
 appId: com.goalin.subradar
 name: "20 - Dashboard Charts Sanity"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Home, tab"
+# Verify Dashboard loaded
+- assertVisible:
+    id: "dashboard-screen"
     optional: true
-- tapOn:
-    text: "Home"
+- takeScreenshot: 20_dashboard_loaded
+
+# Verify hero card
+- assertVisible:
+    id: "dashboard-hero-card"
     optional: true
+
+# Verify stats row
+- assertVisible:
+    id: "dashboard-stats-row"
     optional: true
-- assertNotVisible: "NaN"
+
+# Scroll to charts
+- scrollUntilVisible:
+    element:
+      id: "dashboard-monthly-chart"
+    direction: DOWN
+    timeout: 5000
+    optional: true
+- takeScreenshot: 20_monthly_chart
+
+# Verify category chart
+- assertVisible:
+    id: "dashboard-category-chart"
+    optional: true
+- takeScreenshot: 20_category_chart
+
+# Render sanity checks
 - assertNotVisible: "undefined"
-- assertNotVisible: "Ошибка"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

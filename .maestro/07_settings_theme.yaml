@@ -1,17 +1,33 @@
 appId: com.goalin.subradar
 name: "07 - Settings Theme Toggle"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
-- tapOn:
-    text: "Settings, tab"
-    optional: true
+# Navigate to Settings tab
 - tapOn:
     text: "Settings"
     optional: true
+
+# Verify settings screen loaded
 - assertVisible:
-    text: "Settings, tab"
+    id: "settings-screen"
     optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 07_settings_before_toggle
+
+# Toggle theme
+- tapOn:
+    id: "btn-theme-toggle"
+    optional: true
+- takeScreenshot: 07_settings_after_toggle
+
+# Toggle back
+- tapOn:
+    id: "btn-theme-toggle"
+    optional: true
+- takeScreenshot: 07_settings_theme_restored
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

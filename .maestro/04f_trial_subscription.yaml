@@ -1,15 +1,26 @@
 appId: com.goalin.subradar
 name: "04f - Trial Subscription Badge"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Subs, tab"
+    text: "Subscriptions"
     optional: true
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+
+# Filter by Trial
 - tapOn:
-    text: "Subs"
+    id: "filter-chip-trial"
     optional: true
-    optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 04f_trial_filter
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

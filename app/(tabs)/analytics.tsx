@@ -243,8 +243,8 @@ export default function AnalyticsScreen() {
   const cardMax = Math.max(...cardBreakdown.map((c: any) => c.total ?? c.amount ?? 0), 1);
 
   return (
-    <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+    <SafeAreaView testID="analytics-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView testID="analytics-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
 
         {/* ── Header ────────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -260,7 +260,7 @@ export default function AnalyticsScreen() {
         </View>
 
         {/* ── Summary Strip ─────────────────────────────────────── */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
+        <ScrollView testID="analytics-stats-row" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
           <StatCard
             icon="wallet-outline"
             label={t('analytics.avg_month')}
@@ -292,7 +292,7 @@ export default function AnalyticsScreen() {
             </View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.monthly_spend')}</Text>
           </View>
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View testID="analytics-monthly-chart" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {monthlyData.length > 0 ? (
               <MonthlyBarChart data={monthlyData} />
             ) : (
@@ -314,7 +314,7 @@ export default function AnalyticsScreen() {
               </View>
             )}
           </View>
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View testID="analytics-category-chart" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {byCategory.length > 0 ? (
               <>
                 <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
@@ -345,7 +345,7 @@ export default function AnalyticsScreen() {
               </View>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.card_breakdown')}</Text>
             </View>
-            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View testID="analytics-card-breakdown" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {cardBreakdown.map((card: any, i: number) => {
                 const amount = card.total ?? card.amount ?? 0;
                 return (
@@ -391,7 +391,7 @@ export default function AnalyticsScreen() {
             )}
           </View>
           {isPro ? (
-            <View style={styles.forecastRow}>
+            <View testID="analytics-forecast-row" style={styles.forecastRow}>
               <ForecastCard
                 icon="calendar"
                 label={t('analytics.forecast_30d')}
@@ -413,6 +413,7 @@ export default function AnalyticsScreen() {
             </View>
           ) : (
             <TouchableOpacity
+              testID="btn-unlock-forecast"
               style={[styles.lockedContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() => setProModal({ visible: true, feature: 'forecast' })}
               activeOpacity={0.7}
@@ -458,6 +459,7 @@ export default function AnalyticsScreen() {
             </View>
           ) : (
             <TouchableOpacity
+              testID="btn-unlock-savings"
               style={[styles.lockedContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() => setProModal({ visible: true, feature: 'savings' })}
               activeOpacity={0.7}
@@ -493,7 +495,7 @@ export default function AnalyticsScreen() {
                 <Text style={[styles.sectionBadgeText, { color: colors.error }]}>{top5.length}</Text>
               </View>
             </View>
-            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View testID="analytics-top5" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {top5.map((sub, index) => {
                 const catInfo = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
                 const monthly = getMonthlyAmount(sub);
@@ -532,7 +534,7 @@ export default function AnalyticsScreen() {
               </View>
             )}
           </View>
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View testID="analytics-all-subs" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {activeSubs.map((sub, index) => (
               <View key={sub.id} style={[styles.subRow, index < activeSubs.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
                 {sub.iconUrl ? (

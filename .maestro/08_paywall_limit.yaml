@@ -1,11 +1,22 @@
 appId: com.goalin.subradar
 name: "08 - Paywall Limit"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Verify Dashboard loaded
 - assertVisible:
-    text: "Главная"
+    id: "dashboard-screen"
     optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 08_dashboard_loaded
+
+# Check for paywall modal if visible
+- assertVisible:
+    id: "pro-modal"
+    optional: true
+- takeScreenshot: 08_paywall_check
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

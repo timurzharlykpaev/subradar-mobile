@@ -1,11 +1,21 @@
 appId: com.goalin.subradar
 name: "04c - Edit Subscription"
 ---
-
-# Авторизация через demo аккаунт
 - runFlow: ./00_setup_auth.yaml
 
+# Navigate to Subscriptions tab
 - tapOn:
-    text: "Подписки"
+    text: "Subscriptions"
     optional: true
-- assertNotVisible: "Ошибка"
+- takeScreenshot: 04c_subscriptions_list
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"
