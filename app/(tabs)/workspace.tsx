@@ -471,6 +471,39 @@ export default function WorkspaceScreen() {
           </View>
         )}
 
+        {/* ── Team Analytics Summary ── */}
+        {analytics && (
+          <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
+            <View style={{
+              flexDirection: 'row',
+              backgroundColor: colors.card,
+              borderRadius: 18,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              gap: 12,
+            }}>
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 4 }}>
+                  {t('workspace.yearly_label', 'Yearly')}
+                </Text>
+                <Text style={{ fontSize: 18, fontWeight: '900', color: colors.primary }}>
+                  ${analytics.totalYearly?.toFixed(0) ?? '0'}
+                </Text>
+              </View>
+              <View style={{ width: 1, backgroundColor: colors.border }} />
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 4 }}>
+                  {t('workspace.avg_per_member', 'Avg / member')}
+                </Text>
+                <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
+                  ${analytics.memberCount > 0 ? (analytics.totalMonthly / analytics.memberCount).toFixed(0) : '0'}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* ── Member spending ── */}
         {analytics?.members && analytics.members.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
@@ -482,55 +515,106 @@ export default function WorkspaceScreen() {
             }}>
               {t('workspace.member_spending_title')}
             </Text>
-            <View style={{
-              backgroundColor: colors.card,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: colors.border,
-              overflow: 'hidden',
-            }}>
-              {analytics.members.map((m: any, idx: number) => (
+            {analytics.members.map((m: any) => {
+              const spend = m.monthlySpend ?? m.totalMonthly ?? 0;
+              const yearly = m.yearlySpend ?? spend * 12;
+              const topSubs = m.topSubscriptions ?? [];
+              return (
                 <View
                   key={m.userId}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    gap: 12,
-                    borderBottomWidth: idx < analytics.members.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.border,
+                    backgroundColor: colors.card,
+                    borderRadius: 18,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    padding: 16,
+                    marginBottom: 10,
                   }}
                 >
+                  {/* Member header */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <View style={{
+                      width: 44, height: 44, borderRadius: 22,
+                      backgroundColor: colors.primary + '18',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Text style={{ fontSize: 18, fontWeight: '800', color: colors.primary }}>
+                        {(m.name ?? m.email ?? '?')[0].toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                        {m.name ?? m.email}
+                      </Text>
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 3 }}>
+                        <View style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                          <Text style={{ fontSize: 10, fontWeight: '700', color: colors.primary }}>{m.role}</Text>
+                        </View>
+                        <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                          {m.subscriptionCount ?? 0} {t('workspace.subs_label')}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ fontSize: 17, fontWeight: '900', color: colors.text }}>
+                        ${spend.toFixed(2)}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: colors.textSecondary }}>/mo</Text>
+                    </View>
+                  </View>
+
+                  {/* Yearly spend bar */}
                   <View style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: colors.primary + '18',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    flexDirection: 'row', alignItems: 'center', gap: 8,
+                    backgroundColor: colors.background, borderRadius: 10, padding: 10, marginBottom: 10,
                   }}>
-                    <Text style={{ fontSize: 17, fontWeight: '800', color: colors.primary }}>
-                      {(m.name ?? m.email ?? '?')[0].toUpperCase()}
+                    <Ionicons name="calendar-outline" size={14} color={colors.textSecondary} />
+                    <Text style={{ fontSize: 12, color: colors.textSecondary, flex: 1 }}>
+                      {t('workspace.yearly_label', 'Yearly')}
+                    </Text>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                      ${yearly.toFixed(0)}
                     </Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                      {m.name ?? m.email}
-                    </Text>
-                    <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
-                      {t('workspace.member_subs_count', { count: m.subscriptionCount ?? 0 })}
-                    </Text>
-                  </View>
-                  <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>
-                    ${m.totalMonthly?.toFixed(2) ?? '0.00'}
-                  </Text>
-                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-                    {t('workspace.per_month_label')}
-                  </Text>
+
+                  {/* Top subscriptions */}
+                  {topSubs.length > 0 && (
+                    <View>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {t('workspace.top_subs', 'Top subscriptions')}
+                      </Text>
+                      {topSubs.map((sub: any, si: number) => (
+                        <View key={si} style={{
+                          flexDirection: 'row', alignItems: 'center', gap: 8,
+                          paddingVertical: 6,
+                          borderTopWidth: si > 0 ? 1 : 0,
+                          borderTopColor: colors.border,
+                        }}>
+                          <View style={{
+                            width: 28, height: 28, borderRadius: 8,
+                            backgroundColor: colors.primary + '12',
+                            alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                              {sub.name?.[0] ?? '?'}
+                            </Text>
+                          </View>
+                          <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: colors.text }} numberOfLines={1}>
+                            {sub.name}
+                          </Text>
+                          <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>
+                            {sub.currency ?? 'USD'} {Number(sub.amount).toFixed(2)}
+                          </Text>
+                          <Text style={{ fontSize: 10, color: colors.textSecondary }}>
+                            /{sub.billingPeriod?.[0]?.toLowerCase() ?? 'm'}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </View>
-              ))}
-            </View>
+              );
+            })}
           </View>
         )}
 

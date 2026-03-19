@@ -115,6 +115,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [aiLoading, setAiLoading] = useState(false);
   const [foundService, setFoundService] = useState<any>(null);
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
+  const [parsingScreenshot, setParsingScreenshot] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -430,8 +431,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
                 {/* Section: Оплата */}
                 <FormSection title={t('add.section_payment')} icon="💰">
-                  <View style={{ flexDirection: 'row', gap: 10 }}>
-                    <View style={{ flex: 1 }}>
+                  <View style={{ gap: 10 }}>
+                    <View>
                       <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
                         {t('add.amount')} *
                       </Text>
@@ -445,7 +446,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         placeholderTextColor={colors.textMuted}
                       />
                     </View>
-                    <View style={{ flex: 1 }}>
+                    <View>
                       <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 8 }}>
                         {t('add.currency')}
                       </Text>
@@ -477,26 +478,28 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
                     {t('add.billing_cycle')}
                   </Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                    {BILLING_PERIODS.map((p) => (
-                      <TouchableOpacity
-                        key={p}
-                        style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 6,
-                          borderRadius: 20,
-                          backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
-                          borderWidth: 1,
-                          borderColor: form.billingPeriod === p ? colors.primary : colors.border,
-                        }}
-                        onPress={() => setF('billingPeriod', p)}
-                      >
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
-                          {t(`periods.${p}`, { defaultValue: p })}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
+                      {BILLING_PERIODS.map((p) => (
+                        <TouchableOpacity
+                          key={p}
+                          style={{
+                            paddingHorizontal: 10,
+                            paddingVertical: 6,
+                            borderRadius: 20,
+                            backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
+                            borderWidth: 1,
+                            borderColor: form.billingPeriod === p ? colors.primary : colors.border,
+                          }}
+                          onPress={() => setF('billingPeriod', p)}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
+                            {t(`periods.${p}`, { defaultValue: p })}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
 
                   {cards.length > 0 && (
                     <>
@@ -655,10 +658,33 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </TouchableOpacity>
                 {screenshotUri && (
                   <TouchableOpacity
-                    style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }}
-                    onPress={() => Alert.alert(t('add.ai_assistant'), t('add.ai_screenshot'))}
+                    style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8, opacity: parsingScreenshot ? 0.6 : 1 }}
+                    disabled={parsingScreenshot}
+                    onPress={async () => {
+                      setParsingScreenshot(true);
+                      try {
+                        const formData = new FormData();
+                        formData.append('file', {
+                          uri: screenshotUri,
+                          type: 'image/jpeg',
+                          name: 'screenshot.jpg',
+                        } as any);
+                        const res = await aiApi.parseScreenshot(formData);
+                        const data = res.data;
+                        const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
+                        applyParsedSubscriptions(subs);
+                      } catch {
+                        Alert.alert(t('common.error'), t('add.service_not_found'));
+                      } finally {
+                        setParsingScreenshot(false);
+                      }
+                    }}
                   >
-                    <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>✨ {t('add.parse_screenshot')}</Text>
+                    {parsingScreenshot ? (
+                      <ActivityIndicator color="#FFF" />
+                    ) : (
+                      <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>✨ {t('add.parse_screenshot')}</Text>
+                    )}
                   </TouchableOpacity>
                 )}
               </View>

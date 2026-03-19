@@ -67,7 +67,7 @@ export default function ReportsScreen() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ type: reportType, from, to }),
+        body: JSON.stringify({ type: reportType.toUpperCase(), from, to }),
       });
 
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
