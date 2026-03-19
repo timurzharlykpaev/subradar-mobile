@@ -1,0 +1,105 @@
+appId: com.goalin.subradar
+name: "Full Lifecycle: Add Manual + Analytics + Delete"
+---
+# ── Auth ──────────────────────────────────────────────────
+- runFlow: ./00_onboarding_flow.yaml
+- takeScreenshot: lc_01_dashboard_empty
+
+# ── STEP 1: Add Subscription MANUALLY ─────────────────────
+- tapOn:
+    point: "50%,94%"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 5000
+- takeScreenshot: lc_02_add_sheet
+
+# Switch to Manual
+- tapOn:
+    id: "tab-manual"
+
+# Fill name — use eraseText to clean, then type
+- tapOn:
+    id: "name-input"
+- eraseText: 30
+- inputText: "Netflix"
+- hideKeyboard:
+    optional: true
+- takeScreenshot: lc_03_name
+
+# Fill amount
+- scrollUntilVisible:
+    element:
+      id: "amount-input"
+    direction: DOWN
+    timeout: 3000
+- tapOn:
+    id: "amount-input"
+- eraseText: 10
+- inputText: "15.99"
+- hideKeyboard:
+    optional: true
+- takeScreenshot: lc_04_amount
+
+# Scroll to submit
+- scrollUntilVisible:
+    element:
+      id: "btn-save-sub"
+    direction: DOWN
+    timeout: 5000
+- takeScreenshot: lc_05_ready_submit
+
+# Submit
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- takeScreenshot: lc_06_after_add
+
+# ── STEP 2: Verify Netflix on Dashboard ──────────────────
+- assertNotVisible: "No subscriptions yet"
+- takeScreenshot: lc_07_dashboard_with_sub
+
+# ── STEP 3: Check Subscriptions tab ──────────────────────
+- tapOn:
+    point: "17%,94%"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 5000
+- takeScreenshot: lc_08_subs_list
+
+# ── STEP 4: Check Analytics ──────────────────────────────
+- tapOn:
+    point: "58%,94%"
+- extendedWaitUntil:
+    visible:
+      id: "analytics-screen"
+    timeout: 5000
+- takeScreenshot: lc_09_analytics
+
+# ── STEP 5: Go to Settings ───────────────────────────────
+- tapOn:
+    point: "92%,94%"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 5000
+- takeScreenshot: lc_10_settings
+
+# ── STEP 6: Back to subs, verify list ────────────────────
+- tapOn:
+    point: "17%,94%"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 5000
+- takeScreenshot: lc_11_subs_final
+
+# ── Sanity ────────────────────────────────────────────────
+- assertNotVisible: "Render Error"
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: lc_12_done

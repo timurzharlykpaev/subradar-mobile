@@ -162,6 +162,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       return;
     }
     try {
+      // Auto-generate icon from serviceUrl or service name if not set
+      let iconUrl = form.iconUrl;
+      if (!iconUrl && form.serviceUrl) {
+        try {
+          const host = new URL(form.serviceUrl).hostname;
+          iconUrl = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+        } catch {}
+      }
+      if (!iconUrl && form.name) {
+        const slug = form.name.toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus');
+        iconUrl = `https://www.google.com/s2/favicons?domain=${slug}.com&sz=64`;
+      }
+
       const res = await subscriptionsApi.create({
         name: form.name,
         category: form.category.toUpperCase(),
@@ -174,7 +187,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         currentPlan: form.currentPlan || undefined,
         serviceUrl: form.serviceUrl || undefined,
         cancelUrl: form.cancelUrl || undefined,
-        iconUrl: form.iconUrl || undefined,
+        iconUrl: iconUrl || undefined,
         notes: form.notes || undefined,
         trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : undefined,
       });
@@ -346,7 +359,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             ))}
           </View>
 
-          <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+          <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
             {/* tab === 0 → AI Assistant */}
             {tab === 0 && (
               <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>

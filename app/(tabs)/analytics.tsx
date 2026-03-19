@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Path as SvgPath, Rect, Text as SvgText, Line } from 'react-native-svg';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
@@ -27,10 +27,19 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const maxVal = Math.max(...data.map((d) => d.total), 1);
-  const barW = Math.max(12, (screenWidth - 120) / data.length - 6);
+  const yAxisW = 40;
   const chartW = screenWidth - 80;
+  const barsW = chartW - yAxisW;
+  const barW = Math.max(10, barsW / data.length - 4);
   const labelHeight = 18;
+  const chartAreaH = CHART_HEIGHT - 30;
   const totalH = CHART_HEIGHT + labelHeight;
+
+  // Y-axis grid: 4 steps
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map((frac) => ({
+    y: chartAreaH - frac * chartAreaH,
+    label: `$${Math.round(maxVal * frac)}`,
+  }));
 
   const getMonthLabel = (monthStr: string) => {
     const parts = String(monthStr || '').split('-');
@@ -42,19 +51,34 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
   return (
     <View style={{ height: totalH }}>
       <Svg width={chartW} height={totalH}>
+        {/* Grid lines */}
+        {gridLines.map((line, i) => (
+          <React.Fragment key={`grid-${i}`}>
+            <Line
+              x1={yAxisW} y1={line.y} x2={chartW} y2={line.y}
+              stroke={colors.border}
+              strokeWidth={0.5}
+              strokeDasharray="4,4"
+            />
+            <SvgText x={yAxisW - 4} y={line.y + 3} fontSize={9} fill={colors.textMuted} textAnchor="end">
+              {line.label}
+            </SvgText>
+          </React.Fragment>
+        ))}
+        {/* Bars */}
         {data.map((d, i) => {
-          const barH = Math.max(4, (d.total / maxVal) * (CHART_HEIGHT - 30));
-          const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
-          const y = CHART_HEIGHT - 30 - barH;
+          const barH = Math.max(4, (d.total / maxVal) * chartAreaH);
+          const x = yAxisW + i * (barsW / data.length) + (barsW / data.length - barW) / 2;
+          const y = chartAreaH - barH;
           const isMax = d.total === maxVal;
           const labelX = x + barW / 2;
           return (
             <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
+              <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}88`} />
               {d.total > 0 && (
                 <SvgText
                   x={labelX} y={y - 4}
-                  fontSize={10} fontWeight="700"
+                  fontSize={9} fontWeight="700"
                   fill={isMax ? colors.primary : colors.textMuted}
                   textAnchor="middle"
                 >
@@ -66,7 +90,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
         })}
       </Svg>
       {/* X labels */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: -labelHeight + 4 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: -labelHeight + 4, paddingLeft: yAxisW }}>
         {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
           <Text key={i} style={{ fontSize: 10, color: colors.textMuted }}>{getMonthLabel(d.month)}</Text>
         ))}
@@ -95,7 +119,8 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
     .filter((c) => isFinite(c.total) && c.total > 0)
     .map((cat) => {
       const fraction = cat.total / total;
-      const sweep = fraction * 2 * Math.PI;
+      // Cap at 99.9% to avoid SVG arc rendering bug when start ≈ end
+      const sweep = Math.min(fraction, 0.999) * 2 * Math.PI;
       if (!isFinite(sweep) || sweep <= 0) return null;
 
       const x1 = cx + radius * Math.cos(startAngle);
