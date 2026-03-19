@@ -32,24 +32,26 @@ export default function ReportsScreen() {
 
   const getPeriodDates = () => {
     const now = new Date();
+    const today = now.toISOString().split('T')[0];
     const year = now.getFullYear();
     const month = now.getMonth();
+    const capToday = (d: string) => (d > today ? today : d);
     if (dateRange === 'month') {
       return {
         from: new Date(year, month, 1).toISOString().split('T')[0],
-        to:   new Date(year, month + 1, 0).toISOString().split('T')[0],
+        to:   capToday(new Date(year, month + 1, 0).toISOString().split('T')[0]),
       };
     }
     if (dateRange === 'quarter') {
       const q = Math.floor(month / 3);
       return {
         from: new Date(year, q * 3, 1).toISOString().split('T')[0],
-        to:   new Date(year, q * 3 + 3, 0).toISOString().split('T')[0],
+        to:   capToday(new Date(year, q * 3 + 3, 0).toISOString().split('T')[0]),
       };
     }
     return {
       from: `${year}-01-01`,
-      to:   `${year}-12-31`,
+      to:   capToday(`${year}-12-31`),
     };
   };
 
@@ -196,7 +198,7 @@ export default function ReportsScreen() {
             <ActivityIndicator color="#FFF" />
           ) : (
             <Text style={styles.generateBtnText}>
-              📥 {t('reports.generate')}
+              {t('reports.generate')}
             </Text>
           )}
         </TouchableOpacity>

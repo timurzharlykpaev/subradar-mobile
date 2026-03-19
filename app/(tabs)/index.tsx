@@ -455,23 +455,29 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
   return (
     <View>
       <Svg width={chartW} height={chartH + 18}>
-        {data.map((d, i) => {
-          const val = Number(d.amount) || 0;
-          const barH = Math.max(4, (val / maxVal) * (chartH - 16));
-          const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
-          const y = chartH - barH + 18;
-          const isMax = val === maxVal;
-          return (
-            <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
-              {val > 0 && (
-                <SvgText x={x + barW / 2} y={y - 6} fontSize={10} fontWeight="700" fill={isMax ? colors.primary : colors.textSecondary} textAnchor="middle">
-                  ${val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val.toFixed(0)}
-                </SvgText>
-              )}
-            </React.Fragment>
-          );
-        })}
+        {(() => {
+          const values = data.map((d) => Number(d.amount) || 0);
+          const allSame = values.every((v) => v === values[0]);
+          const topPadding = 24;
+          return data.map((d, i) => {
+            const val = Number(d.amount) || 0;
+            const barH = Math.max(4, (val / maxVal) * (chartH - topPadding));
+            const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
+            const y = chartH - barH + 18;
+            const isMax = val === maxVal;
+            const showLabel = val > 0 && !allSame && isMax;
+            return (
+              <React.Fragment key={i}>
+                <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
+                {showLabel && (
+                  <SvgText x={x + barW / 2} y={y - 6} fontSize={10} fontWeight="700" fill={colors.primary} textAnchor="middle">
+                    ${val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val.toFixed(0)}
+                  </SvgText>
+                )}
+              </React.Fragment>
+            );
+          });
+        })()}
       </Svg>
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 6 }}>
         {data.map((d, i) => {
@@ -502,7 +508,7 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
     .filter((c) => isFinite(Number(c.amount)) && Number(c.amount) > 0)
     .map((cat) => {
       const fraction = Number(cat.amount) / total;
-      const sweep = fraction * 2 * Math.PI;
+      const sweep = Math.min(fraction, 0.999) * 2 * Math.PI;
       if (!isFinite(sweep) || sweep <= 0) return null;
       const catInfo = CATEGORIES.find((c) => c.id === cat.category);
       const color = catInfo?.color || '#757575';
