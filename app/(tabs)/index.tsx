@@ -447,13 +447,12 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
             const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
             const y = chartH - barH + 18;
             const isMax = val === maxVal;
-            const showLabel = val > 0 && !allSame && isMax;
             return (
               <React.Fragment key={i}>
                 <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
-                {showLabel && (
-                  <SvgText x={x + barW / 2} y={y - 6} fontSize={10} fontWeight="700" fill={colors.primary} textAnchor="middle">
-                    ${val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val.toFixed(0)}
+                {val > 0 && (
+                  <SvgText x={x + barW / 2} y={y - 6} fontSize={9} fontWeight="700" fill={isMax ? colors.primary : colors.textMuted} textAnchor="middle">
+                    {val >= 1000 ? `$ ${(val / 1000).toFixed(1)}k` : `$ ${val.toFixed(0)}`}
                   </SvgText>
                 )}
               </React.Fragment>

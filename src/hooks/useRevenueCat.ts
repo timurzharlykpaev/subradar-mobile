@@ -1,29 +1,38 @@
 import { useEffect, useState, useCallback } from 'react';
-import Purchases, {
-  CustomerInfo,
-  PurchasesOfferings,
-  PurchasesPackage,
-  LOG_LEVEL,
-  PURCHASES_ERROR_CODE,
-} from 'react-native-purchases';
 import { Alert } from 'react-native';
+
+let Purchases: any = null;
+let PURCHASES_ERROR_CODE: any = {};
+let LOG_LEVEL: any = {};
+
+try {
+  const rc = require('react-native-purchases');
+  Purchases = rc.default;
+  PURCHASES_ERROR_CODE = rc.PURCHASES_ERROR_CODE;
+  LOG_LEVEL = rc.LOG_LEVEL;
+} catch {
+  console.warn('react-native-purchases not available (Expo Go?)');
+}
 
 const API_KEY = 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
 
 let configured = false;
 
+const isAvailable = () => Purchases != null;
+
 export function configureRevenueCat() {
-  if (configured) return;
+  if (configured || !isAvailable()) return;
   try {
-    if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+    if (__DEV__ && LOG_LEVEL?.DEBUG) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
     Purchases.configure({ apiKey: API_KEY, appUserID: null });
     configured = true;
   } catch (e) {
-    console.warn('RevenueCat configure failed (native module not ready?):', e);
+    console.warn('RevenueCat configure failed:', e);
   }
 }
 
 export async function loginRevenueCat(userId: string) {
+  if (!isAvailable() || !configured) return;
   try {
     await Purchases.logIn(userId);
   } catch (e) {
@@ -32,6 +41,7 @@ export async function loginRevenueCat(userId: string) {
 }
 
 export async function logoutRevenueCat() {
+  if (!isAvailable() || !configured) return;
   try {
     await Purchases.logOut();
   } catch (e) {
@@ -40,12 +50,12 @@ export async function logoutRevenueCat() {
 }
 
 export function useRevenueCat() {
-  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
-  const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<any>(null);
+  const [offerings, setOfferings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!configured) { setLoading(false); return; }
+    if (!configured || !isAvailable()) { setLoading(false); return; }
     let mounted = true;
 
     const load = async () => {
@@ -67,7 +77,7 @@ export function useRevenueCat() {
 
     load();
 
-    const listener = (info: CustomerInfo) => {
+    const listener = (info: any) => {
       if (mounted) setCustomerInfo(info);
     };
     Purchases.addCustomerInfoUpdateListener(listener);
@@ -79,37 +89,38 @@ export function useRevenueCat() {
   }, []);
 
   const isPro = !!(
-    customerInfo?.entitlements.active['pro'] ||
-    customerInfo?.entitlements.active['team']
+    customerInfo?.entitlements?.active?.['pro'] ||
+    customerInfo?.entitlements?.active?.['team']
   );
 
-  const isTeam = !!customerInfo?.entitlements.active['team'];
+  const isTeam = !!customerInfo?.entitlements?.active?.['team'];
 
-  const purchasePackage = useCallback(async (pkg: PurchasesPackage): Promise<boolean> => {
+  const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {
+    if (!isAvailable()) return false;
     try {
       const { customerInfo: info } = await Purchases.purchasePackage(pkg);
       setCustomerInfo(info);
       return !!(info.entitlements.active['pro'] || info.entitlements.active['team']);
     } catch (error: any) {
-      if (error.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
+      if (error?.code === PURCHASES_ERROR_CODE?.PURCHASE_CANCELLED_ERROR) {
         return false;
       }
-      if (error.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR) {
-        const restored = await restorePurchases();
-        return restored;
+      if (error?.code === PURCHASES_ERROR_CODE?.PRODUCT_ALREADY_PURCHASED_ERROR) {
+        return await restorePurchases();
       }
-      Alert.alert('Purchase Error', error.message);
+      Alert.alert('Purchase Error', error?.message || 'Unknown error');
       return false;
     }
   }, []);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
+    if (!isAvailable()) return false;
     try {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
       return !!(info.entitlements.active['pro'] || info.entitlements.active['team']);
     } catch (error: any) {
-      Alert.alert('Restore Error', error.message);
+      Alert.alert('Restore Error', error?.message || 'Unknown error');
       return false;
     }
   }, []);

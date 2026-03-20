@@ -25,7 +25,8 @@ import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
-import RevenueCatUI from 'react-native-purchases-ui';
+let RevenueCatUI: any = null;
+try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
 import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { HourglassIcon, SparklesIcon } from '../../src/components/icons';
 import { notificationsApi } from '../../src/api/notifications';

@@ -52,12 +52,12 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
       <Svg width={chartW} height={totalH}>
         <Defs>
           <LinearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.05" />
+            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.2" />
             <Stop offset="1" stopColor={colors.primary} stopOpacity="1" />
           </LinearGradient>
           <LinearGradient id="barGradDim" x1="0" y1="1" x2="0" y2="0">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.02" />
-            <Stop offset="1" stopColor={colors.primary} stopOpacity="0.5" />
+            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.1" />
+            <Stop offset="1" stopColor={colors.primary} stopOpacity="0.55" />
           </LinearGradient>
         </Defs>
         {gridLines.map((line, i) => (
@@ -100,8 +100,8 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
 }) {
   const { colors } = useTheme();
   const size = 200;
-  const radius = 80;
-  const innerRadius = 52;
+  const radius = 82;
+  const innerRadius = 46;
   const cx = size / 2;
   const cy = size / 2;
   const midRadius = (radius + innerRadius) / 2;
@@ -134,7 +134,7 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
       const labelY = cy + midRadius * Math.sin(midAngle);
 
       startAngle += sweep;
-      return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 10 };
+      return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 15 };
     }).filter(Boolean) as { d: string; color: string; pct: number; labelX: number; labelY: number; showLabel: boolean }[];
 
   return (
@@ -147,11 +147,13 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
           <SvgText
             key={`lbl-${idx}`}
             x={slice.labelX}
-            y={slice.labelY + 4}
-            fontSize={11}
-            fontWeight="800"
+            y={slice.labelY + 5}
+            fontSize={13}
+            fontWeight="900"
             fill="#FFF"
             textAnchor="middle"
+            stroke="#00000030"
+            strokeWidth={0.5}
           >
             {slice.pct}%
           </SvgText>

@@ -18,7 +18,6 @@ import { useTheme } from '../src/theme';
 import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
-import { PurchasesPackage } from 'react-native-purchases';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -150,35 +149,33 @@ export default function PaywallScreen() {
       (selected === 'org' && billing?.plan === 'organization');
     if (currentMatch && !isTrialing) return;
 
-    // Native IAP purchase
+    // Try native IAP first, fallback to web checkout
     const current = offerings?.current;
-    if (!current) {
-      Alert.alert(t('common.error'), 'No offerings available');
-      return;
+    let pkg: any | undefined;
+    if (current) {
+      if (selected === 'pro') {
+        pkg = (billingPeriod === 'yearly' ? current.annual : current.monthly) ?? undefined;
+      } else {
+        pkg = current.availablePackages.find((p: any) =>
+          p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
+        );
+      }
     }
 
-    let pkg: PurchasesPackage | undefined;
-    if (selected === 'pro') {
-      pkg = (billingPeriod === 'yearly' ? current.annual : current.monthly) ?? undefined;
+    if (pkg) {
+      // Native IAP purchase
+      const success = await purchasePackage(pkg);
+      if (success) {
+        await queryClient.invalidateQueries({ queryKey: ['billing'] });
+        Alert.alert(
+          t('paywall.upgrade_success', 'Success!'),
+          t('paywall.upgrade_success_msg', 'Welcome to Pro!'),
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      }
     } else {
-      pkg = current.availablePackages.find(p =>
-        p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
-      );
-    }
-
-    if (!pkg) {
-      Alert.alert(t('common.error'), 'Package not found');
-      return;
-    }
-
-    const success = await purchasePackage(pkg);
-    if (success) {
-      await queryClient.invalidateQueries({ queryKey: ['billing'] });
-      Alert.alert(
-        t('paywall.upgrade_success', 'Success!'),
-        t('paywall.upgrade_success_msg', 'Welcome to Pro!'),
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      // Fallback to web checkout (Lemon Squeezy)
+      router.replace('/subscription-plan' as any);
     }
   };
 
