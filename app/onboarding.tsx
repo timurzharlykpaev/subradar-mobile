@@ -446,6 +446,7 @@ export default function OnboardingScreen() {
   const logoStyle = { transform: [{ scale: logoScale }], opacity: logoOpacity };
 
   const navigateToApp = () => {
+    setOnboarded();
     router.replace('/(tabs)');
   };
 
@@ -906,7 +907,7 @@ export default function OnboardingScreen() {
       {/* Buttons */}
       <TouchableOpacity
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
-        onPress={() => router.replace('/(tabs)')}
+        onPress={() => navigateToApp()}
       >
         <Ionicons name="create-outline" size={22} color="#FFF" />
         <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_manually')}</Text>
@@ -916,7 +917,7 @@ export default function OnboardingScreen() {
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
         onPress={() => {
           setOnboarded();
-          router.replace('/(tabs)/subscriptions');
+          router.replace('/(tabs)');
         }}
       >
         <Ionicons name="sparkles-outline" size={22} color={colors.primary} />
