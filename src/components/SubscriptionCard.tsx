@@ -13,6 +13,7 @@ import { STATUS_COLORS } from '../constants';
 import { CategoryBadge } from './CategoryBadge';
 import { CardBadge } from './CardBadge';
 import { useTheme } from '../theme';
+import { GiftIcon } from './icons';
 
 interface Props {
   subscription: Subscription;
@@ -75,18 +76,24 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
       </View>
 
       <View style={styles.right}>
-        <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
           {subscription.currency} {Number(subscription.amount).toFixed(2)}
         </Text>
-        <Text style={[styles.period, { color: colors.textSecondary }]}>/ {subscription.billingPeriod}</Text>
+        <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{subscription.billingPeriod?.toLowerCase()?.replace('monthly', 'mo')?.replace('yearly', 'yr')?.replace('weekly', 'wk')?.replace('quarterly', 'qtr')}</Text>
         {isTrial && trialDays !== null ? (
           <View style={[styles.trialBadge, {
             backgroundColor: trialExpired ? '#EF444420' : trialUrgent ? '#F59E0B20' : '#3B82F620',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 3,
           }]}>
+            {!trialExpired && trialDays !== 0 && (
+              <GiftIcon size={10} color={trialUrgent ? '#F59E0B' : '#3B82F6'} />
+            )}
             <Text style={[styles.trialBadgeText, {
               color: trialExpired ? '#EF4444' : trialUrgent ? '#F59E0B' : '#3B82F6',
             }]}>
-              {trialExpired ? t('trials.expired') : trialDays === 0 ? t('trials.ends_today') : `🎁 ${trialDays}d`}
+              {trialExpired ? t('trials.expired') : trialDays === 0 ? t('trials.ends_today') : `${trialDays}d`}
             </Text>
           </View>
         ) : subscription.nextPaymentDate ? (
@@ -134,6 +141,6 @@ const styles = StyleSheet.create({
   amount: { fontSize: 15, fontWeight: '800' },
   period: { fontSize: 11 },
   nextDate: { fontSize: 11, fontWeight: '600' },
-  trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2 },
+  trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },
   trialBadgeText: { fontSize: 10, fontWeight: '700' },
 });
