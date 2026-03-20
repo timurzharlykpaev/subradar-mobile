@@ -83,12 +83,12 @@ function DataLoader() {
         const subs = res.data || [];
         setSubscriptions(subs);
         if (notificationsEnabled) {
-          schedulePaymentReminders(subs, reminderDays);
+          schedulePaymentReminders(subs);
         }
       }).catch(() => {
         // Offline — use cached subscriptions from store
         if (subscriptions.length > 0 && notificationsEnabled) {
-          schedulePaymentReminders(subscriptions, reminderDays);
+          schedulePaymentReminders(subscriptions);
         }
       });
     });
