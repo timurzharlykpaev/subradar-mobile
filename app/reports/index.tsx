@@ -70,7 +70,11 @@ export default function ReportsScreen() {
         body: JSON.stringify({ type: reportType.toUpperCase(), from, to }),
       });
 
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      if (!res.ok) {
+        const httpErr: any = new Error(`Server error: ${res.status}`);
+        httpErr.status = res.status;
+        throw httpErr;
+      }
       const report = await res.json();
 
       // 2. Скачиваем PDF
@@ -86,7 +90,11 @@ export default function ReportsScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (download.status !== 200) throw new Error('Download failed');
+      if (download.status !== 200) {
+        const dlErr: any = new Error(`Download failed: ${download.status}`);
+        dlErr.status = download.status;
+        throw dlErr;
+      }
 
       // 3. Открываем шаринг
       const canShare = await Sharing.isAvailableAsync();
@@ -101,11 +109,33 @@ export default function ReportsScreen() {
       }
     } catch (err: any) {
       console.error('Report error:', err);
+
+      let errorMessage: string;
+      const status = err?.status ?? err?.response?.status;
+      const msgLower = (err?.message ?? '').toLowerCase();
+
+      if (status === 401 || msgLower.includes('401')) {
+        errorMessage = t('reports.error_401', 'Session expired, please log in again');
+      } else if (status === 404 || msgLower.includes('404')) {
+        errorMessage = t('reports.error_404', 'Report not found');
+      } else if (
+        msgLower.includes('network') ||
+        msgLower.includes('failed to fetch') ||
+        msgLower.includes('networkrequest') ||
+        msgLower.includes('network request failed')
+      ) {
+        errorMessage = t('reports.error_network', 'Network error, check your connection');
+      } else {
+        errorMessage = err?.response?.data?.message || err?.message || t('reports.error_generic', 'Could not generate report');
+      }
+
       Alert.alert(
-        'Error',
-        err?.message?.includes('401')
-          ? 'Please log in again'
-          : err?.message || 'Could not generate report. Check your connection.'
+        t('common.error', 'Error'),
+        errorMessage,
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          { text: t('reports.retry', 'Retry'), onPress: () => handleGenerate() },
+        ]
       );
     } finally {
       setGenerating(false);
