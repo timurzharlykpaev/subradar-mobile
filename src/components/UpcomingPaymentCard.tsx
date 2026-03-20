@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Subscription } from '../types';
 import { CATEGORIES } from '../constants';
 import { useTheme } from '../theme';
+import { CategoryIcon } from './icons';
 
 interface Props {
   subscription: Subscription;
@@ -19,7 +20,7 @@ export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
 
   return (
     <TouchableOpacity testID={`upcoming-card-${subscription.id}`} style={[styles.card, { backgroundColor: colors.surface, borderTopColor: cat?.color || colors.primary }]}>
-      <Text style={styles.emoji}>{cat?.emoji || '📦'}</Text>
+      <CategoryIcon category={subscription.category} size={24} />
       <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{subscription.name}</Text>
       <Text style={[styles.amount, { color: colors.primary }]} numberOfLines={1}>
         {subscription.currency} {Number(subscription.amount).toFixed(0)}
@@ -46,7 +47,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     gap: 4,
   },
-  emoji: { fontSize: 24 },
   name: { fontSize: 12, fontWeight: '700' },
   amount: { fontSize: 14, fontWeight: '800' },
   days: { fontSize: 11 },
