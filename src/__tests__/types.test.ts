@@ -75,6 +75,34 @@ describe('Type alignment with backend', () => {
       expect(sub.trialEndDate).toBe('2026-04-01');
       expect(sub.cancelledAt).toBe('2026-03-01');
     });
+
+    it('has color field (string | null)', () => {
+      const sub: Subscription = {
+        id: '1', name: 'Test', category: 'OTHER', amount: 5,
+        currency: 'USD', billingPeriod: 'MONTHLY', status: 'ACTIVE',
+        color: '#3B82F6',
+      };
+      expect(sub.color).toBe('#3B82F6');
+    });
+
+    it('has tags field (string[] | null)', () => {
+      const sub: Subscription = {
+        id: '1', name: 'Test', category: 'OTHER', amount: 5,
+        currency: 'USD', billingPeriod: 'MONTHLY', status: 'ACTIVE',
+        tags: ['work', 'essential'],
+      };
+      expect(sub.tags).toEqual(['work', 'essential']);
+      expect(Array.isArray(sub.tags)).toBe(true);
+    });
+
+    it('has startDate field', () => {
+      const sub: Subscription = {
+        id: '1', name: 'Test', category: 'OTHER', amount: 5,
+        currency: 'USD', billingPeriod: 'MONTHLY', status: 'ACTIVE',
+        startDate: '2026-01-15',
+      };
+      expect(sub.startDate).toBe('2026-01-15');
+    });
   });
 
   describe('User', () => {
