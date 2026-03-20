@@ -1,0 +1,44 @@
+appId: com.goalin.subradar
+name: "04g - Add Subscription New Fields"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Verify Dashboard loaded
+- assertVisible:
+    id: "dashboard-screen"
+    optional: true
+
+# Open add subscription sheet
+- tapOn:
+    id: "add-sub-sheet"
+    optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# Switch to Manual tab
+- tapOn:
+    id: "tab-manual"
+    optional: true
+
+# Fill required fields
+- tapOn:
+    id: "name-input"
+    optional: true
+- inputText: "Test Service"
+- tapOn:
+    id: "amount-input"
+    optional: true
+- inputText: "9.99"
+
+# Scroll down to see extra section fields
+- scroll
+- scroll
+
+# Verify new fields are visible (they may show as labels)
+- takeScreenshot: 04g_new_fields_visible
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

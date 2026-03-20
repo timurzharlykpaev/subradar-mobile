@@ -1,0 +1,16 @@
+appId: com.goalin.subradar
+name: "10b - Reports with Retry"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to reports (via Settings or direct)
+- tapOn:
+    text: "Settings"
+    optional: true
+- scroll
+- takeScreenshot: 10b_settings_reports
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

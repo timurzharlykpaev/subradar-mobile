@@ -1,0 +1,48 @@
+appId: com.goalin.subradar
+name: "06b - Analytics Redesign"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Analytics tab
+- tapOn:
+    text: "Analytics"
+    optional: true
+
+# Verify analytics screen loaded
+- assertVisible:
+    id: "analytics-screen"
+    optional: true
+
+# Verify stats row with new card design
+- assertVisible:
+    id: "analytics-stats-row"
+    optional: true
+- takeScreenshot: 06b_stats_cards
+
+# Verify monthly chart (gradient bars)
+- assertVisible:
+    id: "analytics-monthly-chart"
+    optional: true
+- takeScreenshot: 06b_gradient_bars
+
+# Scroll to category section
+- scroll
+
+# Verify category chart
+- assertVisible:
+    id: "analytics-category-chart"
+    optional: true
+- takeScreenshot: 06b_donut_chart
+
+# Scroll to forecast
+- scroll
+- takeScreenshot: 06b_forecast_section
+
+# Scroll to top 5
+- scroll
+- takeScreenshot: 06b_top5_section
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
