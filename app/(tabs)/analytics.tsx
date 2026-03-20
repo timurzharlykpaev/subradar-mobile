@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path as SvgPath, Rect, Text as SvgText, Line } from 'react-native-svg';
+import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
@@ -20,7 +20,7 @@ import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import ProFeatureModal from '../../src/components/ProFeatureModal';
 
-const CHART_HEIGHT = 180;
+const CHART_HEIGHT = 200;
 
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
 function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
@@ -31,13 +31,11 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
   const yAxisW = 40;
   const chartW = screenWidth - 80;
   const barsW = chartW - yAxisW;
-  const barW = Math.max(10, barsW / data.length - 4);
-  const labelHeight = 18;
+  const barW = Math.max(16, barsW / data.length - 6);
   const chartAreaH = CHART_HEIGHT - 30;
-  const totalH = CHART_HEIGHT + labelHeight;
+  const totalH = CHART_HEIGHT + 20;
 
-  // Y-axis grid: 4 steps
-  const gridLines = [0, 0.25, 0.5, 0.75, 1].map((frac) => ({
+  const gridLines = [0.25, 0.5, 0.75].map((frac) => ({
     y: chartAreaH - frac * chartAreaH,
     label: `$${Math.round(maxVal * frac)}`,
   }));
@@ -52,37 +50,32 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
   return (
     <View style={{ height: totalH }}>
       <Svg width={chartW} height={totalH}>
-        {/* Grid lines */}
+        <Defs>
+          <LinearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.05" />
+            <Stop offset="1" stopColor={colors.primary} stopOpacity="1" />
+          </LinearGradient>
+          <LinearGradient id="barGradDim" x1="0" y1="1" x2="0" y2="0">
+            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.02" />
+            <Stop offset="1" stopColor={colors.primary} stopOpacity="0.5" />
+          </LinearGradient>
+        </Defs>
         {gridLines.map((line, i) => (
           <React.Fragment key={`grid-${i}`}>
-            <Line
-              x1={yAxisW} y1={line.y} x2={chartW} y2={line.y}
-              stroke={colors.border}
-              strokeWidth={0.5}
-              strokeDasharray="4,4"
-            />
-            <SvgText x={yAxisW - 4} y={line.y + 3} fontSize={9} fill={colors.textMuted} textAnchor="end">
-              {line.label}
-            </SvgText>
+            <Line x1={yAxisW} y1={line.y} x2={chartW} y2={line.y} stroke={colors.text} strokeWidth={0.5} strokeOpacity={0.05} />
+            <SvgText x={yAxisW - 4} y={line.y + 3} fontSize={9} fill={colors.textMuted} textAnchor="end">{line.label}</SvgText>
           </React.Fragment>
         ))}
-        {/* Bars */}
         {data.map((d, i) => {
           const barH = Math.max(4, (d.total / maxVal) * chartAreaH);
           const x = yAxisW + i * (barsW / data.length) + (barsW / data.length - barW) / 2;
           const y = chartAreaH - barH;
-          const isMax = d.total === maxVal;
-          const labelX = x + barW / 2;
+          const isMax = d.total === maxVal && d.total > 0;
           return (
             <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}88`} />
-              {d.total > 0 && (
-                <SvgText
-                  x={labelX} y={y - 4}
-                  fontSize={9} fontWeight="700"
-                  fill={isMax ? colors.primary : colors.textMuted}
-                  textAnchor="middle"
-                >
+              <Rect x={x} y={y} width={barW} height={barH} rx={6} fill={isMax ? 'url(#barGrad)' : 'url(#barGradDim)'} />
+              {isMax && d.total > 0 && (
+                <SvgText x={x + barW / 2} y={y - 6} fontSize={11} fontWeight="700" fill={colors.primary} textAnchor="middle">
                   ${d.total >= 1000 ? `${(d.total / 1000).toFixed(1)}k` : d.total.toFixed(0)}
                 </SvgText>
               )}
@@ -90,10 +83,9 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
           );
         })}
       </Svg>
-      {/* X labels */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: -labelHeight + 4, paddingLeft: yAxisW }}>
-        {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0).map((d, i) => (
-          <Text key={i} style={{ fontSize: 10, color: colors.textMuted }}>{getMonthLabel(d.month)}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingLeft: yAxisW, marginTop: -14 }}>
+        {data.map((d, i) => (
+          <Text key={i} style={{ fontSize: 9, color: colors.textMuted, textAlign: 'center', flex: 1 }}>{getMonthLabel(d.month)}</Text>
         ))}
       </View>
     </View>
@@ -102,16 +94,17 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
 
 // ─── Custom CategoryDonutChart ───────────────────────────────────────────────
 function CategoryDonutChart({ categories, total, avgLabel }: {
-  categories: { id: string; color: string; total: number }[];
+  categories: { id: string; color: string; total: number; label?: string; categoryId?: string }[];
   total: number;
   avgLabel: string;
 }) {
   const { colors } = useTheme();
-  const size = 160;
-  const radius = 60;
-  const innerRadius = 40;
+  const size = 200;
+  const radius = 80;
+  const innerRadius = 52;
   const cx = size / 2;
   const cy = size / 2;
+  const midRadius = (radius + innerRadius) / 2;
 
   if (!total || !isFinite(total)) return null;
 
@@ -120,7 +113,6 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
     .filter((c) => isFinite(c.total) && c.total > 0)
     .map((cat) => {
       const fraction = cat.total / total;
-      // Cap at 99.9% to avoid SVG arc rendering bug when start ≈ end
       const sweep = Math.min(fraction, 0.999) * 2 * Math.PI;
       if (!isFinite(sweep) || sweep <= 0) return null;
 
@@ -134,17 +126,16 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
       const iy2 = cy + innerRadius * Math.sin(startAngle);
       const largeArc = sweep > Math.PI ? 1 : 0;
 
-      const d = [
-        `M ${x1} ${y1}`,
-        `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
-        `L ${ix1} ${iy1}`,
-        `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2}`,
-        'Z',
-      ].join(' ');
+      const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2} Z`;
+
+      const midAngle = startAngle + sweep / 2;
+      const pct = Math.round(fraction * 100);
+      const labelX = cx + midRadius * Math.cos(midAngle);
+      const labelY = cy + midRadius * Math.sin(midAngle);
 
       startAngle += sweep;
-      return { d, color: cat.color };
-    }).filter(Boolean) as { d: string; color: string }[];
+      return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 10 };
+    }).filter(Boolean) as { d: string; color: string; pct: number; labelX: number; labelY: number; showLabel: boolean }[];
 
   return (
     <View style={{ width: size, height: size, alignSelf: 'center', marginVertical: 8 }}>
@@ -152,10 +143,23 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
         {slices.map((slice, idx) => (
           <SvgPath key={idx} d={slice.d} fill={slice.color} />
         ))}
+        {slices.filter((s) => s.showLabel).map((slice, idx) => (
+          <SvgText
+            key={`lbl-${idx}`}
+            x={slice.labelX}
+            y={slice.labelY + 4}
+            fontSize={11}
+            fontWeight="800"
+            fill="#FFF"
+            textAnchor="middle"
+          >
+            {slice.pct}%
+          </SvgText>
+        ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
-        <Text style={{ fontSize: 11, color: colors.textMuted }}>{avgLabel}</Text>
+        <Text style={{ fontSize: 24, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
+        <Text style={{ fontSize: 11, color: colors.textMuted }}>Total</Text>
       </View>
     </View>
   );
