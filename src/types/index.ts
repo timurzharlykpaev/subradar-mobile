@@ -33,7 +33,9 @@ export interface Subscription {
   isBusinessExpense?: boolean;
   taxCategory?: string;
   reminderEnabled?: boolean;
-  reminderDaysBefore?: number[];
+  reminderDaysBefore?: number[] | null;
+  color?: string | null;
+  tags?: string[] | null;
   addedVia?: SourceType;
   aiMetadata?: Record<string, unknown>;
   createdAt?: string;

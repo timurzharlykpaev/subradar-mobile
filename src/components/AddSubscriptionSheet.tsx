@@ -83,6 +83,10 @@ const emptyForm = {
   iconUrl: '',
   isTrial: false,
   trialEndDate: '',
+  startDate: new Date().toISOString().split('T')[0],
+  reminderDaysBefore: [3] as number[],
+  color: '' as string,
+  tags: [] as string[],
 };
 
 // FormSection component — groups form fields visually
@@ -205,6 +209,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         iconUrl: iconUrl || undefined,
         notes: form.notes || undefined,
         trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : undefined,
+        startDate: form.startDate || undefined,
+        reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
+        reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
+        color: form.color || undefined,
+        tags: form.tags.length > 0 ? form.tags : undefined,
       });
       addSubscription(res.data);
     } catch {
@@ -292,7 +301,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
       applyParsedSubscriptions(subs);
     } catch {
-      // silent — не ломаем UI
+      Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
     } finally {
       setAiLoading(false);
     }
@@ -309,10 +318,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const data = res.data;
       // Если сервер вернул транскрипт — показываем его в поле
       if (data.text) setAiText(data.text);
-      const subs = Array.isArray(data.subscriptions) ? data.subscriptions : (data.subscriptions ? [data.subscriptions] : []);
+      const subs = Array.isArray(data.subscriptions)
+        ? data.subscriptions
+        : data.subscriptions
+          ? [data.subscriptions]
+          : (data.name && data.amount) ? [data] : [];
       if (subs.length > 0) applyParsedSubscriptions(subs);
     } catch {
-      // silent
+      Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
     } finally {
       setAiLoading(false);
     }
