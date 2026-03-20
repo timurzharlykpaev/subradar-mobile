@@ -142,7 +142,18 @@
     "section_main": "Info principal",
     "section_payment": "Pagamento",
     "section_extra": "Adicional",
-    "section_trial": "Período de teste"
+    "section_trial": "Período de teste",
+    "start_date": "Data de inicio",
+    "reminder": "Lembrete",
+    "reminder_off": "Nao",
+    "reminder_1d": "1 dia",
+    "reminder_3d": "3 dias",
+    "reminder_7d": "7 dias",
+    "card_color": "Cor do cartao",
+    "color_auto": "Auto",
+    "tags": "Tags",
+    "tags_placeholder": "Digite e pressione virgula...",
+    "parse_failed": "Nao foi possivel analisar. Tente novamente."
   },
   "settings": {
     "title": "Configurações",

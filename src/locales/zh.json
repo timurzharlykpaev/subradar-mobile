@@ -142,7 +142,18 @@
     "section_main": "基本信息",
     "section_payment": "支付",
     "section_extra": "附加",
-    "section_trial": "试用期"
+    "section_trial": "试用期",
+    "start_date": "开始日期",
+    "reminder": "提醒",
+    "reminder_off": "关",
+    "reminder_1d": "1天",
+    "reminder_3d": "3天",
+    "reminder_7d": "7天",
+    "card_color": "卡片颜色",
+    "color_auto": "自动",
+    "tags": "标签",
+    "tags_placeholder": "输入并按逗号...",
+    "parse_failed": "无法解析。请重试。"
   },
   "settings": {
     "title": "设置",

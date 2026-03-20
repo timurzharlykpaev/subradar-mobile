@@ -155,7 +155,18 @@
     "ai_q_confirm": "Всё верно?",
     "ai_edit": "Изменить",
     "ai_add": "Добавить",
-    "ai_next": "Далее →"
+    "ai_next": "Далее →",
+    "start_date": "Дата начала",
+    "reminder": "Напоминание",
+    "reminder_off": "Выкл",
+    "reminder_1d": "1 день",
+    "reminder_3d": "3 дня",
+    "reminder_7d": "7 дней",
+    "card_color": "Цвет карточки",
+    "color_auto": "Авто",
+    "tags": "Теги",
+    "tags_placeholder": "Введите и нажмите запятую...",
+    "parse_failed": "Не удалось распознать. Попробуйте снова."
   },
   "settings": {
     "title": "Настройки",
