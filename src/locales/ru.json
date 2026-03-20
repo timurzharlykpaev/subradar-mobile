@@ -212,6 +212,9 @@
     "name_required": "Имя обязательно",
     "save_error": "Не удалось сохранить",
     "manage_subscription": "Управление подпиской",
+    "restore_purchases": "Восстановить покупки",
+    "no_purchases": "Активных подписок не найдено.",
+    "manage_sub_web": "Перейдите в веб-приложение для управления подпиской.",
     "reset_onboarding": "Сбросить онбординг",
     "reset_onboarding_confirm": "Онбординг будет запущен заново. Продолжить?",
     "delete_account": "Удалить аккаунт",
@@ -527,7 +530,9 @@
     "feat_team_access": "Командный доступ",
     "feat_everything_pro": "Всё из Pro",
     "feat_member_analytics": "Аналитика по участникам",
-    "feat_members_10": "До 10 участников"
+    "feat_members_10": "До 10 участников",
+    "restored": "Восстановлено!",
+    "restored_msg": "Ваша подписка была восстановлена."
   },
   "pro_modal": {
     "title_default": "Pro функция",

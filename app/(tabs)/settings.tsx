@@ -25,6 +25,8 @@ import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
+import RevenueCatUI from 'react-native-purchases-ui';
+import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { HourglassIcon, SparklesIcon } from '../../src/components/icons';
 import { notificationsApi } from '../../src/api/notifications';
 
@@ -39,6 +41,7 @@ export default function SettingsScreen() {
   const { data: billing } = useBillingStatus();
   const checkoutMutation = useCheckout();
   const startTrialMutation = useStartTrial();
+  const { restorePurchases } = useRevenueCat();
 
   const [showAddCard, setShowAddCard] = useState(false);
   const [cardForm, setCardForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: '#6C47FF' });
@@ -252,6 +255,45 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{t('settings.manage_subscription')}</Text>
               <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.6)" />
             </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Manage Subscription & Restore Purchases */}
+        <View style={[card, { padding: 0, marginTop: 12 }]}>
+          {/* Manage Subscription */}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
+            onPress={async () => {
+              try {
+                await RevenueCatUI.presentCustomerCenter();
+              } catch {
+                Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
+              }
+            }}
+          >
+            <Ionicons name="card-outline" size={20} color={colors.text} />
+            <Text style={{ flex: 1, fontSize: 15, color: colors.text, marginLeft: 0 }}>
+              {t('settings.manage_subscription', 'Manage Subscription')}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 48, marginRight: 16 }} />
+          {/* Restore Purchases */}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
+            onPress={async () => {
+              const restored = await restorePurchases();
+              if (restored) {
+                Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'));
+              } else {
+                Alert.alert(t('settings.no_purchases', 'No active subscriptions found to restore.'));
+              }
+            }}
+          >
+            <Ionicons name="refresh-outline" size={20} color={colors.text} />
+            <Text style={{ flex: 1, fontSize: 15, color: colors.text, marginLeft: 0 }}>
+              {t('settings.restore_purchases', 'Restore Purchases')}
+            </Text>
           </TouchableOpacity>
         </View>
 

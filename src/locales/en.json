@@ -219,7 +219,10 @@
     "failed_trial": "Failed to start trial.",
     "name_required": "Name is required",
     "save_error": "Failed to save",
-    "manage_subscription": "Manage subscription",
+    "manage_subscription": "Manage Subscription",
+    "restore_purchases": "Restore Purchases",
+    "no_purchases": "No active subscriptions found to restore.",
+    "manage_sub_web": "Visit the web app to manage your subscription.",
     "reset_onboarding": "Reset Onboarding",
     "reset_onboarding_confirm": "This will restart the onboarding flow. Continue?",
     "delete_account": "Delete Account",
@@ -527,7 +530,9 @@
     "feat_team_access": "Team access",
     "feat_everything_pro": "Everything in Pro",
     "feat_member_analytics": "Member analytics",
-    "feat_members_10": "Up to 10 members"
+    "feat_members_10": "Up to 10 members",
+    "restored": "Restored!",
+    "restored_msg": "Your subscription has been restored."
   },
   "pro_modal": {
     "title_default": "Pro Feature",
