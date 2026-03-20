@@ -274,7 +274,7 @@ export default function AnalyticsScreen() {
 
   return (
     <SafeAreaView testID="analytics-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView testID="analytics-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView testID="analytics-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
         {/* ── Header ────────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -349,13 +349,18 @@ export default function AnalyticsScreen() {
               <>
                 <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
                 <View style={styles.legendContainer}>
-                  {byCategory.map((cat) => (
-                    <View key={cat.id} style={[styles.legendRow, { borderColor: colors.border }]}>
-                      <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                      <CategoryIcon category={cat.id} size={14} />
-                      <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.label}</Text>
-                      <Text style={[styles.legendPercent, { color: colors.textMuted }]}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
-                      <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
+                  {byCategory.map((cat, idx) => (
+                    <View key={cat.id}>
+                      <View style={[styles.legendRow, { paddingVertical: 8 }]}>
+                        <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
+                        <CategoryIcon category={cat.id} size={14} />
+                        <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.label}</Text>
+                        <Text style={[styles.legendPercent, { color: colors.textMuted }]}>
+                          {categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%
+                        </Text>
+                        <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
+                      </View>
+                      {idx < byCategory.length - 1 && <View style={{ height: 1, backgroundColor: colors.border, opacity: 0.3 }} />}
                     </View>
                   ))}
                 </View>
@@ -376,6 +381,17 @@ export default function AnalyticsScreen() {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('analytics.card_breakdown')}</Text>
             </View>
             <View testID="analytics-card-breakdown" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {cardBreakdown.length > 1 && (
+                <View style={{ flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+                  {cardBreakdown.map((card: any, idx: number) => {
+                    const cardTotal = card.total ?? card.amount ?? 0;
+                    const totalCard = cardBreakdown.reduce((s: number, c: any) => s + (c.total ?? c.amount ?? 0), 0);
+                    const pct = totalCard > 0 ? (cardTotal / totalCard) * 100 : 0;
+                    const barColors = ['#7C5CFF', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#94A3B8'];
+                    return <View key={idx} style={{ width: `${Math.max(pct, 2)}%`, backgroundColor: barColors[idx % barColors.length] }} />;
+                  })}
+                </View>
+              )}
               {cardBreakdown.map((card: any, i: number) => {
                 const amount = card.total ?? card.amount ?? 0;
                 return (
@@ -426,18 +442,22 @@ export default function AnalyticsScreen() {
                 icon="calendar"
                 label={t('analytics.forecast_30d')}
                 value={forecast?.day30 ?? Number(totalMonthly).toFixed(0)}
+                sub={t('analytics.avg_month')}
                 color={colors.primary}
+                accent={true}
               />
               <ForecastCard
                 icon="trending-up"
                 label={t('analytics.forecast_6m')}
                 value={forecast?.month6 ?? Number(totalMonthly * 6).toFixed(0)}
+                sub={t('analytics.forecast')}
                 color={colors.success}
               />
               <ForecastCard
                 icon="analytics"
                 label={t('analytics.forecast_12m')}
                 value={forecast?.month12 ?? Number(totalYearly).toFixed(0)}
+                sub={t('analytics.forecast')}
                 color={colors.warning}
               />
             </View>
@@ -525,25 +545,37 @@ export default function AnalyticsScreen() {
                 <Text style={[styles.sectionBadgeText, { color: colors.error }]}>{top5.length}</Text>
               </View>
             </View>
-            <View testID="analytics-top5" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {top5.map((sub, index) => {
+            <View testID="analytics-top5">
+              {top5.map((sub, idx) => {
                 const catInfo = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
-                const monthly = getMonthlyAmount(sub);
+                const monthlyAmt = getMonthlyAmount(sub);
+                const pct = totalMonthly > 0 ? (monthlyAmt / totalMonthly) * 100 : 0;
                 return (
-                  <View key={sub.id} style={[styles.top5Row, index < top5.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
-                    <View style={[styles.top5RankBadge, { backgroundColor: index === 0 ? colors.warning + '20' : index === 1 ? colors.textMuted + '20' : colors.secondary + '15' }]}>
-                      <Text style={[styles.top5Rank, { color: index === 0 ? colors.warning : index === 1 ? colors.textMuted : colors.textSecondary }]}>{index + 1}</Text>
+                  <View key={sub.id} style={[styles.top5Card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.top5Rank, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.top5RankText}>#{idx + 1}</Text>
                     </View>
-                    <View style={[styles.top5Icon, { backgroundColor: (catInfo?.color || colors.primary) + '18' }]}>
-                      <CategoryIcon category={catInfo?.id || 'OTHER'} size={16} />
-                    </View>
+                    {sub.iconUrl ? (
+                      <Image source={{ uri: sub.iconUrl }} style={styles.top5Icon} />
+                    ) : (
+                      <View style={[styles.top5IconPlaceholder, { backgroundColor: colors.primaryLight }]}>
+                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{sub.name[0]}</Text>
+                      </View>
+                    )}
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                      <Text style={[styles.top5Period, { color: colors.textSecondary }]} numberOfLines={1}>
-                        {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                        <CategoryIcon category={sub.category} size={12} />
+                        <Text style={{ fontSize: 11, color: colors.textMuted }}>{catInfo?.label || sub.category}</Text>
+                      </View>
                     </View>
-                    <Text style={[styles.top5Monthly, { color: colors.primary }]}>${Number(monthly).toFixed(0)}/mo</Text>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={[styles.top5Amount, { color: colors.text }]}>${monthlyAmt.toFixed(2)}</Text>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}</Text>
+                    </View>
+                    <View style={[styles.top5ProgressBg, { backgroundColor: colors.border }]}>
+                      <View style={[styles.top5ProgressFill, { width: `${Math.min(pct, 100)}%`, backgroundColor: catInfo?.color || colors.primary }]} />
+                    </View>
                   </View>
                 );
               })}
@@ -602,27 +634,34 @@ export default function AnalyticsScreen() {
 function StatCard({ icon, label, value, sub, color }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; value: string; sub?: string; color: string }) {
   const { colors } = useTheme();
   return (
-    <View style={[statStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={[statStyles.iconCircle, { backgroundColor: color + '18' }]}>
-        <Ionicons name={icon} size={16} color={color} />
+    <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[styles.statIconCircle, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon as any} size={18} color={color} />
       </View>
-      <Text style={[statStyles.label, { color: colors.textMuted }]} numberOfLines={1}>{label}</Text>
-      <Text style={[statStyles.value, { color }]} numberOfLines={1}>{value}</Text>
+      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
       {sub && <Text style={[statStyles.sub, { color: colors.textSecondary }]} numberOfLines={1}>{sub}</Text>}
     </View>
   );
 }
 
 // ── ForecastCard ────────────────────────────────────────────────────────────
-function ForecastCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
+function ForecastCard({ icon, label, value, sub, color, accent }: {
+  icon: string; label: string; value: string | number; sub: string; color: string; accent?: boolean;
+}) {
   const { colors } = useTheme();
   return (
-    <View style={[forecastStyles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={[forecastStyles.iconCircle, { backgroundColor: color + '18' }]}>
+    <View style={[
+      forecastStyles.card,
+      { backgroundColor: colors.card, borderColor: accent ? color : colors.border },
+      accent && { borderWidth: 1.5 },
+    ]}>
+      <View style={[styles.forecastIconCircle, { backgroundColor: color + '18' }]}>
         <Ionicons name={icon as any} size={16} color={color} />
       </View>
-      <Text style={[forecastStyles.value, { color }]}>${value}</Text>
-      <Text style={[forecastStyles.label, { color: colors.textSecondary }]} numberOfLines={2}>{label}</Text>
+      <Text style={[{ fontSize: accent ? 20 : 16, fontWeight: '900', color: colors.text }]}>${value}</Text>
+      <Text style={[styles.forecastLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{sub}</Text>
     </View>
   );
 }
@@ -691,7 +730,7 @@ const styles = StyleSheet.create({
   statsRow: { paddingHorizontal: 20, paddingVertical: 14 },
 
   // Sections
-  section: { paddingHorizontal: 20, paddingTop: 16 },
+  section: { paddingHorizontal: 24, paddingTop: 24 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -705,7 +744,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionTitle: { fontSize: 17, fontWeight: '800', flex: 1 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', flex: 1, marginBottom: 8 },
   sectionBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -831,34 +870,15 @@ const styles = StyleSheet.create({
   noDuplicates: { fontSize: 13, textAlign: 'center', paddingVertical: 8 },
 
   // Top 5
-  top5Row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 10,
-  },
-  top5RankBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  top5Rank: {
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  top5Icon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  top5Emoji: { fontSize: 18 },
+  top5Card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14, borderWidth: 1, marginBottom: 10, position: 'relative' as const, overflow: 'hidden' as const },
+  top5Rank: { position: 'absolute' as const, top: -1, left: -1, width: 22, height: 22, borderRadius: 11, alignItems: 'center' as const, justifyContent: 'center' as const, zIndex: 1 },
+  top5RankText: { fontSize: 9, fontWeight: '800' as const, color: '#FFF' },
+  top5Icon: { width: 40, height: 40, borderRadius: 12 },
+  top5IconPlaceholder: { width: 40, height: 40, borderRadius: 12, alignItems: 'center' as const, justifyContent: 'center' as const },
   top5Name: { fontSize: 14, fontWeight: '700' },
-  top5Period: { fontSize: 11, marginTop: 2 },
-  top5Monthly: { fontSize: 14, fontWeight: '800', flexShrink: 0 },
+  top5Amount: { fontSize: 15, fontWeight: '800' },
+  top5ProgressBg: { position: 'absolute' as const, bottom: 0, left: 0, right: 0, height: 3 },
+  top5ProgressFill: { height: 3 },
 
   // All subs
   subRow: {
@@ -883,5 +903,16 @@ const styles = StyleSheet.create({
   subName: { fontSize: 14, fontWeight: '700' },
   subCategory: { fontSize: 11, marginTop: 2 },
   subAmount: { fontSize: 13, fontWeight: '700', flexShrink: 0 },
+  // StatCard
+  statCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center', gap: 6, borderWidth: 1, marginRight: 10, minWidth: 100 },
+  statIconCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  statValue: { fontSize: 20, fontWeight: '900' },
+  statLabel: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
+
+  // ForecastCard
+  forecastIconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  forecastLabel: { fontSize: 10, fontWeight: '600', textAlign: 'center' },
+  forecastSub: { fontSize: 9, fontWeight: '500', textAlign: 'center' },
+
   empty: { fontSize: 14, textAlign: 'center', paddingVertical: 20 },
 });
