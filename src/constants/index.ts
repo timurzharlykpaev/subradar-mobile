@@ -18,15 +18,15 @@ export const COLORS = {
 };
 
 export const CATEGORIES = [
-  { id: 'STREAMING', label: 'Streaming', emoji: '📺', color: '#E53935' },
-  { id: 'AI_SERVICES', label: 'AI Services', emoji: '🤖', color: '#8E24AA' },
-  { id: 'INFRASTRUCTURE', label: 'Infrastructure', emoji: '☁️', color: '#039BE5' },
-  { id: 'MUSIC', label: 'Music', emoji: '🎵', color: '#8E24AA' },
-  { id: 'GAMING', label: 'Gaming', emoji: '🎮', color: '#43A047' },
-  { id: 'PRODUCTIVITY', label: 'Productivity', emoji: '📋', color: '#1E88E5' },
-  { id: 'HEALTH', label: 'Health', emoji: '💪', color: '#FB8C00' },
-  { id: 'NEWS', label: 'News', emoji: '📰', color: '#00ACC1' },
-  { id: 'OTHER', label: 'Other', emoji: '📦', color: '#757575' },
+  { id: 'STREAMING', label: 'Streaming', color: '#E53935' },
+  { id: 'AI_SERVICES', label: 'AI Services', color: '#8E24AA' },
+  { id: 'INFRASTRUCTURE', label: 'Infrastructure', color: '#039BE5' },
+  { id: 'MUSIC', label: 'Music', color: '#8E24AA' },
+  { id: 'GAMING', label: 'Gaming', color: '#43A047' },
+  { id: 'PRODUCTIVITY', label: 'Productivity', color: '#1E88E5' },
+  { id: 'HEALTH', label: 'Health', color: '#FB8C00' },
+  { id: 'NEWS', label: 'News', color: '#00ACC1' },
+  { id: 'OTHER', label: 'Other', color: '#757575' },
 ];
 
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'KZT', 'RUB', 'UAH', 'TRY'];
