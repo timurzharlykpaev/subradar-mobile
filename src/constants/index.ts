@@ -18,15 +18,15 @@ export const COLORS = {
 };
 
 export const CATEGORIES = [
-  { id: 'STREAMING', label: 'Streaming', color: '#E53935' },
-  { id: 'AI_SERVICES', label: 'AI Services', color: '#8E24AA' },
-  { id: 'INFRASTRUCTURE', label: 'Infrastructure', color: '#039BE5' },
-  { id: 'MUSIC', label: 'Music', color: '#8E24AA' },
-  { id: 'GAMING', label: 'Gaming', color: '#43A047' },
-  { id: 'PRODUCTIVITY', label: 'Productivity', color: '#1E88E5' },
-  { id: 'HEALTH', label: 'Health', color: '#FB8C00' },
-  { id: 'NEWS', label: 'News', color: '#00ACC1' },
-  { id: 'OTHER', label: 'Other', color: '#757575' },
+  { id: 'STREAMING', label: 'Streaming', color: '#FF4757' },
+  { id: 'AI_SERVICES', label: 'AI Services', color: '#A855F7' },
+  { id: 'INFRASTRUCTURE', label: 'Infrastructure', color: '#3B82F6' },
+  { id: 'MUSIC', label: 'Music', color: '#EC4899' },
+  { id: 'GAMING', label: 'Gaming', color: '#22C55E' },
+  { id: 'PRODUCTIVITY', label: 'Productivity', color: '#F59E0B' },
+  { id: 'HEALTH', label: 'Health', color: '#EF4444' },
+  { id: 'NEWS', label: 'News', color: '#06B6D4' },
+  { id: 'OTHER', label: 'Other', color: '#94A3B8' },
 ];
 
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'KZT', 'RUB', 'UAH', 'TRY'];
