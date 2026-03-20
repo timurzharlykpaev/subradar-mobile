@@ -14,7 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../src/stores/authStore';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
@@ -22,12 +21,12 @@ import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
+import { CategoryIcon } from '../../src/components/icons';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const { currency } = useSettingsStore();
   const { colors, isDark } = useTheme();
@@ -113,13 +112,6 @@ export default function DashboardScreen() {
     }, {} as Record<string, number>)
   ).filter(([, count]) => count > 1);
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return t('dashboard.good_morning');
-    if (h < 17) return t('dashboard.good_afternoon');
-    return t('dashboard.good_evening');
-  };
-
   const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
 
   if (loading) {
@@ -140,24 +132,14 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); }} />
         }
       >
-        {/* ── Header ────────────────────────────────────────────── */}
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.greeting, { color: colors.text }]}>{greeting()}</Text>
-            <Text style={[styles.userName, { color: colors.text }]}>{user?.name?.split(' ')[0] || ''} 👋</Text>
+        {isPro && (
+          <View style={{ paddingHorizontal: 20, paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={[styles.planBadge, { backgroundColor: colors.primary + '20' }]}>
+              <Ionicons name="diamond" size={12} color={colors.primary} />
+              <Text style={[styles.planBadgeText, { color: colors.primary }]}>PRO</Text>
+            </View>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            {isPro && (
-              <View style={[styles.planBadge, { backgroundColor: colors.primary + '20' }]}>
-                <Ionicons name="diamond" size={12} color={colors.primary} />
-                <Text style={[styles.planBadgeText, { color: colors.primary }]}>PRO</Text>
-              </View>
-            )}
-            <TouchableOpacity testID="btn-avatar" style={[styles.avatar, { backgroundColor: colors.primary }]} onPress={() => router.push('/(tabs)/settings')}>
-              <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'U'}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        )}
 
         {/* ── Hero Card: Total Spend ────────────────────────────── */}
         <View testID="dashboard-hero-card" style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
@@ -178,7 +160,7 @@ export default function DashboardScreen() {
           <View style={styles.heroMeta}>
             <View style={styles.heroMetaItem}>
               <Ionicons name="repeat-outline" size={14} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.heroMetaText}>{activeSubs.length} {t('dashboard.active_subscriptions')}</Text>
+              <Text style={styles.heroMetaText}>{activeSubs.length} {t('dashboard.active_subs', 'active subs')}</Text>
             </View>
             <View style={styles.heroMetaDivider} />
             <View style={styles.heroMetaItem}>
@@ -216,7 +198,7 @@ export default function DashboardScreen() {
                     activeOpacity={0.8}
                   >
                     <View style={styles.upcomingTop}>
-                      <Text style={styles.upcomingEmoji}>{cat?.emoji || '📦'}</Text>
+                      <CategoryIcon category={sub.category} size={24} />
                       {urgent && <View style={[styles.urgentDot, { backgroundColor: colors.warning }]} />}
                     </View>
                     <Text style={[styles.upcomingName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
@@ -310,7 +292,7 @@ export default function DashboardScreen() {
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {cat?.emoji} {sub.currentPlan || cat?.label || sub.category}
+                      {sub.currentPlan || cat?.label || sub.category}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
@@ -523,8 +505,8 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
       const largeArc = sweep > Math.PI ? 1 : 0;
       const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2} Z`;
       startAngle += sweep;
-      return { d, color, emoji: catInfo?.emoji || '', label: catInfo?.label || cat.category, pct: Math.round(fraction * 100) };
-    }).filter(Boolean) as { d: string; color: string; emoji: string; label: string; pct: number }[];
+      return { d, color, categoryId: catInfo?.id || 'OTHER', label: catInfo?.label || cat.category, pct: Math.round(fraction * 100) };
+    }).filter(Boolean) as { d: string; color: string; categoryId: string; label: string; pct: number }[];
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
@@ -535,7 +517,10 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
         {slices.map((slice, idx) => (
           <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
-            <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>{slice.emoji} {slice.label}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 }}>
+              <CategoryIcon category={slice.categoryId} size={14} />
+              <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>{slice.label}</Text>
+            </View>
             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary }}>{slice.pct}%</Text>
           </View>
         ))}
@@ -550,13 +535,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
 
   // Header
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
-  greeting: { fontSize: 14, fontWeight: '600' },
-  userName: { fontSize: 22, fontWeight: '900', letterSpacing: -0.3 },
   planBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
   planBadgeText: { fontSize: 11, fontWeight: '800' },
-  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
 
   // Hero card
   heroCard: { marginHorizontal: 20, marginTop: 8, borderRadius: 24, padding: 22, gap: 4, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10, overflow: 'hidden' },
@@ -591,7 +571,6 @@ const styles = StyleSheet.create({
   // Upcoming cards
   upcomingCard: { width: 130, borderRadius: 16, padding: 14, marginRight: 10, borderWidth: 1, gap: 4 },
   upcomingTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  upcomingEmoji: { fontSize: 24 },
   urgentDot: { width: 8, height: 8, borderRadius: 4 },
   upcomingName: { fontSize: 13, fontWeight: '700', marginTop: 4 },
   upcomingAmount: { fontSize: 15, fontWeight: '800' },
