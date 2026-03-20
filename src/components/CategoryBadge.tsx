@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CATEGORIES } from '../constants';
+import { CategoryIcon } from './icons';
 
 interface Props {
   categoryId: string;
@@ -13,7 +14,7 @@ export const CategoryBadge: React.FC<Props> = ({ categoryId, size = 'md' }) => {
 
   return (
     <View style={[styles.badge, { backgroundColor: cat.color + '20' }, isSmall && styles.sm]}>
-      <Text style={[styles.emoji, isSmall && styles.emojiSm]}>{cat.emoji}</Text>
+      <CategoryIcon category={cat.id} size={isSmall ? 12 : 14} />
       {!isSmall && (
         <Text style={[styles.label, { color: cat.color }]}>{cat.label}</Text>
       )}
@@ -34,7 +35,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 3,
   },
-  emoji: { fontSize: 14 },
-  emojiSm: { fontSize: 12 },
   label: { fontSize: 12, fontWeight: '600' },
 });
