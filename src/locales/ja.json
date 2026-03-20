@@ -142,7 +142,18 @@
     "section_main": "基本情報",
     "section_payment": "支払い",
     "section_extra": "追加",
-    "section_trial": "トライアル期間"
+    "section_trial": "トライアル期間",
+    "start_date": "開始日",
+    "reminder": "リマインダー",
+    "reminder_off": "オフ",
+    "reminder_1d": "1日前",
+    "reminder_3d": "3日前",
+    "reminder_7d": "7日前",
+    "card_color": "カード色",
+    "color_auto": "自動",
+    "tags": "タグ",
+    "tags_placeholder": "入力してカンマを押す...",
+    "parse_failed": "解析できませんでした。もう一度お試しください。"
   },
   "settings": {
     "title": "設定",

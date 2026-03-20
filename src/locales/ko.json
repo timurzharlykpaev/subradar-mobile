@@ -142,7 +142,18 @@
     "section_main": "기본 정보",
     "section_payment": "결제",
     "section_extra": "추가",
-    "section_trial": "체험 기간"
+    "section_trial": "체험 기간",
+    "start_date": "시작일",
+    "reminder": "알림",
+    "reminder_off": "끔",
+    "reminder_1d": "1일 전",
+    "reminder_3d": "3일 전",
+    "reminder_7d": "7일 전",
+    "card_color": "카드 색상",
+    "color_auto": "자동",
+    "tags": "태그",
+    "tags_placeholder": "입력 후 쉼표를 누르세요...",
+    "parse_failed": "분석할 수 없습니다. 다시 시도하세요."
   },
   "settings": {
     "title": "설정",

@@ -155,7 +155,18 @@
     "ai_q_confirm": "Is this correct?",
     "ai_edit": "Edit",
     "ai_add": "Add",
-    "ai_next": "Next →"
+    "ai_next": "Next →",
+    "start_date": "Start date",
+    "reminder": "Reminder",
+    "reminder_off": "Off",
+    "reminder_1d": "1 day",
+    "reminder_3d": "3 days",
+    "reminder_7d": "7 days",
+    "card_color": "Card color",
+    "color_auto": "Auto",
+    "tags": "Tags",
+    "tags_placeholder": "Type and press comma...",
+    "parse_failed": "Could not parse. Try again."
   },
   "periods": {
     "WEEKLY": "Weekly",

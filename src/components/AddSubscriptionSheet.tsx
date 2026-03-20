@@ -83,6 +83,10 @@ const emptyForm = {
   iconUrl: '',
   isTrial: false,
   trialEndDate: '',
+  startDate: new Date().toISOString().split('T')[0],
+  reminderDaysBefore: [3] as number[],
+  color: '' as string,
+  tags: [] as string[],
 };
 
 // FormSection component — groups form fields visually
@@ -94,6 +98,7 @@ function FormSection({ title, icon, children }: { title: string; icon: React.Rea
       borderRadius: 16,
       padding: 16,
       marginBottom: 12,
+      marginTop: 16,
       borderWidth: 1,
       borderColor: colors.border,
     }}>
@@ -205,6 +210,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         iconUrl: iconUrl || undefined,
         notes: form.notes || undefined,
         trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : undefined,
+        startDate: form.startDate || undefined,
+        reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
+        reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
+        color: form.color || undefined,
+        tags: form.tags.length > 0 ? form.tags : undefined,
       });
       addSubscription(res.data);
     } catch {
@@ -292,7 +302,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
       applyParsedSubscriptions(subs);
     } catch {
-      // silent — не ломаем UI
+      Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
     } finally {
       setAiLoading(false);
     }
@@ -309,10 +319,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const data = res.data;
       // Если сервер вернул транскрипт — показываем его в поле
       if (data.text) setAiText(data.text);
-      const subs = Array.isArray(data.subscriptions) ? data.subscriptions : (data.subscriptions ? [data.subscriptions] : []);
+      const subs = Array.isArray(data.subscriptions)
+        ? data.subscriptions
+        : data.subscriptions
+          ? [data.subscriptions]
+          : (data.name && data.amount) ? [data] : [];
       if (subs.length > 0) applyParsedSubscriptions(subs);
     } catch {
-      // silent
+      Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
     } finally {
       setAiLoading(false);
     }
@@ -515,6 +529,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     </View>
                   </ScrollView>
 
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
+                    {t('add.start_date', 'Start date')}
+                  </Text>
+                  <TextInput
+                    style={inputStyle}
+                    value={form.startDate}
+                    onChangeText={(v) => setF('startDate', v)}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor={colors.textMuted}
+                    keyboardType="numbers-and-punctuation"
+                  />
+
                   {cards.length > 0 && (
                     <>
                       <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
@@ -584,6 +610,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     placeholder="https://netflix.com"
                     placeholderTextColor={colors.textMuted}
                     autoCapitalize="none"
+                    keyboardType="url"
+                    autoCorrect={false}
                   />
 
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
@@ -597,6 +625,109 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     placeholderTextColor={colors.textMuted}
                     multiline
                     numberOfLines={3}
+                  />
+
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
+                    {t('add.reminder', 'Reminder')}
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    {[
+                      { label: t('add.reminder_off', 'Off'), value: [] as number[] },
+                      { label: t('add.reminder_1d', '1d'), value: [1] },
+                      { label: t('add.reminder_3d', '3d'), value: [3] },
+                      { label: t('add.reminder_7d', '7d'), value: [7] },
+                    ].map((opt) => {
+                      const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
+                      return (
+                        <TouchableOpacity
+                          key={opt.label}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 20,
+                            backgroundColor: isSelected ? colors.primary : colors.background,
+                            borderWidth: 1,
+                            borderColor: isSelected ? colors.primary : colors.border,
+                          }}
+                          onPress={() => setF('reminderDaysBefore', opt.value)}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
+                            {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
+                    {t('add.card_color', 'Card color')}
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                    {[
+                      { label: t('add.color_auto', 'Auto'), value: '', hex: colors.primary },
+                      { value: '#3B82F6', hex: '#3B82F6' },
+                      { value: '#10B981', hex: '#10B981' },
+                      { value: '#EF4444', hex: '#EF4444' },
+                      { value: '#F59E0B', hex: '#F59E0B' },
+                      { value: '#EC4899', hex: '#EC4899' },
+                      { value: '#06B6D4', hex: '#06B6D4' },
+                      { value: '#6B7280', hex: '#6B7280' },
+                    ].map((c) => (
+                      <TouchableOpacity
+                        key={c.value || 'auto'}
+                        onPress={() => setF('color', c.value)}
+                        style={{
+                          width: 32, height: 32, borderRadius: 16,
+                          backgroundColor: c.hex,
+                          borderWidth: 2.5,
+                          borderColor: form.color === c.value ? colors.text : 'transparent',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {c.label && (
+                          <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>{c.label}</Text>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
+                    {t('add.tags', 'Tags')}
+                  </Text>
+                  {form.tags.length > 0 && (
+                    <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                      {form.tags.map((tag, idx) => (
+                        <View key={idx} style={{
+                          flexDirection: 'row', alignItems: 'center', gap: 4,
+                          backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+                        }}>
+                          <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
+                          <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_: string, i: number) => i !== idx))}>
+                            <Ionicons name="close" size={14} color={colors.primary} />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                  <TextInput
+                    style={inputStyle}
+                    placeholder={t('add.tags_placeholder', 'Type and press comma...')}
+                    placeholderTextColor={colors.textMuted}
+                    onChangeText={(v) => {
+                      if (v.includes(',')) {
+                        const tag = v.replace(',', '').trim();
+                        if (tag && !form.tags.includes(tag)) {
+                          setF('tags', [...form.tags, tag]);
+                        }
+                      }
+                    }}
+                    onSubmitEditing={(e) => {
+                      const tag = e.nativeEvent.text.trim();
+                      if (tag && !form.tags.includes(tag)) {
+                        setF('tags', [...form.tags, tag]);
+                      }
+                    }}
+                    returnKeyType="done"
                   />
                 </FormSection>
 

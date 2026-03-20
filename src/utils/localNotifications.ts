@@ -9,7 +9,6 @@ const CHANNEL_ID = 'payment-reminders';
 
 export async function schedulePaymentReminders(
   subscriptions: Subscription[],
-  reminderDays: number[] = [1, 3],
 ): Promise<void> {
   try {
     // Cancel all existing scheduled reminders
@@ -22,10 +21,17 @@ export async function schedulePaymentReminders(
     const now = new Date();
 
     for (const sub of active) {
+      // Skip if reminders are explicitly disabled for this subscription
+      if (sub.reminderEnabled === false) continue;
+
       if (!sub.nextPaymentDate) continue;
 
       const payDate = new Date(sub.nextPaymentDate);
       if (isNaN(payDate.getTime())) continue;
+
+      const reminderDays = (sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0)
+        ? sub.reminderDaysBefore
+        : [1, 3]; // default fallback
 
       for (const daysBefore of reminderDays) {
         const triggerDate = new Date(payDate);

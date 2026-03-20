@@ -142,7 +142,18 @@
     "section_main": "Info principal",
     "section_payment": "Pago",
     "section_extra": "Adicional",
-    "section_trial": "Período de prueba"
+    "section_trial": "Período de prueba",
+    "start_date": "Fecha de inicio",
+    "reminder": "Recordatorio",
+    "reminder_off": "No",
+    "reminder_1d": "1 dia",
+    "reminder_3d": "3 dias",
+    "reminder_7d": "7 dias",
+    "card_color": "Color de tarjeta",
+    "color_auto": "Auto",
+    "tags": "Etiquetas",
+    "tags_placeholder": "Escribe y presiona coma...",
+    "parse_failed": "No se pudo analizar. Intenta de nuevo."
   },
   "settings": {
     "title": "Configuración",

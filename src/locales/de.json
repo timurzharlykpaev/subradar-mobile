@@ -142,7 +142,18 @@
     "section_main": "Hauptinfos",
     "section_payment": "Zahlung",
     "section_extra": "Zusätzlich",
-    "section_trial": "Testzeitraum"
+    "section_trial": "Testzeitraum",
+    "start_date": "Startdatum",
+    "reminder": "Erinnerung",
+    "reminder_off": "Aus",
+    "reminder_1d": "1 Tag",
+    "reminder_3d": "3 Tage",
+    "reminder_7d": "7 Tage",
+    "card_color": "Kartenfarbe",
+    "color_auto": "Auto",
+    "tags": "Tags",
+    "tags_placeholder": "Eingeben und Komma drucken...",
+    "parse_failed": "Konnte nicht analysiert werden. Versuche es erneut."
   },
   "settings": {
     "title": "Einstellungen",

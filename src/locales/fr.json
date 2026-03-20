@@ -142,7 +142,18 @@
     "section_main": "Infos principales",
     "section_payment": "Paiement",
     "section_extra": "Supplémentaire",
-    "section_trial": "Période d'essai"
+    "section_trial": "Période d'essai",
+    "start_date": "Date de debut",
+    "reminder": "Rappel",
+    "reminder_off": "Non",
+    "reminder_1d": "1 jour",
+    "reminder_3d": "3 jours",
+    "reminder_7d": "7 jours",
+    "card_color": "Couleur de carte",
+    "color_auto": "Auto",
+    "tags": "Tags",
+    "tags_placeholder": "Tapez et appuyez sur virgule...",
+    "parse_failed": "Impossible d'analyser. Reessayez."
   },
   "settings": {
     "title": "Paramètres",

@@ -46,6 +46,28 @@ All endpoints require `Authorization: Bearer <access_token>` unless marked as pu
 | POST | `/subscriptions/:id/pause` | Pause subscription |
 | POST | `/subscriptions/:id/restore` | Restore paused/cancelled subscription |
 
+### POST /subscriptions — Request Body
+```json
+{
+  "name": "string (required)",
+  "amount": "number (required)",
+  "currency": "string (required) — ISO 4217, e.g. USD",
+  "billingPeriod": "BillingCycle (required) — MONTHLY | YEARLY | WEEKLY | QUARTERLY | LIFETIME | ONE_TIME",
+  "category": "Category (required) — STREAMING | AI_SERVICES | INFRASTRUCTURE | MUSIC | GAMING | PRODUCTIVITY | HEALTH | NEWS | OTHER",
+  "status": "SubscriptionStatus (optional) — ACTIVE | TRIAL | PAUSED | CANCELLED",
+  "nextPaymentDate": "string (optional) — ISO date, e.g. 2026-04-01",
+  "startDate": "string (optional) — ISO date, subscription start date",
+  "currentPlan": "string (optional) — plan name, e.g. Pro",
+  "iconUrl": "string (optional) — URL to service icon",
+  "paymentCardId": "string (optional) — UUID of linked payment card",
+  "notes": "string (optional)",
+  "color": "string (optional) — hex color for card, e.g. #3B82F6",
+  "tags": "string[] (optional) — array of tags, e.g. [\"work\", \"team\"]",
+  "reminderEnabled": "boolean (optional) — enable payment reminder notifications",
+  "reminderDaysBefore": "number (optional) — days before payment to send reminder"
+}
+```
+
 ### Query params for GET /subscriptions
 - `status` — ACTIVE, TRIAL, PAUSED, CANCELLED, ARCHIVED
 - `category` — STREAMING, AI_SERVICES, etc.
@@ -59,13 +81,13 @@ All endpoints require `Authorization: Bearer <access_token>` unless marked as pu
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/ai/parse-text-subscription` | Parse subscription from text input |
-| POST | `/ai/parse-subscription-image` | Parse subscription from photo/screenshot |
+| POST | `/ai/parse-text` | Parse subscription from text input |
+| POST | `/ai/parse-screenshot` | Parse subscription from photo/screenshot |
 | POST | `/ai/match-service` | Match service name to known services |
 | GET | `/ai/subscription-insights` | Get AI insights for user's subscriptions |
 | POST | `/ai/run-audit` | Trigger monthly AI audit |
 
-### POST /ai/parse-text-subscription
+### POST /ai/parse-text
 ```json
 Request: { "text": "ChatGPT Plus $20/month, billing on 15th" }
 Response: {
@@ -84,10 +106,10 @@ Response: {
 }
 ```
 
-### POST /ai/parse-subscription-image
+### POST /ai/parse-screenshot
 ```
 Request: multipart/form-data { image: File }
-Response: same shape as parse-text-subscription
+Response: same shape as parse-text
 ```
 
 ## Analytics
