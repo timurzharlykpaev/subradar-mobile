@@ -525,7 +525,10 @@ export default function SettingsScreen() {
                 try {
                   const { authApi } = await import('../../src/api/auth');
                   await authApi.deleteAccount();
-                } catch {}
+                } catch (e) {
+                  console.warn('Delete account failed:', e);
+                }
+                // Always logout even if API call fails
                 logout();
                 router.replace('/onboarding' as any);
               }},
