@@ -16,6 +16,7 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 import { schedulePaymentReminders } from '../src/utils/localNotifications';
 import { ErrorBoundary } from '../src/utils/ErrorBoundary';
+import { configureRevenueCat, loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -26,6 +27,8 @@ Notifications.setNotificationHandler({
     shouldSetBadge: true,
   }),
 });
+
+configureRevenueCat();
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (!Device.isDevice) return null;
@@ -70,7 +73,14 @@ function DataLoader() {
   const { reminderDays, notificationsEnabled } = useSettingsStore();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      logoutRevenueCat();
+      return;
+    }
+
+    // Identify user in RevenueCat
+    const userId = useAuthStore.getState().user?.id;
+    if (userId) loginRevenueCat(userId);
 
     // Load cards
     import('../src/api/cards').then(({ cardsApi }) => {
