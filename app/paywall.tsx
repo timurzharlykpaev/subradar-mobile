@@ -17,6 +17,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/theme';
 import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRevenueCat } from '../src/hooks/useRevenueCat';
+import { PurchasesPackage } from 'react-native-purchases';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -67,6 +69,7 @@ export default function PaywallScreen() {
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
   const startTrialMutation = useStartTrial();
   const queryClient = useQueryClient();
+  const { offerings, purchasePackage, restorePurchases } = useRevenueCat();
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -94,8 +97,24 @@ export default function PaywallScreen() {
   const isTrialing = billing?.status === 'trialing';
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
 
-  const getPrice = (planId: string) => {
-    if (planId === 'free') return { price: '$0', period: '' };
+  const getPrice = (planId: string): { price: string; period: string } => {
+    if (planId === 'free') return { price: t('paywall.free_price', 'Free'), period: '' };
+
+    const current = offerings?.current;
+    if (current) {
+      if (planId === 'pro') {
+        const pkg = billingPeriod === 'yearly' ? current.annual : current.monthly;
+        if (pkg) return { price: pkg.product.priceString, period: `/${billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` };
+      }
+      if (planId === 'org') {
+        const pkg = current.availablePackages.find(p =>
+          p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
+        );
+        if (pkg) return { price: pkg.product.priceString, period: `/${billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` };
+      }
+    }
+
+    // Fallback
     if (planId === 'pro') {
       return billingPeriod === 'yearly'
         ? { price: '$24.99', period: `/${t('paywall.year', 'yr')}` }
@@ -109,6 +128,7 @@ export default function PaywallScreen() {
   const handleAction = async () => {
     if (selected === 'free') { router.back(); return; }
 
+    // Trial flow stays the same
     if (selected === 'pro' && canTrial) {
       try {
         await startTrialMutation.mutateAsync();
@@ -124,12 +144,42 @@ export default function PaywallScreen() {
       return;
     }
 
+    // Already on this plan
     const currentMatch =
       (selected === 'pro' && billing?.plan === 'pro') ||
       (selected === 'org' && billing?.plan === 'organization');
     if (currentMatch && !isTrialing) return;
 
-    router.replace('/subscription-plan' as any);
+    // Native IAP purchase
+    const current = offerings?.current;
+    if (!current) {
+      Alert.alert(t('common.error'), 'No offerings available');
+      return;
+    }
+
+    let pkg: PurchasesPackage | undefined;
+    if (selected === 'pro') {
+      pkg = (billingPeriod === 'yearly' ? current.annual : current.monthly) ?? undefined;
+    } else {
+      pkg = current.availablePackages.find(p =>
+        p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
+      );
+    }
+
+    if (!pkg) {
+      Alert.alert(t('common.error'), 'Package not found');
+      return;
+    }
+
+    const success = await purchasePackage(pkg);
+    if (success) {
+      await queryClient.invalidateQueries({ queryKey: ['billing'] });
+      Alert.alert(
+        t('paywall.upgrade_success', 'Success!'),
+        t('paywall.upgrade_success_msg', 'Welcome to Pro!'),
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    }
   };
 
   const isLoading = startTrialMutation.isPending || billingLoading;
@@ -341,6 +391,25 @@ export default function PaywallScreen() {
         <Text style={[styles.disclaimer, { color: colors.textMuted }]}>
           {canTrial ? t('paywall.free_trial_disclaimer') : t('paywall.paid_disclaimer')}
         </Text>
+
+        {/* Restore Purchases */}
+        <TouchableOpacity
+          style={{ alignItems: 'center', paddingTop: 16, paddingBottom: 8 }}
+          onPress={async () => {
+            const restored = await restorePurchases();
+            if (restored) {
+              await queryClient.invalidateQueries({ queryKey: ['billing'] });
+              Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'));
+              router.back();
+            } else {
+              Alert.alert(t('paywall.no_purchases', 'No active subscriptions found.'));
+            }
+          }}
+        >
+          <Text style={{ color: colors.textMuted, fontSize: 13, textDecorationLine: 'underline' }}>
+            {t('paywall.restore_purchases', 'Restore Purchases')}
+          </Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
