@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
 import { subscriptionsApi } from '../api/subscriptions';
 import { aiApi } from '../api/ai';
@@ -31,6 +32,12 @@ import { VoiceRecorder } from './VoiceRecorder';
 import { AIWizard, ParsedSub } from './AIWizard';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useTheme } from '../theme';
+import {
+  MovieIcon, MusicIcon, PlayIcon, InfrastructureIcon, FolderIcon,
+  BriefcaseIcon, PaletteIcon, ChartBarIcon, AiServicesIcon,
+  PenIcon, BrushIcon, OctopusIcon, WaveDropIcon, OtherIcon, SparklesIcon,
+  PinIcon, MoneyIcon, ClipboardIcon, AlarmIcon, CameraIcon, GiftIcon,
+} from './icons';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -44,21 +51,21 @@ interface Props {
 const TAB_KEYS = ['add.ai_assistant', 'add.manual', 'add.screenshot'] as const;
 
 const POPULAR_SERVICES = [
-  { name: 'Netflix', emoji: '🎬' },
-  { name: 'Spotify', emoji: '🎵' },
-  { name: 'YouTube Premium', emoji: '▶️' },
-  { name: 'Apple iCloud', emoji: '☁️' },
-  { name: 'Google One', emoji: '🗂️' },
-  { name: 'LinkedIn Premium', emoji: '💼' },
-  { name: 'Adobe Creative Cloud', emoji: '🎨' },
-  { name: 'Microsoft 365', emoji: '📊' },
-  { name: 'ChatGPT Plus', emoji: '🤖' },
-  { name: 'Notion', emoji: '📝' },
-  { name: 'Figma', emoji: '🖌️' },
-  { name: 'GitHub', emoji: '🐙' },
-  { name: 'DigitalOcean', emoji: '🌊' },
-  { name: 'Dropbox', emoji: '📦' },
-  { name: 'Disney+', emoji: '✨' },
+  { name: 'Netflix', Icon: MovieIcon },
+  { name: 'Spotify', Icon: MusicIcon },
+  { name: 'YouTube Premium', Icon: PlayIcon },
+  { name: 'Apple iCloud', Icon: InfrastructureIcon },
+  { name: 'Google One', Icon: FolderIcon },
+  { name: 'LinkedIn Premium', Icon: BriefcaseIcon },
+  { name: 'Adobe Creative Cloud', Icon: PaletteIcon },
+  { name: 'Microsoft 365', Icon: ChartBarIcon },
+  { name: 'ChatGPT Plus', Icon: AiServicesIcon },
+  { name: 'Notion', Icon: PenIcon },
+  { name: 'Figma', Icon: BrushIcon },
+  { name: 'GitHub', Icon: OctopusIcon },
+  { name: 'DigitalOcean', Icon: WaveDropIcon },
+  { name: 'Dropbox', Icon: OtherIcon },
+  { name: 'Disney+', Icon: SparklesIcon },
 ];
 
 const emptyForm = {
@@ -79,7 +86,7 @@ const emptyForm = {
 };
 
 // FormSection component — groups form fields visually
-function FormSection({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+function FormSection({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   const { colors } = useTheme();
   return (
     <View style={{
@@ -90,14 +97,21 @@ function FormSection({ title, icon, children }: { title: string; icon: string; c
       borderWidth: 1,
       borderColor: colors.border,
     }}>
-      <Text style={{
-        fontSize: 13,
-        fontWeight: '700',
-        color: colors.textMuted,
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
         marginBottom: 12,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-      }}>{icon} {title}</Text>
+      }}>
+        {icon}
+        <Text style={{
+          fontSize: 13,
+          fontWeight: '700',
+          color: colors.textMuted,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+        }}>{title}</Text>
+      </View>
       {children}
     </View>
   );
@@ -335,7 +349,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.text }]}>{t('add.title')}</Text>
             <TouchableOpacity onPress={handleClose} style={[styles.closeBtn, { backgroundColor: colors.background }]}>
-              <Text style={[styles.closeBtnText, { color: colors.textSecondary }]}>✕</Text>
+              <Ionicons name="close" size={22} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -385,7 +399,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {tab === 1 && (
               <View style={{ paddingBottom: 40 }}>
                 {/* Section: Основное */}
-                <FormSection title={t('add.section_main')} icon="📌">
+                <FormSection title={t('add.section_main')} icon={<PinIcon size={16} color={colors.text} />}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
                     {t('add.name')} *
                   </Text>
@@ -430,7 +444,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </FormSection>
 
                 {/* Section: Оплата */}
-                <FormSection title={t('add.section_payment')} icon="💰">
+                <FormSection title={t('add.section_payment')} icon={<MoneyIcon size={16} color={colors.text} />}>
                   <View style={{ gap: 10 }}>
                     <View>
                       <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
@@ -548,7 +562,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </FormSection>
 
                 {/* Section: Дополнительно */}
-                <FormSection title={t('add.section_extra')} icon="📋">
+                <FormSection title={t('add.section_extra')} icon={<ClipboardIcon size={16} color={colors.text} />}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
                     {t('add.plan')}
                   </Text>
@@ -587,12 +601,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </FormSection>
 
                 {/* Section: Триал период */}
-                <FormSection title={t('add.trial_period')} icon="⏰">
+                <FormSection title={t('add.trial_period')} icon={<AlarmIcon size={16} color={colors.text} />}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                        🎁 {t('add.trial_period')}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <GiftIcon size={16} color={colors.text} />
+                        <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                          {t('add.trial_period')}
+                        </Text>
+                      </View>
                       <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
                         {t('add.trial_desc')}
                       </Text>
@@ -651,7 +668,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     <Image source={{ uri: screenshotUri }} style={styles.screenshot} resizeMode="contain" />
                   ) : (
                     <View style={styles.screenshotPlaceholder}>
-                      <Text style={styles.screenshotIcon}>📸</Text>
+                      <CameraIcon size={24} color={colors.textSecondary} />
                       <Text style={[styles.screenshotText, { color: colors.textSecondary }]}>{t('add.tap_to_pick')}</Text>
                     </View>
                   )}
@@ -683,7 +700,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     {parsingScreenshot ? (
                       <ActivityIndicator color="#FFF" />
                     ) : (
-                      <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>✨ {t('add.parse_screenshot')}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <SparklesIcon size={16} color="#FFF" />
+                        <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.parse_screenshot')}</Text>
+                      </View>
                     )}
                   </TouchableOpacity>
                 )}
