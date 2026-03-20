@@ -15,7 +15,8 @@
     "are_you_sure": "정말이신가요?",
     "no_card": "카드 없음",
     "no_data_period": "이 기간 데이터 없음",
-    "popular": "인기"
+    "popular": "인기",
+    "success": "성공"
   },
   "tabs": {
     "home": "홈",
@@ -91,7 +92,13 @@
     "delete_title": "구독 삭제",
     "cancel_title": "구독 취소",
     "subscription_count": "구독 {{count}}개",
-    "subscription_count_plural": "구독 {{count}}개"
+    "subscription_count_plural": "구독 {{count}}개",
+    "sort_name": "A-Z",
+    "sort_date": "날짜",
+    "sort_high": "가격 ↓",
+    "sort_low": "가격 ↑",
+    "no_results": "결과 없음",
+    "try_different": "다른 검색어를 시도하세요"
   },
   "add": {
     "title": "구독 추가",
@@ -153,7 +160,14 @@
     "color_auto": "자동",
     "tags": "태그",
     "tags_placeholder": "입력 후 쉼표를 누르세요...",
-    "parse_failed": "분석할 수 없습니다. 다시 시도하세요."
+    "parse_failed": "분석할 수 없습니다. 다시 시도하세요.",
+    "hold_to_record": "길게 눌러 말하기",
+    "ai_q_name": "어떤 구독인가요?",
+    "ai_q_name_hint": "서비스 이름을 말하거나 입력하세요",
+    "ai_q_confirm": "모두 맞나요?",
+    "ai_add": "추가",
+    "ai_edit": "편집",
+    "ai_next": "다음 →"
   },
   "settings": {
     "title": "설정",
@@ -204,7 +218,10 @@
     "delete_account": "계정 삭제",
     "delete_account_confirm": "계정과 모든 데이터가 영구적으로 삭제됩니다.",
     "delete_account_success": "계정이 삭제되었습니다",
-    "danger_zone": "위험 구역"
+    "danger_zone": "위험 구역",
+    "manage_sub_web": "구독 관리를 위해 웹 앱을 방문하세요.",
+    "no_purchases": "활성 구독을 찾을 수 없습니다.",
+    "restore_purchases": "구매 복원"
   },
   "auth": {
     "welcome": "다시 오셨군요",
@@ -320,7 +337,16 @@
     "cancel_confirm_url": "해지 페이지로 이동합니다. 취소로 표시하시겠습니까?",
     "keep": "유지",
     "remove_confirm": "{{name}}을(를) 삭제하시겠습니까?",
-    "day": "{{day}}일"
+    "day": "{{day}}일",
+    "edit_title": "구독 편집",
+    "invalid_billing_day": "결제일은 1에서 31 사이여야 합니다",
+    "fill_card_fields": "카드 이름과 끝 4자리를 입력하세요",
+    "invalid_last4": "끝 4자리는 정확히 4자리 숫자여야 합니다",
+    "add_card": "+ 카드 추가",
+    "card_brand": "브랜드",
+    "card_last4": "끝 4자리",
+    "card_nickname": "카드 이름",
+    "save_card": "카드 저장"
   },
   "cards": {
     "title": "카드",
@@ -357,7 +383,12 @@
     "period_quarter": "최근 3개월",
     "period_year": "올해",
     "period_label": "기간: {{period}}",
-    "report_suffix": "보고서"
+    "report_suffix": "보고서",
+    "error_401": "세션이 만료되었습니다. 다시 로그인하세요",
+    "error_404": "보고서를 찾을 수 없습니다",
+    "error_generic": "보고서를 생성할 수 없습니다",
+    "error_network": "네트워크 오류, 연결을 확인하세요",
+    "retry": "다시 시도"
   },
   "edit_profile": {
     "title": "프로필 편집",
@@ -469,7 +500,27 @@
     "send_invite": "전송",
     "remove_member_confirm": "멤버를 제거할까요?",
     "subscriptions_per_month": "구독/월",
-    "empty_subtitle": "팀으로 구독을 관리하세요.\n공유 지출을 추적하세요."
+    "empty_subtitle": "팀으로 구독을 관리하세요.\n공유 지출을 추적하세요.",
+    "members_one": "멤버",
+    "members_other": "멤버",
+    "invite_btn": "초대",
+    "per_month_label": "월간",
+    "subs_label": "구독",
+    "members_label": "멤버",
+    "member_spending_title": "멤버별 지출",
+    "member_subs_count": "구독 {{count}}개",
+    "members_section_title": "멤버",
+    "no_members_yet": "아직 멤버가 없습니다",
+    "remove_confirm_title": "제거할까요?",
+    "remove_btn": "제거",
+    "invite_sent": "초대가 전송되었습니다",
+    "error_title": "오류",
+    "error_create": "생성 실패",
+    "error_invite": "전송 실패",
+    "error_remove": "제거 실패",
+    "avg_per_member": "평균 / 멤버",
+    "top_subs": "상위 구독",
+    "yearly_label": "연간"
   },
   "paywall": {
     "choose_plan": "플랜 선택",
@@ -479,10 +530,54 @@
     "paid_disclaimer": "App Store 통해 결제. 언제든지 취소 가능.",
     "continue_free": "무료로 계속",
     "subtitle_trial": "7일 무료·언제든지 취소",
-    "subtitle_no_trial": "모든 기능 잠금 해제"
+    "subtitle_no_trial": "모든 기능 잠금 해제",
+    "month": "월",
+    "year": "년",
+    "free_7_days": "7일 무료",
+    "feat_subs_3": "구독 3개",
+    "feat_ai_5": "AI 요청 5회/월",
+    "feat_basic_analytics": "기본 분석",
+    "feat_unlimited_subs": "무제한 구독",
+    "feat_ai_200": "AI 요청 200회/월",
+    "feat_advanced_analytics": "고급 분석",
+    "feat_pdf_reports": "PDF 보고서",
+    "feat_team_access": "팀 접근",
+    "feat_everything_pro": "Pro 모든 기능",
+    "feat_member_analytics": "멤버 분석",
+    "feat_members_10": "최대 10명",
+    "restored": "복원되었습니다!",
+    "restored_msg": "구독이 복원되었습니다.",
+    "free_price": "무료",
+    "no_purchases": "활성 구독을 찾을 수 없습니다.",
+    "restore_purchases": "구매 복원",
+    "upgrade_success": "성공!",
+    "upgrade_success_msg": "Pro에 오신 것을 환영합니다!"
   },
   "ai": {
     "or_type": "또는 입력",
     "popular_services": "인기"
+  },
+  "pro_modal": {
+    "title_default": "Pro 기능",
+    "desc_default": "이 기능을 잠금 해제하려면 Pro로 업그레이드하세요",
+    "title_forecast": "지출 예측",
+    "desc_forecast": "30일, 6개월, 12개월 예상 지출 확인",
+    "title_savings": "절약 분석",
+    "desc_savings": "중복 항목을 찾고 사용하지 않는 구독을 절약하세요",
+    "title_ai_text": "AI 텍스트 분석",
+    "desc_ai_text": "구독을 설명하면 AI가 세부 정보를 입력합니다",
+    "title_ai_photo": "AI 사진 스캔",
+    "desc_ai_photo": "영수증을 찍으면 AI가 구독을 인식합니다",
+    "title_unlimited_subs": "무제한 구독",
+    "desc_unlimited_subs": "제한 없이 모든 구독을 추적하세요",
+    "title_workspace": "팀 공간",
+    "desc_workspace": "팀 구독 및 공유 지출 관리",
+    "feat_unlimited": "무제한 구독",
+    "feat_ai": "AI 요청 200회/월",
+    "feat_analytics": "고급 분석 및 예측",
+    "feat_reports": "PDF 보고서",
+    "start_trial": "7일 무료 체험 시작",
+    "upgrade": "업그레이드 — $2.99/월",
+    "unlock": "잠금 해제"
   }
 }

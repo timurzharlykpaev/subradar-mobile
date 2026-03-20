@@ -15,7 +15,8 @@
     "are_you_sure": "Tem certeza?",
     "no_card": "Sem cartão",
     "no_data_period": "Sem dados para este período",
-    "popular": "Populares"
+    "popular": "Populares",
+    "success": "Sucesso"
   },
   "tabs": {
     "home": "Início",
@@ -91,7 +92,13 @@
     "delete_title": "Excluir assinatura",
     "cancel_title": "Cancelar assinatura",
     "subscription_count": "{{count}} assinatura",
-    "subscription_count_plural": "{{count}} assinaturas"
+    "subscription_count_plural": "{{count}} assinaturas",
+    "sort_name": "A-Z",
+    "sort_date": "Data",
+    "sort_high": "Preço ↓",
+    "sort_low": "Preço ↑",
+    "no_results": "Sem resultados",
+    "try_different": "Tente outra pesquisa"
   },
   "add": {
     "title": "Adicionar Assinatura",
@@ -153,7 +160,14 @@
     "color_auto": "Auto",
     "tags": "Tags",
     "tags_placeholder": "Digite e pressione virgula...",
-    "parse_failed": "Nao foi possivel analisar. Tente novamente."
+    "parse_failed": "Nao foi possivel analisar. Tente novamente.",
+    "hold_to_record": "Segurar para falar",
+    "ai_q_name": "Qual assinatura?",
+    "ai_q_name_hint": "Diga ou digite o nome do serviço",
+    "ai_q_confirm": "Está correto?",
+    "ai_add": "Adicionar",
+    "ai_edit": "Editar",
+    "ai_next": "Próximo →"
   },
   "settings": {
     "title": "Configurações",
@@ -204,7 +218,10 @@
     "delete_account": "Excluir conta",
     "delete_account_confirm": "Isso excluirá permanentemente sua conta e todos os dados.",
     "delete_account_success": "Conta excluída",
-    "danger_zone": "Zona de perigo"
+    "danger_zone": "Zona de perigo",
+    "manage_sub_web": "Visite o app web para gerenciar sua assinatura.",
+    "no_purchases": "Nenhuma assinatura ativa encontrada.",
+    "restore_purchases": "Restaurar compras"
   },
   "auth": {
     "welcome": "Bem-vindo de volta",
@@ -320,7 +337,16 @@
     "cancel_confirm_url": "Isso abrirá a página de cancelamento. Marcar como cancelada?",
     "keep": "Manter",
     "remove_confirm": "Remover {{name}}?",
-    "day": "Dia {{day}}"
+    "day": "Dia {{day}}",
+    "edit_title": "Editar assinatura",
+    "invalid_billing_day": "O dia de cobrança deve estar entre 1 e 31",
+    "fill_card_fields": "Preencha o nome do cartão e os últimos 4 dígitos",
+    "invalid_last4": "Os últimos 4 dígitos devem ser exatamente 4 números",
+    "add_card": "+ Adicionar cartão",
+    "card_brand": "Bandeira",
+    "card_last4": "Últimos 4 dígitos",
+    "card_nickname": "Nome do cartão",
+    "save_card": "Salvar cartão"
   },
   "cards": {
     "title": "Cartões",
@@ -357,7 +383,12 @@
     "period_quarter": "Últimos 3 meses",
     "period_year": "Este ano",
     "period_label": "Período: {{period}}",
-    "report_suffix": "Relatório"
+    "report_suffix": "Relatório",
+    "error_401": "Sessão expirada, faça login novamente",
+    "error_404": "Relatório não encontrado",
+    "error_generic": "Não foi possível gerar o relatório",
+    "error_network": "Erro de rede, verifique sua conexão",
+    "retry": "Tentar novamente"
   },
   "edit_profile": {
     "title": "Editar Perfil",
@@ -469,7 +500,27 @@
     "send_invite": "Enviar",
     "remove_member_confirm": "Remover membro?",
     "subscriptions_per_month": "assinaturas/mês",
-    "empty_subtitle": "Gerencie assinaturas em equipe.\nAcompanhe gastos compartilhados."
+    "empty_subtitle": "Gerencie assinaturas em equipe.\nAcompanhe gastos compartilhados.",
+    "members_one": "membro",
+    "members_other": "membros",
+    "invite_btn": "Convidar",
+    "per_month_label": "por mês",
+    "subs_label": "assinaturas",
+    "members_label": "membros",
+    "member_spending_title": "Gastos por membro",
+    "member_subs_count": "{{count}} assinaturas",
+    "members_section_title": "Membros",
+    "no_members_yet": "Nenhum membro ainda",
+    "remove_confirm_title": "Remover?",
+    "remove_btn": "Remover",
+    "invite_sent": "Convite enviado",
+    "error_title": "Erro",
+    "error_create": "Falha ao criar",
+    "error_invite": "Falha ao enviar",
+    "error_remove": "Falha ao remover",
+    "avg_per_member": "Média / membro",
+    "top_subs": "Top assinaturas",
+    "yearly_label": "Anual"
   },
   "paywall": {
     "choose_plan": "Escolha um plano",
@@ -479,10 +530,54 @@
     "paid_disclaimer": "Via App Store. Cancelável a qualquer momento.",
     "continue_free": "Continuar grátis",
     "subtitle_trial": "7 dias grátis · Cancelável",
-    "subtitle_no_trial": "Desbloquear todos os recursos"
+    "subtitle_no_trial": "Desbloquear todos os recursos",
+    "month": "mês",
+    "year": "ano",
+    "free_7_days": "7 dias grátis",
+    "feat_subs_3": "3 assinaturas",
+    "feat_ai_5": "5 requisições IA/mês",
+    "feat_basic_analytics": "Análise básica",
+    "feat_unlimited_subs": "Assinaturas ilimitadas",
+    "feat_ai_200": "200 requisições IA/mês",
+    "feat_advanced_analytics": "Análise avançada",
+    "feat_pdf_reports": "Relatórios PDF",
+    "feat_team_access": "Acesso em equipe",
+    "feat_everything_pro": "Tudo do Pro",
+    "feat_member_analytics": "Análise por membro",
+    "feat_members_10": "Até 10 membros",
+    "restored": "Restaurado!",
+    "restored_msg": "Sua assinatura foi restaurada.",
+    "free_price": "Grátis",
+    "no_purchases": "Nenhuma assinatura ativa encontrada.",
+    "restore_purchases": "Restaurar compras",
+    "upgrade_success": "Sucesso!",
+    "upgrade_success_msg": "Bem-vindo ao Pro!"
   },
   "ai": {
     "or_type": "ou digite",
     "popular_services": "Populares"
+  },
+  "pro_modal": {
+    "title_default": "Função Pro",
+    "desc_default": "Faça upgrade para Pro para desbloquear esta função",
+    "title_forecast": "Previsão de gastos",
+    "desc_forecast": "Veja gastos previstos para 30 dias, 6 e 12 meses",
+    "title_savings": "Análise de economia",
+    "desc_savings": "Encontre duplicatas e economize em assinaturas não usadas",
+    "title_ai_text": "Análise de texto IA",
+    "desc_ai_text": "Descreva sua assinatura e a IA preencherá os detalhes",
+    "title_ai_photo": "Escaneamento de foto IA",
+    "desc_ai_photo": "Tire foto de um recibo e a IA reconhecerá a assinatura",
+    "title_unlimited_subs": "Assinaturas ilimitadas",
+    "desc_unlimited_subs": "Rastreie todas as assinaturas sem limites",
+    "title_workspace": "Espaço de equipe",
+    "desc_workspace": "Gerencie assinaturas de equipe e gastos compartilhados",
+    "feat_unlimited": "Assinaturas ilimitadas",
+    "feat_ai": "200 requisições IA/mês",
+    "feat_analytics": "Análise avançada e previsões",
+    "feat_reports": "Relatórios PDF",
+    "start_trial": "Teste grátis 7 dias",
+    "upgrade": "Upgrade — $2,99/mês",
+    "unlock": "Desbloquear"
   }
 }

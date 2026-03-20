@@ -15,7 +15,8 @@
     "are_you_sure": "よろしいですか？",
     "no_card": "カードなし",
     "no_data_period": "この期間のデータなし",
-    "popular": "人気"
+    "popular": "人気",
+    "success": "成功"
   },
   "tabs": {
     "home": "ホーム",
@@ -91,7 +92,13 @@
     "delete_title": "サブスクを削除",
     "cancel_title": "サブスクをキャンセル",
     "subscription_count": "{{count}}件のサブスクリプション",
-    "subscription_count_plural": "{{count}}件のサブスクリプション"
+    "subscription_count_plural": "{{count}}件のサブスクリプション",
+    "sort_name": "A-Z",
+    "sort_date": "日付",
+    "sort_high": "価格 ↓",
+    "sort_low": "価格 ↑",
+    "no_results": "結果なし",
+    "try_different": "別の検索を試してください"
   },
   "add": {
     "title": "サブスクリプションを追加",
@@ -153,7 +160,14 @@
     "color_auto": "自動",
     "tags": "タグ",
     "tags_placeholder": "入力してカンマを押す...",
-    "parse_failed": "解析できませんでした。もう一度お試しください。"
+    "parse_failed": "解析できませんでした。もう一度お試しください。",
+    "hold_to_record": "長押しで話す",
+    "ai_q_name": "どのサブスク？",
+    "ai_q_name_hint": "サービス名を言うか入力してください",
+    "ai_q_confirm": "すべて正しいですか？",
+    "ai_add": "追加",
+    "ai_edit": "編集",
+    "ai_next": "次へ →"
   },
   "settings": {
     "title": "設定",
@@ -204,7 +218,10 @@
     "delete_account": "アカウント削除",
     "delete_account_confirm": "アカウントとすべてのデータが完全に削除されます。",
     "delete_account_success": "アカウントを削除しました",
-    "danger_zone": "危険ゾーン"
+    "danger_zone": "危険ゾーン",
+    "manage_sub_web": "ウェブアプリでサブスクリプションを管理してください。",
+    "no_purchases": "有効なサブスクリプションが見つかりません。",
+    "restore_purchases": "購入を復元"
   },
   "auth": {
     "welcome": "おかえりなさい",
@@ -320,7 +337,16 @@
     "cancel_confirm_url": "解約ページを開きます。キャンセル済みにしますか？",
     "keep": "維持する",
     "remove_confirm": "{{name}}を削除しますか？",
-    "day": "{{day}}日"
+    "day": "{{day}}日",
+    "edit_title": "サブスクリプションを編集",
+    "invalid_billing_day": "請求日は1から31の間である必要があります",
+    "fill_card_fields": "カードのニックネームと下4桁を入力してください",
+    "invalid_last4": "下4桁は正確に4つの数字である必要があります",
+    "add_card": "+ カードを追加",
+    "card_brand": "ブランド",
+    "card_last4": "下4桁",
+    "card_nickname": "カード名",
+    "save_card": "カードを保存"
   },
   "cards": {
     "title": "カード",
@@ -357,7 +383,12 @@
     "period_quarter": "過去3ヶ月",
     "period_year": "今年",
     "period_label": "期間：{{period}}",
-    "report_suffix": "レポート"
+    "report_suffix": "レポート",
+    "error_401": "セッションが期限切れです。再度ログインしてください",
+    "error_404": "レポートが見つかりません",
+    "error_generic": "レポートを生成できませんでした",
+    "error_network": "ネットワークエラー、接続を確認してください",
+    "retry": "再試行"
   },
   "edit_profile": {
     "title": "プロフィール編集",
@@ -469,7 +500,27 @@
     "send_invite": "送信",
     "remove_member_confirm": "メンバーを削除？",
     "subscriptions_per_month": "サブスク/月",
-    "empty_subtitle": "チームでサブスクを管理。\n共有支出を追跡。"
+    "empty_subtitle": "チームでサブスクを管理。\n共有支出を追跡。",
+    "members_one": "メンバー",
+    "members_other": "メンバー",
+    "invite_btn": "招待",
+    "per_month_label": "月あたり",
+    "subs_label": "サブスク",
+    "members_label": "メンバー",
+    "member_spending_title": "メンバー別支出",
+    "member_subs_count": "{{count}}件",
+    "members_section_title": "メンバー",
+    "no_members_yet": "まだメンバーがいません",
+    "remove_confirm_title": "削除しますか？",
+    "remove_btn": "削除",
+    "invite_sent": "招待を送信しました",
+    "error_title": "エラー",
+    "error_create": "作成に失敗しました",
+    "error_invite": "送信に失敗しました",
+    "error_remove": "削除に失敗しました",
+    "avg_per_member": "平均 / メンバー",
+    "top_subs": "トップサブスク",
+    "yearly_label": "年次"
   },
   "paywall": {
     "choose_plan": "プランを選択",
@@ -479,10 +530,54 @@
     "paid_disclaimer": "App Store経由。いつでも解約可能。",
     "continue_free": "無料で続ける",
     "subtitle_trial": "7日間無料·いつでも解約",
-    "subtitle_no_trial": "全機能を解放"
+    "subtitle_no_trial": "全機能を解放",
+    "month": "月",
+    "year": "年",
+    "free_7_days": "7日間無料",
+    "feat_subs_3": "3つのサブスク",
+    "feat_ai_5": "AIリクエスト5回/月",
+    "feat_basic_analytics": "基本分析",
+    "feat_unlimited_subs": "無制限サブスク",
+    "feat_ai_200": "AIリクエスト200回/月",
+    "feat_advanced_analytics": "高度な分析",
+    "feat_pdf_reports": "PDFレポート",
+    "feat_team_access": "チームアクセス",
+    "feat_everything_pro": "Proの全機能",
+    "feat_member_analytics": "メンバー分析",
+    "feat_members_10": "最大10名",
+    "restored": "復元しました！",
+    "restored_msg": "サブスクリプションが復元されました。",
+    "free_price": "無料",
+    "no_purchases": "有効なサブスクリプションが見つかりません。",
+    "restore_purchases": "購入を復元",
+    "upgrade_success": "成功！",
+    "upgrade_success_msg": "Proへようこそ！"
   },
   "ai": {
     "or_type": "または入力",
     "popular_services": "人気"
+  },
+  "pro_modal": {
+    "title_default": "Pro機能",
+    "desc_default": "Proにアップグレードしてこの機能を解放",
+    "title_forecast": "支出予測",
+    "desc_forecast": "30日、6ヶ月、12ヶ月の支出予測を確認",
+    "title_savings": "節約分析",
+    "desc_savings": "重複を見つけ、未使用のサブスクで節約",
+    "title_ai_text": "AIテキスト解析",
+    "desc_ai_text": "サブスクを説明すると、AIが詳細を入力",
+    "title_ai_photo": "AI写真スキャン",
+    "desc_ai_photo": "レシートを撮影するとAIがサブスクを認識",
+    "title_unlimited_subs": "無制限サブスク",
+    "desc_unlimited_subs": "制限なくすべてのサブスクを管理",
+    "title_workspace": "チームスペース",
+    "desc_workspace": "チームのサブスクと共有支出を管理",
+    "feat_unlimited": "無制限サブスク",
+    "feat_ai": "AIリクエスト200回/月",
+    "feat_analytics": "高度な分析と予測",
+    "feat_reports": "PDFレポート",
+    "start_trial": "7日間無料トライアル開始",
+    "upgrade": "アップグレード — $2.99/月",
+    "unlock": "解放"
   }
 }

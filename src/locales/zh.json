@@ -15,7 +15,8 @@
     "are_you_sure": "确定吗？",
     "no_card": "无卡",
     "no_data_period": "此期间无数据",
-    "popular": "热门"
+    "popular": "热门",
+    "success": "成功"
   },
   "tabs": {
     "home": "首页",
@@ -91,7 +92,13 @@
     "delete_title": "删除订阅",
     "cancel_title": "取消订阅",
     "subscription_count": "{{count}} 个订阅",
-    "subscription_count_plural": "{{count}} 个订阅"
+    "subscription_count_plural": "{{count}} 个订阅",
+    "sort_name": "A-Z",
+    "sort_date": "日期",
+    "sort_high": "价格 ↓",
+    "sort_low": "价格 ↑",
+    "no_results": "无结果",
+    "try_different": "尝试其他搜索"
   },
   "add": {
     "title": "添加订阅",
@@ -153,7 +160,14 @@
     "color_auto": "自动",
     "tags": "标签",
     "tags_placeholder": "输入并按逗号...",
-    "parse_failed": "无法解析。请重试。"
+    "parse_failed": "无法解析。请重试。",
+    "hold_to_record": "按住说话",
+    "ai_q_name": "哪个订阅？",
+    "ai_q_name_hint": "说出或输入服务名称",
+    "ai_q_confirm": "一切正确？",
+    "ai_add": "添加",
+    "ai_edit": "编辑",
+    "ai_next": "下一步 →"
   },
   "settings": {
     "title": "设置",
@@ -204,7 +218,10 @@
     "delete_account": "删除账户",
     "delete_account_confirm": "这将永久删除您的账户和所有数据。",
     "delete_account_success": "账户已删除",
-    "danger_zone": "危险区域"
+    "danger_zone": "危险区域",
+    "manage_sub_web": "请访问网页应用管理您的订阅。",
+    "no_purchases": "未找到活跃订阅。",
+    "restore_purchases": "恢复购买"
   },
   "auth": {
     "welcome": "欢迎回来",
@@ -320,7 +337,16 @@
     "cancel_confirm_url": "这将打开取消页面。标记为已取消？",
     "keep": "保留",
     "remove_confirm": "移除 {{name}}？",
-    "day": "第{{day}}天"
+    "day": "第{{day}}天",
+    "edit_title": "编辑订阅",
+    "invalid_billing_day": "扣款日必须在1到31之间",
+    "fill_card_fields": "填写卡片昵称和后4位",
+    "invalid_last4": "后4位必须恰好是4个数字",
+    "add_card": "+ 添加卡片",
+    "card_brand": "品牌",
+    "card_last4": "后4位",
+    "card_nickname": "卡片名称",
+    "save_card": "保存卡片"
   },
   "cards": {
     "title": "卡片",
@@ -357,7 +383,12 @@
     "period_quarter": "最近3个月",
     "period_year": "今年",
     "period_label": "时段：{{period}}",
-    "report_suffix": "报告"
+    "report_suffix": "报告",
+    "error_401": "会话已过期，请重新登录",
+    "error_404": "报告未找到",
+    "error_generic": "无法生成报告",
+    "error_network": "网络错误，请检查连接",
+    "retry": "重试"
   },
   "edit_profile": {
     "title": "编辑资料",
@@ -469,7 +500,27 @@
     "send_invite": "发送",
     "remove_member_confirm": "移除成员？",
     "subscriptions_per_month": "订阅/月",
-    "empty_subtitle": "以团队方式管理订阅。\n追踪共享支出和报告。"
+    "empty_subtitle": "以团队方式管理订阅。\n追踪共享支出和报告。",
+    "members_one": "成员",
+    "members_other": "成员",
+    "invite_btn": "邀请",
+    "per_month_label": "每月",
+    "subs_label": "订阅",
+    "members_label": "成员",
+    "member_spending_title": "成员支出",
+    "member_subs_count": "{{count}} 个订阅",
+    "members_section_title": "成员",
+    "no_members_yet": "暂无成员",
+    "remove_confirm_title": "移除？",
+    "remove_btn": "移除",
+    "invite_sent": "邀请已发送",
+    "error_title": "错误",
+    "error_create": "创建失败",
+    "error_invite": "发送失败",
+    "error_remove": "移除失败",
+    "avg_per_member": "均 / 成员",
+    "top_subs": "热门订阅",
+    "yearly_label": "年度"
   },
   "paywall": {
     "choose_plan": "选择计划",
@@ -479,10 +530,54 @@
     "paid_disclaimer": "通过App Store付款。随时可取消。",
     "continue_free": "免费继续",
     "subtitle_trial": "7天免费·随时取消",
-    "subtitle_no_trial": "解锁所有功能"
+    "subtitle_no_trial": "解锁所有功能",
+    "month": "月",
+    "year": "年",
+    "free_7_days": "7天免费",
+    "feat_subs_3": "3个订阅",
+    "feat_ai_5": "5次AI请求/月",
+    "feat_basic_analytics": "基础分析",
+    "feat_unlimited_subs": "无限订阅",
+    "feat_ai_200": "200次AI请求/月",
+    "feat_advanced_analytics": "高级分析",
+    "feat_pdf_reports": "PDF报告",
+    "feat_team_access": "团队访问",
+    "feat_everything_pro": "Pro全部功能",
+    "feat_member_analytics": "成员分析",
+    "feat_members_10": "最多10名成员",
+    "restored": "已恢复！",
+    "restored_msg": "您的订阅已恢复。",
+    "free_price": "免费",
+    "no_purchases": "未找到活跃订阅。",
+    "restore_purchases": "恢复购买",
+    "upgrade_success": "成功！",
+    "upgrade_success_msg": "欢迎加入Pro！"
   },
   "ai": {
     "or_type": "或输入",
     "popular_services": "热门"
+  },
+  "pro_modal": {
+    "title_default": "Pro功能",
+    "desc_default": "升级到Pro以解锁此功能",
+    "title_forecast": "支出预测",
+    "desc_forecast": "查看30天、6个月和12个月的预测支出",
+    "title_savings": "节省分析",
+    "desc_savings": "发现重复订阅并节省未使用的订阅费用",
+    "title_ai_text": "AI文本分析",
+    "desc_ai_text": "描述您的订阅，AI将填写详细信息",
+    "title_ai_photo": "AI照片扫描",
+    "desc_ai_photo": "拍下收据，AI将识别订阅信息",
+    "title_unlimited_subs": "无限订阅",
+    "desc_unlimited_subs": "不受限制地追踪所有订阅",
+    "title_workspace": "团队空间",
+    "desc_workspace": "管理团队订阅和共享支出",
+    "feat_unlimited": "无限订阅",
+    "feat_ai": "200次AI请求/月",
+    "feat_analytics": "高级分析与预测",
+    "feat_reports": "PDF报告",
+    "start_trial": "开始7天免费试用",
+    "upgrade": "升级 — $2.99/月",
+    "unlock": "解锁"
   }
 }

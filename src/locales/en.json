@@ -15,7 +15,8 @@
     "are_you_sure": "Are you sure?",
     "no_card": "No card",
     "no_data_period": "No data for this period",
-    "popular": "Popular"
+    "popular": "Popular",
+    "success": "Success"
   },
   "tabs": {
     "home": "Home",
@@ -348,7 +349,12 @@
     "edit_title": "Edit Subscription",
     "invalid_billing_day": "Billing day must be between 1 and 31",
     "fill_card_fields": "Fill in card nickname and last 4 digits",
-    "invalid_last4": "Last 4 digits must be exactly 4 numbers"
+    "invalid_last4": "Last 4 digits must be exactly 4 numbers",
+    "add_card": "+ Add card",
+    "card_brand": "Brand",
+    "card_last4": "Last 4 digits",
+    "card_nickname": "Card name",
+    "save_card": "Save card"
   },
   "cards": {
     "title": "Cards",
@@ -385,7 +391,12 @@
     "period_quarter": "Last 3 months",
     "period_year": "This year",
     "period_label": "Period: {{period}}",
-    "report_suffix": "Report"
+    "report_suffix": "Report",
+    "error_401": "Session expired, please log in again",
+    "error_404": "Report not found",
+    "error_generic": "Could not generate report",
+    "error_network": "Network error, check your connection",
+    "retry": "Retry"
   },
   "edit_profile": {
     "title": "Edit Profile",
@@ -506,7 +517,10 @@
     "error_title": "Error",
     "error_create": "Failed to create",
     "error_invite": "Failed to send",
-    "error_remove": "Failed to remove"
+    "error_remove": "Failed to remove",
+    "avg_per_member": "Avg / member",
+    "top_subs": "Top subscriptions",
+    "yearly_label": "Yearly"
   },
   "paywall": {
     "choose_plan": "Choose a Plan",
@@ -532,7 +546,12 @@
     "feat_member_analytics": "Member analytics",
     "feat_members_10": "Up to 10 members",
     "restored": "Restored!",
-    "restored_msg": "Your subscription has been restored."
+    "restored_msg": "Your subscription has been restored.",
+    "free_price": "Free",
+    "no_purchases": "No active subscriptions found.",
+    "restore_purchases": "Restore Purchases",
+    "upgrade_success": "Success!",
+    "upgrade_success_msg": "Welcome to Pro!"
   },
   "pro_modal": {
     "title_default": "Pro Feature",

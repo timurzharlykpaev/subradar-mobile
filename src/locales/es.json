@@ -15,7 +15,8 @@
     "are_you_sure": "¿Estás seguro?",
     "no_card": "Sin tarjeta",
     "no_data_period": "Sin datos para este período",
-    "popular": "Populares"
+    "popular": "Populares",
+    "success": "Éxito"
   },
   "tabs": {
     "home": "Inicio",
@@ -91,7 +92,13 @@
     "delete_title": "Eliminar suscripción",
     "cancel_title": "Cancelar suscripción",
     "subscription_count": "{{count}} suscripción",
-    "subscription_count_plural": "{{count}} suscripciones"
+    "subscription_count_plural": "{{count}} suscripciones",
+    "sort_name": "Nombre",
+    "sort_date": "Fecha",
+    "sort_high": "Precio mayor",
+    "sort_low": "Precio menor",
+    "no_results": "Sin resultados",
+    "try_different": "Prueba con otra búsqueda"
   },
   "add": {
     "title": "Agregar Suscripción",
@@ -153,7 +160,14 @@
     "color_auto": "Auto",
     "tags": "Etiquetas",
     "tags_placeholder": "Escribe y presiona coma...",
-    "parse_failed": "No se pudo analizar. Intenta de nuevo."
+    "parse_failed": "No se pudo analizar. Intenta de nuevo.",
+    "hold_to_record": "Mantener para hablar",
+    "ai_q_name": "¿Qué suscripción?",
+    "ai_q_name_hint": "Di o escribe el nombre del servicio",
+    "ai_q_confirm": "¿Todo correcto?",
+    "ai_add": "Agregar",
+    "ai_edit": "Editar",
+    "ai_next": "Siguiente →"
   },
   "settings": {
     "title": "Configuración",
@@ -204,7 +218,10 @@
     "delete_account": "Eliminar cuenta",
     "delete_account_confirm": "Esto eliminará permanentemente tu cuenta y todos los datos.",
     "delete_account_success": "Cuenta eliminada",
-    "danger_zone": "Zona de peligro"
+    "danger_zone": "Zona de peligro",
+    "manage_sub_web": "Visita la app web para gestionar tu suscripción.",
+    "no_purchases": "No se encontraron suscripciones activas.",
+    "restore_purchases": "Restaurar compras"
   },
   "auth": {
     "welcome": "Bienvenido de nuevo",
@@ -320,7 +337,16 @@
     "cancel_confirm_url": "Esto abrirá la página de cancelación. ¿Marcar como cancelada?",
     "keep": "Mantener",
     "remove_confirm": "¿Eliminar {{name}}?",
-    "day": "Día {{day}}"
+    "day": "Día {{day}}",
+    "edit_title": "Editar suscripción",
+    "invalid_billing_day": "El día de cobro debe estar entre 1 y 31",
+    "fill_card_fields": "Completa el nombre de la tarjeta y los últimos 4 dígitos",
+    "invalid_last4": "Los últimos 4 dígitos deben ser exactamente 4 números",
+    "add_card": "+ Agregar tarjeta",
+    "card_brand": "Marca",
+    "card_last4": "Últimos 4 dígitos",
+    "card_nickname": "Nombre de tarjeta",
+    "save_card": "Guardar tarjeta"
   },
   "cards": {
     "title": "Tarjetas",
@@ -357,7 +383,12 @@
     "period_quarter": "Últimos 3 meses",
     "period_year": "Este año",
     "period_label": "Período: {{period}}",
-    "report_suffix": "Informe"
+    "report_suffix": "Informe",
+    "error_401": "Sesión expirada, inicia sesión de nuevo",
+    "error_404": "Informe no encontrado",
+    "error_generic": "No se pudo generar el informe",
+    "error_network": "Error de red, comprueba tu conexión",
+    "retry": "Reintentar"
   },
   "edit_profile": {
     "title": "Editar perfil",
@@ -469,7 +500,27 @@
     "send_invite": "Enviar",
     "remove_member_confirm": "¿Eliminar miembro?",
     "subscriptions_per_month": "suscripciones/mes",
-    "empty_subtitle": "Gestiona suscripciones en equipo.\nRastrear gastos compartidos."
+    "empty_subtitle": "Gestiona suscripciones en equipo.\nRastrear gastos compartidos.",
+    "members_one": "miembro",
+    "members_other": "miembros",
+    "invite_btn": "Invitar",
+    "per_month_label": "por mes",
+    "subs_label": "suscripciones",
+    "members_label": "miembros",
+    "member_spending_title": "Gasto por miembro",
+    "member_subs_count": "{{count}} suscripciones",
+    "members_section_title": "Miembros",
+    "no_members_yet": "Sin miembros aún",
+    "remove_confirm_title": "¿Eliminar?",
+    "remove_btn": "Eliminar",
+    "invite_sent": "Invitación enviada",
+    "error_title": "Error",
+    "error_create": "Error al crear",
+    "error_invite": "Error al enviar",
+    "error_remove": "Error al eliminar",
+    "avg_per_member": "Prom / miembro",
+    "top_subs": "Top suscripciones",
+    "yearly_label": "Anual"
   },
   "paywall": {
     "choose_plan": "Elige un plan",
@@ -479,10 +530,54 @@
     "paid_disclaimer": "Via App Store. Cancelable en cualquier momento.",
     "continue_free": "Continuar gratis",
     "subtitle_trial": "7 días gratis · Cancelable",
-    "subtitle_no_trial": "Desbloquear todas las funciones"
+    "subtitle_no_trial": "Desbloquear todas las funciones",
+    "month": "mes",
+    "year": "año",
+    "free_7_days": "7 días gratis",
+    "feat_subs_3": "Hasta 3 suscripciones",
+    "feat_ai_5": "5 solicitudes IA/mes",
+    "feat_basic_analytics": "Análisis básico",
+    "feat_unlimited_subs": "Suscripciones ilimitadas",
+    "feat_ai_200": "200 solicitudes IA/mes",
+    "feat_advanced_analytics": "Análisis avanzado",
+    "feat_pdf_reports": "Informes PDF",
+    "feat_team_access": "Acceso de equipo",
+    "feat_everything_pro": "Todo en Pro",
+    "feat_member_analytics": "Análisis por miembro",
+    "feat_members_10": "Hasta 10 miembros",
+    "restored": "Restaurado!",
+    "restored_msg": "Tu suscripción ha sido restaurada.",
+    "free_price": "Gratis",
+    "no_purchases": "No se encontraron suscripciones activas.",
+    "restore_purchases": "Restaurar compras",
+    "upgrade_success": "Éxito!",
+    "upgrade_success_msg": "Bienvenido a Pro!"
   },
   "ai": {
     "or_type": "o escribe",
     "popular_services": "Populares"
+  },
+  "pro_modal": {
+    "title_default": "Función Pro",
+    "desc_default": "Actualiza a Pro para desbloquear esta función",
+    "title_forecast": "Previsión de gastos",
+    "desc_forecast": "Ve el gasto previsto para 30 días, 6 y 12 meses",
+    "title_savings": "Análisis de ahorro",
+    "desc_savings": "Encuentra duplicados y ahorra en suscripciones no usadas",
+    "title_ai_text": "Análisis de texto IA",
+    "desc_ai_text": "Describe tu suscripción y la IA rellenará los detalles",
+    "title_ai_photo": "Escaneo de foto IA",
+    "desc_ai_photo": "Toma un recibo y la IA reconocerá la suscripción",
+    "title_unlimited_subs": "Suscripciones ilimitadas",
+    "desc_unlimited_subs": "Rastrea todas tus suscripciones sin límites",
+    "title_workspace": "Espacio de equipo",
+    "desc_workspace": "Gestiona suscripciones de equipo y gastos compartidos",
+    "feat_unlimited": "Suscripciones ilimitadas",
+    "feat_ai": "200 solicitudes IA/mes",
+    "feat_analytics": "Análisis avanzado y previsiones",
+    "feat_reports": "Informes PDF",
+    "start_trial": "Prueba gratis 7 días",
+    "upgrade": "Mejorar — $2.99/mes",
+    "unlock": "Desbloquear"
   }
 }

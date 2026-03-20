@@ -15,7 +15,8 @@
     "are_you_sure": "Êtes-vous sûr ?",
     "no_card": "Aucune carte",
     "no_data_period": "Pas de données pour cette période",
-    "popular": "Populaires"
+    "popular": "Populaires",
+    "success": "Succès"
   },
   "tabs": {
     "home": "Accueil",
@@ -91,7 +92,13 @@
     "delete_title": "Supprimer l'abonnement",
     "cancel_title": "Annuler l'abonnement",
     "subscription_count": "{{count}} abonnement",
-    "subscription_count_plural": "{{count}} abonnements"
+    "subscription_count_plural": "{{count}} abonnements",
+    "sort_name": "A-Z",
+    "sort_date": "Date",
+    "sort_high": "Prix ↓",
+    "sort_low": "Prix ↑",
+    "no_results": "Aucun résultat",
+    "try_different": "Essayez une autre recherche"
   },
   "add": {
     "title": "Ajouter un abonnement",
@@ -153,7 +160,14 @@
     "color_auto": "Auto",
     "tags": "Tags",
     "tags_placeholder": "Tapez et appuyez sur virgule...",
-    "parse_failed": "Impossible d'analyser. Reessayez."
+    "parse_failed": "Impossible d'analyser. Reessayez.",
+    "hold_to_record": "Maintenir pour parler",
+    "ai_q_name": "Quel abonnement ?",
+    "ai_q_name_hint": "Dites ou tapez le nom du service",
+    "ai_q_confirm": "Tout est correct ?",
+    "ai_add": "Ajouter",
+    "ai_edit": "Modifier",
+    "ai_next": "Suivant →"
   },
   "settings": {
     "title": "Paramètres",
@@ -204,7 +218,10 @@
     "delete_account": "Supprimer le compte",
     "delete_account_confirm": "Supprime définitivement votre compte et toutes les données.",
     "delete_account_success": "Compte supprimé",
-    "danger_zone": "Zone dangereuse"
+    "danger_zone": "Zone dangereuse",
+    "manage_sub_web": "Visitez l'app web pour gérer votre abonnement.",
+    "no_purchases": "Aucun abonnement actif trouvé.",
+    "restore_purchases": "Restaurer les achats"
   },
   "auth": {
     "welcome": "Bon retour",
@@ -320,7 +337,16 @@
     "cancel_confirm_url": "Cela ouvrira la page d'annulation. Marquer comme annulé ?",
     "keep": "Conserver",
     "remove_confirm": "Supprimer {{name}} ?",
-    "day": "Jour {{day}}"
+    "day": "Jour {{day}}",
+    "edit_title": "Modifier l'abonnement",
+    "invalid_billing_day": "Le jour de facturation doit être entre 1 et 31",
+    "fill_card_fields": "Remplissez le nom de la carte et les 4 derniers chiffres",
+    "invalid_last4": "Les 4 derniers chiffres doivent être exactement 4 chiffres",
+    "add_card": "+ Ajouter une carte",
+    "card_brand": "Réseau",
+    "card_last4": "4 derniers chiffres",
+    "card_nickname": "Nom de carte",
+    "save_card": "Enregistrer la carte"
   },
   "cards": {
     "title": "Cartes",
@@ -357,7 +383,12 @@
     "period_quarter": "3 derniers mois",
     "period_year": "Cette année",
     "period_label": "Période : {{period}}",
-    "report_suffix": "Rapport"
+    "report_suffix": "Rapport",
+    "error_401": "Session expirée, veuillez vous reconnecter",
+    "error_404": "Rapport introuvable",
+    "error_generic": "Impossible de générer le rapport",
+    "error_network": "Erreur réseau, vérifiez votre connexion",
+    "retry": "Réessayer"
   },
   "edit_profile": {
     "title": "Modifier le profil",
@@ -469,7 +500,27 @@
     "send_invite": "Envoyer",
     "remove_member_confirm": "Retirer le membre?",
     "subscriptions_per_month": "abos/mois",
-    "empty_subtitle": "Gérez les abonnements en équipe.\nSuivez les dépenses communes."
+    "empty_subtitle": "Gérez les abonnements en équipe.\nSuivez les dépenses communes.",
+    "members_one": "membre",
+    "members_other": "membres",
+    "invite_btn": "Inviter",
+    "per_month_label": "par mois",
+    "subs_label": "abonnements",
+    "members_label": "membres",
+    "member_spending_title": "Dépenses par membre",
+    "member_subs_count": "{{count}} abonnements",
+    "members_section_title": "Membres",
+    "no_members_yet": "Aucun membre pour l'instant",
+    "remove_confirm_title": "Retirer ?",
+    "remove_btn": "Retirer",
+    "invite_sent": "Invitation envoyée",
+    "error_title": "Erreur",
+    "error_create": "Échec de la création",
+    "error_invite": "Échec de l'envoi",
+    "error_remove": "Échec de la suppression",
+    "avg_per_member": "Moy / membre",
+    "top_subs": "Top abonnements",
+    "yearly_label": "Annuel"
   },
   "paywall": {
     "choose_plan": "Choisir un plan",
@@ -479,10 +530,54 @@
     "paid_disclaimer": "Via App Store. Annulable à tout moment.",
     "continue_free": "Continuer gratuitement",
     "subtitle_trial": "7 jours gratuits · Annulable",
-    "subtitle_no_trial": "Débloquer toutes les fonctionnalités"
+    "subtitle_no_trial": "Débloquer toutes les fonctionnalités",
+    "month": "mois",
+    "year": "an",
+    "free_7_days": "7 jours gratuits",
+    "feat_subs_3": "3 abonnements",
+    "feat_ai_5": "5 requêtes IA/mois",
+    "feat_basic_analytics": "Analytique de base",
+    "feat_unlimited_subs": "Abonnements illimités",
+    "feat_ai_200": "200 requêtes IA/mois",
+    "feat_advanced_analytics": "Analytique avancée",
+    "feat_pdf_reports": "Rapports PDF",
+    "feat_team_access": "Accès équipe",
+    "feat_everything_pro": "Tout de Pro",
+    "feat_member_analytics": "Analytique membres",
+    "feat_members_10": "Jusqu'à 10 membres",
+    "restored": "Restauré !",
+    "restored_msg": "Votre abonnement a été restauré.",
+    "free_price": "Gratuit",
+    "no_purchases": "Aucun abonnement actif trouvé.",
+    "restore_purchases": "Restaurer les achats",
+    "upgrade_success": "Succès !",
+    "upgrade_success_msg": "Bienvenue dans Pro !"
   },
   "ai": {
     "or_type": "ou tapez",
     "popular_services": "Populaires"
+  },
+  "pro_modal": {
+    "title_default": "Fonctionnalité Pro",
+    "desc_default": "Passez à Pro pour débloquer cette fonctionnalité",
+    "title_forecast": "Prévision des dépenses",
+    "desc_forecast": "Voir les dépenses prévues pour 30 jours, 6 et 12 mois",
+    "title_savings": "Analyse des économies",
+    "desc_savings": "Trouvez les doublons et économisez sur les abonnements inutilisés",
+    "title_ai_text": "Analyse de texte IA",
+    "desc_ai_text": "Décrivez votre abonnement et l'IA remplira les détails",
+    "title_ai_photo": "Scan photo IA",
+    "desc_ai_photo": "Prenez un reçu et l'IA reconnaîtra l'abonnement",
+    "title_unlimited_subs": "Abonnements illimités",
+    "desc_unlimited_subs": "Suivez tous vos abonnements sans limites",
+    "title_workspace": "Espace d'équipe",
+    "desc_workspace": "Gérez les abonnements d'équipe et les dépenses partagées",
+    "feat_unlimited": "Abonnements illimités",
+    "feat_ai": "200 requêtes IA/mois",
+    "feat_analytics": "Analytique avancée et prévisions",
+    "feat_reports": "Rapports PDF",
+    "start_trial": "Essai gratuit 7 jours",
+    "upgrade": "Passer à Pro — 2,99 $/mois",
+    "unlock": "Débloquer"
   }
 }
