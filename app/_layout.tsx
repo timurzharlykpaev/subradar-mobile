@@ -28,7 +28,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-configureRevenueCat();
+// RevenueCat configured lazily inside DataLoader after native modules are ready
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (!Device.isDevice) return null;
@@ -73,10 +73,10 @@ function DataLoader() {
   const { reminderDays, notificationsEnabled } = useSettingsStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      logoutRevenueCat();
-      return;
-    }
+    if (!isAuthenticated) return;
+
+    // Configure RevenueCat lazily (safe after native modules loaded)
+    try { configureRevenueCat(); } catch {}
 
     // Identify user in RevenueCat
     const userId = useAuthStore.getState().user?.id;

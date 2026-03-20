@@ -14,9 +14,13 @@ let configured = false;
 
 export function configureRevenueCat() {
   if (configured) return;
-  if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-  Purchases.configure({ apiKey: API_KEY, appUserID: null });
-  configured = true;
+  try {
+    if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+    Purchases.configure({ apiKey: API_KEY, appUserID: null });
+    configured = true;
+  } catch (e) {
+    console.warn('RevenueCat configure failed (native module not ready?):', e);
+  }
 }
 
 export async function loginRevenueCat(userId: string) {
@@ -41,6 +45,7 @@ export function useRevenueCat() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!configured) { setLoading(false); return; }
     let mounted = true;
 
     const load = async () => {
