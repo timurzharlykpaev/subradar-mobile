@@ -26,6 +26,7 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 import { useTheme } from '../src/theme';
+import { SunIcon, MoonIcon, MailIcon } from '../src/components/icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -753,7 +754,7 @@ export default function OnboardingScreen() {
         onPress={toggleTheme}
         style={{ position: 'absolute', top: (safeInsets.top || 0) + 8, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Text style={{ fontSize: 18 }}>{isDark ? '☀️' : '🌙'}</Text>
+        {isDark ? <SunIcon size={18} color="#F59E0B" /> : <MoonIcon size={18} color="#6366F1" />}
       </TouchableOpacity>
       <AuthHero />
 
@@ -791,7 +792,7 @@ export default function OnboardingScreen() {
             onPress={() => setOtpMode(true)}
             disabled={loading}
           >
-            <Text style={styles.emailOtpIcon}>✉️</Text>
+            <MailIcon size={18} color={colors.primary} />
             <Text style={[styles.socialText, { color: colors.text }]}>{t('auth.continue_email')}</Text>
           </TouchableOpacity>
         </>

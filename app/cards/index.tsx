@@ -17,6 +17,7 @@ import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
+import { CreditCardIcon } from '../../src/components/icons';
 
 const CARD_COLORS = ['#6C47FF', '#FF6B6B', '#4CAF50', '#FF9800', '#1E88E5', '#E91E63'];
 
@@ -73,7 +74,7 @@ export default function CardsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {cards.length === 0 && (
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>💳</Text>
+            <CreditCardIcon size={48} color={colors.textMuted} />
             <Text style={[styles.emptyText, { color: colors.text }]}>{t('cards.empty')}</Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>{t('cards.empty_desc')}</Text>
           </View>

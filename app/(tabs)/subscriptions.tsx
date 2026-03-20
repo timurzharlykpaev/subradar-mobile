@@ -21,6 +21,7 @@ import { subscriptionsApi } from '../../src/api/subscriptions';
 import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
+import { CategoryIcon } from '../../src/components/icons';
 import { usePlanLimits } from '../../src/hooks/usePlanLimits';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
@@ -215,7 +216,10 @@ export default function SubscriptionsScreen() {
                 ]}
                 onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
               >
-                <Text style={{ fontSize: 13, color: selectedCategory === cat.id ? '#FFF' : colors.text }}>{cat.emoji} {cat.label}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <CategoryIcon category={cat.id} size={13} />
+                  <Text style={{ fontSize: 13, color: selectedCategory === cat.id ? '#FFF' : colors.text }}>{cat.label}</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>

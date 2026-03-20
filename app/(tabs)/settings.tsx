@@ -25,6 +25,7 @@ import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
+import { HourglassIcon, SparklesIcon } from '../../src/components/icons';
 import { notificationsApi } from '../../src/api/notifications';
 
 export default function SettingsScreen() {
@@ -186,9 +187,12 @@ export default function SettingsScreen() {
 
             {isPro ? (
               <>
-                <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
-                  {isTrialing ? `⏳ ${t('settings.pro_trial')}` : `✨ ${t('settings.subradar_pro')}`}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {isTrialing ? <HourglassIcon size={20} color="#FFF" /> : <SparklesIcon size={20} color="#FFF" />}
+                  <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
+                    {isTrialing ? t('settings.pro_trial') : t('settings.subradar_pro')}
+                  </Text>
+                </View>
                 {isTrialing && billing?.trialDaysLeft != null && (
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{t('settings.days_remaining', { count: billing.trialDaysLeft })}</Text>
                 )}
@@ -209,7 +213,10 @@ export default function SettingsScreen() {
               </>
             ) : (
               <>
-                <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>✨ {t('settings.subradar_pro')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <SparklesIcon size={20} color="#FFF" />
+                  <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>{t('settings.subradar_pro')}</Text>
+                </View>
                 <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 }}>{t('settings.pro_features')}</Text>
                 {billing && (
                   <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 12, padding: 12, gap: 10 }}>

@@ -8,6 +8,7 @@ import {
   AppState,
   type AppStateStatus,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   useAudioRecorder,
@@ -16,6 +17,7 @@ import {
   RecordingPresets,
 } from 'expo-audio';
 import { COLORS } from '../constants';
+import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
   onRecordingComplete: (uri: string) => void;
@@ -24,6 +26,7 @@ interface Props {
 
 export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButton }) => {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -104,7 +107,7 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
           <Animated.View
             style={[styles.button, isRecording && styles.recording, { transform: [{ scale: scaleAnim }] }]}
           >
-            <Text style={styles.icon}>{isRecording ? '⏹' : '🎙'}</Text>
+            {isRecording ? <Ionicons name="stop-circle" size={28} color={colors.error} /> : <Ionicons name="mic" size={28} color={colors.primary} />}
           </Animated.View>
         )}
       </Pressable>
@@ -128,6 +131,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   recording: { backgroundColor: '#FFE0E0' },
-  icon: { fontSize: 28 },
   label: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500' },
 });

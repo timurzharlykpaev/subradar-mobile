@@ -140,7 +140,7 @@ export default function PaywallScreen() {
     const currentMatch =
       (selected === 'pro' && billing?.plan === 'pro') ||
       (selected === 'org' && billing?.plan === 'organization');
-    if (currentMatch && !isTrialing) return `${t('subscription_plan.active')} ✓`;
+    if (currentMatch && !isTrialing) return t('subscription_plan.active');
     if (selected === 'org') return t('subscription_plan.upgrade_team');
     return t('subscription_plan.upgrade_pro');
   };
@@ -318,7 +318,17 @@ export default function PaywallScreen() {
           {isLoading ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.ctaBtnText}>{getButtonLabel()}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.ctaBtnText}>{getButtonLabel()}</Text>
+              {(() => {
+                const currentMatch =
+                  (selected === 'pro' && billing?.plan === 'pro') ||
+                  (selected === 'org' && billing?.plan === 'organization');
+                return currentMatch && !isTrialing ? (
+                  <Ionicons name="checkmark-circle" size={18} color="#FFF" />
+                ) : null;
+              })()}
+            </View>
           )}
         </TouchableOpacity>
 

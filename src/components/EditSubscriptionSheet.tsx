@@ -13,7 +13,9 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, CATEGORIES, CURRENCIES, BILLING_PERIODS, CARD_BRANDS } from '../constants';
+import { CategoryIcon } from './icons';
 import { subscriptionsApi } from '../api/subscriptions';
 import { cardsApi } from '../api/cards';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
@@ -136,7 +138,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
             <View style={styles.header}>
               <Text style={styles.title}>{t('subscription.edit_title')}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                <Text style={styles.closeBtnText}>✕</Text>
+                <Ionicons name="close" size={22} color={COLORS.text} />
               </TouchableOpacity>
             </View>
 
@@ -218,9 +220,10 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                           ]}
                           onPress={() => setForm((f) => ({ ...f, category: cat.id }))}
                         >
-                          <Text style={form.category === cat.id ? styles.chipActiveText : styles.chipText}>
-                            {cat.emoji} {cat.label}
-                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <CategoryIcon category={cat.id} size={14} />
+                            <Text style={form.category === cat.id ? styles.chipActiveText : styles.chipText}>{cat.label}</Text>
+                          </View>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -418,7 +421,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeBtnText: { fontSize: 14, color: COLORS.textSecondary, fontWeight: '600' },
   content: { paddingHorizontal: 20 },
   form: { paddingBottom: 40 },
   row: { flexDirection: 'row', gap: 10 },

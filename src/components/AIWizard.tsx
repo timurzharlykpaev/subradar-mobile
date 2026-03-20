@@ -14,8 +14,10 @@ import {
   Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
 import { VoiceRecorder } from './VoiceRecorder';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
@@ -346,15 +348,19 @@ export function AIWizard({ onDone }: Props) {
                   </Text>
                 </Text>
                 {!!s.cancelUrl && (
-                  <Text style={[styles.confirmMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                    🔗 {s.cancelUrl}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <ExternalLinkIcon size={14} color={colors.primary} />
+                    <Text style={[styles.confirmMeta, { color: colors.textMuted }]} numberOfLines={1}>
+                      {s.cancelUrl}
+                    </Text>
+                  </View>
                 )}
               </View>
               <TouchableOpacity onPress={reset} style={styles.editLink}>
-                <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-                  ✏️  {t('add.ai_edit', 'Изменить')}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <PencilIcon size={14} color={colors.primary} />
+                  <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{t('add.ai_edit', 'Изменить')}</Text>
+                </View>
               </TouchableOpacity>
             </View>
           );
@@ -429,7 +435,10 @@ export function AIWizard({ onDone }: Props) {
             style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
             onPress={() => onDone(ui.subscription)}
           >
-            <Text style={styles.actionTxt}>✓  {t('add.ai_add', 'Добавить')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="checkmark" size={16} color="#FFF" />
+              <Text style={styles.actionTxt}>{t('add.ai_add', 'Добавить')}</Text>
+            </View>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity

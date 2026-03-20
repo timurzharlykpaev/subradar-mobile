@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { reportError } from './errorReporter';
+import { WarningIcon } from '../components/icons';
 
 interface Props {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Text style={styles.emoji}>⚠️</Text>
+          <WarningIcon size={48} color="#F59E0B" />
           <Text style={styles.title}>Что-то пошло не так</Text>
           <Text style={styles.subtitle}>
             Произошла непредвиденная ошибка. Мы уже знаем о ней и работаем над исправлением.
@@ -53,10 +54,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     padding: 32,
-  },
-  emoji: {
-    fontSize: 48,
-    marginBottom: 16,
   },
   title: {
     fontSize: 22,

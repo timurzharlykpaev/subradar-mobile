@@ -20,6 +20,7 @@ import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
 import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
+import { PencilIcon, TrashIcon } from '../../src/components/icons';
 
 export default function SubscriptionDetailScreen() {
   const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
@@ -111,10 +112,10 @@ export default function SubscriptionDetailScreen() {
           </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.editBtn} onPress={() => setEditVisible(true)}>
-              <Text style={styles.editBtnText}>✏️</Text>
+              <PencilIcon size={16} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-              <Text style={styles.deleteBtnText}>🗑</Text>
+              <TrashIcon size={16} color={colors.error} />
             </TouchableOpacity>
           </View>
         </View>

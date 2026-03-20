@@ -17,6 +17,7 @@ import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
+import { CategoryIcon } from '../../src/components/icons';
 import ProFeatureModal from '../../src/components/ProFeatureModal';
 
 const CHART_HEIGHT = 180;
@@ -227,7 +228,7 @@ export default function AnalyticsScreen() {
         return {
           id: d.category || '',
           label: cat?.label || d.category || '',
-          emoji: cat?.emoji || '📦',
+          categoryId: cat?.id || 'OTHER',
           color: cat?.color || '#757575',
           total: isFinite(Number(d.total ?? d.amount)) ? Number(d.total ?? d.amount) : 0,
           count: d.count ?? 0,
@@ -347,7 +348,7 @@ export default function AnalyticsScreen() {
                   {byCategory.map((cat) => (
                     <View key={cat.id} style={[styles.legendRow, { borderColor: colors.border }]}>
                       <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                      <Text style={[styles.legendEmoji]}>{cat.emoji}</Text>
+                      <CategoryIcon category={cat.id || cat.categoryId} size={14} />
                       <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.label}</Text>
                       <Text style={[styles.legendPercent, { color: colors.textMuted }]}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
                       <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
@@ -530,7 +531,7 @@ export default function AnalyticsScreen() {
                       <Text style={[styles.top5Rank, { color: index === 0 ? colors.warning : index === 1 ? colors.textMuted : colors.textSecondary }]}>{index + 1}</Text>
                     </View>
                     <View style={[styles.top5Icon, { backgroundColor: (catInfo?.color || colors.primary) + '18' }]}>
-                      <Text style={styles.top5Emoji}>{catInfo?.emoji || '📦'}</Text>
+                      <CategoryIcon category={catInfo?.id || 'OTHER'} size={16} />
                     </View>
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
@@ -572,7 +573,7 @@ export default function AnalyticsScreen() {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                   <Text style={[styles.subCategory, { color: colors.textSecondary }]} numberOfLines={1}>
-                    {CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.emoji || '📦'}{' '}
+                    <CategoryIcon category={CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.id || 'OTHER'} size={14} />{' '}
                     {CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.label || sub.category}
                   </Text>
                 </View>
