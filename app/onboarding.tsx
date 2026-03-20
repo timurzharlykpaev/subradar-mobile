@@ -916,9 +916,7 @@ export default function OnboardingScreen() {
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
         onPress={() => {
           setOnboarded();
-          router.replace('/(tabs)');
-          // небольшая задержка чтобы tabs успели смонтироваться
-          setTimeout(() => router.push('/(tabs)/add'), 300);
+          router.replace('/(tabs)/subscriptions');
         }}
       >
         <Ionicons name="sparkles-outline" size={22} color={colors.primary} />
