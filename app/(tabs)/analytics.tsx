@@ -348,7 +348,7 @@ export default function AnalyticsScreen() {
                   {byCategory.map((cat) => (
                     <View key={cat.id} style={[styles.legendRow, { borderColor: colors.border }]}>
                       <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                      <CategoryIcon category={cat.id || cat.categoryId} size={14} />
+                      <CategoryIcon category={cat.id} size={14} />
                       <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.label}</Text>
                       <Text style={[styles.legendPercent, { color: colors.textMuted }]}>{categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%</Text>
                       <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>

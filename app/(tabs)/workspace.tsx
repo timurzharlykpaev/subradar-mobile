@@ -55,7 +55,7 @@ export default function WorkspaceScreen() {
       queryClient.invalidateQueries({ queryKey: ['workspace'] });
       setShowInvite(false);
       setInviteEmail('');
-      Alert.alert('✅', t('workspace.invite_sent'));
+      Alert.alert(t('common.success', 'Success'), t('workspace.invite_sent'));
     },
     onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_invite')),
   });

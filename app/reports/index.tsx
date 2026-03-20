@@ -97,7 +97,7 @@ export default function ReportsScreen() {
           UTI: 'com.adobe.pdf',
         });
       } else {
-        Alert.alert('✅ Report saved', `Saved to: ${localPath}`);
+        Alert.alert(t('common.success', 'Report saved'), `Saved to: ${localPath}`);
       }
     } catch (err: any) {
       console.error('Report error:', err);
@@ -180,7 +180,7 @@ export default function ReportsScreen() {
         {/* Preview */}
         <View style={[styles.preview, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.previewTitle, { color: colors.text }]}>
-            📄 {reportTypeLabel} {t('reports.report_suffix')}
+            {reportTypeLabel} {t('reports.report_suffix')}
           </Text>
           <Text style={[styles.previewDesc, { color: colors.textSecondary }]}>{getDesc()}</Text>
           <Text style={[styles.previewRange, { color: colors.primary }]}>
