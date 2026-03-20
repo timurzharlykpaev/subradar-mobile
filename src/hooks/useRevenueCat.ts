@@ -7,11 +7,15 @@ let LOG_LEVEL: any = {};
 
 try {
   const rc = require('react-native-purchases');
-  Purchases = rc.default;
-  PURCHASES_ERROR_CODE = rc.PURCHASES_ERROR_CODE;
-  LOG_LEVEL = rc.LOG_LEVEL;
+  const mod = rc.default || rc;
+  // Verify the native module is actually available (not just JS wrapper)
+  if (mod && typeof mod.configure === 'function') {
+    Purchases = mod;
+    PURCHASES_ERROR_CODE = rc.PURCHASES_ERROR_CODE || {};
+    LOG_LEVEL = rc.LOG_LEVEL || {};
+  }
 } catch {
-  console.warn('react-native-purchases not available (Expo Go?)');
+  // Native module not linked (Expo Go, simulator without dev build)
 }
 
 const API_KEY = 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
