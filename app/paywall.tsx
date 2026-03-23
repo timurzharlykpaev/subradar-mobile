@@ -72,6 +72,11 @@ export default function PaywallScreen() {
   const queryClient = useQueryClient();
   const { offerings, purchasePackage, restorePurchases } = useRevenueCat();
 
+  // Force-refresh billing when paywall opens to get latest plan status
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['billing'] });
+  }, []);
+
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -145,11 +150,13 @@ export default function PaywallScreen() {
       return;
     }
 
-    // Already on this plan
+    // Already on this exact plan — do nothing (but allow period switch for upgrades)
+    // Note: RC handles the actual upgrade/crossgrade logic
     const currentMatch =
       (selected === 'pro' && billing?.plan === 'pro') ||
       (selected === 'org' && billing?.plan === 'organization');
-    if (currentMatch && !isTrialing) return;
+    // Allow purchase even on current plan so user can switch monthly→yearly
+    // RC will handle upgrade properly (PRODUCT_CHANGE event)
 
     // Try native IAP first, fallback to web checkout
     const current = offerings?.current;
@@ -394,14 +401,22 @@ export default function PaywallScreen() {
         })}
 
         {/* CTA */}
+        {(() => {
+          const ctaCurrentMatch =
+            (selected === 'pro' && billing?.plan === 'pro' && !isTrialing) ||
+            (selected === 'org' && billing?.plan === 'organization' && !isTrialing);
+          const ctaColor = selected === 'free'
+            ? colors.textSecondary
+            : (PLANS.find(p => p.id === selected)?.color ?? colors.primary);
+          return (
         <TouchableOpacity
           style={[
             styles.ctaBtn,
-            { backgroundColor: selected === 'free' ? colors.textSecondary : (PLANS.find(p => p.id === selected)?.color ?? colors.primary) },
-            isLoading && { opacity: 0.5 },
+            { backgroundColor: ctaCurrentMatch ? (isDark ? '#2A2A3E' : '#E5E5EF') : ctaColor },
+            (isLoading || ctaCurrentMatch) && { opacity: ctaCurrentMatch ? 0.7 : 0.5 },
           ]}
           onPress={handleAction}
-          disabled={isLoading}
+          disabled={isLoading || ctaCurrentMatch}
           activeOpacity={0.85}
         >
           {isLoading ? (
@@ -420,6 +435,8 @@ export default function PaywallScreen() {
             </View>
           )}
         </TouchableOpacity>
+          );
+        })()}
 
         {/* Secondary action */}
         <TouchableOpacity style={styles.laterBtn} onPress={() => router.back()}>
