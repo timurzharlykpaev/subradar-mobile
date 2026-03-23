@@ -101,12 +101,10 @@ export default function TabsLayout() {
         />
       </Tabs>
 
-      {sheetVisible && (
-        <AddSubscriptionSheet
-          visible={sheetVisible}
-          onClose={() => setSheetVisible(false)}
-        />
-      )}
+      <AddSubscriptionSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+      />
     </>
   );
 }
