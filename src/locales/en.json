@@ -168,7 +168,9 @@
     "tags": "Tags",
     "tags_placeholder": "Type and press comma...",
     "parse_failed": "Could not parse. Try again.",
-    "save_failed": "Failed to save subscription"
+    "save_failed": "Failed to save subscription",
+    "success_added": "Added!",
+    "edit_details": "Edit details"
   },
   "periods": {
     "WEEKLY": "Weekly",

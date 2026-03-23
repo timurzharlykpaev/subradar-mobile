@@ -168,7 +168,9 @@
     "ai_q_confirm": "一切正确？",
     "ai_add": "添加",
     "ai_edit": "编辑",
-    "ai_next": "下一步 →"
+    "ai_next": "下一步 →",
+    "success_added": "Added!",
+    "edit_details": "Edit details"
   },
   "settings": {
     "title": "设置",

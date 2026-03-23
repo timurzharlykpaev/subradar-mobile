@@ -168,7 +168,9 @@
     "ai_q_confirm": "Tout est correct ?",
     "ai_add": "Ajouter",
     "ai_edit": "Modifier",
-    "ai_next": "Suivant →"
+    "ai_next": "Suivant →",
+    "success_added": "Added!",
+    "edit_details": "Edit details"
   },
   "settings": {
     "title": "Paramètres",

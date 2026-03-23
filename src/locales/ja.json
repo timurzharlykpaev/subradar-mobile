@@ -168,7 +168,9 @@
     "ai_q_confirm": "すべて正しいですか？",
     "ai_add": "追加",
     "ai_edit": "編集",
-    "ai_next": "次へ →"
+    "ai_next": "次へ →",
+    "success_added": "Added!",
+    "edit_details": "Edit details"
   },
   "settings": {
     "title": "設定",

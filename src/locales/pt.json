@@ -168,7 +168,9 @@
     "ai_q_confirm": "Está correto?",
     "ai_add": "Adicionar",
     "ai_edit": "Editar",
-    "ai_next": "Próximo →"
+    "ai_next": "Próximo →",
+    "success_added": "Added!",
+    "edit_details": "Edit details"
   },
   "settings": {
     "title": "Configurações",

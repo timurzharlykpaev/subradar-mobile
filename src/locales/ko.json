@@ -168,7 +168,9 @@
     "ai_q_confirm": "모두 맞나요?",
     "ai_add": "추가",
     "ai_edit": "편집",
-    "ai_next": "다음 →"
+    "ai_next": "다음 →",
+    "success_added": "Added!",
+    "edit_details": "Edit details"
   },
   "settings": {
     "title": "설정",
