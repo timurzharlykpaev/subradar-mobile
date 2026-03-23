@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -61,27 +61,32 @@ export default function SubscriptionsScreen() {
     { label: t('subscriptions.sort_name', 'A-Z'), value: 'name' },
   ];
 
-  const {
-    searchQuery, filter, setFilter, setSearchQuery,
-    getFiltered, removeSubscription, updateSubscription,
-    selectedCategory, setSelectedCategory, setSubscriptions, subscriptions,
-  } = useSubscriptionsStore();
+  const searchQuery = useSubscriptionsStore((s) => s.searchQuery);
+  const filter = useSubscriptionsStore((s) => s.filter);
+  const setFilter = useSubscriptionsStore((s) => s.setFilter);
+  const setSearchQuery = useSubscriptionsStore((s) => s.setSearchQuery);
+  const getFiltered = useSubscriptionsStore((s) => s.getFiltered);
+  const removeSubscription = useSubscriptionsStore((s) => s.removeSubscription);
+  const selectedCategory = useSubscriptionsStore((s) => s.selectedCategory);
+  const setSelectedCategory = useSubscriptionsStore((s) => s.setSelectedCategory);
+  const setSubscriptions = useSubscriptionsStore((s) => s.setSubscriptions);
+  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
-  const filtered = getFiltered();
-
-  // Apply sorting
-  const subs = [...filtered].sort((a, b) => {
-    switch (sortBy) {
-      case 'amount_high': return (Number(b.amount) || 0) - (Number(a.amount) || 0);
-      case 'amount_low': return (Number(a.amount) || 0) - (Number(b.amount) || 0);
-      case 'name': return (a.name || '').localeCompare(b.name || '');
-      case 'next_date':
-      default:
-        const da = a.nextPaymentDate ? new Date(a.nextPaymentDate).getTime() : Infinity;
-        const db = b.nextPaymentDate ? new Date(b.nextPaymentDate).getTime() : Infinity;
-        return da - db;
-    }
-  });
+  const subs = useMemo(() => {
+    const filtered = getFiltered();
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'amount_high': return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+        case 'amount_low': return (Number(a.amount) || 0) - (Number(b.amount) || 0);
+        case 'name': return (a.name || '').localeCompare(b.name || '');
+        case 'next_date':
+        default:
+          const da = a.nextPaymentDate ? new Date(a.nextPaymentDate).getTime() : Infinity;
+          const db = b.nextPaymentDate ? new Date(b.nextPaymentDate).getTime() : Infinity;
+          return da - db;
+      }
+    });
+  }, [getFiltered, filter, searchQuery, selectedCategory, sortBy]);
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [

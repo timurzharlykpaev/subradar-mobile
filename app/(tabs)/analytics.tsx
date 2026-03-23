@@ -7,8 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
@@ -559,7 +559,7 @@ export default function AnalyticsScreen() {
                       <Text style={styles.top5RankText}>#{idx + 1}</Text>
                     </View>
                     {sub.iconUrl ? (
-                      <Image source={{ uri: sub.iconUrl }} style={styles.top5Icon} />
+                      <Image source={{ uri: sub.iconUrl }} style={styles.top5Icon} cachePolicy="memory-disk" />
                     ) : (
                       <View style={[styles.top5IconPlaceholder, { backgroundColor: colors.primaryLight }]}>
                         <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{sub.name[0]}</Text>
@@ -603,7 +603,7 @@ export default function AnalyticsScreen() {
             {activeSubs.map((sub, index) => (
               <View key={sub.id} style={[styles.subRow, index < activeSubs.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
                 {sub.iconUrl ? (
-                  <Image source={{ uri: sub.iconUrl }} style={styles.subIconImage} />
+                  <Image source={{ uri: sub.iconUrl }} style={styles.subIconImage} cachePolicy="memory-disk" />
                 ) : (
                   <View style={[styles.subIcon, { backgroundColor: colors.primaryLight }]}>
                     <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>

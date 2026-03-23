@@ -4,8 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Subscription } from '../types';
@@ -27,7 +27,7 @@ function daysUntil(date?: string | null): number | null {
   return Math.ceil((d.getTime() - Date.now()) / 86400000);
 }
 
-export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
+const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -47,7 +47,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
     >
       <View style={styles.left}>
         {subscription.iconUrl ? (
-          <Image source={{ uri: subscription.iconUrl }} style={styles.logo} />
+          <Image source={{ uri: subscription.iconUrl }} style={styles.logo} cachePolicy="memory-disk" />
         ) : (
           <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>
             <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name[0]}</Text>
@@ -105,6 +105,8 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
     </TouchableOpacity>
   );
 };
+
+export const SubscriptionCard = React.memo(SubscriptionCardInner);
 
 const styles = StyleSheet.create({
   card: {
