@@ -197,8 +197,13 @@ export default function PaywallScreen() {
         setPurchasing(false);
       }
     } else {
-      // Fallback to web checkout (Lemon Squeezy)
-      router.replace('/subscription-plan' as any);
+      // Package not found in RevenueCat offerings
+      // This means yearly/team plan is not configured in RC dashboard
+      Alert.alert(
+        t('paywall.plan_unavailable', 'Plan unavailable'),
+        t('paywall.plan_unavailable_msg', 'This plan is not available in your region or device. Please try the monthly plan or contact support.'),
+        [{ text: 'OK' }]
+      );
     }
   };
 
