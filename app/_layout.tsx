@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Platform, View, Text, Image, Animated } from 'react-native';
+import { BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../src/i18n';
-import { ThemeProvider } from '../src/theme';
+import { ThemeProvider, useTheme } from '../src/theme';
 import { notificationsApi } from '../src/api/notifications';
 import { useAuthStore } from '../src/stores/authStore';
 import { usePaymentCardsStore } from '../src/stores/paymentCardsStore';
@@ -141,6 +141,16 @@ function PushSetup() {
   return null;
 }
 
+function AdaptiveStatusBar() {
+  const { isDark } = useTheme();
+  return (
+    <StatusBar
+      style={isDark ? 'light' : 'dark'}
+      translucent={Platform.OS === 'android'}
+    />
+  );
+}
+
 function SplashScreen() {
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.85)).current;
@@ -181,6 +191,18 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Android hardware back button
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // false = let system handle (default back behavior)
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, []);
+
   if (showSplash) return <SplashScreen />;
 
   return (
@@ -189,7 +211,7 @@ export default function RootLayout() {
       <View style={{ flex: 1 }}>
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
-            <StatusBar style="dark" />
+            <AdaptiveStatusBar />
             <LanguageLoader />
             <DataLoader />
             <PushSetup />

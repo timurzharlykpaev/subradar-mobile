@@ -51,8 +51,12 @@
       "package": "com.goalin.subradar",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "navigationBarColor": "#0A0A14",
+      "navigationBarStyle": "dark"
     },
     "web": {
       "bundler": "metro",
@@ -60,14 +64,20 @@
     },
     "plugins": [
       "expo-router",
-      "expo-image-picker",
+      ["expo-image-picker", {
+        "photosPermission": "Allow SubRadar to access your photos to scan receipts.",
+        "cameraPermission": "Allow SubRadar to take photos of receipts."
+      }],
       [
         "expo-audio",
         {
           "microphonePermission": "SubRadar needs microphone access to add subscriptions by voice."
         }
       ],
-      "expo-notifications",
+      ["expo-notifications", {
+        "color": "#7C5CFF",
+        "defaultChannel": "default"
+      }],
       [
         "expo-build-properties",
         {
