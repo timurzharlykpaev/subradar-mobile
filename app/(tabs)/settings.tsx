@@ -23,7 +23,7 @@ import { PaymentCard } from '../../src/types';
 import { CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useBillingStatus, useCheckout, useStartTrial } from '../../src/hooks/useBilling';
+import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
 import { useTranslation } from 'react-i18next';
 let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
@@ -40,7 +40,7 @@ export default function SettingsScreen() {
   const { cards, addCard, removeCard } = usePaymentCardsStore();
 
   const { data: billing } = useBillingStatus();
-  const checkoutMutation = useCheckout();
+
   const startTrialMutation = useStartTrial();
   const { restorePurchases } = useRevenueCat();
 
@@ -62,12 +62,7 @@ export default function SettingsScreen() {
   };
 
   const handleUpgrade = () => {
-    checkoutMutation.mutate('pro-monthly', {
-      onError: (error: any) => {
-        const msg = error?.response?.data?.message || error?.message || t('settings.checkout_error', 'Payment provider unavailable. Try again later.');
-        Alert.alert(t('common.error'), msg);
-      },
-    });
+    router.push('/paywall' as any);
   };
 
   const handleAddCard = async () => {
@@ -246,9 +241,9 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   style={{ backgroundColor: '#FFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 }}
                   onPress={canTrial ? handleStartTrial : handleUpgrade}
-                  disabled={startTrialMutation.isPending || checkoutMutation.isPending}
+                  disabled={startTrialMutation.isPending}
                 >
-                  {startTrialMutation.isPending || checkoutMutation.isPending ? (
+                  {startTrialMutation.isPending ? (
                     <ActivityIndicator color={colors.primary} />
                   ) : (
                     <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>
