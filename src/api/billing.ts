@@ -6,4 +6,5 @@ export const billingApi = {
   cancel: () => apiClient.post('/billing/cancel'),
   getPlans: () => apiClient.get('/billing/plans'),
   startTrial: () => apiClient.post('/billing/trial'),
+  syncRevenueCat: (productId: string) => apiClient.post('/billing/sync-revenuecat', { productId }),
 };

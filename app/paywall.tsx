@@ -18,6 +18,7 @@ import { useTheme } from '../src/theme';
 import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
+import { billingApi } from '../src/api/billing';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -166,6 +167,11 @@ export default function PaywallScreen() {
       // Native IAP purchase
       const success = await purchasePackage(pkg);
       if (success) {
+        try {
+          await billingApi.syncRevenueCat(pkg.product.identifier);
+        } catch (e) {
+          console.warn('RC sync failed:', e);
+        }
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
         Alert.alert(
           t('paywall.upgrade_success', 'Success!'),
