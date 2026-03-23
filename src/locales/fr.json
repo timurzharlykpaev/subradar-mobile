@@ -163,6 +163,7 @@
     "parse_failed": "Impossible d'analyser. Reessayez.",
     "save_failed": "Failed to save subscription",
     "hold_to_record": "Maintenir pour parler",
+    "tap_to_record": "Tap to record",
     "ai_q_name": "Quel abonnement ?",
     "ai_q_name_hint": "Dites ou tapez le nom du service",
     "ai_q_confirm": "Tout est correct ?",
@@ -419,7 +420,8 @@
     "then": "puis"
   },
   "voice": {
-    "hold_to_record": "Maintenez pour enregistrer"
+    "hold_to_record": "Maintenez pour enregistrer",
+    "tap_to_record": "Tap to record"
   },
   "upcoming": {
     "today": "Aujourd'hui",

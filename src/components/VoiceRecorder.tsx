@@ -21,7 +21,7 @@ import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
   onRecordingComplete: (uri: string) => void;
-  customButton?: React.ReactNode; // кастомная кнопка-обёртка
+  customButton?: React.ReactNode;
 }
 
 export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButton }) => {
@@ -52,14 +52,12 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
     }
   }, [isRecording, recorder, scaleAnim, onRecordingComplete]);
 
-  // Stop recording when app goes to background
   useEffect(() => {
     const handleAppState = (nextState: AppStateStatus) => {
       if (nextState !== 'active' && isRecording) {
         stopRecording();
       }
     };
-
     const sub = AppState.addEventListener('change', handleAppState);
     return () => sub.remove();
   }, [isRecording, stopRecording]);
@@ -83,8 +81,8 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
 
       Animated.loop(
         Animated.sequence([
-          Animated.timing(scaleAnim, { toValue: 1.2, duration: 500, useNativeDriver: true }),
-          Animated.timing(scaleAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+          Animated.timing(scaleAnim, { toValue: 1.15, duration: 600, useNativeDriver: true }),
+          Animated.timing(scaleAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
         ])
       ).start();
     } catch (e: unknown) {
@@ -93,12 +91,20 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
     }
   };
 
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   const formatDuration = (s: number) =>
     `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   return (
     <View testID="voice-recorder" style={styles.container}>
-      <Pressable testID="btn-record" onPressIn={startRecording} onPressOut={stopRecording}>
+      <Pressable testID="btn-record" onPress={toggleRecording}>
         {customButton ? (
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
             {customButton}
@@ -107,13 +113,16 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
           <Animated.View
             style={[styles.button, isRecording && styles.recording, { transform: [{ scale: scaleAnim }] }]}
           >
-            {isRecording ? <Ionicons name="stop-circle" size={28} color={colors.error} /> : <Ionicons name="mic" size={28} color={colors.primary} />}
+            {isRecording
+              ? <Ionicons name="stop" size={28} color={colors.error} />
+              : <Ionicons name="mic" size={28} color={colors.primary} />
+            }
           </Animated.View>
         )}
       </Pressable>
       {!customButton && (
-        <Text style={styles.label}>
-          {isRecording ? formatDuration(duration) : t('voice.hold_to_record')}
+        <Text style={[styles.label, isRecording && { color: colors.error }]}>
+          {isRecording ? formatDuration(duration) : t('voice.tap_to_record')}
         </Text>
       )}
     </View>

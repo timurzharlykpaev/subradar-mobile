@@ -185,7 +185,7 @@ function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => 
           ? t('common.loading', 'Распознаю...')
           : isRecording
             ? durationFmt
-            : t('add.hold_to_record', 'Держи и говори')}
+            : t('add.tap_to_record', 'Нажми для записи')}
       </Text>
     </View>
   );

@@ -151,6 +151,7 @@
     "section_extra": "Additional",
     "section_trial": "Trial Period",
     "hold_to_record": "Hold and speak",
+    "tap_to_record": "Tap to record",
     "ai_q_name": "What subscription?",
     "ai_q_name_hint": "Say or type the service name",
     "ai_q_confirm": "Is this correct?",
@@ -427,7 +428,8 @@
     "then": "then"
   },
   "voice": {
-    "hold_to_record": "Hold to record"
+    "hold_to_record": "Hold to record",
+    "tap_to_record": "Tap to record"
   },
   "upcoming": {
     "today": "Today",

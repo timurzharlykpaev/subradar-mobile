@@ -163,6 +163,7 @@
     "parse_failed": "无法解析。请重试。",
     "save_failed": "Failed to save subscription",
     "hold_to_record": "按住说话",
+    "tap_to_record": "Tap to record",
     "ai_q_name": "哪个订阅？",
     "ai_q_name_hint": "说出或输入服务名称",
     "ai_q_confirm": "一切正确？",
@@ -419,7 +420,8 @@
     "then": "之后"
   },
   "voice": {
-    "hold_to_record": "按住录音"
+    "hold_to_record": "按住录音",
+    "tap_to_record": "Tap to record"
   },
   "upcoming": {
     "today": "今天",

@@ -163,6 +163,7 @@
     "parse_failed": "解析できませんでした。もう一度お試しください。",
     "save_failed": "Failed to save subscription",
     "hold_to_record": "長押しで話す",
+    "tap_to_record": "Tap to record",
     "ai_q_name": "どのサブスク？",
     "ai_q_name_hint": "サービス名を言うか入力してください",
     "ai_q_confirm": "すべて正しいですか？",
@@ -419,7 +420,8 @@
     "then": "その後"
   },
   "voice": {
-    "hold_to_record": "長押しで録音"
+    "hold_to_record": "長押しで録音",
+    "tap_to_record": "Tap to record"
   },
   "upcoming": {
     "today": "今日",

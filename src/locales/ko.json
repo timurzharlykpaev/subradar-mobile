@@ -163,6 +163,7 @@
     "parse_failed": "분석할 수 없습니다. 다시 시도하세요.",
     "save_failed": "Failed to save subscription",
     "hold_to_record": "길게 눌러 말하기",
+    "tap_to_record": "Tap to record",
     "ai_q_name": "어떤 구독인가요?",
     "ai_q_name_hint": "서비스 이름을 말하거나 입력하세요",
     "ai_q_confirm": "모두 맞나요?",
@@ -419,7 +420,8 @@
     "then": "이후"
   },
   "voice": {
-    "hold_to_record": "길게 눌러 녹음"
+    "hold_to_record": "길게 눌러 녹음",
+    "tap_to_record": "Tap to record"
   },
   "upcoming": {
     "today": "오늘",
