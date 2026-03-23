@@ -402,9 +402,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         ? `https://www.google.com/s2/favicons?domain=${sub.name.toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus')}.com&sz=64`
                         : undefined);
 
+                    const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'NEWS', 'HEALTH', 'OTHER'];
+                    const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
+                    const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
+
                     const res = await subscriptionsApi.create({
                       name: sub.name || 'Subscription',
-                      category: (sub.category || 'OTHER').toUpperCase(),
+                      category: safeCategory,
                       amount: sub.amount || 0,
                       currency: sub.currency || currency || 'USD',
                       billingPeriod: sub.billingPeriod || 'MONTHLY',
