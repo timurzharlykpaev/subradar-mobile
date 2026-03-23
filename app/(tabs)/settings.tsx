@@ -61,7 +61,14 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleUpgrade = () => { checkoutMutation.mutate('pro-monthly'); };
+  const handleUpgrade = () => {
+    checkoutMutation.mutate('pro-monthly', {
+      onError: (error: any) => {
+        const msg = error?.response?.data?.message || error?.message || t('settings.checkout_error', 'Payment provider unavailable. Try again later.');
+        Alert.alert(t('common.error'), msg);
+      },
+    });
+  };
 
   const handleAddCard = async () => {
     if (!cardForm.nickname || cardForm.last4.length !== 4) {

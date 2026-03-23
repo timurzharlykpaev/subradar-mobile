@@ -23,6 +23,10 @@ export function useCheckout() {
     onSuccess: (data: { url: string }) => {
       if (data?.url) Linking.openURL(data.url);
     },
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message || error?.message || 'Payment provider error. Please try again.';
+      console.warn('Checkout error:', msg);
+    },
   });
 }
 
