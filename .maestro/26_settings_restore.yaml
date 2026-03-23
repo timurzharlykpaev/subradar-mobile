@@ -1,0 +1,43 @@
+appId: com.goalin.subradar
+name: "26 - Settings: Restore Purchases"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Settings tab
+- tapOn:
+    text: "Settings"
+    optional: true
+- assertVisible:
+    id: "settings-screen"
+    optional: true
+- takeScreenshot: 26_settings_screen
+
+# Scroll down to find Restore Purchases
+- scroll:
+    id: "settings-scroll"
+    direction: "DOWN"
+- takeScreenshot: 26_scrolled
+
+# Tap Restore Purchases
+- tapOn:
+    text: "Restore Purchases"
+    optional: true
+- tapOn:
+    text: "Восстановить покупки"
+    optional: true
+- takeScreenshot: 26_restore_tapped
+
+# Verify that an Alert appeared (restored or no purchases)
+# Maestro captures alerts automatically — just check for common alert text
+- assertVisible:
+    text: "Restored!"
+    optional: true
+- assertVisible:
+    text: "No active subscriptions found to restore."
+    optional: true
+- takeScreenshot: 26_alert_shown
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

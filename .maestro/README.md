@@ -49,6 +49,10 @@ maestro test .maestro/04_add_subscription_manual.yaml
 | 20 | `20_dashboard_sanity` | Dashboard: no NaN/undefined, has Прогноз |
 | 21 | `21_logout` | Logout → see SubRadar |
 | 22 | `22_subscription_detail_no_nulls` | Detail: no undefined/null |
+| 23 | `23_settings_team_plan` | Settings: Team plan, pull-to-refresh, edit profile |
+| 24 | `24_paywall_flow` | Paywall: open, view plans, close |
+| 25 | `25_ai_wizard_plans` | AI Wizard: search + plans selection |
+| 26 | `26_settings_restore` | Settings: Restore Purchases |
 
 ## Notes
 - All `optional: true` assertions mean the element **may not exist** (navigation varies by state).

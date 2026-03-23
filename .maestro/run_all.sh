@@ -55,6 +55,10 @@ ORDERED=(
   "19_paywall_upgrade"
   "20_dashboard_sanity"
   "21_logout"
+  "23_settings_team_plan"
+  "24_paywall_flow"
+  "25_ai_wizard_plans"
+  "26_settings_restore"
 )
 
 for name in "${ORDERED[@]}"; do

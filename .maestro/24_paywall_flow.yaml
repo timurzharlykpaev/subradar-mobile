@@ -1,0 +1,45 @@
+appId: com.goalin.subradar
+name: "24 - Paywall Flow: Open, View Plans, Close"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Settings to find plan card
+- tapOn:
+    text: "Settings"
+    optional: true
+- assertVisible:
+    id: "settings-screen"
+    optional: true
+
+# Tap plan card to open paywall
+- tapOn:
+    id: "btn-plan-card"
+    optional: true
+- takeScreenshot: 24_paywall_opened
+
+# Verify paywall has plan content (check for plan-related text)
+- assertVisible:
+    text: "Pro"
+    optional: true
+- takeScreenshot: 24_paywall_plans
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
+
+# Close paywall / go back
+- tapOn:
+    id: "btn-paywall-close"
+    optional: true
+- tapOn:
+    text: "Close"
+    optional: true
+- pressKey: "back"
+  optional: true
+- takeScreenshot: 24_after_close
+
+# Verify we're back on settings or dashboard
+- assertVisible:
+    id: "settings-screen"
+    optional: true

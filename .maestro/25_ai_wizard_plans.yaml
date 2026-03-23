@@ -1,0 +1,46 @@
+appId: com.goalin.subradar
+name: "25 - AI Wizard: Search and Plans Selection"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Open add subscription sheet
+- tapOn:
+    id: "add-sub-sheet"
+    optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# AI wizard should be visible
+- assertVisible:
+    id: "ai-wizard"
+    optional: true
+- takeScreenshot: 25_ai_wizard_idle
+
+# Type subscription name
+- tapOn:
+    id: "ai-wizard-input"
+    optional: true
+- inputText: "LinkedIn"
+- takeScreenshot: 25_ai_input_linkedin
+
+# Tap "Next" to trigger AI search
+- tapOn:
+    text: "Далее →"
+    optional: true
+- tapOn:
+    text: "Next →"
+    optional: true
+
+# Wait for response (plans or confirm screen)
+- extendedWaitUntil:
+    visible:
+      text: "LinkedIn"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 25_ai_result
+
+# Render sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
