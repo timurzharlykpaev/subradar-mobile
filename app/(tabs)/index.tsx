@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -18,10 +19,12 @@ import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
-import { useBillingStatus } from '../../src/hooks/useBilling';
+import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
+import { WelcomeSheet } from '../../src/components/WelcomeSheet';
+import { TrialOfferModal } from '../../src/components/TrialOfferModal';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 
 export default function DashboardScreen() {
@@ -35,6 +38,10 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = React.useState(false);
   const [monthlyTrend, setMonthlyTrend] = React.useState<{ month: string; amount: number }[]>([]);
   const [categoryData, setCategoryData] = React.useState<{ category: string; amount: number }[]>([]);
+  const [showWelcome, setShowWelcome] = React.useState(false);
+  const [showTrialOffer, setShowTrialOffer] = React.useState(false);
+  const prevSubsCount = useRef<number | null>(null);
+  const startTrial = useStartTrial();
 
   const fetchSubscriptions = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -73,6 +80,32 @@ export default function DashboardScreen() {
   };
 
   useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, []);
+
+  // Show WelcomeSheet on first visit with no subscriptions
+  useEffect(() => {
+    if (loading) return;
+    if (subscriptions.length === 0) {
+      AsyncStorage.getItem('welcome_shown').then((val) => {
+        if (!val) setShowWelcome(true);
+      });
+    }
+  }, [loading, subscriptions.length]);
+
+  // Show TrialOfferModal when first subscription is added and no active plan
+  useEffect(() => {
+    if (prevSubsCount.current === 0 && subscriptions.length >= 1) {
+      const hasActivePlan = billing?.plan === 'pro' || billing?.plan === 'organization';
+      if (!hasActivePlan) {
+        AsyncStorage.getItem('trial_offered').then((val) => {
+          if (!val) {
+            setShowTrialOffer(true);
+            AsyncStorage.setItem('trial_offered', '1');
+          }
+        });
+      }
+    }
+    prevSubsCount.current = subscriptions.length;
+  }, [subscriptions.length, billing?.plan]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
@@ -372,6 +405,30 @@ export default function DashboardScreen() {
         </View>
 
       </ScrollView>
+
+      <WelcomeSheet
+        visible={showWelcome}
+        onAddWithAI={() => {
+          setShowWelcome(false);
+          AsyncStorage.setItem('welcome_shown', '1');
+          router.push('/(tabs)/subscriptions');
+        }}
+        onSkip={() => {
+          setShowWelcome(false);
+          AsyncStorage.setItem('welcome_shown', '1');
+        }}
+      />
+
+      <TrialOfferModal
+        visible={showTrialOffer}
+        isPending={startTrial.isPending}
+        onStartTrial={() => {
+          startTrial.mutate(undefined, {
+            onSuccess: () => setShowTrialOffer(false),
+          });
+        }}
+        onSkip={() => setShowTrialOffer(false)}
+      />
     </SafeAreaView>
   );
 }

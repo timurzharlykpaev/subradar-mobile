@@ -303,7 +303,14 @@
     "terms_prefix": "By continuing, you agree to our",
     "terms_link": "Terms of Service",
     "terms_and": "and",
-    "privacy_link": "Privacy Policy"
+    "privacy_link": "Privacy Policy",
+    "welcome_title": "Welcome to SubRadar!",
+    "welcome_subtitle": "Add your first subscription in 10 seconds",
+    "welcome_add_ai": "Add with AI ✨",
+    "trial_title": "First subscription added!",
+    "trial_description": "Try SubRadar Pro free for 7 days. You will only be charged after the trial ends.",
+    "trial_start": "Start trial →",
+    "trial_skip": "Continue for free"
   },
   "analytics": {
     "title": "Analytics",
