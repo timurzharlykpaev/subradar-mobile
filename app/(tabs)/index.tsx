@@ -9,7 +9,7 @@ import {
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -283,7 +283,7 @@ export default function DashboardScreen() {
                   activeOpacity={0.8}
                 >
                   {sub.iconUrl ? (
-                    <Image source={{ uri: sub.iconUrl }} style={styles.subIcon} cachePolicy="memory-disk" />
+                    <Image source={{ uri: sub.iconUrl }} style={styles.subIcon} />
                   ) : (
                     <View style={[styles.subIconPlaceholder, { backgroundColor: colors.primaryLight }]}>
                       <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>

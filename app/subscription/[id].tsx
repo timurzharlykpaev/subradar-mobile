@@ -9,7 +9,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -123,7 +123,7 @@ export default function SubscriptionDetailScreen() {
         {/* Service Info */}
         <View style={styles.serviceCard}>
           {subscription.iconUrl ? (
-            <Image source={{ uri: subscription.iconUrl }} style={styles.logo} cachePolicy="memory-disk" />
+            <Image source={{ uri: subscription.iconUrl }} style={styles.logo} />
           ) : (
             <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>
               <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name[0]}</Text>
@@ -216,7 +216,7 @@ export default function SubscriptionDetailScreen() {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {receipts.map((uri, i) => (
-                <Image key={i} source={{ uri }} style={styles.receiptThumb} cachePolicy="memory-disk" />
+                <Image key={i} source={{ uri }} style={styles.receiptThumb} />
               ))}
             </ScrollView>
           )}
