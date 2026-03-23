@@ -11,7 +11,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback,
+  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -261,8 +261,7 @@ export function AIWizard({ onDone }: Props) {
         fade(() => setUi({ kind: 'question', text: data.question, field: data.field ?? 'clarify' }));
       }
     } catch {
-      // fallback: treat input as name, proceed manually
-      fade(() => setUi({ kind: 'confirm', subscription: { name: message.trim(), amount: 0, currency: 'USD', billingPeriod: 'MONTHLY' } }));
+      fade(() => setUi({ kind: 'question', text: t('ai.could_not_parse'), field: 'clarify' }));
     } finally {
       setLoading(false);
       setInput('');
@@ -275,20 +274,20 @@ export function AIWizard({ onDone }: Props) {
     Keyboard.dismiss();
     setLoading(true);
     try {
-      // Step 1: transcribe audio → text
       const fd = new FormData();
       fd.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
       const transcribeRes = await aiApi.parseAudio(fd);
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
+        Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
         setLoading(false);
         return;
       }
       setInput(text);
-      // Step 2: send transcribed text to wizard (same as typing)
       await callWizard(text);
     } catch (err) {
       console.warn('AIWizard voice error:', err);
+      Alert.alert(t('ai.voice_error_title'), t('ai.voice_error'));
       setLoading(false);
     }
   };

@@ -161,6 +161,7 @@
     "tags": "标签",
     "tags_placeholder": "输入并按逗号...",
     "parse_failed": "无法解析。请重试。",
+    "save_failed": "Failed to save subscription",
     "hold_to_record": "按住说话",
     "ai_q_name": "哪个订阅？",
     "ai_q_name_hint": "说出或输入服务名称",
@@ -555,7 +556,11 @@
   },
   "ai": {
     "or_type": "或输入",
-    "popular_services": "热门"
+    "popular_services": "热门",
+    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
+    "voice_error_title": "Voice Error",
+    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
+    "voice_error": "Voice processing failed. Please try again."
   },
   "pro_modal": {
     "title_default": "Pro功能",

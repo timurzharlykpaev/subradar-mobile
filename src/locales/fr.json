@@ -161,6 +161,7 @@
     "tags": "Tags",
     "tags_placeholder": "Tapez et appuyez sur virgule...",
     "parse_failed": "Impossible d'analyser. Reessayez.",
+    "save_failed": "Failed to save subscription",
     "hold_to_record": "Maintenir pour parler",
     "ai_q_name": "Quel abonnement ?",
     "ai_q_name_hint": "Dites ou tapez le nom du service",
@@ -555,7 +556,11 @@
   },
   "ai": {
     "or_type": "ou tapez",
-    "popular_services": "Populaires"
+    "popular_services": "Populaires",
+    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
+    "voice_error_title": "Voice Error",
+    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
+    "voice_error": "Voice processing failed. Please try again."
   },
   "pro_modal": {
     "title_default": "Fonctionnalité Pro",

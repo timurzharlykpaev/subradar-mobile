@@ -161,6 +161,7 @@
     "tags": "Tags",
     "tags_placeholder": "Digite e pressione virgula...",
     "parse_failed": "Nao foi possivel analisar. Tente novamente.",
+    "save_failed": "Failed to save subscription",
     "hold_to_record": "Segurar para falar",
     "ai_q_name": "Qual assinatura?",
     "ai_q_name_hint": "Diga ou digite o nome do serviço",
@@ -555,7 +556,11 @@
   },
   "ai": {
     "or_type": "ou digite",
-    "popular_services": "Populares"
+    "popular_services": "Populares",
+    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
+    "voice_error_title": "Voice Error",
+    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
+    "voice_error": "Voice processing failed. Please try again."
   },
   "pro_modal": {
     "title_default": "Função Pro",

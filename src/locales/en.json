@@ -167,7 +167,8 @@
     "color_auto": "Auto",
     "tags": "Tags",
     "tags_placeholder": "Type and press comma...",
-    "parse_failed": "Could not parse. Try again."
+    "parse_failed": "Could not parse. Try again.",
+    "save_failed": "Failed to save subscription"
   },
   "periods": {
     "WEEKLY": "Weekly",
@@ -578,6 +579,10 @@
   },
   "ai": {
     "or_type": "or type",
-    "popular_services": "Popular"
+    "popular_services": "Popular",
+    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
+    "voice_error_title": "Voice Error",
+    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
+    "voice_error": "Voice processing failed. Please try again."
   }
 }

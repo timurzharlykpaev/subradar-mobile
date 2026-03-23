@@ -177,12 +177,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       router.push('/paywall');
       return;
     }
-    if (!form.name || !form.amount) {
+    if (!form.name || !form.amount || parseFloat(form.amount) <= 0) {
       Alert.alert(t('add.required'), t('add.fill_required'));
       return;
     }
     try {
-      // Auto-generate icon from serviceUrl or service name if not set
       let iconUrl = form.iconUrl;
       if (!iconUrl && form.serviceUrl) {
         try {
@@ -197,7 +196,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
       const res = await subscriptionsApi.create({
         name: form.name,
-        category: form.category.toUpperCase(),
+        category: (form.category || 'OTHER').toUpperCase(),
         amount: parseFloat(form.amount),
         currency: form.currency,
         billingPeriod: form.billingPeriod,
@@ -217,14 +216,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         tags: form.tags.length > 0 ? form.tags : undefined,
       });
       addSubscription(res.data);
-    } catch {
-      Alert.alert(t('common.error'), '');
+      setForm(emptyForm);
+      setFoundService(null);
+      setAiQuery('');
+      handleClose();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || t('add.save_failed');
+      Alert.alert(t('common.error'), msg);
     }
-    setForm(emptyForm);
-    setFoundService(null);
-    setAiQuery('');
-    handleClose();
-  }, [form, handleClose]);
+  }, [form, handleClose, subsLimitReached, onClose, router, t, addSubscription]);
 
   const handleAILookup = useCallback(async () => {
     if (!aiQuery.trim()) return;

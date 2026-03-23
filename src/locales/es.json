@@ -161,6 +161,7 @@
     "tags": "Etiquetas",
     "tags_placeholder": "Escribe y presiona coma...",
     "parse_failed": "No se pudo analizar. Intenta de nuevo.",
+    "save_failed": "Failed to save subscription",
     "hold_to_record": "Mantener para hablar",
     "ai_q_name": "¿Qué suscripción?",
     "ai_q_name_hint": "Di o escribe el nombre del servicio",
@@ -555,7 +556,11 @@
   },
   "ai": {
     "or_type": "o escribe",
-    "popular_services": "Populares"
+    "popular_services": "Populares",
+    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
+    "voice_error_title": "Voice Error",
+    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
+    "voice_error": "Voice processing failed. Please try again."
   },
   "pro_modal": {
     "title_default": "Función Pro",
