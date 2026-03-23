@@ -198,12 +198,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         iconUrl = `https://www.google.com/s2/favicons?domain=${slug}.com&sz=64`;
       }
 
+      const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+      const rawBilling = (form.billingPeriod || 'MONTHLY').toUpperCase();
+      const safeBilling = VALID_BILLING.includes(rawBilling) ? rawBilling : 'MONTHLY';
+
       const res = await subscriptionsApi.create({
         name: form.name,
         category: (form.category || 'OTHER').toUpperCase(),
         amount: parseFloat(form.amount),
         currency: form.currency,
-        billingPeriod: form.billingPeriod,
+        billingPeriod: safeBilling,
         billingDay: parseInt(form.billingDay) || 1,
         status: form.isTrial ? 'TRIAL' : 'ACTIVE',
         paymentCardId: form.paymentCardId || undefined,
@@ -218,6 +222,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
         color: form.color || undefined,
         tags: form.tags.length > 0 ? form.tags : undefined,
+        addedVia: 'MANUAL',
       });
       addSubscription(res.data);
       setSuccessName(form.name);
@@ -406,18 +411,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
                     const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
 
+                    const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+                    const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+                    const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
+
                     const res = await subscriptionsApi.create({
                       name: sub.name || 'Subscription',
                       category: safeCategory,
                       amount: sub.amount || 0,
                       currency: sub.currency || currency || 'USD',
-                      billingPeriod: sub.billingPeriod || 'MONTHLY',
+                      billingPeriod: safeBillingPeriod,
                       billingDay: 1,
                       status: 'ACTIVE',
                       serviceUrl: sub.serviceUrl || undefined,
                       cancelUrl: sub.cancelUrl || undefined,
                       iconUrl: iconUrl || undefined,
                       startDate: new Date().toISOString().split('T')[0],
+                      addedVia: 'AI_TEXT',
                     });
                     addSubscription(res.data);
                     setSuccessName(sub.name || '');
