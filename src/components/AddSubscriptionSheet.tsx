@@ -227,6 +227,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       addSubscription(res.data);
       setSuccessName(form.name);
       setShowSuccess(true);
+      // Sync list from server in background
+      subscriptionsApi.getAll().then((r) => {
+        useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+      }).catch(() => {});
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || t('add.save_failed');
       Alert.alert(t('common.error'), msg);
@@ -432,6 +436,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     addSubscription(res.data);
                     setSuccessName(sub.name || '');
                     setShowSuccess(true);
+                    // Sync list from server
+                    subscriptionsApi.getAll().then((r) => {
+                      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+                    }).catch(() => {});
                   }}
                   onEdit={(sub) => {
                     setForm((f) => ({
