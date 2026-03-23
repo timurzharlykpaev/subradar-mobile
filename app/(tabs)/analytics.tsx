@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
@@ -190,8 +191,9 @@ export default function AnalyticsScreen() {
   const [byCardData, setByCardData] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any>(null);
   const [proModal, setProModal] = useState<{ visible: boolean; feature: string }>({ visible: false, feature: 'forecast' });
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchAll = useCallback(() => {
     analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => {});
     analyticsApi.getMonthly().then((r) => {
       const raw = r.data || [];
@@ -209,6 +211,14 @@ export default function AnalyticsScreen() {
     }).catch(() => {});
     analyticsApi.getForecast().then((r) => setForecast(r.data)).catch(() => {});
   }, []);
+
+  useEffect(() => { fetchAll(); }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    fetchAll();
+    setRefreshing(false);
+  }, [fetchAll]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
 
@@ -277,7 +287,7 @@ export default function AnalyticsScreen() {
 
   return (
     <SafeAreaView testID="analytics-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView testID="analytics-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView testID="analytics-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
         {/* ── Header ────────────────────────────────────────────── */}
         <View style={styles.header}>

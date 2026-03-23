@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   Switch,
   Alert,
@@ -24,6 +25,7 @@ import { CURRENCIES, CARD_BRANDS, LANGUAGES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
@@ -45,8 +47,16 @@ export default function SettingsScreen() {
   const startTrialMutation = useStartTrial();
   const { restorePurchases } = useRevenueCat();
 
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
   const [showAddCard, setShowAddCard] = useState(false);
   const [cardForm, setCardForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: '#6C47FF' });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ['billing'] });
+    setRefreshing(false);
+  }, [queryClient]);
 
   const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
   const isTeam = billing?.plan === 'organization';
@@ -150,7 +160,13 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView testID="settings-screen" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
-      <ScrollView testID="settings-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        testID="settings-scroll"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
