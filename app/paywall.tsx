@@ -136,7 +136,7 @@ export default function PaywallScreen() {
         Alert.alert(
           t('subscription_plan.trial_activated'),
           t('subscription_plan.trial_activated_msg'),
-          [{ text: 'OK', onPress: () => router.back() }]
+          [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
         );
       } catch (e: any) {
         Alert.alert(t('common.error'), e?.response?.data?.message || '');
@@ -176,7 +176,7 @@ export default function PaywallScreen() {
         Alert.alert(
           t('paywall.upgrade_success', 'Success!'),
           t('paywall.upgrade_success_msg', 'Welcome to Pro!'),
-          [{ text: 'OK', onPress: () => router.back() }]
+          [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
         );
       }
     } else {
