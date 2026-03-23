@@ -455,48 +455,47 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   />
                 </View>
 
-                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginBottom: 16 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                      {t('add.amount')} *
-                    </Text>
-                    <TextInput
-                      testID="amount-input"
-                      style={inputStyle}
-                      value={form.amount}
-                      onChangeText={(v) => setF('amount', v)}
-                      placeholder="9.99"
-                      keyboardType="decimal-pad"
-                      placeholderTextColor={colors.textMuted}
-                    />
-                  </View>
-                  <View style={{ width: 120 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                      {t('add.currency')}
-                    </Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 6 }}>
-                      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
-                        {CURRENCIES.map((cur) => (
-                          <TouchableOpacity
-                            key={cur}
-                            style={{
-                              paddingHorizontal: 10,
-                              paddingVertical: 6,
-                              borderRadius: 20,
-                              backgroundColor: form.currency === cur ? colors.primary : colors.background,
-                              borderWidth: 1,
-                              borderColor: form.currency === cur ? colors.primary : colors.border,
-                            }}
-                            onPress={() => setF('currency', cur)}
-                          >
-                            <Text style={{ fontSize: 12, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
-                              {cur}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </ScrollView>
-                  </View>
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                    {t('add.amount')} *
+                  </Text>
+                  <TextInput
+                    testID="amount-input"
+                    style={inputStyle}
+                    value={form.amount}
+                    onChangeText={(v) => setF('amount', v)}
+                    placeholder="9.99"
+                    keyboardType="decimal-pad"
+                    placeholderTextColor={colors.textMuted}
+                  />
+                </View>
+
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                    {t('add.currency')}
+                  </Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
+                      {CURRENCIES.map((cur) => (
+                        <TouchableOpacity
+                          key={cur}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 7,
+                            borderRadius: 20,
+                            backgroundColor: form.currency === cur ? colors.primary : colors.background,
+                            borderWidth: 1,
+                            borderColor: form.currency === cur ? colors.primary : colors.border,
+                          }}
+                          onPress={() => setF('currency', cur)}
+                        >
+                          <Text style={{ fontSize: 13, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
+                            {cur}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
                 </View>
 
                 <View style={{ marginBottom: 16 }}>
