@@ -84,11 +84,11 @@ export default function SubscriptionPlanScreen() {
   }
 
   const subsUsed = billing?.subscriptionCount ?? 0;
-  const subsLimit = billing?.subscriptionLimit;
+  const subsLimit = billing?.subscriptionLimit; // null = unlimited
   const aiUsed = billing?.aiRequestsUsed ?? 0;
-  const aiLimit = billing?.aiRequestsLimit ?? 5;
+  const aiLimit = billing?.aiRequestsLimit; // null = unlimited
   const subsPercent = subsLimit ? Math.min((subsUsed / subsLimit) * 100, 100) : 0;
-  const aiPercent = Math.min((aiUsed / aiLimit) * 100, 100);
+  const aiPercent = aiLimit ? Math.min((aiUsed / aiLimit) * 100, 100) : 0;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -164,7 +164,7 @@ export default function SubscriptionPlanScreen() {
               <View style={styles.usageItem}>
                 <View style={styles.usageHeader}>
                   <Text style={styles.usageLabel}>{t('subscription_plan.ai_used')}</Text>
-                  <Text style={styles.usageValue}>{aiUsed}/{aiLimit}</Text>
+                  <Text style={styles.usageValue}>{aiUsed}/{aiLimit ?? '∞'}</Text>
                 </View>
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${aiPercent}%`, backgroundColor: aiPercent >= 90 ? '#F87171' : 'rgba(255,255,255,0.8)' }]} />
