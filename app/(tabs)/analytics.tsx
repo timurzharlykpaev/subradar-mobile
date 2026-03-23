@@ -52,30 +52,31 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
       <Svg width={chartW} height={totalH}>
         <Defs>
           <LinearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.2" />
+            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.35" />
             <Stop offset="1" stopColor={colors.primary} stopOpacity="1" />
           </LinearGradient>
           <LinearGradient id="barGradDim" x1="0" y1="1" x2="0" y2="0">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.1" />
-            <Stop offset="1" stopColor={colors.primary} stopOpacity="0.55" />
+            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.15" />
+            <Stop offset="1" stopColor={colors.primary} stopOpacity="0.7" />
           </LinearGradient>
         </Defs>
         {gridLines.map((line, i) => (
           <React.Fragment key={`grid-${i}`}>
-            <Line x1={yAxisW} y1={line.y} x2={chartW} y2={line.y} stroke={colors.text} strokeWidth={0.5} strokeOpacity={0.05} />
+            <Line x1={yAxisW} y1={line.y} x2={chartW} y2={line.y} stroke={colors.text} strokeWidth={0.5} strokeOpacity={0.08} />
             <SvgText x={yAxisW - 4} y={line.y + 3} fontSize={9} fill={colors.textMuted} textAnchor="end">{line.label}</SvgText>
           </React.Fragment>
         ))}
         {data.map((d, i) => {
-          const barH = Math.max(4, (d.total / maxVal) * chartAreaH);
+          const ratio = d.total / maxVal;
+          const barH = d.total > 0 ? Math.max(6, ratio * chartAreaH) : 2;
           const x = yAxisW + i * (barsW / data.length) + (barsW / data.length - barW) / 2;
           const y = chartAreaH - barH;
           const isMax = d.total === maxVal && d.total > 0;
           return (
             <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={6} fill={isMax ? 'url(#barGrad)' : 'url(#barGradDim)'} />
-              {isMax && d.total > 0 && (
-                <SvgText x={x + barW / 2} y={y - 6} fontSize={11} fontWeight="700" fill={colors.primary} textAnchor="middle">
+              <Rect x={x} y={y} width={barW} height={barH} rx={barW / 4} fill={isMax ? 'url(#barGrad)' : 'url(#barGradDim)'} />
+              {d.total > 0 && (
+                <SvgText x={x + barW / 2} y={y - 5} fontSize={10} fontWeight={isMax ? '700' : '500'} fill={isMax ? colors.primary : colors.textMuted} textAnchor="middle" opacity={isMax ? 1 : 0.7}>
                   ${d.total >= 1000 ? `${(d.total / 1000).toFixed(1)}k` : d.total.toFixed(0)}
                 </SvgText>
               )}
