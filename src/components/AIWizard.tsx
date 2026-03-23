@@ -35,7 +35,8 @@ export interface ParsedSub {
 }
 
 interface Props {
-  onDone: (sub: ParsedSub) => void;
+  onSave: (sub: ParsedSub) => Promise<void>;
+  onEdit: (sub: ParsedSub) => void;
 }
 
 // ── SVG иконки ──────────────────────────────────────────────────────────────
@@ -214,7 +215,7 @@ type UIState =
   | { kind: 'question'; text: string; field: string }
   | { kind: 'confirm'; subscription: ParsedSub };
 
-export function AIWizard({ onDone }: Props) {
+export function AIWizard({ onSave, onEdit }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
 
@@ -222,6 +223,7 @@ export function AIWizard({ onDone }: Props) {
   const [input, setInput] = useState('');
   const [context, setContext] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim  = useRef(new Animated.Value(1)).current;
@@ -355,12 +357,6 @@ export function AIWizard({ onDone }: Props) {
                   </View>
                 )}
               </View>
-              <TouchableOpacity onPress={reset} style={styles.editLink}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <PencilIcon size={14} color={colors.primary} />
-                  <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{t('add.ai_edit', 'Изменить')}</Text>
-                </View>
-              </TouchableOpacity>
             </View>
           );
         })()}
@@ -430,15 +426,40 @@ export function AIWizard({ onDone }: Props) {
       {/* ── Footer button ─────────────────────────────────────────────────── */}
       <View style={styles.footer}>
         {ui.kind === 'confirm' ? (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
-            onPress={() => onDone(ui.subscription)}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="checkmark" size={16} color="#FFF" />
-              <Text style={styles.actionTxt}>{t('add.ai_add', 'Добавить')}</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={{ gap: 8 }}>
+            <TouchableOpacity
+              style={[styles.actionBtn, { backgroundColor: '#10B981' }, saving && { opacity: 0.6 }]}
+              onPress={async () => {
+                setSaving(true);
+                try {
+                  await onSave(ui.subscription);
+                } catch (err: any) {
+                  const msg = err?.response?.data?.message || err?.message || 'Error';
+                  Alert.alert(t('common.error'), msg);
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                {saving ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Ionicons name="checkmark" size={16} color="#FFF" />
+                )}
+                <Text style={styles.actionTxt}>{t('add.ai_add', 'Добавить')}</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ alignItems: 'center', paddingVertical: 10 }}
+              onPress={() => onEdit(ui.subscription)}
+            >
+              <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
+                {t('add.edit_details', 'Редактировать детали')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <TouchableOpacity
             style={[styles.actionBtn, { backgroundColor: colors.primary }, (!input.trim() || loading) && { opacity: 0.4 }]}

@@ -30,6 +30,7 @@ import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { VoiceRecorder } from './VoiceRecorder';
 import { AIWizard, ParsedSub } from './AIWizard';
+import { SuccessOverlay } from './SuccessOverlay';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useTheme } from '../theme';
 import {
@@ -135,6 +136,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [foundService, setFoundService] = useState<any>(null);
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
   const [parsingScreenshot, setParsingScreenshot] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successName, setSuccessName] = useState('');
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -216,10 +219,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         tags: form.tags.length > 0 ? form.tags : undefined,
       });
       addSubscription(res.data);
-      setForm(emptyForm);
-      setFoundService(null);
-      setAiQuery('');
-      handleClose();
+      setSuccessName(form.name);
+      setShowSuccess(true);
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || t('add.save_failed');
       Alert.alert(t('common.error'), msg);
@@ -392,20 +393,46 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {/* tab === 0 → AI Assistant */}
             {tab === 0 && (
               <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
-                <AIWizard onDone={(sub) => {
-                  setForm((f) => ({
-                    ...f,
-                    name: sub.name ?? f.name,
-                    amount: sub.amount != null ? String(sub.amount) : f.amount,
-                    currency: sub.currency ?? f.currency,
-                    billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
-                    category: sub.category?.toLowerCase() ?? f.category,
-                    serviceUrl: sub.serviceUrl ?? f.serviceUrl,
-                    cancelUrl: sub.cancelUrl ?? f.cancelUrl,
-                    iconUrl: sub.iconUrl ?? f.iconUrl,
-                  }));
-                  setTab(1);
-                }} />
+                <AIWizard
+                  onSave={async (sub) => {
+                    const iconUrl = sub.iconUrl || (sub.serviceUrl
+                      ? `https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}&sz=64`
+                      : sub.name
+                        ? `https://www.google.com/s2/favicons?domain=${sub.name.toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus')}.com&sz=64`
+                        : undefined);
+
+                    const res = await subscriptionsApi.create({
+                      name: sub.name || 'Subscription',
+                      category: (sub.category || 'OTHER').toUpperCase(),
+                      amount: sub.amount || 0,
+                      currency: sub.currency || currency || 'USD',
+                      billingPeriod: sub.billingPeriod || 'MONTHLY',
+                      billingDay: 1,
+                      status: 'ACTIVE',
+                      serviceUrl: sub.serviceUrl || undefined,
+                      cancelUrl: sub.cancelUrl || undefined,
+                      iconUrl: iconUrl || undefined,
+                      startDate: new Date().toISOString().split('T')[0],
+                    });
+                    addSubscription(res.data);
+                    setSuccessName(sub.name || '');
+                    setShowSuccess(true);
+                  }}
+                  onEdit={(sub) => {
+                    setForm((f) => ({
+                      ...f,
+                      name: sub.name ?? f.name,
+                      amount: sub.amount != null ? String(sub.amount) : f.amount,
+                      currency: sub.currency ?? f.currency,
+                      billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
+                      category: sub.category?.toLowerCase() ?? f.category,
+                      serviceUrl: sub.serviceUrl ?? f.serviceUrl,
+                      cancelUrl: sub.cancelUrl ?? f.cancelUrl,
+                      iconUrl: sub.iconUrl ?? f.iconUrl,
+                    }));
+                    setTab(1);
+                  }}
+                />
               </View>
             )}
 
@@ -842,6 +869,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             )}
           </ScrollView>
         </KeyboardAvoidingView>
+        <SuccessOverlay
+          visible={showSuccess}
+          name={successName}
+          onFinish={() => {
+            setShowSuccess(false);
+            setSuccessName('');
+            setForm(emptyForm);
+            setFoundService(null);
+            setAiQuery('');
+            setTab(0);
+            handleClose();
+          }}
+        />
       </Animated.View>
     </Modal>
   );
