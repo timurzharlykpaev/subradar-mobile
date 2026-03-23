@@ -20,7 +20,12 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as WebBrowser from 'expo-web-browser';
 // expo-auth-session/providers/google removed (requires native build)
-import * as AppleAuthentication from 'expo-apple-authentication';
+let AppleAuthentication: any = null;
+if (Platform.OS === 'ios') {
+  try {
+    AppleAuthentication = require('expo-apple-authentication');
+  } catch {}
+}
 import { useAuthStore } from '../src/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
 import { authApi } from '../src/api/auth';
@@ -476,6 +481,7 @@ export default function OnboardingScreen() {
   };
 
   const handleAppleLogin = async () => {
+    if (!AppleAuthentication) return;
     setLoading(true);
     try {
       const credential = await AppleAuthentication.signInAsync({

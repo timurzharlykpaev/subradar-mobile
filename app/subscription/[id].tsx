@@ -49,7 +49,7 @@ export default function SubscriptionDetailScreen() {
   const category = CATEGORIES.find((c) => c.id === subscription.category);
 
   const handleOpenWebsite = () => {
-    const url = (subscription as any).serviceUrl ?? subscription.websiteUrl;
+    const url = subscription.serviceUrl;
     if (url) Linking.openURL(url);
   };
 

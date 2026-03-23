@@ -106,7 +106,7 @@ export default function PaywallScreen() {
         if (pkg) return { price: pkg.product.priceString, period: `/${billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` };
       }
       if (planId === 'org') {
-        const pkg = current.availablePackages.find(p =>
+        const pkg = current.availablePackages.find((p: any) =>
           p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
         );
         if (pkg) return { price: pkg.product.priceString, period: `/${billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` };
