@@ -98,7 +98,12 @@
     "sort_high": "価格 ↓",
     "sort_low": "価格 ↑",
     "no_results": "結果なし",
-    "try_different": "別の検索を試してください"
+    "try_different": "別の検索を試してください",
+    "status_active": "アクティブ",
+    "status_trial": "お試し",
+    "status_cancelled": "キャンセル",
+    "status_paused": "一時停止",
+    "status_expired": "期限切れ"
   },
   "add": {
     "title": "サブスクリプションを追加",

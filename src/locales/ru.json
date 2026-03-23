@@ -98,7 +98,12 @@
     "sort_low": "Цена ↑",
     "sort_name": "А-Я",
     "no_results": "Ничего не найдено",
-    "try_different": "Попробуйте другой запрос"
+    "try_different": "Попробуйте другой запрос",
+    "status_active": "Активна",
+    "status_trial": "Пробный",
+    "status_cancelled": "Отменена",
+    "status_paused": "Пауза",
+    "status_expired": "Истекла"
   },
   "add": {
     "title": "Добавить подписку",

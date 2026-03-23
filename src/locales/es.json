@@ -98,7 +98,12 @@
     "sort_high": "Precio mayor",
     "sort_low": "Precio menor",
     "no_results": "Sin resultados",
-    "try_different": "Prueba con otra búsqueda"
+    "try_different": "Prueba con otra búsqueda",
+    "status_active": "Activa",
+    "status_trial": "Prueba",
+    "status_cancelled": "Cancelada",
+    "status_paused": "Pausada",
+    "status_expired": "Expirada"
   },
   "add": {
     "title": "Agregar Suscripción",

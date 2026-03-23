@@ -60,7 +60,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
           <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{subscription.name}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>
-              {subscription.status}
+              {t(`subscriptions.status_${subscription.status?.toLowerCase()}`, subscription.status)}
             </Text>
           </View>
         </View>

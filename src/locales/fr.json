@@ -98,7 +98,12 @@
     "sort_high": "Prix ↓",
     "sort_low": "Prix ↑",
     "no_results": "Aucun résultat",
-    "try_different": "Essayez une autre recherche"
+    "try_different": "Essayez une autre recherche",
+    "status_active": "Active",
+    "status_trial": "Essai",
+    "status_cancelled": "Annulée",
+    "status_paused": "Pausée",
+    "status_expired": "Expirée"
   },
   "add": {
     "title": "Ajouter un abonnement",

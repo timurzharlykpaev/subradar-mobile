@@ -98,7 +98,12 @@
     "sort_high": "Preço ↓",
     "sort_low": "Preço ↑",
     "no_results": "Sem resultados",
-    "try_different": "Tente outra pesquisa"
+    "try_different": "Tente outra pesquisa",
+    "status_active": "Ativa",
+    "status_trial": "Teste",
+    "status_cancelled": "Cancelada",
+    "status_paused": "Pausada",
+    "status_expired": "Expirada"
   },
   "add": {
     "title": "Adicionar Assinatura",

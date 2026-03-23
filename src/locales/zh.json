@@ -98,7 +98,12 @@
     "sort_high": "价格 ↓",
     "sort_low": "价格 ↑",
     "no_results": "无结果",
-    "try_different": "尝试其他搜索"
+    "try_different": "尝试其他搜索",
+    "status_active": "活跃",
+    "status_trial": "试用",
+    "status_cancelled": "已取消",
+    "status_paused": "暂停",
+    "status_expired": "已过期"
   },
   "add": {
     "title": "添加订阅",
