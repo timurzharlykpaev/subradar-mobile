@@ -19,7 +19,6 @@ import { useTheme } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
-import { VoiceRecorder } from './VoiceRecorder';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { Pressable } from 'react-native';
 
@@ -132,46 +131,30 @@ const QUICK = [
 
 function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => void; loading: boolean; colors: any; t: any }) {
   const { isRecording, durationFmt, start, stop } = useVoiceRecorder(onVoice);
-
   const ring1 = useRef(new Animated.Value(1)).current;
-  const ring2 = useRef(new Animated.Value(1)).current;
 
-  // Пульс в покое
+  // Single gentle pulse — no heavy dual-ring animation
   React.useEffect(() => {
-    if (isRecording) return;
     const loop = Animated.loop(Animated.sequence([
-      Animated.timing(ring1, { toValue: 1.18, duration: 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
-      Animated.timing(ring1, { toValue: 1,    duration: 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+      Animated.timing(ring1, { toValue: isRecording ? 1.3 : 1.15, duration: isRecording ? 500 : 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+      Animated.timing(ring1, { toValue: 1, duration: isRecording ? 500 : 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
     ]));
     loop.start();
     return () => loop.stop();
   }, [isRecording]);
 
-  // Пульс при записи — быстрее и с двумя кольцами
-  React.useEffect(() => {
-    if (!isRecording) { ring1.setValue(1); ring2.setValue(1); return; }
-    const l1 = Animated.loop(Animated.sequence([
-      Animated.timing(ring1, { toValue: 1.35, duration: 600, useNativeDriver: true }),
-      Animated.timing(ring1, { toValue: 1,    duration: 600, useNativeDriver: true }),
-    ]));
-    const l2 = Animated.loop(Animated.sequence([
-      Animated.timing(ring2, { toValue: 0,    duration: 0,   useNativeDriver: true }),
-      Animated.timing(ring2, { toValue: 1.55, duration: 1200, useNativeDriver: true }),
-      Animated.timing(ring2, { toValue: 0,    duration: 0,   useNativeDriver: true }),
-    ]));
-    l1.start(); l2.start();
-    return () => { l1.stop(); l2.stop(); };
-  }, [isRecording]);
-
   const bg = isRecording ? '#EF4444' : colors.primary;
+
+  const toggle = () => {
+    if (isRecording) stop();
+    else start();
+  };
 
   return (
     <View style={micStyles.wrap}>
-      {/* Фоновые кольца */}
-      <Animated.View style={[micStyles.ring, { backgroundColor: bg + '18', transform: [{ scale: ring2 }] }]} />
-      <Animated.View style={[micStyles.ring, { backgroundColor: bg + '25', transform: [{ scale: ring1 }] }]} />
+      <Animated.View style={[micStyles.ring, { backgroundColor: bg + '20', transform: [{ scale: ring1 }] }]} />
 
-      <Pressable onPressIn={start} onPressOut={stop} style={micStyles.pressable}>
+      <Pressable onPress={toggle} style={micStyles.pressable}>
         <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
           {loading
             ? <ActivityIndicator color="#fff" size="large" />
@@ -181,7 +164,7 @@ function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => 
         </View>
       </Pressable>
 
-      <Text style={[micStyles.label, { color: colors.textSecondary }]}>
+      <Text style={[micStyles.label, { color: isRecording ? '#EF4444' : colors.textSecondary }]}>
         {loading
           ? t('common.loading', 'Распознаю...')
           : isRecording
