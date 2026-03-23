@@ -49,6 +49,7 @@ export default function SettingsScreen() {
   const [cardForm, setCardForm] = useState({ nickname: '', last4: '', brand: 'VISA' as PaymentCard['brand'], color: '#6C47FF' });
 
   const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
+  const isTeam = billing?.plan === 'organization';
   const isTrialing = billing?.status === 'trialing';
   const canTrial = billing && !billing.trialUsed && !isPro;
 
@@ -197,7 +198,11 @@ export default function SettingsScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   {isTrialing ? <HourglassIcon size={20} color="#FFF" /> : <SparklesIcon size={20} color="#FFF" />}
                   <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>
-                    {isTrialing ? t('settings.pro_trial') : t('settings.subradar_pro')}
+                    {isTrialing
+                      ? t('settings.pro_trial')
+                      : isTeam
+                        ? t('settings.subradar_team', 'SubRadar Team')
+                        : t('settings.subradar_pro')}
                   </Text>
                 </View>
                 {isTrialing && billing?.trialDaysLeft != null && (
