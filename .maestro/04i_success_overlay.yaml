@@ -1,12 +1,7 @@
 appId: com.goalin.subradar
-name: "04g - Add Subscription New Fields (Progressive Disclosure)"
+name: "04i - Success Overlay After Add"
 ---
 - runFlow: ./00_setup_auth.yaml
-
-# Verify Dashboard loaded
-- assertVisible:
-    id: "dashboard-screen"
-    optional: true
 
 # Open add subscription sheet
 - tapOn:
@@ -29,20 +24,28 @@ name: "04g - Add Subscription New Fields (Progressive Disclosure)"
 - tapOn:
     id: "amount-input"
     optional: true
-- inputText: "9.99"
+- inputText: "4.99"
 
-# Expand "More options" to see new fields
-- tapOn: "More options"
-  optional: true
-- tapOn: "Ещё"
-  optional: true
+# Save subscription
+- tapOn:
+    id: "btn-save-sub"
+    optional: true
+- takeScreenshot: 04i_success_overlay
 
-# Scroll to see all optional fields
-- scroll
-- scroll
-- takeScreenshot: 04g_new_fields_visible
+# Wait for overlay to auto-dismiss
+- extendedWaitUntil:
+    notVisible: "Added!"
+    timeout: 5000
+    optional: true
+- extendedWaitUntil:
+    notVisible: "Добавлено!"
+    timeout: 5000
+    optional: true
 
-# Render sanity checks
+# Should be back on dashboard/main screen
+- takeScreenshot: 04i_after_success
+
+# Sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
 - assertNotVisible: "Render Error"

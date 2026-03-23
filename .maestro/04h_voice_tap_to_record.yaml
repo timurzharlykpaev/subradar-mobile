@@ -1,0 +1,57 @@
+appId: com.goalin.subradar
+name: "04h - Voice Tap to Record"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Open add subscription sheet
+- tapOn:
+    id: "add-sub-sheet"
+    optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# Verify AI wizard is visible (default tab)
+- assertVisible:
+    id: "ai-wizard"
+    optional: true
+
+# Verify voice recorder is visible
+- assertVisible:
+    id: "voice-recorder"
+    optional: true
+
+# Verify record button exists
+- assertVisible:
+    id: "btn-record"
+    optional: true
+- takeScreenshot: 04h_voice_idle
+
+# Tap to start recording (permission dialog may appear)
+- tapOn:
+    id: "btn-record"
+    optional: true
+
+# Allow microphone permission if dialog appears
+- tapOn: "Allow"
+  optional: true
+- tapOn: "허용"
+  optional: true
+- tapOn: "Разрешить"
+  optional: true
+
+- takeScreenshot: 04h_voice_recording
+
+# Wait briefly then tap to stop
+- swipe:
+    direction: UP
+    duration: 500
+- tapOn:
+    id: "btn-record"
+    optional: true
+- takeScreenshot: 04h_voice_stopped
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

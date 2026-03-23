@@ -1,5 +1,5 @@
 appId: com.goalin.subradar
-name: "04 - Add Subscription Manual"
+name: "04 - Add Subscription Manual (Progressive Disclosure)"
 ---
 - runFlow: ./00_setup_auth.yaml
 
@@ -21,22 +21,34 @@ name: "04 - Add Subscription Manual"
 - tapOn:
     id: "tab-manual"
     optional: true
-- takeScreenshot: 04_manual_tab
+- takeScreenshot: 04_manual_tab_minimal
 
-# Fill subscription name
+# Fill essential fields (Name + Amount)
 - tapOn:
     id: "name-input"
     optional: true
 - inputText: "Netflix"
-
-# Fill amount
 - tapOn:
     id: "amount-input"
     optional: true
 - inputText: "15.99"
-- takeScreenshot: 04_manual_form_filled
+- takeScreenshot: 04_essential_fields_filled
 
-# Render sanity checks
+# Verify "More options" toggle exists
+- assertVisible: "More options"
+  optional: true
+- assertVisible: "Ещё"
+  optional: true
+
+# Tap "More options" to expand
+- tapOn: "More options"
+  optional: true
+- tapOn: "Ещё"
+  optional: true
+- scroll
+- takeScreenshot: 04_more_options_expanded
+
+# Sanity checks
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
 - assertNotVisible: "Render Error"

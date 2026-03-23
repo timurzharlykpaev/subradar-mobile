@@ -1,5 +1,5 @@
 appId: com.goalin.subradar
-name: "04b - Add Subscription AI"
+name: "04b - Add Subscription AI (Direct Save)"
 ---
 - runFlow: ./00_setup_auth.yaml
 
@@ -11,24 +11,20 @@ name: "04b - Add Subscription AI"
     id: "dashboard-quick-actions"
     optional: true
 
-# Switch to AI tab
-- tapOn:
-    id: "tab-ai"
-    optional: true
-- takeScreenshot: 04b_ai_tab
-
-# Verify AI wizard is visible
+# AI tab should be default (tab 0)
 - assertVisible:
     id: "ai-wizard"
     optional: true
+- takeScreenshot: 04b_ai_wizard_idle
 
-# Verify AI input is available
-- assertVisible:
+# Type subscription name
+- tapOn:
     id: "ai-wizard-input"
     optional: true
-- takeScreenshot: 04b_ai_wizard
+- inputText: "Netflix"
+- takeScreenshot: 04b_ai_input_filled
 
-# Render sanity checks
+# Verify sanity
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
 - assertNotVisible: "Render Error"
