@@ -172,11 +172,19 @@ export default function PaywallScreen() {
         } catch (e) {
           console.warn('RC sync failed:', e);
         }
+        // Small delay to let RC webhook reach the backend before invalidating cache
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
         Alert.alert(
           t('paywall.upgrade_success', 'Success!'),
           t('paywall.upgrade_success_msg', 'Welcome to Pro!'),
-          [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
+          [{
+            text: 'OK', onPress: () => {
+              router.replace('/(tabs)' as any);
+              // Re-fetch billing after navigation to ensure UI is up to date
+              setTimeout(() => queryClient.invalidateQueries({ queryKey: ['billing'] }), 500);
+            }
+          }]
         );
       }
     } else {
