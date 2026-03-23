@@ -66,6 +66,7 @@ export default function PaywallScreen() {
   const { t } = useTranslation();
   const [selected, setSelected] = useState('pro');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [purchasing, setPurchasing] = useState(false);
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
   const startTrialMutation = useStartTrial();
   const queryClient = useQueryClient();
@@ -165,8 +166,13 @@ export default function PaywallScreen() {
 
     if (pkg) {
       // Native IAP purchase
-      const success = await purchasePackage(pkg);
-      if (success) {
+      setPurchasing(true);
+      try {
+        const success = await purchasePackage(pkg);
+        if (!success) {
+          // User cancelled or error already shown by hook
+          return;
+        }
         try {
           await billingApi.syncRevenueCat(pkg.product.identifier);
         } catch (e) {
@@ -175,9 +181,10 @@ export default function PaywallScreen() {
         // Small delay to let RC webhook reach the backend before invalidating cache
         await new Promise((resolve) => setTimeout(resolve, 1000));
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
+        const planLabel = selected === 'org' ? 'Team' : 'Pro';
         Alert.alert(
           t('paywall.upgrade_success', 'Success!'),
-          t('paywall.upgrade_success_msg', 'Welcome to Pro!'),
+          t('paywall.upgrade_success_msg_plan', { defaultValue: `Welcome to {{plan}}!`, plan: planLabel }),
           [{
             text: 'OK', onPress: () => {
               router.replace('/(tabs)' as any);
@@ -186,6 +193,8 @@ export default function PaywallScreen() {
             }
           }]
         );
+      } finally {
+        setPurchasing(false);
       }
     } else {
       // Fallback to web checkout (Lemon Squeezy)
@@ -193,7 +202,7 @@ export default function PaywallScreen() {
     }
   };
 
-  const isLoading = startTrialMutation.isPending || billingLoading;
+  const isLoading = startTrialMutation.isPending || billingLoading || purchasing;
 
   const getButtonLabel = () => {
     if (selected === 'free') return t('paywall.continue_free');
