@@ -92,8 +92,13 @@ export default function SubscriptionsScreen() {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
-        try { await subscriptionsApi.delete(id); removeSubscription(id); }
-        catch { removeSubscription(id); }
+        try {
+          await subscriptionsApi.delete(id);
+          removeSubscription(id);
+        } catch (err: any) {
+          const msg = err?.response?.data?.message || err?.message || t('common.error');
+          Alert.alert(t('common.error'), msg);
+        }
       }},
     ]);
   };

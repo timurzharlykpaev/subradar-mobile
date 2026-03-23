@@ -94,9 +94,18 @@ export default function SubscriptionDetailScreen() {
         text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
-          try { await subscriptionsApi.delete(id!); } catch {}
-          removeSubscription(id!);
-          router.back();
+          try {
+            await subscriptionsApi.delete(id!);
+            removeSubscription(id!);
+            // Refresh subscriptions list from server
+            subscriptionsApi.getAll().then((r) => {
+              useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+            }).catch(() => {});
+            router.back();
+          } catch (err: any) {
+            const msg = err?.response?.data?.message || err?.message || t('common.error');
+            Alert.alert(t('common.error'), msg);
+          }
         },
       },
     ]);
