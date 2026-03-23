@@ -11,7 +11,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert,
+  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert, Image,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -193,10 +193,18 @@ const micStyles = StyleSheet.create({
 
 // ── Component ────────────────────────────────────────────────────────────────
 
+interface PlanOption {
+  name: string;
+  amount: number;
+  billingPeriod: string;
+  currency: string;
+}
+
 type UIState =
   | { kind: 'idle' }
   | { kind: 'question'; text: string; field: string }
-  | { kind: 'confirm'; subscription: ParsedSub };
+  | { kind: 'confirm'; subscription: ParsedSub }
+  | { kind: 'plans'; plans: PlanOption[]; serviceName: string; iconUrl?: string; serviceUrl?: string; cancelUrl?: string; category?: string };
 
 export function AIWizard({ onSave, onEdit }: Props) {
   const { colors, isDark } = useTheme();
@@ -240,10 +248,22 @@ export function AIWizard({ onSave, onEdit }: Props) {
     try {
       const res = await aiApi.wizard(message, context, i18n.language ?? 'en', newHistory);
       const data = res.data;
-      if (data.done && data.subscription) {
+      if (data.done && data.plans && Array.isArray(data.plans) && data.plans.length > 0) {
         const newCtx = { ...context, ...data.partialContext };
         setContext(newCtx);
-        // Add assistant response to history
+        setHistory((h) => [...h, { role: 'assistant', content: JSON.stringify(data) }]);
+        fade(() => setUi({
+          kind: 'plans',
+          plans: data.plans,
+          serviceName: data.serviceName ?? '',
+          iconUrl: data.iconUrl,
+          serviceUrl: data.serviceUrl,
+          cancelUrl: data.cancelUrl,
+          category: data.category,
+        }));
+      } else if (data.done && data.subscription) {
+        const newCtx = { ...context, ...data.partialContext };
+        setContext(newCtx);
         setHistory((h) => [...h, { role: 'assistant', content: JSON.stringify(data) }]);
         fade(() => setUi({ kind: 'confirm', subscription: data.subscription }));
       } else if (!data.done && data.question) {
@@ -312,6 +332,71 @@ export function AIWizard({ onSave, onEdit }: Props) {
     <View testID="ai-wizard" style={{ flex: 1 }}>
       <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
+        {/* ── Plans selection screen ────────────────────────────────────── */}
+        {ui.kind === 'plans' && (() => {
+          const quick = QUICK.find(q => q.name.toLowerCase() === (ui.serviceName ?? '').toLowerCase());
+          const periodLabel = (p: string) => {
+            const map: Record<string, string> = { MONTHLY: t('billing.monthly', 'мес'), YEARLY: t('billing.yearly', 'год'), WEEKLY: t('billing.weekly', 'нед'), QUARTERLY: t('billing.quarterly', 'кварт') };
+            return map[p] ?? p.toLowerCase();
+          };
+          const handlePlanTap = (plan: PlanOption) => {
+            const sub: ParsedSub = {
+              name: plan.name,
+              amount: plan.amount,
+              currency: plan.currency,
+              billingPeriod: plan.billingPeriod as ParsedSub['billingPeriod'],
+              category: ui.category,
+              serviceUrl: ui.serviceUrl,
+              cancelUrl: ui.cancelUrl,
+              iconUrl: ui.iconUrl,
+            };
+            fade(() => setUi({ kind: 'confirm', subscription: sub }));
+          };
+          return (
+            <View style={{ flex: 1 }}>
+              {/* Service header */}
+              <View style={styles.plansHeader}>
+                {quick
+                  ? <quick.Icon size={44} />
+                  : ui.iconUrl
+                    ? <Image source={{ uri: ui.iconUrl }} style={styles.plansLogo} />
+                    : (
+                      <View style={[styles.fallbackIcon, { backgroundColor: colors.primary, width: 44, height: 44, borderRadius: 11 }]}>
+                        <Text style={[styles.fallbackLetter, { fontSize: 20 }]}>{(ui.serviceName ?? '?')[0].toUpperCase()}</Text>
+                      </View>
+                    )}
+                <Text style={[styles.plansTitle, { color: colors.text }]}>{ui.serviceName}</Text>
+              </View>
+              <Text style={[styles.plansSubtitle, { color: colors.textSecondary }]}>
+                {t('add.choose_plan', 'Выбери тариф')}
+              </Text>
+
+              {/* Plan cards */}
+              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                {ui.plans.map((plan, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={[styles.planCard, { backgroundColor: card, borderColor: colors.border }]}
+                    onPress={() => handlePlanTap(plan)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.planName, { color: colors.text }]}>{plan.name}</Text>
+                      <Text style={[styles.planPeriod, { color: colors.textSecondary }]}>
+                        {periodLabel(plan.billingPeriod)}
+                      </Text>
+                    </View>
+                    <Text style={[styles.planPrice, { color: colors.primary }]}>
+                      {plan.currency} {plan.amount.toFixed(2)}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          );
+        })()}
+
         {/* ── Confirm screen ───────────────────────────────────────────── */}
         {ui.kind === 'confirm' && (() => {
           const s = ui.subscription;
@@ -352,7 +437,7 @@ export function AIWizard({ onSave, onEdit }: Props) {
         })()}
 
         {/* ── Input / Question screen ───────────────────────────────────── */}
-        {ui.kind !== 'confirm' && (
+        {ui.kind !== 'confirm' && ui.kind !== 'plans' && (
           <View style={{ flex: 1 }}>
             <Text style={[styles.question, { color: colors.text }]}>{questionText}</Text>
             {!!hintText && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
@@ -415,7 +500,27 @@ export function AIWizard({ onSave, onEdit }: Props) {
 
       {/* ── Footer button ─────────────────────────────────────────────────── */}
       <View style={styles.footer}>
-        {ui.kind === 'confirm' ? (
+        {ui.kind === 'plans' ? (
+          <TouchableOpacity
+            style={{ alignItems: 'center', paddingVertical: 14 }}
+            onPress={() => {
+              onEdit({
+                name: ui.serviceName,
+                iconUrl: ui.iconUrl,
+                serviceUrl: ui.serviceUrl,
+                cancelUrl: ui.cancelUrl,
+                category: ui.category,
+              });
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <PencilIcon size={14} color={colors.textSecondary} />
+              <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
+                {t('add.enter_manually', 'Ввести вручную')}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ) : ui.kind === 'confirm' ? (
           <View style={{ gap: 8 }}>
             <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: '#10B981' }, saving && { opacity: 0.6 }]}
@@ -487,6 +592,14 @@ const styles = StyleSheet.create({
   confirmAmount:{ fontSize: 26, fontWeight: '800' },
   confirmPer:   { fontSize: 15, fontWeight: '400' },
   confirmMeta:  { fontSize: 12, maxWidth: 260 },
+  plansHeader:  { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
+  plansLogo:    { width: 44, height: 44, borderRadius: 11 },
+  plansTitle:   { fontSize: 24, fontWeight: '800' },
+  plansSubtitle:{ fontSize: 14, marginBottom: 12 },
+  planCard:     { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
+  planName:     { fontSize: 16, fontWeight: '700' },
+  planPeriod:   { fontSize: 13, marginTop: 2 },
+  planPrice:    { fontSize: 18, fontWeight: '800', marginRight: 8 },
   editLink:     { alignItems: 'center', marginTop: 14, padding: 8 },
   footer:       { paddingTop: 12 },
   actionBtn:    { borderRadius: 18, padding: 18, alignItems: 'center' },
