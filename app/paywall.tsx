@@ -266,23 +266,33 @@ export default function PaywallScreen() {
         )}
 
         {/* Billing period toggle */}
-        <View style={[styles.periodToggle, { backgroundColor: isDark ? '#1C1C2E' : '#F0EFF8' }]}>
+        <View style={[styles.periodToggle, { backgroundColor: isDark ? '#16162A' : '#EDEDF8', borderWidth: 1, borderColor: isDark ? '#2A2A4A' : '#D8D8F0' }]}>
           <TouchableOpacity
-            style={[styles.periodBtn, billingPeriod === 'monthly' && { backgroundColor: colors.primary }]}
+            style={[
+              styles.periodBtn,
+              billingPeriod === 'monthly'
+                ? { backgroundColor: colors.primary, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 }
+                : { opacity: 0.6 },
+            ]}
             onPress={() => setBillingPeriod('monthly')}
           >
-            <Text style={[styles.periodText, { color: billingPeriod === 'monthly' ? '#FFF' : colors.textSecondary }]}>
+            <Text style={[styles.periodText, { color: billingPeriod === 'monthly' ? '#FFF' : colors.textSecondary, fontWeight: billingPeriod === 'monthly' ? '700' : '500' }]}>
               {t('subscription_plan.billing_monthly')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.periodBtn, billingPeriod === 'yearly' && { backgroundColor: colors.primary }]}
+            style={[
+              styles.periodBtn,
+              billingPeriod === 'yearly'
+                ? { backgroundColor: colors.primary, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 }
+                : { opacity: 0.6 },
+            ]}
             onPress={() => setBillingPeriod('yearly')}
           >
-            <Text style={[styles.periodText, { color: billingPeriod === 'yearly' ? '#FFF' : colors.textSecondary }]}>
+            <Text style={[styles.periodText, { color: billingPeriod === 'yearly' ? '#FFF' : colors.textSecondary, fontWeight: billingPeriod === 'yearly' ? '700' : '500' }]}>
               {t('subscription_plan.billing_yearly')}
             </Text>
-            <View style={styles.saveBadge}>
+            <View style={[styles.saveBadge, billingPeriod === 'yearly' && { backgroundColor: '#10B981' }]}>
               <Text style={styles.saveBadgeText}>-30%</Text>
             </View>
           </TouchableOpacity>
@@ -303,11 +313,14 @@ export default function PaywallScreen() {
                 style={[
                   styles.planCard,
                   {
-                    backgroundColor: isDark ? '#1C1C2E' : '#FFFFFF',
-                    borderColor: isSelected ? plan.color : colors.border,
-                    borderWidth: isSelected ? 2 : 1,
+                    backgroundColor: isSelected
+                      ? (isDark ? plan.color + '18' : plan.color + '10')
+                      : (isDark ? '#1C1C2E' : '#FFFFFF'),
+                    borderColor: isSelected ? plan.color : (isDark ? '#2A2A3E' : '#E5E7EB'),
+                    borderWidth: isSelected ? 2.5 : 1,
                   },
-                  isSelected && { shadowColor: plan.color, shadowOpacity: 0.2, shadowRadius: 16, elevation: 6 },
+                  isSelected && { shadowColor: plan.color, shadowOpacity: 0.3, shadowRadius: 20, elevation: 8 },
+                  !isSelected && { opacity: 0.75 },
                 ]}
                 onPress={() => setSelected(plan.id)}
                 activeOpacity={0.85}
@@ -385,6 +398,7 @@ export default function PaywallScreen() {
           style={[
             styles.ctaBtn,
             { backgroundColor: selected === 'free' ? colors.textSecondary : (PLANS.find(p => p.id === selected)?.color ?? colors.primary) },
+            isLoading && { opacity: 0.5 },
           ]}
           onPress={handleAction}
           disabled={isLoading}
