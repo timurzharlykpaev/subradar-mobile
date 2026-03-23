@@ -32,10 +32,12 @@ name: "04g - Add Subscription New Fields (Progressive Disclosure)"
 - inputText: "9.99"
 
 # Expand "More options" to see new fields
-- tapOn: "More options"
-  optional: true
-- tapOn: "Ещё"
-  optional: true
+- tapOn:
+    text: "More options"
+    optional: true
+- tapOn:
+    text: "Ещё"
+    optional: true
 
 # Scroll to see all optional fields
 - scroll

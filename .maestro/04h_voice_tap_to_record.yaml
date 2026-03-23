@@ -33,12 +33,15 @@ name: "04h - Voice Tap to Record"
     optional: true
 
 # Allow microphone permission if dialog appears
-- tapOn: "Allow"
-  optional: true
-- tapOn: "허용"
-  optional: true
-- tapOn: "Разрешить"
-  optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "허용"
+    optional: true
+- tapOn:
+    text: "Разрешить"
+    optional: true
 
 - takeScreenshot: 04h_voice_recording
 

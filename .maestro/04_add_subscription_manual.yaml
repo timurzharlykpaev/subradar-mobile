@@ -35,16 +35,20 @@ name: "04 - Add Subscription Manual (Progressive Disclosure)"
 - takeScreenshot: 04_essential_fields_filled
 
 # Verify "More options" toggle exists
-- assertVisible: "More options"
-  optional: true
-- assertVisible: "Ещё"
-  optional: true
+- assertVisible:
+    text: "More options"
+    optional: true
+- assertVisible:
+    text: "Ещё"
+    optional: true
 
 # Tap "More options" to expand
-- tapOn: "More options"
-  optional: true
-- tapOn: "Ещё"
-  optional: true
+- tapOn:
+    text: "More options"
+    optional: true
+- tapOn:
+    text: "Ещё"
+    optional: true
 - scroll
 - takeScreenshot: 04_more_options_expanded
 
