@@ -171,7 +171,9 @@
     "ai_edit": "편집",
     "ai_next": "다음 →",
     "success_added": "Added!",
-    "edit_details": "Edit details"
+    "edit_details": "Edit details",
+    "show_more": "More options",
+    "show_less": "Less"
   },
   "settings": {
     "title": "설정",

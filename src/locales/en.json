@@ -171,7 +171,9 @@
     "parse_failed": "Could not parse. Try again.",
     "save_failed": "Failed to save subscription",
     "success_added": "Added!",
-    "edit_details": "Edit details"
+    "edit_details": "Edit details",
+    "show_more": "More options",
+    "show_less": "Less"
   },
   "periods": {
     "WEEKLY": "Weekly",

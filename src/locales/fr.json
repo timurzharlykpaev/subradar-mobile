@@ -171,7 +171,9 @@
     "ai_edit": "Modifier",
     "ai_next": "Suivant →",
     "success_added": "Added!",
-    "edit_details": "Edit details"
+    "edit_details": "Edit details",
+    "show_more": "More options",
+    "show_less": "Less"
   },
   "settings": {
     "title": "Paramètres",

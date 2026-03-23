@@ -138,6 +138,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [parsingScreenshot, setParsingScreenshot] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState('');
+  const [moreExpanded, setMoreExpanded] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -439,8 +440,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {/* tab === 1 → Manual form */}
             {tab === 1 && (
               <View style={{ paddingBottom: 40 }}>
-                {/* Section: Основное */}
-                <FormSection title={t('add.section_main')} icon={<PinIcon size={16} color={colors.text} />}>
+                {/* Essential fields — always visible, no section wrapper */}
+                <View style={{ marginBottom: 16 }}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
                     {t('add.name')} *
                   </Text>
@@ -452,85 +453,54 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     placeholder={t('add.name_placeholder')}
                     placeholderTextColor={colors.textMuted}
                   />
+                </View>
 
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
-                    {t('add.category')}
-                  </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
-                      {CATEGORIES.map((cat) => (
-                        <TouchableOpacity
-                          key={cat.id}
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 6,
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
-                            borderRadius: 20,
-                            backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
-                            borderWidth: 1,
-                            borderColor: form.category === cat.id ? colors.primary : colors.border,
-                          }}
-                          onPress={() => setF('category', cat.id)}
-                        >
-                          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
-                            {cat.label}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </ScrollView>
-                </FormSection>
-
-                {/* Section: Оплата */}
-                <FormSection title={t('add.section_payment')} icon={<MoneyIcon size={16} color={colors.text} />}>
-                  <View style={{ gap: 10 }}>
-                    <View>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                        {t('add.amount')} *
-                      </Text>
-                      <TextInput
-                        testID="amount-input"
-                        style={inputStyle}
-                        value={form.amount}
-                        onChangeText={(v) => setF('amount', v)}
-                        placeholder="9.99"
-                        keyboardType="decimal-pad"
-                        placeholderTextColor={colors.textMuted}
-                      />
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 8 }}>
-                        {t('add.currency')}
-                      </Text>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
-                          {CURRENCIES.map((cur) => (
-                            <TouchableOpacity
-                              key={cur}
-                              style={{
-                                paddingHorizontal: 10,
-                                paddingVertical: 6,
-                                borderRadius: 20,
-                                backgroundColor: form.currency === cur ? colors.primary : colors.background,
-                                borderWidth: 1,
-                                borderColor: form.currency === cur ? colors.primary : colors.border,
-                              }}
-                              onPress={() => setF('currency', cur)}
-                            >
-                              <Text style={{ fontSize: 12, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
-                                {cur}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </ScrollView>
-                    </View>
+                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginBottom: 16 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                      {t('add.amount')} *
+                    </Text>
+                    <TextInput
+                      testID="amount-input"
+                      style={inputStyle}
+                      value={form.amount}
+                      onChangeText={(v) => setF('amount', v)}
+                      placeholder="9.99"
+                      keyboardType="decimal-pad"
+                      placeholderTextColor={colors.textMuted}
+                    />
                   </View>
+                  <View style={{ width: 120 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                      {t('add.currency')}
+                    </Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 6 }}>
+                      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
+                        {CURRENCIES.map((cur) => (
+                          <TouchableOpacity
+                            key={cur}
+                            style={{
+                              paddingHorizontal: 10,
+                              paddingVertical: 6,
+                              borderRadius: 20,
+                              backgroundColor: form.currency === cur ? colors.primary : colors.background,
+                              borderWidth: 1,
+                              borderColor: form.currency === cur ? colors.primary : colors.border,
+                            }}
+                            onPress={() => setF('currency', cur)}
+                          >
+                            <Text style={{ fontSize: 12, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
+                              {cur}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  </View>
+                </View>
 
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
                     {t('add.billing_cycle')}
                   </Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -555,8 +525,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       ))}
                     </View>
                   </ScrollView>
+                </View>
 
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
                     {t('add.start_date', 'Start date')}
                   </Text>
                   <TextInput
@@ -567,240 +539,318 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     placeholderTextColor={colors.textMuted}
                     keyboardType="numbers-and-punctuation"
                   />
+                </View>
 
-                  {cards.length > 0 && (
-                    <>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
-                        {t('add.card')}
+                {/* "More" toggle button */}
+                <TouchableOpacity
+                  onPress={() => setMoreExpanded(!moreExpanded)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    paddingVertical: 14,
+                    marginTop: 4,
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                  }}
+                >
+                  <Ionicons
+                    name={moreExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={16}
+                    color={colors.textSecondary}
+                  />
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
+                    {moreExpanded ? t('add.show_less', 'Less') : t('add.show_more', 'More options')}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Optional fields — collapsed by default */}
+                {moreExpanded && (
+                  <View style={{ marginTop: 8 }}>
+                    {/* Category */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                        {t('add.category')}
                       </Text>
                       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={{ flexDirection: 'row', gap: 6 }}>
-                          <TouchableOpacity
-                            style={{
-                              paddingHorizontal: 10,
-                              paddingVertical: 6,
-                              borderRadius: 20,
-                              backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
-                              borderWidth: 1,
-                              borderColor: !form.paymentCardId ? colors.primary : colors.border,
-                            }}
-                            onPress={() => setF('paymentCardId', '')}
-                          >
-                            <Text style={{ fontSize: 12, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
-                              {t('add.no_card')}
-                            </Text>
-                          </TouchableOpacity>
-                          {cards.map((card) => (
+                        <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
+                          {CATEGORIES.map((cat) => (
                             <TouchableOpacity
-                              key={card.id}
+                              key={cat.id}
                               style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 6,
                                 paddingHorizontal: 10,
                                 paddingVertical: 6,
                                 borderRadius: 20,
-                                backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
+                                backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
                                 borderWidth: 1,
-                                borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
+                                borderColor: form.category === cat.id ? colors.primary : colors.border,
                               }}
-                              onPress={() => setF('paymentCardId', card.id)}
+                              onPress={() => setF('category', cat.id)}
                             >
-                              <Text style={{ fontSize: 12, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
-                                ••••{card.last4} ({card.brand})
+                              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
+                                {cat.label}
                               </Text>
                             </TouchableOpacity>
                           ))}
                         </View>
                       </ScrollView>
-                    </>
-                  )}
-                </FormSection>
-
-                {/* Section: Дополнительно */}
-                <FormSection title={t('add.section_extra')} icon={<ClipboardIcon size={16} color={colors.text} />}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                    {t('add.plan')}
-                  </Text>
-                  <TextInput
-                    style={inputStyle}
-                    value={form.currentPlan}
-                    onChangeText={(v) => setF('currentPlan', v)}
-                    placeholder={t('add.plan_placeholder')}
-                    placeholderTextColor={colors.textMuted}
-                  />
-
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
-                    {t('add.website')}
-                  </Text>
-                  <TextInput
-                    style={inputStyle}
-                    value={form.serviceUrl}
-                    onChangeText={(v) => setF('serviceUrl', v)}
-                    placeholder="https://netflix.com"
-                    placeholderTextColor={colors.textMuted}
-                    autoCapitalize="none"
-                    keyboardType="url"
-                    autoCorrect={false}
-                  />
-
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
-                    {t('add.notes')}
-                  </Text>
-                  <TextInput
-                    style={[inputStyle, { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }]}
-                    value={form.notes}
-                    onChangeText={(v) => setF('notes', v)}
-                    placeholder={t('add.notes_placeholder')}
-                    placeholderTextColor={colors.textMuted}
-                    multiline
-                    numberOfLines={3}
-                  />
-
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
-                    {t('add.reminder', 'Reminder')}
-                  </Text>
-                  <View style={{ flexDirection: 'row', gap: 6 }}>
-                    {[
-                      { label: t('add.reminder_off', 'Off'), value: [] as number[] },
-                      { label: t('add.reminder_1d', '1d'), value: [1] },
-                      { label: t('add.reminder_3d', '3d'), value: [3] },
-                      { label: t('add.reminder_7d', '7d'), value: [7] },
-                    ].map((opt) => {
-                      const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
-                      return (
-                        <TouchableOpacity
-                          key={opt.label}
-                          style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 20,
-                            backgroundColor: isSelected ? colors.primary : colors.background,
-                            borderWidth: 1,
-                            borderColor: isSelected ? colors.primary : colors.border,
-                          }}
-                          onPress={() => setF('reminderDaysBefore', opt.value)}
-                        >
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
-                            {opt.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
-                    {t('add.card_color', 'Card color')}
-                  </Text>
-                  <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                    {[
-                      { label: t('add.color_auto', 'Auto'), value: '', hex: colors.primary },
-                      { value: '#3B82F6', hex: '#3B82F6' },
-                      { value: '#10B981', hex: '#10B981' },
-                      { value: '#EF4444', hex: '#EF4444' },
-                      { value: '#F59E0B', hex: '#F59E0B' },
-                      { value: '#EC4899', hex: '#EC4899' },
-                      { value: '#06B6D4', hex: '#06B6D4' },
-                      { value: '#6B7280', hex: '#6B7280' },
-                    ].map((c) => (
-                      <TouchableOpacity
-                        key={c.value || 'auto'}
-                        onPress={() => setF('color', c.value)}
-                        style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          backgroundColor: c.hex,
-                          borderWidth: 2.5,
-                          borderColor: form.color === c.value ? colors.text : 'transparent',
-                          alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        {c.label && (
-                          <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>{c.label}</Text>
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 6 }}>
-                    {t('add.tags', 'Tags')}
-                  </Text>
-                  {form.tags.length > 0 && (
-                    <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                      {form.tags.map((tag, idx) => (
-                        <View key={idx} style={{
-                          flexDirection: 'row', alignItems: 'center', gap: 4,
-                          backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
-                        }}>
-                          <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
-                          <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_: string, i: number) => i !== idx))}>
-                            <Ionicons name="close" size={14} color={colors.primary} />
-                          </TouchableOpacity>
-                        </View>
-                      ))}
                     </View>
-                  )}
-                  <TextInput
-                    style={inputStyle}
-                    placeholder={t('add.tags_placeholder', 'Type and press comma...')}
-                    placeholderTextColor={colors.textMuted}
-                    onChangeText={(v) => {
-                      if (v.includes(',')) {
-                        const tag = v.replace(',', '').trim();
-                        if (tag && !form.tags.includes(tag)) {
-                          setF('tags', [...form.tags, tag]);
-                        }
-                      }
-                    }}
-                    onSubmitEditing={(e) => {
-                      const tag = e.nativeEvent.text.trim();
-                      if (tag && !form.tags.includes(tag)) {
-                        setF('tags', [...form.tags, tag]);
-                      }
-                    }}
-                    returnKeyType="done"
-                  />
-                </FormSection>
 
-                {/* Section: Триал период */}
-                <FormSection title={t('add.trial_period')} icon={<AlarmIcon size={16} color={colors.text} />}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <GiftIcon size={16} color={colors.text} />
-                        <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                          {t('add.trial_period')}
+                    {/* Payment Card */}
+                    {cards.length > 0 && (
+                      <View style={{ marginBottom: 16 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                          {t('add.card')}
                         </Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                          <View style={{ flexDirection: 'row', gap: 6 }}>
+                            <TouchableOpacity
+                              style={{
+                                paddingHorizontal: 10,
+                                paddingVertical: 6,
+                                borderRadius: 20,
+                                backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
+                                borderWidth: 1,
+                                borderColor: !form.paymentCardId ? colors.primary : colors.border,
+                              }}
+                              onPress={() => setF('paymentCardId', '')}
+                            >
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
+                                {t('add.no_card')}
+                              </Text>
+                            </TouchableOpacity>
+                            {cards.map((card) => (
+                              <TouchableOpacity
+                                key={card.id}
+                                style={{
+                                  paddingHorizontal: 10,
+                                  paddingVertical: 6,
+                                  borderRadius: 20,
+                                  backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
+                                  borderWidth: 1,
+                                  borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
+                                }}
+                                onPress={() => setF('paymentCardId', card.id)}
+                              >
+                                <Text style={{ fontSize: 12, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
+                                  ••••{card.last4} ({card.brand})
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        </ScrollView>
                       </View>
-                      <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
-                        {t('add.trial_desc')}
-                      </Text>
-                    </View>
-                    <Switch
-                      value={form.isTrial}
-                      onValueChange={(v) => setForm((f) => ({
-                        ...f,
-                        isTrial: v,
-                        trialEndDate: v
-                          ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-                          : '',
-                      }))}
-                      trackColor={{ false: colors.border, true: '#F59E0B' }}
-                      thumbColor={form.isTrial ? '#FFF' : '#999'}
-                    />
-                  </View>
+                    )}
 
-                  {form.isTrial && (
-                    <>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
-                        {t('add.trial_end_date')}
+                    {/* Plan name */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                        {t('add.plan')}
                       </Text>
                       <TextInput
                         style={inputStyle}
-                        value={form.trialEndDate}
-                        onChangeText={(v) => setF('trialEndDate', v)}
-                        placeholder="YYYY-MM-DD"
+                        value={form.currentPlan}
+                        onChangeText={(v) => setF('currentPlan', v)}
+                        placeholder={t('add.plan_placeholder')}
                         placeholderTextColor={colors.textMuted}
                       />
-                    </>
-                  )}
-                </FormSection>
+                    </View>
+
+                    {/* Service URL */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                        {t('add.website')}
+                      </Text>
+                      <TextInput
+                        style={inputStyle}
+                        value={form.serviceUrl}
+                        onChangeText={(v) => setF('serviceUrl', v)}
+                        placeholder="https://netflix.com"
+                        placeholderTextColor={colors.textMuted}
+                        autoCapitalize="none"
+                        keyboardType="url"
+                        autoCorrect={false}
+                      />
+                    </View>
+
+                    {/* Notes */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                        {t('add.notes')}
+                      </Text>
+                      <TextInput
+                        style={[inputStyle, { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }]}
+                        value={form.notes}
+                        onChangeText={(v) => setF('notes', v)}
+                        placeholder={t('add.notes_placeholder')}
+                        placeholderTextColor={colors.textMuted}
+                        multiline
+                        numberOfLines={3}
+                      />
+                    </View>
+
+                    {/* Reminder */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                        {t('add.reminder', 'Reminder')}
+                      </Text>
+                      <View style={{ flexDirection: 'row', gap: 6 }}>
+                        {[
+                          { label: t('add.reminder_off', 'Off'), value: [] as number[] },
+                          { label: t('add.reminder_1d', '1d'), value: [1] },
+                          { label: t('add.reminder_3d', '3d'), value: [3] },
+                          { label: t('add.reminder_7d', '7d'), value: [7] },
+                        ].map((opt) => {
+                          const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
+                          return (
+                            <TouchableOpacity
+                              key={opt.label}
+                              style={{
+                                paddingHorizontal: 12,
+                                paddingVertical: 6,
+                                borderRadius: 20,
+                                backgroundColor: isSelected ? colors.primary : colors.background,
+                                borderWidth: 1,
+                                borderColor: isSelected ? colors.primary : colors.border,
+                              }}
+                              onPress={() => setF('reminderDaysBefore', opt.value)}
+                            >
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
+                                {opt.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    </View>
+
+                    {/* Card color */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                        {t('add.card_color', 'Card color')}
+                      </Text>
+                      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                        {[
+                          { label: t('add.color_auto', 'Auto'), value: '', hex: colors.primary },
+                          { value: '#3B82F6', hex: '#3B82F6' },
+                          { value: '#10B981', hex: '#10B981' },
+                          { value: '#EF4444', hex: '#EF4444' },
+                          { value: '#F59E0B', hex: '#F59E0B' },
+                          { value: '#EC4899', hex: '#EC4899' },
+                          { value: '#06B6D4', hex: '#06B6D4' },
+                          { value: '#6B7280', hex: '#6B7280' },
+                        ].map((c) => (
+                          <TouchableOpacity
+                            key={c.value || 'auto'}
+                            onPress={() => setF('color', c.value)}
+                            style={{
+                              width: 32, height: 32, borderRadius: 16,
+                              backgroundColor: c.hex,
+                              borderWidth: 2.5,
+                              borderColor: form.color === c.value ? colors.text : 'transparent',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}
+                          >
+                            {c.label && (
+                              <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>{c.label}</Text>
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+
+                    {/* Tags */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                        {t('add.tags', 'Tags')}
+                      </Text>
+                      {form.tags.length > 0 && (
+                        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                          {form.tags.map((tag, idx) => (
+                            <View key={idx} style={{
+                              flexDirection: 'row', alignItems: 'center', gap: 4,
+                              backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+                            }}>
+                              <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
+                              <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_: string, i: number) => i !== idx))}>
+                                <Ionicons name="close" size={14} color={colors.primary} />
+                              </TouchableOpacity>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                      <TextInput
+                        style={inputStyle}
+                        placeholder={t('add.tags_placeholder', 'Type and press comma...')}
+                        placeholderTextColor={colors.textMuted}
+                        onChangeText={(v) => {
+                          if (v.includes(',')) {
+                            const tag = v.replace(',', '').trim();
+                            if (tag && !form.tags.includes(tag)) {
+                              setF('tags', [...form.tags, tag]);
+                            }
+                          }
+                        }}
+                        onSubmitEditing={(e) => {
+                          const tag = e.nativeEvent.text.trim();
+                          if (tag && !form.tags.includes(tag)) {
+                            setF('tags', [...form.tags, tag]);
+                          }
+                        }}
+                        returnKeyType="done"
+                      />
+                    </View>
+
+                    {/* Trial toggle + date */}
+                    <View style={{ marginBottom: 16 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <GiftIcon size={16} color={colors.text} />
+                            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                              {t('add.trial_period')}
+                            </Text>
+                          </View>
+                          <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                            {t('add.trial_desc')}
+                          </Text>
+                        </View>
+                        <Switch
+                          value={form.isTrial}
+                          onValueChange={(v) => setForm((f) => ({
+                            ...f,
+                            isTrial: v,
+                            trialEndDate: v
+                              ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+                              : '',
+                          }))}
+                          trackColor={{ false: colors.border, true: '#F59E0B' }}
+                          thumbColor={form.isTrial ? '#FFF' : '#999'}
+                        />
+                      </View>
+
+                      {form.isTrial && (
+                        <>
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
+                            {t('add.trial_end_date')}
+                          </Text>
+                          <TextInput
+                            style={inputStyle}
+                            value={form.trialEndDate}
+                            onChangeText={(v) => setF('trialEndDate', v)}
+                            placeholder="YYYY-MM-DD"
+                            placeholderTextColor={colors.textMuted}
+                          />
+                        </>
+                      )}
+                    </View>
+                  </View>
+                )}
 
                 <TouchableOpacity
                   testID="btn-save-sub"

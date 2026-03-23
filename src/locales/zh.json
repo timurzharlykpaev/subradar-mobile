@@ -171,7 +171,9 @@
     "ai_edit": "编辑",
     "ai_next": "下一步 →",
     "success_added": "Added!",
-    "edit_details": "Edit details"
+    "edit_details": "Edit details",
+    "show_more": "More options",
+    "show_less": "Less"
   },
   "settings": {
     "title": "设置",
