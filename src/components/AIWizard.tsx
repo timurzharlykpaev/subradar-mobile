@@ -209,6 +209,7 @@ type UIState =
 export function AIWizard({ onSave, onEdit }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
+  const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
 
   const [ui, setUi] = useState<UIState>({ kind: 'idle' });
   const [input, setInput] = useState('');
@@ -246,7 +247,8 @@ export function AIWizard({ onSave, onEdit }: Props) {
     const newHistory = [...history, { role: 'user' as const, content: message }];
     setHistory(newHistory);
     try {
-      const res = await aiApi.wizard(message, context, i18n.language ?? 'en', newHistory);
+      const contextWithCurrency = { ...context, preferredCurrency: userCurrency };
+      const res = await aiApi.wizard(message, contextWithCurrency, i18n.language ?? 'en', newHistory);
       const data = res.data;
       if (data.done && data.plans && Array.isArray(data.plans) && data.plans.length > 0) {
         const newCtx = { ...context, ...data.partialContext };
