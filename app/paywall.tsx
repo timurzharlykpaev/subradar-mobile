@@ -399,11 +399,21 @@ export default function PaywallScreen() {
         <TouchableOpacity
           style={{ alignItems: 'center', paddingTop: 16, paddingBottom: 8 }}
           onPress={async () => {
-            const restored = await restorePurchases();
-            if (restored) {
+            const { success, customerInfo: info } = await restorePurchases();
+            if (success) {
+              // Sync restored plan to backend
+              try {
+                const activeEntitlement = info?.entitlements?.active;
+                const productId = activeEntitlement?.['team']?.productIdentifier
+                  || activeEntitlement?.['pro']?.productIdentifier;
+                if (productId) await billingApi.syncRevenueCat(productId);
+              } catch (e) {
+                console.warn('RC restore sync failed:', e);
+              }
               await queryClient.invalidateQueries({ queryKey: ['billing'] });
-              Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'));
-              router.back();
+              Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'),
+                [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
+              );
             } else {
               Alert.alert(t('paywall.no_purchases', 'No active subscriptions found.'));
             }

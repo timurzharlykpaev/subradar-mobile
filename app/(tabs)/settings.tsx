@@ -30,6 +30,7 @@ try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
 import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { HourglassIcon, SparklesIcon } from '../../src/components/icons';
 import { notificationsApi } from '../../src/api/notifications';
+import { billingApi } from '../../src/api/billing';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -285,8 +286,16 @@ export default function SettingsScreen() {
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
             onPress={async () => {
-              const restored = await restorePurchases();
-              if (restored) {
+              const { success, customerInfo: info } = await restorePurchases();
+              if (success) {
+                try {
+                  const activeEntitlement = info?.entitlements?.active;
+                  const productId = activeEntitlement?.['team']?.productIdentifier
+                    || activeEntitlement?.['pro']?.productIdentifier;
+                  if (productId) await billingApi.syncRevenueCat(productId);
+                } catch (e) {
+                  console.warn('RC restore sync failed:', e);
+                }
                 Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'));
               } else {
                 Alert.alert(t('settings.no_purchases', 'No active subscriptions found to restore.'));

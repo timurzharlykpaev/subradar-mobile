@@ -110,22 +110,24 @@ export function useRevenueCat() {
         return false;
       }
       if (error?.code === PURCHASES_ERROR_CODE?.PRODUCT_ALREADY_PURCHASED_ERROR) {
-        return await restorePurchases();
+        const { success } = await restorePurchases();
+        return success;
       }
       Alert.alert('Purchase Error', error?.message || 'Unknown error');
       return false;
     }
   }, []);
 
-  const restorePurchases = useCallback(async (): Promise<boolean> => {
-    if (!isAvailable()) return false;
+  const restorePurchases = useCallback(async (): Promise<{ success: boolean; customerInfo: any | null }> => {
+    if (!isAvailable()) return { success: false, customerInfo: null };
     try {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
-      return !!(info.entitlements.active['pro'] || info.entitlements.active['team']);
+      const success = !!(info.entitlements.active['pro'] || info.entitlements.active['team']);
+      return { success, customerInfo: info };
     } catch (error: any) {
       Alert.alert('Restore Error', error?.message || 'Unknown error');
-      return false;
+      return { success: false, customerInfo: null };
     }
   }, []);
 
