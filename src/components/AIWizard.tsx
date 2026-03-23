@@ -205,6 +205,7 @@ export function AIWizard({ onSave, onEdit }: Props) {
   const [ui, setUi] = useState<UIState>({ kind: 'idle' });
   const [input, setInput] = useState('');
   const [context, setContext] = useState<Record<string, any>>({});
+  const [history, setHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -233,16 +234,22 @@ export function AIWizard({ onSave, onEdit }: Props) {
   const callWizard = async (message: string) => {
     if (!message.trim()) return;
     setLoading(true);
+    // Add user message to history
+    const newHistory = [...history, { role: 'user' as const, content: message }];
+    setHistory(newHistory);
     try {
-      const res = await aiApi.wizard(message, context, i18n.language ?? 'en');
+      const res = await aiApi.wizard(message, context, i18n.language ?? 'en', newHistory);
       const data = res.data;
       if (data.done && data.subscription) {
         const newCtx = { ...context, ...data.partialContext };
         setContext(newCtx);
+        // Add assistant response to history
+        setHistory((h) => [...h, { role: 'assistant', content: JSON.stringify(data) }]);
         fade(() => setUi({ kind: 'confirm', subscription: data.subscription }));
       } else if (!data.done && data.question) {
         const newCtx = { ...context, ...(data.partialContext ?? {}) };
         setContext(newCtx);
+        setHistory((h) => [...h, { role: 'assistant', content: data.question }]);
         fade(() => setUi({ kind: 'question', text: data.question, field: data.field ?? 'clarify' }));
       }
     } catch {
