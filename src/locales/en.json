@@ -602,5 +602,23 @@
     "voice_error_title": "Voice Error",
     "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
     "voice_error": "Voice processing failed. Please try again."
+  },
+  "categories": {
+    "streaming": "Streaming",
+    "ai_services": "AI Services",
+    "infrastructure": "Infrastructure",
+    "developer": "Developer Tools",
+    "productivity": "Productivity",
+    "music": "Music",
+    "gaming": "Gaming",
+    "education": "Education",
+    "finance": "Finance",
+    "design": "Design",
+    "security": "Security",
+    "health": "Health & Wellness",
+    "sport": "Sport & Fitness",
+    "news": "News & Media",
+    "business": "Business",
+    "other": "Other"
   }
 }

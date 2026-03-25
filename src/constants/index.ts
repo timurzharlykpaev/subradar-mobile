@@ -20,13 +20,20 @@ export const COLORS = {
 export const CATEGORIES = [
   { id: 'STREAMING', label: 'Streaming', color: '#FF4757' },
   { id: 'AI_SERVICES', label: 'AI Services', color: '#A855F7' },
-  { id: 'INFRASTRUCTURE', label: 'Infrastructure', color: '#3B82F6' },
-  { id: 'MUSIC', label: 'Music', color: '#EC4899' },
-  { id: 'GAMING', label: 'Gaming', color: '#22C55E' },
-  { id: 'PRODUCTIVITY', label: 'Productivity', color: '#F59E0B' },
-  { id: 'HEALTH', label: 'Health', color: '#EF4444' },
-  { id: 'NEWS', label: 'News', color: '#06B6D4' },
-  { id: 'OTHER', label: 'Other', color: '#94A3B8' },
+  { id: 'INFRASTRUCTURE', label: 'Infrastructure', color: '#06B6D4' },
+  { id: 'DEVELOPER', label: 'Developer', color: '#3B82F6' },
+  { id: 'PRODUCTIVITY', label: 'Productivity', color: '#10B981' },
+  { id: 'MUSIC', label: 'Music', color: '#FF6B6B' },
+  { id: 'GAMING', label: 'Gaming', color: '#8B5CF6' },
+  { id: 'EDUCATION', label: 'Education', color: '#F59E0B' },
+  { id: 'FINANCE', label: 'Finance', color: '#22C55E' },
+  { id: 'DESIGN', label: 'Design', color: '#F472B6' },
+  { id: 'SECURITY', label: 'Security', color: '#EF4444' },
+  { id: 'HEALTH', label: 'Health', color: '#EC4899' },
+  { id: 'SPORT', label: 'Sport', color: '#F97316' },
+  { id: 'NEWS', label: 'News', color: '#6B7280' },
+  { id: 'BUSINESS', label: 'Business', color: '#1D4ED8' },
+  { id: 'OTHER', label: 'Other', color: '#9CA3AF' },
 ];
 
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'KZT', 'RUB', 'UAH', 'TRY'];

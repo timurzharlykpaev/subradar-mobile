@@ -595,5 +595,23 @@
     "start_trial": "7일 무료 체험 시작",
     "upgrade": "업그레이드 — $2.99/월",
     "unlock": "잠금 해제"
+  },
+  "categories": {
+    "streaming": "스트리밍",
+    "ai_services": "AI 서비스",
+    "infrastructure": "인프라",
+    "developer": "개발 도구",
+    "productivity": "생산성",
+    "music": "음악",
+    "gaming": "게임",
+    "education": "교육",
+    "finance": "금융",
+    "design": "디자인",
+    "security": "보안",
+    "health": "건강",
+    "sport": "스포츠",
+    "news": "뉴스・미디어",
+    "business": "비즈니스",
+    "other": "기타"
   }
 }

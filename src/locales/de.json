@@ -595,5 +595,23 @@
     "start_trial": "7-Tage-Testversion starten",
     "upgrade": "Upgrade — 2,99 $/Monat",
     "unlock": "Freischalten"
+  },
+  "categories": {
+    "streaming": "Streaming",
+    "ai_services": "KI-Dienste",
+    "infrastructure": "Infrastruktur",
+    "developer": "Entwicklertools",
+    "productivity": "Produktivität",
+    "music": "Musik",
+    "gaming": "Gaming",
+    "education": "Bildung",
+    "finance": "Finanzen",
+    "design": "Design",
+    "security": "Sicherheit",
+    "health": "Gesundheit",
+    "sport": "Sport & Fitness",
+    "news": "Nachrichten & Medien",
+    "business": "Business",
+    "other": "Sonstiges"
   }
 }

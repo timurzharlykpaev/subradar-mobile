@@ -595,5 +595,23 @@
     "start_trial": "Teste grátis 7 dias",
     "upgrade": "Upgrade — $2,99/mês",
     "unlock": "Desbloquear"
+  },
+  "categories": {
+    "streaming": "Streaming",
+    "ai_services": "Serviços de IA",
+    "infrastructure": "Infraestrutura",
+    "developer": "Desenvolvimento",
+    "productivity": "Produtividade",
+    "music": "Música",
+    "gaming": "Jogos",
+    "education": "Educação",
+    "finance": "Finanças",
+    "design": "Design",
+    "security": "Segurança",
+    "health": "Saúde e bem-estar",
+    "sport": "Esporte e fitness",
+    "news": "Notícias e mídia",
+    "business": "Negócios",
+    "other": "Outros"
   }
 }
