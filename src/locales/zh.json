@@ -321,7 +321,8 @@
     "upgrade_savings": "升级到Pro以查看节省机会",
     "top5": "最贵的5个订阅",
     "card_label": "卡片 {{number}}",
-    "duplicate_label": "重复 {{number}}"
+    "duplicate_label": "重复 {{number}}",
+    "total": "总计"
   },
   "subscription": {
     "billing_day": "扣款日",

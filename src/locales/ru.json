@@ -328,7 +328,8 @@
     "upgrade_savings": "Обновите до Pro для анализа экономии",
     "top5": "Топ-5 самых дорогих",
     "card_label": "Карта {{number}}",
-    "duplicate_label": "Дубликат {{number}}"
+    "duplicate_label": "Дубликат {{number}}",
+    "total": "Итого"
   },
   "subscription": {
     "billing_day": "День списания",

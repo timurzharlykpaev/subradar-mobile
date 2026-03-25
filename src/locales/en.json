@@ -336,7 +336,8 @@
     "upgrade_savings": "Upgrade to Pro to see savings opportunities",
     "top5": "Top 5 Most Expensive",
     "card_label": "Card {{number}}",
-    "duplicate_label": "Duplicate {{number}}"
+    "duplicate_label": "Duplicate {{number}}",
+    "total": "Total"
   },
   "subscription": {
     "billing_day": "Billing Day",

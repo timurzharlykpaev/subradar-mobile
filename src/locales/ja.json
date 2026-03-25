@@ -321,7 +321,8 @@
     "upgrade_savings": "Proにアップグレードして節約の機会を確認",
     "top5": "支出トップ5",
     "card_label": "カード {{number}}",
-    "duplicate_label": "重複 {{number}}"
+    "duplicate_label": "重複 {{number}}",
+    "total": "合計"
   },
   "subscription": {
     "billing_day": "請求日",

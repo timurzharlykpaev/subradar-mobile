@@ -321,7 +321,8 @@
     "upgrade_savings": "Auf Pro upgraden, um Sparmöglichkeiten zu sehen",
     "top5": "Top 5 Teuerste",
     "card_label": "Karte {{number}}",
-    "duplicate_label": "Duplikat {{number}}"
+    "duplicate_label": "Duplikat {{number}}",
+    "total": "Gesamt"
   },
   "subscription": {
     "billing_day": "Abrechnungstag",

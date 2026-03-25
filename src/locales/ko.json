@@ -321,7 +321,8 @@
     "upgrade_savings": "절약 기회를 보려면 Pro로 업그레이드하세요",
     "top5": "가장 비싼 구독 Top 5",
     "card_label": "카드 {{number}}",
-    "duplicate_label": "중복 {{number}}"
+    "duplicate_label": "중복 {{number}}",
+    "total": "합계"
   },
   "subscription": {
     "billing_day": "결제일",

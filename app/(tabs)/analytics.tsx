@@ -101,6 +101,7 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
   avgLabel: string;
 }) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const size = 200;
   const radius = 82;
   const innerRadius = 46;
@@ -163,7 +164,7 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: 24, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
-        <Text style={{ fontSize: 11, color: colors.textMuted }}>Total</Text>
+        <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('analytics.total', 'Total')}</Text>
       </View>
     </View>
   );
