@@ -25,6 +25,7 @@ import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import { WelcomeSheet } from '../../src/components/WelcomeSheet';
 import { TrialOfferModal } from '../../src/components/TrialOfferModal';
+import { useUIStore } from '../../src/stores/uiStore';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 
 export default function DashboardScreen() {
@@ -411,7 +412,7 @@ export default function DashboardScreen() {
         onAddWithAI={() => {
           setShowWelcome(false);
           AsyncStorage.setItem('welcome_shown', '1');
-          router.push('/(tabs)/subscriptions');
+          useUIStore.getState().openAddSheet();
         }}
         onSkip={() => {
           setShowWelcome(false);

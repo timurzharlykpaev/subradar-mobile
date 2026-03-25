@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
 import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
+import { useUIStore } from '../../src/stores/uiStore';
 
 function TabIcon({ name, focused }: { name: React.ComponentProps<typeof Ionicons>['name']; focused: boolean }) {
   const { colors } = useTheme();
@@ -19,7 +20,7 @@ function TabIcon({ name, focused }: { name: React.ComponentProps<typeof Ionicons
 }
 
 export default function TabsLayout() {
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const { addSheetVisible, openAddSheet, closeAddSheet } = useUIStore();
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
 
@@ -62,7 +63,7 @@ export default function TabsLayout() {
             title: '',
             tabBarButton: () => (
               <TouchableOpacity
-                onPress={() => setSheetVisible(true)}
+                onPress={() => openAddSheet()}
                 style={styles.addBtnWrapper}
               >
                 <View style={styles.addBtn}>
@@ -102,8 +103,8 @@ export default function TabsLayout() {
       </Tabs>
 
       <AddSubscriptionSheet
-        visible={sheetVisible}
-        onClose={() => setSheetVisible(false)}
+        visible={addSheetVisible}
+        onClose={() => closeAddSheet()}
       />
     </>
   );
