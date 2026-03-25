@@ -337,7 +337,10 @@
     "top5": "Top 5 Most Expensive",
     "card_label": "Card {{number}}",
     "duplicate_label": "Duplicate {{number}}",
-    "total": "Total"
+    "total": "Total",
+    "empty_title": "No subscriptions yet",
+    "empty_subtitle": "Add your first subscription to see spending analytics",
+    "loading": "Loading analytics..."
   },
   "subscription": {
     "billing_day": "Billing Day",

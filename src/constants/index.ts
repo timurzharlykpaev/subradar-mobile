@@ -31,9 +31,9 @@ export const CATEGORIES = [
   { id: 'SECURITY', label: 'Security', color: '#EF4444' },
   { id: 'HEALTH', label: 'Health', color: '#EC4899' },
   { id: 'SPORT', label: 'Sport', color: '#F97316' },
-  { id: 'NEWS', label: 'News', color: '#6B7280' },
+  { id: 'NEWS', label: 'News', color: '#0EA5E9' },
   { id: 'BUSINESS', label: 'Business', color: '#1D4ED8' },
-  { id: 'OTHER', label: 'Other', color: '#9CA3AF' },
+  { id: 'OTHER', label: 'Other', color: '#A78BFA' },
 ];
 
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'KZT', 'RUB', 'UAH', 'TRY'];

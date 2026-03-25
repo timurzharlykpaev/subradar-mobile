@@ -8,11 +8,13 @@ import {
   RefreshControl,
   TouchableOpacity,
   useWindowDimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { useFocusEffect } from 'expo-router';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
@@ -22,6 +24,14 @@ import { CategoryIcon } from '../../src/components/icons';
 import ProFeatureModal from '../../src/components/ProFeatureModal';
 
 const CHART_HEIGHT = 200;
+
+/** Format number with space separator: 1500 → "1 500" */
+function formatNum(n: number, decimals = 0): string {
+  const fixed = n.toFixed(decimals);
+  const [intPart, decPart] = fixed.split('.');
+  const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return decPart ? `${formatted}.${decPart}` : formatted;
+}
 
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
 function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
@@ -38,7 +48,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
 
   const gridLines = [0.25, 0.5, 0.75].map((frac) => ({
     y: chartAreaH - frac * chartAreaH,
-    label: `$${Math.round(maxVal * frac)}`,
+    label: `$${formatNum(Math.round(maxVal * frac))}`,
   }));
 
   const getMonthLabel = (monthStr: string) => {
@@ -95,10 +105,9 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
 }
 
 // ─── Custom CategoryDonutChart ───────────────────────────────────────────────
-function CategoryDonutChart({ categories, total, avgLabel }: {
+function CategoryDonutChart({ categories, total }: {
   categories: { id: string; color: string; total: number; label?: string; categoryId?: string }[];
   total: number;
-  avgLabel: string;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -137,6 +146,7 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
       const labelY = cy + midRadius * Math.sin(midAngle);
 
       startAngle += sweep;
+      // Only show label inside segment if >= 15% (enough space to not overlap)
       return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 15 };
     }).filter(Boolean) as { d: string; color: string; pct: number; labelX: number; labelY: number; showLabel: boolean }[];
 
@@ -151,7 +161,7 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
             key={`lbl-${idx}`}
             x={slice.labelX}
             y={slice.labelY + 5}
-            fontSize={13}
+            fontSize={12}
             fontWeight="900"
             fill="#FFF"
             textAnchor="middle"
@@ -163,8 +173,8 @@ function CategoryDonutChart({ categories, total, avgLabel }: {
         ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 24, fontWeight: '900', color: colors.text }}>${Number(total).toFixed(0)}</Text>
-        <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('analytics.total', 'Total')}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>${formatNum(total)}</Text>
+        <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('analytics.total')}</Text>
       </View>
     </View>
   );
@@ -175,7 +185,7 @@ const PERIOD_SHORT: Record<string, string> = {
   MONTHLY: 'mo',
   QUARTERLY: 'qt',
   YEARLY: 'yr',
-  LIFETIME: '∞',
+  LIFETIME: '\u221E',
   ONE_TIME: '1x',
 };
 
@@ -193,31 +203,45 @@ export default function AnalyticsScreen() {
   const [forecast, setForecast] = useState<any>(null);
   const [proModal, setProModal] = useState<{ visible: boolean; feature: string }>({ visible: false, feature: 'forecast' });
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchAll = useCallback(() => {
-    analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => {});
-    analyticsApi.getMonthly().then((r) => {
-      const raw = r.data || [];
-      const data = raw.map((d: any) => ({
-        month: (d.label || d.month || '').slice(-5) || '',
-        total: d.total ?? d.amount ?? 0,
-      }));
-      setMonthlyData(data.slice(-12));
-    }).catch(() => {});
-    analyticsApi.getByCategory().then((r) => {
-      setByCategoryData(r.data || []);
-    }).catch(() => {});
-    analyticsApi.getByCard().then((r) => {
-      setByCardData(r.data || []);
-    }).catch(() => {});
-    analyticsApi.getForecast().then((r) => setForecast(r.data)).catch(() => {});
+  const fetchAll = useCallback(async () => {
+    const promises = [
+      analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => {}),
+      analyticsApi.getMonthly().then((r) => {
+        const raw = r.data || [];
+        const data = raw.map((d: any) => ({
+          month: (d.label || d.month || '').slice(-5) || '',
+          total: d.total ?? d.amount ?? 0,
+        }));
+        setMonthlyData(data.slice(-12));
+      }).catch(() => {}),
+      analyticsApi.getByCategory().then((r) => {
+        setByCategoryData(r.data || []);
+      }).catch(() => {}),
+      analyticsApi.getByCard().then((r) => {
+        setByCardData(r.data || []);
+      }).catch(() => {}),
+      analyticsApi.getForecast().then((r) => setForecast(r.data)).catch(() => {}),
+    ];
+    await Promise.all(promises);
   }, []);
 
-  useEffect(() => { fetchAll(); }, []);
+  // Initial load
+  useEffect(() => {
+    fetchAll().finally(() => setLoading(false));
+  }, []);
+
+  // Re-fetch when tab gains focus (e.g. after adding a subscription)
+  useFocusEffect(
+    useCallback(() => {
+      fetchAll();
+    }, [fetchAll])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchAll();
+    await fetchAll();
     setRefreshing(false);
   }, [fetchAll]);
 
@@ -247,7 +271,7 @@ export default function AnalyticsScreen() {
           id: d.category || '',
           label: cat?.label || d.category || '',
           categoryId: cat?.id || 'OTHER',
-          color: cat?.color || '#757575',
+          color: cat?.color || '#A78BFA',
           total: isFinite(Number(d.total ?? d.amount)) ? Number(d.total ?? d.amount) : 0,
           count: d.count ?? 0,
         };
@@ -286,6 +310,63 @@ export default function AnalyticsScreen() {
 
   const cardMax = Math.max(...cardBreakdown.map((c: any) => c.total ?? c.amount ?? 0), 1);
 
+  const hasNoData = activeSubs.length === 0 && !summary && byCategoryData.length === 0 && monthlyData.length === 0;
+
+  // Loading state
+  if (loading) {
+    return (
+      <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <View style={[styles.headerIconCircle, { backgroundColor: colors.primary + '18' }]}>
+              <Ionicons name="analytics" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.title, { color: colors.text }]}>{t('analytics.title')}</Text>
+              <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('analytics.subtitle')}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12 }}>{t('analytics.loading')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Empty state — no subscriptions at all
+  if (hasNoData) {
+    return (
+      <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+          <View style={styles.header}>
+            <View style={styles.headerRow}>
+              <View style={[styles.headerIconCircle, { backgroundColor: colors.primary + '18' }]}>
+                <Ionicons name="analytics" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.title, { color: colors.text }]}>{t('analytics.title')}</Text>
+                <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('analytics.subtitle')}</Text>
+              </View>
+            </View>
+          </View>
+          <View style={{ alignItems: 'center', paddingTop: 80, paddingHorizontal: 40 }}>
+            <View style={[styles.emptyIconCircle, { backgroundColor: colors.primary + '15' }]}>
+              <Ionicons name="pie-chart-outline" size={48} color={colors.primary} />
+            </View>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, textAlign: 'center', marginTop: 20 }}>
+              {t('analytics.empty_title')}
+            </Text>
+            <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
+              {t('analytics.empty_subtitle')}
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView testID="analytics-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView testID="analytics-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
@@ -308,13 +389,13 @@ export default function AnalyticsScreen() {
           <StatCard
             icon="wallet-outline"
             label={t('analytics.avg_month')}
-            value={`$${Number(totalMonthly).toFixed(0)}`}
+            value={`$${formatNum(totalMonthly)}`}
             color={colors.primary}
           />
           <StatCard
             icon="calendar-outline"
             label={t('analytics.total_year')}
-            value={`$${Number(totalYearly).toFixed(0)}`}
+            value={`$${formatNum(totalYearly)}`}
             color={colors.success}
           />
           {mostExpensive && (
@@ -322,7 +403,7 @@ export default function AnalyticsScreen() {
               icon="flame-outline"
               label={t('analytics.most_expensive')}
               value={mostExpensive.name}
-              sub={`$${Number(mostExpensive.amount).toFixed(0)}/mo`}
+              sub={`$${formatNum(mostExpensive.amount)}/mo`}
               color={colors.warning}
             />
           )}
@@ -361,22 +442,26 @@ export default function AnalyticsScreen() {
           <View testID="analytics-category-chart" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {byCategory.length > 0 ? (
               <>
-                <CategoryDonutChart categories={byCategory} total={categoryTotal} avgLabel={t('analytics.avg_month')} />
+                <CategoryDonutChart categories={byCategory} total={categoryTotal} />
                 <View style={styles.legendContainer}>
-                  {byCategory.map((cat, idx) => (
-                    <View key={cat.id}>
-                      <View style={[styles.legendRow, { paddingVertical: 8 }]}>
-                        <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
-                        <CategoryIcon category={cat.id} size={14} />
-                        <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{cat.label}</Text>
-                        <Text style={[styles.legendPercent, { color: colors.textMuted }]}>
-                          {categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0}%
-                        </Text>
-                        <Text style={[styles.legendAmount, { color: colors.primary }]}>${Number(cat.total).toFixed(0)}</Text>
+                  {byCategory.map((cat, idx) => {
+                    const pct = categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0;
+                    const label = cat.label && cat.label.length > 10 ? cat.label.slice(0, 8) + '\u2026' : cat.label;
+                    return (
+                      <View key={cat.id}>
+                        <View style={[styles.legendRow, { paddingVertical: 8 }]}>
+                          <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
+                          <CategoryIcon category={cat.id} size={14} />
+                          <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{label}</Text>
+                          <Text style={[styles.legendPercent, { color: colors.textMuted }]}>
+                            {pct}%
+                          </Text>
+                          <Text style={[styles.legendAmount, { color: colors.primary }]}>${formatNum(cat.total)}</Text>
+                        </View>
+                        {idx < byCategory.length - 1 && <View style={{ height: 1, backgroundColor: colors.border, opacity: 0.3 }} />}
                       </View>
-                      {idx < byCategory.length - 1 && <View style={{ height: 1, backgroundColor: colors.border, opacity: 0.3 }} />}
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               </>
             ) : (
@@ -416,7 +501,7 @@ export default function AnalyticsScreen() {
                     <View style={{ flex: 1, gap: 6 }}>
                       <View style={styles.cardBreakdownLabelRow}>
                         <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
-                        <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${Number(amount).toFixed(2)}</Text>
+                        <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${formatNum(amount, 2)}</Text>
                       </View>
                       <View style={[styles.barBg, { backgroundColor: colors.border }]}>
                         <View
@@ -455,7 +540,7 @@ export default function AnalyticsScreen() {
               <ForecastCard
                 icon="calendar"
                 label={t('analytics.forecast_30d')}
-                value={forecast?.day30 ?? Number(totalMonthly).toFixed(0)}
+                value={formatNum(forecast?.day30 ?? totalMonthly)}
                 sub={t('analytics.avg_month')}
                 color={colors.primary}
                 accent={true}
@@ -463,14 +548,14 @@ export default function AnalyticsScreen() {
               <ForecastCard
                 icon="trending-up"
                 label={t('analytics.forecast_6m')}
-                value={forecast?.month6 ?? Number(totalMonthly * 6).toFixed(0)}
+                value={formatNum(forecast?.month6 ?? totalMonthly * 6)}
                 sub={t('analytics.forecast')}
                 color={colors.success}
               />
               <ForecastCard
                 icon="analytics"
                 label={t('analytics.forecast_12m')}
-                value={forecast?.month12 ?? Number(totalYearly).toFixed(0)}
+                value={formatNum(forecast?.month12 ?? totalYearly)}
                 sub={t('analytics.forecast')}
                 color={colors.warning}
               />
@@ -515,7 +600,7 @@ export default function AnalyticsScreen() {
                   <Ionicons name="leaf" size={20} color={colors.success} />
                 </View>
                 <Text style={[styles.savingsAmount, { color: colors.success }]}>
-                  ${Number(summary?.savingsPossible ?? 0).toFixed(2)}
+                  ${formatNum(summary?.savingsPossible ?? 0, 2)}
                 </Text>
                 <Text style={[styles.savingsLabel, { color: colors.textMuted }]}>{t('analytics.potential_savings')}</Text>
               </View>
@@ -584,7 +669,7 @@ export default function AnalyticsScreen() {
                       </View>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={[styles.top5Amount, { color: colors.text }]}>${monthlyAmt.toFixed(2)}</Text>
+                      <Text style={[styles.top5Amount, { color: colors.text }]}>${formatNum(monthlyAmt, 2)}</Text>
                       <Text style={{ fontSize: 10, color: colors.textMuted }}>/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}</Text>
                     </View>
                     <View style={[styles.top5ProgressBg, { backgroundColor: colors.border }]}>
@@ -628,7 +713,7 @@ export default function AnalyticsScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
-                  {sub.currency} {Number(sub.amount).toFixed(2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
+                  {sub.currency} {formatNum(sub.amount, 2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
                 </Text>
               </View>
             ))}
@@ -795,7 +880,7 @@ const styles = StyleSheet.create({
   legendEmoji: { fontSize: 16, width: 22, textAlign: 'center' },
   legendLabel: { flex: 1, fontSize: 13, fontWeight: '600' },
   legendPercent: { fontSize: 12, width: 36, textAlign: 'right', fontWeight: '600' },
-  legendAmount: { fontSize: 13, fontWeight: '700', width: 56, textAlign: 'right' },
+  legendAmount: { fontSize: 13, fontWeight: '700', width: 64, textAlign: 'right' },
 
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
@@ -882,6 +967,15 @@ const styles = StyleSheet.create({
   },
   duplicateText: { flex: 1, fontSize: 13 },
   noDuplicates: { fontSize: 13, textAlign: 'center', paddingVertical: 8 },
+
+  // Empty state
+  emptyIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   // Top 5
   top5Card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14, borderWidth: 1, marginBottom: 10, position: 'relative' as const, overflow: 'hidden' as const },
