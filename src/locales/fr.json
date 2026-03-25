@@ -166,7 +166,7 @@
     "tags": "Tags",
     "tags_placeholder": "Tapez et appuyez sur virgule...",
     "parse_failed": "Impossible d'analyser. Reessayez.",
-    "save_failed": "Failed to save subscription",
+    "save_failed": "Impossible d'enregistrer l'abonnement",
     "hold_to_record": "Maintenir pour parler",
     "tap_to_record": "Tap to record",
     "ai_q_name": "Quel abonnement ?",
@@ -175,10 +175,10 @@
     "ai_add": "Ajouter",
     "ai_edit": "Modifier",
     "ai_next": "Suivant →",
-    "success_added": "Added!",
-    "edit_details": "Edit details",
-    "show_more": "More options",
-    "show_less": "Less"
+    "success_added": "Ajouté !",
+    "edit_details": "Modifier les détails",
+    "show_more": "Plus d'options",
+    "show_less": "Moins"
   },
   "settings": {
     "title": "Paramètres",
@@ -295,7 +295,14 @@
     "add_with_ai": "Ajouter avec l'IA",
     "first_sub_subtitle": "Suivez-le en secondes avec l'IA ou manuellement",
     "first_sub_title": "Ajouter votre premier abonnement",
-    "skip_for_now": "Ignorer"
+    "skip_for_now": "Ignorer",
+    "welcome_title": "Bienvenue sur SubRadar !",
+    "welcome_subtitle": "Ajoutez votre premier abonnement en 10 secondes",
+    "welcome_add_ai": "Ajouter avec l'IA ✨",
+    "trial_title": "Premier abonnement ajouté !",
+    "trial_description": "Essayez SubRadar Pro gratuitement pendant 7 jours. Vous ne serez facturé qu'après la période d'essai.",
+    "trial_start": "Commencer l'essai →",
+    "trial_skip": "Continuer gratuitement"
   },
   "analytics": {
     "title": "Analytique",
@@ -322,7 +329,10 @@
     "top5": "Top 5 les plus chers",
     "card_label": "Carte {{number}}",
     "duplicate_label": "Doublon {{number}}",
-    "total": "Total"
+    "total": "Total",
+    "empty_title": "Aucun abonnement pour l'instant",
+    "empty_subtitle": "Ajoutez votre premier abonnement pour voir l'analytique des dépenses",
+    "loading": "Chargement de l'analytique..."
   },
   "subscription": {
     "billing_day": "Jour de facturation",
@@ -429,7 +439,7 @@
   },
   "voice": {
     "hold_to_record": "Maintenez pour enregistrer",
-    "tap_to_record": "Tap to record"
+    "tap_to_record": "Appuyez pour enregistrer"
   },
   "upcoming": {
     "today": "Aujourd'hui",
@@ -569,10 +579,10 @@
   "ai": {
     "or_type": "ou tapez",
     "popular_services": "Populaires",
-    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
-    "voice_error_title": "Voice Error",
-    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "could_not_parse": "Je n'ai pas compris. Pourriez-vous décrire l'abonnement autrement ?",
+    "voice_error_title": "Erreur vocale",
+    "voice_empty": "Impossible de reconnaître la parole. Réessayez ou tapez.",
+    "voice_error": "Échec du traitement vocal. Veuillez réessayer."
   },
   "pro_modal": {
     "title_default": "Fonctionnalité Pro",

@@ -166,7 +166,7 @@
     "tags": "Tags",
     "tags_placeholder": "Digite e pressione virgula...",
     "parse_failed": "Nao foi possivel analisar. Tente novamente.",
-    "save_failed": "Failed to save subscription",
+    "save_failed": "Não foi possível salvar a assinatura",
     "hold_to_record": "Segurar para falar",
     "tap_to_record": "Tap to record",
     "ai_q_name": "Qual assinatura?",
@@ -175,10 +175,10 @@
     "ai_add": "Adicionar",
     "ai_edit": "Editar",
     "ai_next": "Próximo →",
-    "success_added": "Added!",
-    "edit_details": "Edit details",
-    "show_more": "More options",
-    "show_less": "Less"
+    "success_added": "Adicionado!",
+    "edit_details": "Editar detalhes",
+    "show_more": "Mais opções",
+    "show_less": "Menos"
   },
   "settings": {
     "title": "Configurações",
@@ -295,7 +295,14 @@
     "add_with_ai": "Adicionar com IA",
     "first_sub_subtitle": "Rastreie em segundos com IA ou manualmente",
     "first_sub_title": "Adicione sua primeira assinatura",
-    "skip_for_now": "Pular"
+    "skip_for_now": "Pular",
+    "welcome_title": "Bem-vindo ao SubRadar!",
+    "welcome_subtitle": "Adicione sua primeira assinatura em 10 segundos",
+    "welcome_add_ai": "Adicionar com IA ✨",
+    "trial_title": "Primeira assinatura adicionada!",
+    "trial_description": "Experimente o SubRadar Pro grátis por 7 dias. Você só será cobrado após o período de teste.",
+    "trial_start": "Iniciar teste →",
+    "trial_skip": "Continuar grátis"
   },
   "analytics": {
     "title": "Análises",
@@ -322,7 +329,10 @@
     "top5": "Top 5 Mais Caras",
     "card_label": "Cartão {{number}}",
     "duplicate_label": "Duplicata {{number}}",
-    "total": "Total"
+    "total": "Total",
+    "empty_title": "Ainda sem assinaturas",
+    "empty_subtitle": "Adicione sua primeira assinatura para ver a análise de gastos",
+    "loading": "Carregando análises..."
   },
   "subscription": {
     "billing_day": "Dia de cobrança",
@@ -429,7 +439,7 @@
   },
   "voice": {
     "hold_to_record": "Segure para gravar",
-    "tap_to_record": "Tap to record"
+    "tap_to_record": "Toque para gravar"
   },
   "upcoming": {
     "today": "Hoje",
@@ -569,10 +579,10 @@
   "ai": {
     "or_type": "ou digite",
     "popular_services": "Populares",
-    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
-    "voice_error_title": "Voice Error",
-    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "could_not_parse": "Não consegui entender. Poderia descrever a assinatura de outra forma?",
+    "voice_error_title": "Erro de voz",
+    "voice_empty": "Não foi possível reconhecer a fala. Tente novamente ou digite.",
+    "voice_error": "Falha no processamento de voz. Tente novamente."
   },
   "pro_modal": {
     "title_default": "Função Pro",

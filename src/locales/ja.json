@@ -166,7 +166,7 @@
     "tags": "タグ",
     "tags_placeholder": "入力してカンマを押す...",
     "parse_failed": "解析できませんでした。もう一度お試しください。",
-    "save_failed": "Failed to save subscription",
+    "save_failed": "サブスクリプションの保存に失敗しました",
     "hold_to_record": "長押しで話す",
     "tap_to_record": "Tap to record",
     "ai_q_name": "どのサブスク？",
@@ -175,10 +175,10 @@
     "ai_add": "追加",
     "ai_edit": "編集",
     "ai_next": "次へ →",
-    "success_added": "Added!",
-    "edit_details": "Edit details",
-    "show_more": "More options",
-    "show_less": "Less"
+    "success_added": "追加しました！",
+    "edit_details": "詳細を編集",
+    "show_more": "その他のオプション",
+    "show_less": "閉じる"
   },
   "settings": {
     "title": "設定",
@@ -295,7 +295,14 @@
     "add_with_ai": "AIで追加",
     "first_sub_subtitle": "AIまたは手動で数秒でトラッキング",
     "first_sub_title": "最初のサブスクを追加",
-    "skip_for_now": "スキップ"
+    "skip_for_now": "スキップ",
+    "welcome_title": "SubRadarへようこそ！",
+    "welcome_subtitle": "10秒で最初のサブスクリプションを追加",
+    "welcome_add_ai": "AIで追加 ✨",
+    "trial_title": "最初のサブスクリプションを追加しました！",
+    "trial_description": "SubRadar Proを7日間無料でお試しください。トライアル終了後にのみ課金されます。",
+    "trial_start": "トライアル開始 →",
+    "trial_skip": "無料で続ける"
   },
   "analytics": {
     "title": "分析",
@@ -322,7 +329,10 @@
     "top5": "支出トップ5",
     "card_label": "カード {{number}}",
     "duplicate_label": "重複 {{number}}",
-    "total": "合計"
+    "total": "合計",
+    "empty_title": "サブスクリプションがまだありません",
+    "empty_subtitle": "最初のサブスクリプションを追加して支出分析を確認しましょう",
+    "loading": "分析を読み込み中..."
   },
   "subscription": {
     "billing_day": "請求日",
@@ -429,7 +439,7 @@
   },
   "voice": {
     "hold_to_record": "長押しで録音",
-    "tap_to_record": "Tap to record"
+    "tap_to_record": "タップして録音"
   },
   "upcoming": {
     "today": "今日",
@@ -569,10 +579,10 @@
   "ai": {
     "or_type": "または入力",
     "popular_services": "人気",
-    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
-    "voice_error_title": "Voice Error",
-    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "could_not_parse": "理解できませんでした。サブスクリプションを別の方法で説明していただけますか？",
+    "voice_error_title": "音声エラー",
+    "voice_empty": "音声を認識できませんでした。もう一度お試しいただくか、テキストで入力してください。",
+    "voice_error": "音声処理に失敗しました。もう一度お試しください。"
   },
   "pro_modal": {
     "title_default": "Pro機能",

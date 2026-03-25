@@ -10,6 +10,7 @@ import pt from './locales/pt.json';
 import zh from './locales/zh.json';
 import ja from './locales/ja.json';
 import ko from './locales/ko.json';
+import kk from './locales/kk.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -22,6 +23,7 @@ i18n.use(initReactI18next).init({
     zh: { translation: zh },
     ja: { translation: ja },
     ko: { translation: ko },
+    kk: { translation: kk },
   },
   lng: 'en',
   fallbackLng: 'en',

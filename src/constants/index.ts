@@ -52,6 +52,7 @@ export const LANGUAGES = [
   { code: 'zh', label: '中文', flag: '🇨🇳' },
   { code: 'ja', label: '日本語', flag: '🇯🇵' },
   { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'kk', label: 'Қазақша', flag: '🇰🇿' },
 ];
 
 export const STATUS_COLORS: Record<string, string> = {

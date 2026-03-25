@@ -166,7 +166,7 @@
     "tags": "标签",
     "tags_placeholder": "输入并按逗号...",
     "parse_failed": "无法解析。请重试。",
-    "save_failed": "Failed to save subscription",
+    "save_failed": "保存订阅失败",
     "hold_to_record": "按住说话",
     "tap_to_record": "Tap to record",
     "ai_q_name": "哪个订阅？",
@@ -175,10 +175,10 @@
     "ai_add": "添加",
     "ai_edit": "编辑",
     "ai_next": "下一步 →",
-    "success_added": "Added!",
-    "edit_details": "Edit details",
-    "show_more": "More options",
-    "show_less": "Less"
+    "success_added": "已添加！",
+    "edit_details": "编辑详情",
+    "show_more": "更多选项",
+    "show_less": "收起"
   },
   "settings": {
     "title": "设置",
@@ -295,7 +295,14 @@
     "add_with_ai": "用AI添加",
     "first_sub_subtitle": "用AI或手动在几秒内跟踪",
     "first_sub_title": "添加第一个订阅",
-    "skip_for_now": "跳过"
+    "skip_for_now": "跳过",
+    "welcome_title": "欢迎来到SubRadar！",
+    "welcome_subtitle": "10秒内添加您的第一个订阅",
+    "welcome_add_ai": "用AI添加 ✨",
+    "trial_title": "第一个订阅已添加！",
+    "trial_description": "免费试用SubRadar Pro 7天。试用期结束后才会收费。",
+    "trial_start": "开始试用 →",
+    "trial_skip": "免费继续"
   },
   "analytics": {
     "title": "分析",
@@ -322,7 +329,10 @@
     "top5": "最贵的5个订阅",
     "card_label": "卡片 {{number}}",
     "duplicate_label": "重复 {{number}}",
-    "total": "总计"
+    "total": "总计",
+    "empty_title": "暂无订阅",
+    "empty_subtitle": "添加第一个订阅以查看支出分析",
+    "loading": "正在加载分析..."
   },
   "subscription": {
     "billing_day": "扣款日",
@@ -429,7 +439,7 @@
   },
   "voice": {
     "hold_to_record": "按住录音",
-    "tap_to_record": "Tap to record"
+    "tap_to_record": "点击录音"
   },
   "upcoming": {
     "today": "今天",
@@ -569,10 +579,10 @@
   "ai": {
     "or_type": "或输入",
     "popular_services": "热门",
-    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
-    "voice_error_title": "Voice Error",
-    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "could_not_parse": "无法理解。请尝试用其他方式描述订阅。",
+    "voice_error_title": "语音错误",
+    "voice_empty": "无法识别语音。请重试或输入文字。",
+    "voice_error": "语音处理失败。请重试。"
   },
   "pro_modal": {
     "title_default": "Pro功能",

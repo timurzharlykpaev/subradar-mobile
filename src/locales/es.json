@@ -166,7 +166,7 @@
     "tags": "Etiquetas",
     "tags_placeholder": "Escribe y presiona coma...",
     "parse_failed": "No se pudo analizar. Intenta de nuevo.",
-    "save_failed": "Failed to save subscription",
+    "save_failed": "No se pudo guardar la suscripción",
     "hold_to_record": "Mantener para hablar",
     "tap_to_record": "Tap to record",
     "ai_q_name": "¿Qué suscripción?",
@@ -175,10 +175,10 @@
     "ai_add": "Agregar",
     "ai_edit": "Editar",
     "ai_next": "Siguiente →",
-    "success_added": "Added!",
-    "edit_details": "Edit details",
-    "show_more": "More options",
-    "show_less": "Less"
+    "success_added": "¡Agregado!",
+    "edit_details": "Editar detalles",
+    "show_more": "Más opciones",
+    "show_less": "Menos"
   },
   "settings": {
     "title": "Configuración",
@@ -295,7 +295,14 @@
     "add_with_ai": "Añadir con IA",
     "first_sub_subtitle": "Rastréala en segundos con IA o manualmente",
     "first_sub_title": "Añade tu primera suscripción",
-    "skip_for_now": "Omitir"
+    "skip_for_now": "Omitir",
+    "welcome_title": "¡Bienvenido a SubRadar!",
+    "welcome_subtitle": "Agrega tu primera suscripción en 10 segundos",
+    "welcome_add_ai": "Agregar con IA ✨",
+    "trial_title": "¡Primera suscripción agregada!",
+    "trial_description": "Prueba SubRadar Pro gratis por 7 días. Solo se cobrará después del período de prueba.",
+    "trial_start": "Iniciar prueba →",
+    "trial_skip": "Continuar gratis"
   },
   "analytics": {
     "title": "Analítica",
@@ -322,7 +329,10 @@
     "top5": "Top 5 más caras",
     "card_label": "Tarjeta {{number}}",
     "duplicate_label": "Duplicado {{number}}",
-    "total": "Total"
+    "total": "Total",
+    "empty_title": "Aún no hay suscripciones",
+    "empty_subtitle": "Agrega tu primera suscripción para ver la analítica de gastos",
+    "loading": "Cargando analítica..."
   },
   "subscription": {
     "billing_day": "Día de cobro",
@@ -429,7 +439,7 @@
   },
   "voice": {
     "hold_to_record": "Mantén presionado para grabar",
-    "tap_to_record": "Tap to record"
+    "tap_to_record": "Toca para grabar"
   },
   "upcoming": {
     "today": "Hoy",
@@ -569,10 +579,10 @@
   "ai": {
     "or_type": "o escribe",
     "popular_services": "Populares",
-    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
-    "voice_error_title": "Voice Error",
-    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "could_not_parse": "No pude entender eso. ¿Podrías describir la suscripción de otra forma?",
+    "voice_error_title": "Error de voz",
+    "voice_empty": "No se pudo reconocer el habla. Intenta de nuevo o escribe.",
+    "voice_error": "Error al procesar la voz. Intenta de nuevo."
   },
   "pro_modal": {
     "title_default": "Función Pro",

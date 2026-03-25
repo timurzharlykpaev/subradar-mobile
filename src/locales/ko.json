@@ -166,7 +166,7 @@
     "tags": "태그",
     "tags_placeholder": "입력 후 쉼표를 누르세요...",
     "parse_failed": "분석할 수 없습니다. 다시 시도하세요.",
-    "save_failed": "Failed to save subscription",
+    "save_failed": "구독 저장에 실패했습니다",
     "hold_to_record": "길게 눌러 말하기",
     "tap_to_record": "Tap to record",
     "ai_q_name": "어떤 구독인가요?",
@@ -175,10 +175,10 @@
     "ai_add": "추가",
     "ai_edit": "편집",
     "ai_next": "다음 →",
-    "success_added": "Added!",
-    "edit_details": "Edit details",
-    "show_more": "More options",
-    "show_less": "Less"
+    "success_added": "추가됨!",
+    "edit_details": "세부 정보 편집",
+    "show_more": "더 보기",
+    "show_less": "접기"
   },
   "settings": {
     "title": "설정",
@@ -295,7 +295,14 @@
     "add_with_ai": "AI로 추가",
     "first_sub_subtitle": "AI 또는 수동으로 몇 초 만에 추적",
     "first_sub_title": "첫 번째 구독 추가",
-    "skip_for_now": "건너뛰기"
+    "skip_for_now": "건너뛰기",
+    "welcome_title": "SubRadar에 오신 것을 환영합니다!",
+    "welcome_subtitle": "10초 만에 첫 번째 구독을 추가하세요",
+    "welcome_add_ai": "AI로 추가 ✨",
+    "trial_title": "첫 번째 구독이 추가되었습니다!",
+    "trial_description": "SubRadar Pro를 7일간 무료로 체험하세요. 체험 기간이 끝난 후에만 결제됩니다.",
+    "trial_start": "체험 시작 →",
+    "trial_skip": "무료로 계속"
   },
   "analytics": {
     "title": "분석",
@@ -322,7 +329,10 @@
     "top5": "가장 비싼 구독 Top 5",
     "card_label": "카드 {{number}}",
     "duplicate_label": "중복 {{number}}",
-    "total": "합계"
+    "total": "합계",
+    "empty_title": "아직 구독이 없습니다",
+    "empty_subtitle": "첫 번째 구독을 추가하여 지출 분석을 확인하세요",
+    "loading": "분석 로딩 중..."
   },
   "subscription": {
     "billing_day": "결제일",
@@ -429,7 +439,7 @@
   },
   "voice": {
     "hold_to_record": "길게 눌러 녹음",
-    "tap_to_record": "Tap to record"
+    "tap_to_record": "탭하여 녹음"
   },
   "upcoming": {
     "today": "오늘",
@@ -569,10 +579,10 @@
   "ai": {
     "or_type": "또는 입력",
     "popular_services": "인기",
-    "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
-    "voice_error_title": "Voice Error",
-    "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "could_not_parse": "이해할 수 없습니다. 구독을 다른 방식으로 설명해 주시겠어요?",
+    "voice_error_title": "음성 오류",
+    "voice_empty": "음성을 인식할 수 없습니다. 다시 시도하거나 텍스트로 입력하세요.",
+    "voice_error": "음성 처리에 실패했습니다. 다시 시도하세요."
   },
   "pro_modal": {
     "title_default": "Pro 기능",
