@@ -262,7 +262,7 @@ export default function AnalyticsScreen() {
   const totalMonthly = summary?.totalMonthly ?? activeSubs.reduce((sum, s) => sum + getMonthlyAmount(s), 0);
   const totalYearly = summary?.totalYearly ?? totalMonthly * 12;
   const mostExpensive = activeSubs.reduce<typeof activeSubs[0] | null>(
-    (max, s) => (!max || s.amount > max.amount ? s : max), null,
+    (max, s) => (!max || getMonthlyAmount(s) > getMonthlyAmount(max) ? s : max), null,
   );
 
   // Category breakdown
@@ -405,7 +405,7 @@ export default function AnalyticsScreen() {
               icon="flame-outline"
               label={t('analytics.most_expensive')}
               value={mostExpensive.name}
-              sub={`$${formatNum(mostExpensive.amount)}/mo`}
+              sub={`$${formatNum(getMonthlyAmount(mostExpensive), 2)}/mo`}
               color={colors.warning}
             />
           )}
