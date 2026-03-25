@@ -26,8 +26,10 @@ import ProFeatureModal from '../../src/components/ProFeatureModal';
 const CHART_HEIGHT = 200;
 
 /** Format number with space separator: 1500 → "1 500" */
-function formatNum(n: number, decimals = 0): string {
-  const fixed = n.toFixed(decimals);
+function formatNum(n: number | string | undefined | null, decimals = 0): string {
+  const num = Number(n);
+  if (!isFinite(num)) return '0';
+  const fixed = num.toFixed(decimals);
   const [intPart, decPart] = fixed.split('.');
   const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return decPart ? `${formatted}.${decPart}` : formatted;
