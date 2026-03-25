@@ -65,12 +65,25 @@ export default function SubscriptionDetailScreen() {
           text: t('subscriptions.cancel_title'),
           style: 'destructive',
           onPress: async () => {
-            if (subscription.cancelUrl) {
-              Linking.openURL(subscription.cancelUrl);
+            try {
+              await subscriptionsApi.cancel(id!);
+              if (subscription.cancelUrl) {
+                Linking.openURL(subscription.cancelUrl);
+              }
+              updateSubscription(id!, { status: 'CANCELLED' });
+              // Sync full list from server
+              subscriptionsApi.getAll().then((r) => {
+                useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+              }).catch(() => {});
+              Alert.alert(
+                t('subscriptions.cancel_title'),
+                t('subscription.cancel_success', 'Подписка отменена'),
+                [{ text: 'OK', onPress: () => router.back() }]
+              );
+            } catch (err: any) {
+              const msg = err?.response?.data?.message || err?.message || t('common.error');
+              Alert.alert(t('common.error'), msg);
             }
-            try { await subscriptionsApi.cancel(id!); } catch {}
-            updateSubscription(id!, { status: 'CANCELLED' });
-            router.back();
           },
         },
       ]

@@ -42,7 +42,11 @@ export default function SubscriptionPlanScreen() {
     mutationFn: () => billingApi.cancel(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billing'] });
-      Alert.alert(t('subscription_plan.cancelled_title'), t('subscription_plan.cancelled_msg'));
+      Alert.alert(
+        t('subscription_plan.cancelled_title'),
+        t('subscription_plan.cancelled_msg'),
+        [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
+      );
     },
     onError: (e: any) => Alert.alert(t('common.error'), e?.response?.data?.message || ''),
   });
