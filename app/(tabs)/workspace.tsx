@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   Alert, ActivityIndicator, StyleSheet, RefreshControl,
@@ -23,6 +23,11 @@ export default function WorkspaceScreen() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+
+  // Force billing refresh when workspace tab opens to get latest plan status
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['billing'] });
+  }, []);
   const [wsName, setWsName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
 
