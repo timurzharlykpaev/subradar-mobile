@@ -190,12 +190,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       if (!iconUrl && form.serviceUrl) {
         try {
           const host = new URL(form.serviceUrl).hostname;
-          iconUrl = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+          iconUrl = `https://logo.clearbit.com/${host}`;
         } catch {}
       }
       if (!iconUrl && form.name) {
-        const slug = form.name.toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus');
-        iconUrl = `https://www.google.com/s2/favicons?domain=${slug}.com&sz=64`;
+        const slug = form.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+        iconUrl = `https://logo.clearbit.com/${slug}.com`;
       }
 
       const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
@@ -406,9 +406,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 <AIWizard
                   onSave={async (sub) => {
                     const iconUrl = sub.iconUrl || (sub.serviceUrl
-                      ? `https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}&sz=64`
+                      ? `https://logo.clearbit.com/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
                       : sub.name
-                        ? `https://www.google.com/s2/favicons?domain=${sub.name.toLowerCase().replace(/\s+/g, '').replace(/\+/g, 'plus')}.com&sz=64`
+                        ? `https://logo.clearbit.com/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
                         : undefined);
 
                     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'NEWS', 'HEALTH', 'OTHER'];

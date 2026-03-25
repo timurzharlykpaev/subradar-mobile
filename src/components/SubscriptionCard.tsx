@@ -47,10 +47,15 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
     >
       <View style={styles.left}>
         {subscription.iconUrl ? (
-          <Image source={{ uri: subscription.iconUrl }} style={styles.logo} />
+          <Image
+            source={{ uri: subscription.iconUrl }}
+            style={styles.logo}
+            onError={() => {}}
+            defaultSource={undefined}
+          />
         ) : (
           <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>
-            <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name[0]}</Text>
+            <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name?.[0]?.toUpperCase() ?? '?'}</Text>
           </View>
         )}
       </View>
