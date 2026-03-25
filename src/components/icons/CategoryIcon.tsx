@@ -9,16 +9,30 @@ import { ProductivityIcon } from './ProductivityIcon';
 import { HealthIcon } from './HealthIcon';
 import { NewsIcon } from './NewsIcon';
 import { OtherIcon } from './OtherIcon';
+import { EducationIcon } from './EducationIcon';
+import { FinanceIcon } from './FinanceIcon';
+import { DesignIcon } from './DesignIcon';
+import { SecurityIcon } from './SecurityIcon';
+import { DeveloperIcon } from './DeveloperIcon';
+import { SportIcon } from './SportIcon';
+import { BusinessIcon } from './BusinessIcon';
 
 const ICON_MAP: Record<string, React.FC<{ size?: number; color?: string }>> = {
   STREAMING: StreamingIcon,
   AI_SERVICES: AiServicesIcon,
   INFRASTRUCTURE: InfrastructureIcon,
+  DEVELOPER: DeveloperIcon,
+  PRODUCTIVITY: ProductivityIcon,
   MUSIC: MusicIcon,
   GAMING: GamingIcon,
-  PRODUCTIVITY: ProductivityIcon,
+  EDUCATION: EducationIcon,
+  FINANCE: FinanceIcon,
+  DESIGN: DesignIcon,
+  SECURITY: SecurityIcon,
   HEALTH: HealthIcon,
+  SPORT: SportIcon,
   NEWS: NewsIcon,
+  BUSINESS: BusinessIcon,
   OTHER: OtherIcon,
 };
 

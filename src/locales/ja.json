@@ -595,5 +595,23 @@
     "start_trial": "7日間無料トライアル開始",
     "upgrade": "アップグレード — $2.99/月",
     "unlock": "解放"
+  },
+  "categories": {
+    "streaming": "ストリーミング",
+    "ai_services": "AIサービス",
+    "infrastructure": "インフラ",
+    "developer": "開発ツール",
+    "productivity": "生産性",
+    "music": "音楽",
+    "gaming": "ゲーム",
+    "education": "教育",
+    "finance": "金融",
+    "design": "デザイン",
+    "security": "セキュリティ",
+    "health": "健康",
+    "sport": "スポーツ",
+    "news": "ニュース・メディア",
+    "business": "ビジネス",
+    "other": "その他"
   }
 }

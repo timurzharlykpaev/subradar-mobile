@@ -595,5 +595,23 @@
     "start_trial": "Essai gratuit 7 jours",
     "upgrade": "Passer à Pro — 2,99 $/mois",
     "unlock": "Débloquer"
+  },
+  "categories": {
+    "streaming": "Streaming",
+    "ai_services": "Services IA",
+    "infrastructure": "Infrastructure",
+    "developer": "Développement",
+    "productivity": "Productivité",
+    "music": "Musique",
+    "gaming": "Jeux vidéo",
+    "education": "Éducation",
+    "finance": "Finance",
+    "design": "Design",
+    "security": "Sécurité",
+    "health": "Santé et bien-être",
+    "sport": "Sport et fitness",
+    "news": "Actualités et médias",
+    "business": "Business",
+    "other": "Autre"
   }
 }

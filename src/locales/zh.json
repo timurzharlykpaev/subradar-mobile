@@ -595,5 +595,23 @@
     "start_trial": "开始7天免费试用",
     "upgrade": "升级 — $2.99/月",
     "unlock": "解锁"
+  },
+  "categories": {
+    "streaming": "流媒体",
+    "ai_services": "AI服务",
+    "infrastructure": "基础设施",
+    "developer": "开发工具",
+    "productivity": "生产力",
+    "music": "音乐",
+    "gaming": "游戏",
+    "education": "教育",
+    "finance": "金融",
+    "design": "设计",
+    "security": "安全",
+    "health": "健康",
+    "sport": "运动健身",
+    "news": "新闻媒体",
+    "business": "商务",
+    "other": "其他"
   }
 }
