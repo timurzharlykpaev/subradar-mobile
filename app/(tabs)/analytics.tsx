@@ -167,7 +167,7 @@ function CategoryDonutChart({ categories, total }: {
             y={slice.labelY + 5}
             fontSize={13}
             fontWeight="900"
-            fill="#1A1A1A"
+            fill="#FFFFFF"
             textAnchor="middle"
           >
             {slice.pct}%
