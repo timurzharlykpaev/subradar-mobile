@@ -574,7 +574,10 @@
     "no_purchases": "未找到活跃订阅。",
     "restore_purchases": "恢复购买",
     "upgrade_success": "成功！",
-    "upgrade_success_msg": "欢迎加入Pro！"
+    "upgrade_success_msg": "欢迎加入Pro！",
+    "upgrade_success_msg_plan": "欢迎使用 {{plan}}！",
+    "upgrade_success_hint": "所有功能已解锁，随时可用。",
+    "upgrade_success_cta": "开始探索 →"
   },
   "ai": {
     "or_type": "或输入",

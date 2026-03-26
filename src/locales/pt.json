@@ -574,7 +574,10 @@
     "no_purchases": "Nenhuma assinatura ativa encontrada.",
     "restore_purchases": "Restaurar compras",
     "upgrade_success": "Sucesso!",
-    "upgrade_success_msg": "Bem-vindo ao Pro!"
+    "upgrade_success_msg": "Bem-vindo ao Pro!",
+    "upgrade_success_msg_plan": "Bem-vindo ao {{plan}}!",
+    "upgrade_success_hint": "Todos os recursos estão desbloqueados.",
+    "upgrade_success_cta": "Começar →"
   },
   "ai": {
     "or_type": "ou digite",

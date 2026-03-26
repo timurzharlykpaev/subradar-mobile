@@ -574,7 +574,10 @@
     "no_purchases": "Белсенді жазылымдар табылмады.",
     "restore_purchases": "Сатып алуларды қалпына келтіру",
     "upgrade_success": "Сәтті!",
-    "upgrade_success_msg": "Pro-ға қош келдіңіз!"
+    "upgrade_success_msg": "Pro-ға қош келдіңіз!",
+    "upgrade_success_msg_plan": "{{plan}} қош келдіңіз!",
+    "upgrade_success_hint": "Барлық мүмкіндіктер бекітілді.",
+    "upgrade_success_cta": "Бастау →"
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",

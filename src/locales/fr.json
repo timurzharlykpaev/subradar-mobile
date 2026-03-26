@@ -574,7 +574,10 @@
     "no_purchases": "Aucun abonnement actif trouvé.",
     "restore_purchases": "Restaurer les achats",
     "upgrade_success": "Succès !",
-    "upgrade_success_msg": "Bienvenue dans Pro !"
+    "upgrade_success_msg": "Bienvenue dans Pro !",
+    "upgrade_success_msg_plan": "Bienvenue dans {{plan}} !",
+    "upgrade_success_hint": "Toutes les fonctionnalités sont débloquées.",
+    "upgrade_success_cta": "Commencer →"
   },
   "ai": {
     "or_type": "ou tapez",

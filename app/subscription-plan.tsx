@@ -150,6 +150,12 @@ export default function SubscriptionPlanScreen() {
                   <Text style={styles.heroBadgeText}>{t('subscription_plan.active')}</Text>
                 </View>
               )}
+              {canTrial && (
+                <View style={[styles.heroBadge, { backgroundColor: 'rgba(139,92,246,0.35)' }]}>
+                  <Ionicons name="star-outline" size={12} color="#DDD6FE" />
+                  <Text style={styles.heroBadgeText}>{t('paywall.free_7_days', '7 days free')}</Text>
+                </View>
+              )}
             </View>
 
             {/* Usage bars */}

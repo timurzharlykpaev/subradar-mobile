@@ -574,7 +574,10 @@
     "no_purchases": "Активных подписок не найдено.",
     "restore_purchases": "Восстановить покупки",
     "upgrade_success": "Успешно!",
-    "upgrade_success_msg": "Добро пожаловать в Pro!"
+    "upgrade_success_msg": "Добро пожаловать в Pro!",
+    "upgrade_success_msg_plan": "Добро пожаловать в {{plan}}!",
+    "upgrade_success_hint": "Все функции разблокированы и готовы к использованию.",
+    "upgrade_success_cta": "Начать →"
   },
   "pro_modal": {
     "title_default": "Pro функция",

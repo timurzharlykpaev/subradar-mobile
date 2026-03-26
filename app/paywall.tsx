@@ -19,6 +19,7 @@ import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
+import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -67,6 +68,7 @@ export default function PaywallScreen() {
   const [selected, setSelected] = useState('pro');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [purchasing, setPurchasing] = useState(false);
+  const [successPlan, setSuccessPlan] = useState<string | null>(null);
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
   const startTrialMutation = useStartTrial();
   const queryClient = useQueryClient();
@@ -134,16 +136,12 @@ export default function PaywallScreen() {
   const handleAction = async () => {
     if (selected === 'free') { router.back(); return; }
 
-    // Trial flow stays the same
+    // Trial flow
     if (selected === 'pro' && canTrial) {
       try {
         await startTrialMutation.mutateAsync();
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
-        Alert.alert(
-          t('subscription_plan.trial_activated'),
-          t('subscription_plan.trial_activated_msg'),
-          [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
-        );
+        setSuccessPlan('Trial');
       } catch (e: any) {
         Alert.alert(t('common.error'), e?.response?.data?.message || '');
       }
@@ -189,17 +187,7 @@ export default function PaywallScreen() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
         const planLabel = selected === 'org' ? 'Team' : 'Pro';
-        Alert.alert(
-          t('paywall.upgrade_success', 'Success!'),
-          t('paywall.upgrade_success_msg_plan', { defaultValue: `Welcome to {{plan}}!`, plan: planLabel }),
-          [{
-            text: 'OK', onPress: () => {
-              router.replace('/(tabs)' as any);
-              // Re-fetch billing after navigation to ensure UI is up to date
-              setTimeout(() => queryClient.invalidateQueries({ queryKey: ['billing'] }), 500);
-            }
-          }]
-        );
+        setSuccessPlan(planLabel);
       } finally {
         setPurchasing(false);
       }
@@ -478,6 +466,15 @@ export default function PaywallScreen() {
         </TouchableOpacity>
 
       </ScrollView>
+      <PurchaseSuccessScreen
+        visible={!!successPlan}
+        planName={successPlan ?? ''}
+        onDone={() => {
+          setSuccessPlan(null);
+          router.replace('/(tabs)' as any);
+          setTimeout(() => queryClient.invalidateQueries({ queryKey: ['billing'] }), 500);
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -574,7 +574,10 @@
     "no_purchases": "有効なサブスクリプションが見つかりません。",
     "restore_purchases": "購入を復元",
     "upgrade_success": "成功！",
-    "upgrade_success_msg": "Proへようこそ！"
+    "upgrade_success_msg": "Proへようこそ！",
+    "upgrade_success_msg_plan": "{{plan}}へようこそ！",
+    "upgrade_success_hint": "すべての機能がアンロックされました。",
+    "upgrade_success_cta": "始める →"
   },
   "ai": {
     "or_type": "または入力",

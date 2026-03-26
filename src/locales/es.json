@@ -574,7 +574,10 @@
     "no_purchases": "No se encontraron suscripciones activas.",
     "restore_purchases": "Restaurar compras",
     "upgrade_success": "Éxito!",
-    "upgrade_success_msg": "Bienvenido a Pro!"
+    "upgrade_success_msg": "Bienvenido a Pro!",
+    "upgrade_success_msg_plan": "¡Bienvenido a {{plan}}!",
+    "upgrade_success_hint": "Todas las funciones están desbloqueadas.",
+    "upgrade_success_cta": "Empezar →"
   },
   "ai": {
     "or_type": "o escribe",

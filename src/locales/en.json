@@ -574,7 +574,10 @@
     "no_purchases": "No active subscriptions found.",
     "restore_purchases": "Restore Purchases",
     "upgrade_success": "Success!",
-    "upgrade_success_msg": "Welcome to Pro!"
+    "upgrade_success_msg": "Welcome to Pro!",
+    "upgrade_success_msg_plan": "Welcome to {{plan}}!",
+    "upgrade_success_hint": "All features are now unlocked and ready to use.",
+    "upgrade_success_cta": "Start exploring →"
   },
   "pro_modal": {
     "title_default": "Pro Feature",
