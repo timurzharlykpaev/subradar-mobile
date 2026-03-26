@@ -26,6 +26,7 @@ import { CategoryIcon } from '../../src/components/icons';
 import { WelcomeSheet } from '../../src/components/WelcomeSheet';
 import { TrialOfferModal } from '../../src/components/TrialOfferModal';
 import { useUIStore } from '../../src/stores/uiStore';
+import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 
 export default function DashboardScreen() {
@@ -316,13 +317,13 @@ export default function DashboardScreen() {
                   onPress={() => router.push(`/subscription/${sub.id}` as any)}
                   activeOpacity={0.8}
                 >
-                  {sub.iconUrl ? (
-                    <Image source={{ uri: sub.iconUrl }} style={styles.subIcon} />
-                  ) : (
-                    <View style={[styles.subIconPlaceholder, { backgroundColor: colors.primaryLight }]}>
-                      <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
-                    </View>
-                  )}
+                  <SubIcon
+                    iconUrl={sub.iconUrl}
+                    name={sub.name}
+                    imageStyle={styles.subIcon}
+                    placeholderStyle={[styles.subIconPlaceholder, { backgroundColor: colors.primaryLight }]}
+                    textStyle={[styles.subIconText, { color: colors.primary }]}
+                  />
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>

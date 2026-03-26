@@ -13,6 +13,7 @@ import {
 import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useFocusEffect } from 'expo-router';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
@@ -656,13 +657,13 @@ export default function AnalyticsScreen() {
                     <View style={[styles.top5Rank, { backgroundColor: colors.primary }]}>
                       <Text style={styles.top5RankText}>#{idx + 1}</Text>
                     </View>
-                    {sub.iconUrl ? (
-                      <Image source={{ uri: sub.iconUrl }} style={styles.top5Icon} />
-                    ) : (
-                      <View style={[styles.top5IconPlaceholder, { backgroundColor: colors.primaryLight }]}>
-                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{sub.name[0]}</Text>
-                      </View>
-                    )}
+                    <SubIcon
+                      iconUrl={sub.iconUrl}
+                      name={sub.name}
+                      imageStyle={styles.top5Icon}
+                      placeholderStyle={[styles.top5IconPlaceholder, { backgroundColor: colors.primaryLight }]}
+                      textStyle={{ fontSize: 16, fontWeight: '800', color: colors.primary }}
+                    />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
@@ -700,13 +701,13 @@ export default function AnalyticsScreen() {
           <View testID="analytics-all-subs" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {activeSubs.map((sub, index) => (
               <View key={sub.id} style={[styles.subRow, index < activeSubs.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
-                {sub.iconUrl ? (
-                  <Image source={{ uri: sub.iconUrl }} style={styles.subIconImage} />
-                ) : (
-                  <View style={[styles.subIcon, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={[styles.subIconText, { color: colors.primary }]}>{sub.name[0]}</Text>
-                  </View>
-                )}
+                <SubIcon
+                  iconUrl={sub.iconUrl}
+                  name={sub.name}
+                  imageStyle={styles.subIconImage}
+                  placeholderStyle={[styles.subIcon, { backgroundColor: colors.primaryLight }]}
+                  textStyle={[styles.subIconText, { color: colors.primary }]}
+                />
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                   <Text style={[styles.subCategory, { color: colors.textSecondary }]} numberOfLines={1}>

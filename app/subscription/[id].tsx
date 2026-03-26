@@ -32,6 +32,7 @@ export default function SubscriptionDetailScreen() {
   const { colors, isDark } = useTheme();
   const [receipts, setReceipts] = useState<string[]>([]);
   const [editVisible, setEditVisible] = useState(false);
+  const [iconError, setIconError] = useState(false);
 
   if (!subscription) {
     return (
@@ -144,11 +145,11 @@ export default function SubscriptionDetailScreen() {
 
         {/* Service Info */}
         <View style={styles.serviceCard}>
-          {subscription.iconUrl ? (
-            <Image source={{ uri: subscription.iconUrl }} style={styles.logo} />
+          {subscription.iconUrl && !iconError ? (
+            <Image source={{ uri: subscription.iconUrl }} style={styles.logo} onError={() => setIconError(true)} />
           ) : (
             <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>
-              <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name[0]}</Text>
+              <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name?.[0]?.toUpperCase() ?? '?'}</Text>
             </View>
           )}
 
