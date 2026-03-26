@@ -167,14 +167,18 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); }} />
         }
       >
-        {isPro && (
-          <View style={{ paddingHorizontal: 20, paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <View style={[styles.planBadge, { backgroundColor: colors.primary + '20' }]}>
-              <Ionicons name="diamond" size={12} color={colors.primary} />
-              <Text style={[styles.planBadgeText, { color: colors.primary }]}>PRO</Text>
-            </View>
-          </View>
-        )}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            onPress={() => router.push('/subscription-plan' as any)}
+            activeOpacity={0.7}
+            style={[styles.planBadge, { backgroundColor: isPro ? colors.primary + '20' : colors.textMuted + '20' }]}
+          >
+            <Ionicons name={isPro ? 'diamond' : 'person-outline'} size={12} color={isPro ? colors.primary : colors.textMuted} />
+            <Text style={[styles.planBadgeText, { color: isPro ? colors.primary : colors.textMuted }]}>
+              {isPro ? 'PRO' : 'FREE'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* ── Hero Card: Total Spend ────────────────────────────── */}
         <View testID="dashboard-hero-card" style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
