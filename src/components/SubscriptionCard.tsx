@@ -31,6 +31,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const [iconError, setIconError] = React.useState(false);
   const statusColor = STATUS_COLORS[subscription.status] || colors.textSecondary;
 
   const isTrial = subscription.status === 'TRIAL';
@@ -46,12 +47,11 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}
     >
       <View style={styles.left}>
-        {subscription.iconUrl ? (
+        {subscription.iconUrl && !iconError ? (
           <Image
             source={{ uri: subscription.iconUrl }}
             style={styles.logo}
-            onError={() => {}}
-            defaultSource={undefined}
+            onError={() => setIconError(true)}
           />
         ) : (
           <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>

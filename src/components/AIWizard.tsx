@@ -290,6 +290,7 @@ export function AIWizard({ onSave, onEdit }: Props) {
     try {
       const fd = new FormData();
       fd.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
+      fd.append('locale', i18n.language ?? 'en');
       const transcribeRes = await aiApi.parseAudio(fd);
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
@@ -412,11 +413,13 @@ export function AIWizard({ onSave, onEdit }: Props) {
                 <View style={styles.confirmIcon}>
                   {quick
                     ? <quick.Icon size={52} />
-                    : (
-                      <View style={[styles.fallbackIcon, { backgroundColor: colors.primary }]}>
-                        <Text style={styles.fallbackLetter}>{(s.name ?? '?')[0].toUpperCase()}</Text>
-                      </View>
-                    )}
+                    : s.iconUrl
+                      ? <Image source={{ uri: s.iconUrl }} style={{ width: 52, height: 52, borderRadius: 13 }} />
+                      : (
+                        <View style={[styles.fallbackIcon, { backgroundColor: colors.primary }]}>
+                          <Text style={styles.fallbackLetter}>{(s.name ?? '?')[0].toUpperCase()}</Text>
+                        </View>
+                      )}
                 </View>
                 <Text style={[styles.confirmName,   { color: colors.text }]}>{s.name}</Text>
                 <Text style={[styles.confirmAmount, { color: colors.primary }]}>
