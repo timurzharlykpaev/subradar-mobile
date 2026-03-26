@@ -482,6 +482,7 @@
     "start_trial": "Start 7-day trial",
     "upgrade_pro": "Upgrade to Pro",
     "upgrade_team": "Upgrade to Team",
+    "upgrade_to": "Upgrade to {{plan}}",
     "max_plan": "Max plan",
     "cancel_sub": "Cancel subscription",
     "cancel_trial": "Cancel trial",

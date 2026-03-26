@@ -482,6 +482,7 @@
     "start_trial": "Начать 7-дневный триал",
     "upgrade_pro": "Перейти на Pro",
     "upgrade_team": "Перейти на Team",
+    "upgrade_to": "Перейти на {{plan}}",
     "max_plan": "Максимальный план",
     "cancel_sub": "Отменить подписку",
     "cancel_trial": "Отменить триал",

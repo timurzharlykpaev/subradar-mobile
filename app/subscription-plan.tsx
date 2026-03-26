@@ -74,6 +74,7 @@ export default function SubscriptionPlanScreen() {
 
   const plan = billing?.plan ?? 'free';
   const isPro = plan === 'pro' || plan === 'organization';
+  const isTeam = plan === 'organization';
   const isTrialing = billing?.status === 'trialing';
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
   const display = PLAN_DISPLAY[plan] ?? PLAN_DISPLAY.free;
@@ -88,11 +89,69 @@ export default function SubscriptionPlanScreen() {
   }
 
   const subsUsed = billing?.subscriptionCount ?? 0;
-  const subsLimit = billing?.subscriptionLimit; // null = unlimited
+  const subsLimit = billing?.subscriptionLimit;
   const aiUsed = billing?.aiRequestsUsed ?? 0;
-  const aiLimit = billing?.aiRequestsLimit; // null = unlimited
+  const aiLimit = billing?.aiRequestsLimit;
   const subsPercent = subsLimit ? Math.min((subsUsed / subsLimit) * 100, 100) : 0;
   const aiPercent = aiLimit ? Math.min((aiUsed / aiLimit) * 100, 100) : 0;
+
+  // Plan card renderer
+  const renderPlanCard = (planKey: string, isCurrent: boolean) => {
+    const d = PLAN_DISPLAY[planKey] ?? PLAN_DISPLAY.free;
+    const price = PRICES[planKey]?.[billingPeriod] ?? '$0';
+    const featKey = planKey === 'organization' ? 'org' : planKey;
+    const feats: string[] = t(`subscription_plan.feat_${featKey}`, { returnObjects: true }) as string[] ?? [];
+
+    return (
+      <View style={[styles.planCard, {
+        backgroundColor: isDark ? '#1C1C2E' : '#FFFFFF',
+        borderColor: isCurrent ? d.color : colors.border,
+        borderWidth: isCurrent ? 2 : 1,
+      }]}>
+        {isCurrent && (
+          <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
+            <Text style={styles.currentBadgeText}>{t('subscription_plan.current_plan')}</Text>
+          </View>
+        )}
+        <View style={styles.planCardHeader}>
+          <View style={[styles.planIconWrap, { backgroundColor: d.color + '20' }]}>
+            <Ionicons name={d.icon as any} size={20} color={d.color} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.planCardName, { color: colors.text }]}>{d.name}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[styles.planCardPrice, { color: d.color }]}>{price}</Text>
+            {planKey !== 'free' && (
+              <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                /{billingPeriod === 'monthly' ? t('paywall.month', 'mo') : t('paywall.year', 'yr')}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Features */}
+        {Array.isArray(feats) && feats.map((f: string, i: number) => (
+          <View key={i} style={styles.featureRow}>
+            <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+            <Text style={[styles.featureText, { color: colors.text }]}>{f}</Text>
+          </View>
+        ))}
+
+        {/* Action */}
+        {!isCurrent && planKey !== 'free' && (
+          <TouchableOpacity
+            style={[styles.planCardBtn, { backgroundColor: d.color }]}
+            onPress={() => router.push('/paywall' as any)}
+          >
+            <Text style={styles.planCardBtnText}>
+              {t('subscription_plan.upgrade_to', { plan: d.name })}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -111,7 +170,6 @@ export default function SubscriptionPlanScreen() {
 
           {/* Plan hero card */}
           <View style={[styles.heroCard, { backgroundColor: display.color }]}>
-            {/* Decorative circles */}
             <View style={[styles.heroDecor, styles.heroDecor1]} />
             <View style={[styles.heroDecor, styles.heroDecor2]} />
 
@@ -125,11 +183,10 @@ export default function SubscriptionPlanScreen() {
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.heroPrice}>{PRICES[plan]?.[billingPeriod] ?? '$0'}</Text>
-                {billingPeriod === 'monthly' && plan !== 'free' && (
-                  <Text style={styles.heroPeriod}>/{t('paywall.month', 'mo')}</Text>
-                )}
-                {billingPeriod === 'yearly' && plan !== 'free' && (
-                  <Text style={styles.heroPeriod}>/{t('paywall.year', 'yr')}</Text>
+                {plan !== 'free' && (
+                  <Text style={styles.heroPeriod}>
+                    /{billingPeriod === 'monthly' ? t('paywall.month', 'mo') : t('paywall.year', 'yr')}
+                  </Text>
                 )}
               </View>
             </View>
@@ -163,9 +220,7 @@ export default function SubscriptionPlanScreen() {
               <View style={styles.usageItem}>
                 <View style={styles.usageHeader}>
                   <Text style={styles.usageLabel}>{t('subscription_plan.subs_used')}</Text>
-                  <Text style={styles.usageValue}>
-                    {subsUsed}/{subsLimit == null ? '∞' : subsLimit}
-                  </Text>
+                  <Text style={styles.usageValue}>{subsUsed}/{subsLimit == null ? '∞' : subsLimit}</Text>
                 </View>
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${subsLimit ? subsPercent : 0}%`, backgroundColor: subsPercent >= 90 ? '#F87171' : 'rgba(255,255,255,0.8)' }]} />
@@ -183,49 +238,38 @@ export default function SubscriptionPlanScreen() {
             </View>
           </View>
 
-          {/* Billing period toggle */}
-          {plan !== 'free' && (
-            <View style={[styles.periodToggle, { backgroundColor: isDark ? '#1C1C2E' : '#F0EFF8', borderColor: colors.border }]}>
-              <TouchableOpacity
-                style={[styles.periodBtn, billingPeriod === 'monthly' && { backgroundColor: colors.primary }]}
-                onPress={() => setBillingPeriod('monthly')}
-              >
-                <Text style={[styles.periodText, { color: billingPeriod === 'monthly' ? '#FFF' : colors.textSecondary }]}>
-                  {t('subscription_plan.billing_monthly')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.periodBtn, billingPeriod === 'yearly' && { backgroundColor: colors.primary }]}
-                onPress={() => setBillingPeriod('yearly')}
-              >
-                <Text style={[styles.periodText, { color: billingPeriod === 'yearly' ? '#FFF' : colors.textSecondary }]}>
-                  {t('subscription_plan.billing_yearly')}
-                </Text>
-                <View style={styles.saveBadge}>
-                  <Text style={styles.saveBadgeText}>{t('subscription_plan.save_badge')}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Features card */}
-          <View style={[styles.featuresCard, { backgroundColor: isDark ? '#1C1C2E' : '#FFFFFF', borderColor: colors.border }]}>
-            <Text style={[styles.featuresTitle, { color: colors.text }]}>
-              {t('subscription_plan.included')}
-            </Text>
-            {Array.isArray(features) && features.map((f: string, i: number) => (
-              <View key={i} style={styles.featureRow}>
-                <View style={[styles.featureCheck, { backgroundColor: '#22C55E18' }]}>
-                  <Ionicons name="checkmark" size={14} color="#22C55E" />
-                </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>{f}</Text>
+          {/* Billing period toggle — always visible */}
+          <View style={[styles.periodToggle, { backgroundColor: isDark ? '#1C1C2E' : '#F0EFF8', borderColor: colors.border }]}>
+            <TouchableOpacity
+              style={[styles.periodBtn, billingPeriod === 'monthly' && { backgroundColor: colors.primary }]}
+              onPress={() => setBillingPeriod('monthly')}
+            >
+              <Text style={[styles.periodText, { color: billingPeriod === 'monthly' ? '#FFF' : colors.textSecondary }]}>
+                {t('subscription_plan.billing_monthly')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.periodBtn, billingPeriod === 'yearly' && { backgroundColor: colors.primary }]}
+              onPress={() => setBillingPeriod('yearly')}
+            >
+              <Text style={[styles.periodText, { color: billingPeriod === 'yearly' ? '#FFF' : colors.textSecondary }]}>
+                {t('subscription_plan.billing_yearly')}
+              </Text>
+              <View style={styles.saveBadge}>
+                <Text style={styles.saveBadgeText}>{t('subscription_plan.save_badge')}</Text>
               </View>
-            ))}
+            </TouchableOpacity>
+          </View>
+
+          {/* All plan cards */}
+          <View style={{ paddingHorizontal: 20, marginTop: 16, gap: 12 }}>
+            {renderPlanCard('free', plan === 'free')}
+            {renderPlanCard('pro', plan === 'pro')}
+            {renderPlanCard('organization', plan === 'organization')}
           </View>
 
           {/* Action buttons */}
           <View style={styles.actions}>
-
             {canTrial && (
               <TouchableOpacity
                 style={[styles.actionPrimary, { backgroundColor: '#8B5CF6' }]}
@@ -239,25 +283,6 @@ export default function SubscriptionPlanScreen() {
                   </>
                 )}
               </TouchableOpacity>
-            )}
-
-            {plan !== 'organization' && (
-              <TouchableOpacity
-                style={[styles.actionPrimary, { backgroundColor: colors.primary }]}
-                onPress={() => router.push('/paywall' as any)}
-              >
-                <Ionicons name="arrow-up-circle" size={18} color="#FFF" />
-                <Text style={styles.actionPrimaryText}>
-                  {plan === 'free' ? t('subscription_plan.upgrade_pro') : t('subscription_plan.upgrade_team')}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {plan === 'organization' && (
-              <View style={[styles.actionDisabled, { backgroundColor: colors.surface2 }]}>
-                <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                <Text style={[styles.actionDisabledText, { color: colors.primary }]}>{t('subscription_plan.max_plan')}</Text>
-              </View>
             )}
 
             {isPro && !isTrialing && (
@@ -305,15 +330,8 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: '800' },
 
   heroCard: {
-    marginHorizontal: 20,
-    borderRadius: 24,
-    padding: 22,
-    gap: 16,
-    overflow: 'hidden',
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+    marginHorizontal: 20, borderRadius: 24, padding: 22, gap: 16, overflow: 'hidden',
+    shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 8,
   },
   heroDecor: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' },
   heroDecor1: { width: 160, height: 160, top: -60, right: -40 },
@@ -343,11 +361,18 @@ const styles = StyleSheet.create({
   saveBadge: { backgroundColor: '#22C55E', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
 
-  featuresCard: { marginHorizontal: 20, marginTop: 16, borderRadius: 20, padding: 18, borderWidth: 1, gap: 12 },
-  featuresTitle: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
-  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  featureCheck: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  featureText: { fontSize: 14, fontWeight: '500' },
+  // Plan cards
+  planCard: { borderRadius: 20, padding: 18, gap: 10 },
+  currentBadge: { position: 'absolute', top: 12, right: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  currentBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', textTransform: 'uppercase' },
+  planCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  planIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  planCardName: { fontSize: 20, fontWeight: '900' },
+  planCardPrice: { fontSize: 22, fontWeight: '900' },
+  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  featureText: { fontSize: 14, fontWeight: '500', flex: 1 },
+  planCardBtn: { borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+  planCardBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800' },
 
   actions: { paddingHorizontal: 20, marginTop: 20, gap: 10 },
   actionPrimary: {
@@ -356,8 +381,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6,
   },
   actionPrimaryText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
-  actionDisabled: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 16 },
-  actionDisabledText: { fontSize: 16, fontWeight: '800' },
   actionOutline: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 16, borderWidth: 1.5 },
   actionOutlineText: { fontSize: 15, fontWeight: '700' },
 

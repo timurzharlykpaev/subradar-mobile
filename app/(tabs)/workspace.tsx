@@ -19,7 +19,8 @@ export default function WorkspaceScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: billing } = useBillingStatus();
-  const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
+  const isTeam = billing?.plan === 'organization';
+  const isPro = billing?.plan === 'pro' || isTeam;
 
   const [showCreate, setShowCreate] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -118,7 +119,7 @@ export default function WorkspaceScreen() {
 
           {/* Actions */}
           <View style={{ paddingHorizontal: 20, paddingBottom: 120 }}>
-            {!isPro ? (
+            {!isTeam ? (
               <TouchableOpacity
                 testID="btn-workspace-upgrade"
                 style={{
