@@ -115,9 +115,9 @@ function CategoryDonutChart({ categories, total }: {
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const size = 220;
-  const radius = 95;
-  const innerRadius = 55;
+  const size = 280;
+  const radius = 125;
+  const innerRadius = 65;
   const cx = size / 2;
   const cy = size / 2;
   const midRadius = (radius + innerRadius) / 2;
@@ -165,7 +165,7 @@ function CategoryDonutChart({ categories, total }: {
             key={`lbl-${idx}`}
             x={slice.labelX}
             y={slice.labelY + 5}
-            fontSize={12}
+            fontSize={14}
             fontWeight="900"
             fill="#FFF"
             textAnchor="middle"
@@ -509,7 +509,7 @@ export default function AnalyticsScreen() {
                     </View>
                     <View style={{ flex: 1, gap: 6 }}>
                       <View style={styles.cardBreakdownLabelRow}>
-                        <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.nickname || t('analytics.card_label', { number: i + 1 })}</Text>
+                        <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.card?.nickname || card.nickname || (card.card?.last4 ? `····${card.card.last4} ${card.card.brand}` : t('analytics.card_label', { number: i + 1 }))}</Text>
                         <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${formatNum(amount, 2)}</Text>
                       </View>
                       <View style={[styles.barBg, { backgroundColor: colors.border }]}>
@@ -900,9 +900,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardBreakdownLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  cardBreakdownLabel: { fontSize: 14, fontWeight: '700', flex: 1 },
-  cardBreakdownAmount: { fontSize: 14, fontWeight: '800' },
+  cardBreakdownLabelRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  cardBreakdownLabel: { fontSize: 14, fontWeight: '700', flex: 1, flexShrink: 1 },
+  cardBreakdownAmount: { fontSize: 14, fontWeight: '800', flexShrink: 0 },
   barBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 6, borderRadius: 3 },
 
