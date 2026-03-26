@@ -402,16 +402,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             ))}
           </View>
 
-          {/* Bulk add banner */}
-          <TouchableOpacity
-            onPress={() => setShowBulk(true)}
-            style={[styles.bulkBanner, { backgroundColor: colors.primary + '14', borderColor: colors.primary + '40' }]}
-          >
-            <Ionicons name="layers-outline" size={16} color={colors.primary} />
-            <Text style={[styles.bulkBannerText, { color: colors.primary }]}>
-              {t('add.bulk_add_cta', 'Добавить несколько сразу →')}
-            </Text>
-          </TouchableOpacity>
+
 
           <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
             {/* tab === 0 → AI Assistant */}
@@ -454,6 +445,40 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     subscriptionsApi.getAll().then((r) => {
                       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
                     }).catch(() => {});
+                  }}
+                  onSaveBulk={async (subs) => {
+                    const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
+                    const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
+                    let saved = 0;
+                    for (const sub of subs) {
+                      try {
+                        const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
+                        const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+                        const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+                        const res = await subscriptionsApi.create({
+                          name: sub.name || 'Subscription',
+                          category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
+                          amount: sub.amount || 0,
+                          currency: sub.currency || currency || 'USD',
+                          billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
+                          billingDay: 1,
+                          status: 'ACTIVE',
+                          serviceUrl: sub.serviceUrl || undefined,
+                          cancelUrl: sub.cancelUrl || undefined,
+                          iconUrl: iconUrl || undefined,
+                          startDate: new Date().toISOString().split('T')[0],
+                          addedVia: 'AI_TEXT',
+                        });
+                        addSubscription(res.data);
+                        saved++;
+                      } catch {}
+                    }
+                    // Sync
+                    subscriptionsApi.getAll().then((r) => {
+                      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+                    }).catch(() => {});
+                    setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
+                    setShowSuccess(true);
                   }}
                   onEdit={(sub) => {
                     setForm((f) => ({

@@ -21,6 +21,8 @@ import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { Pressable } from 'react-native';
+import { usePlanLimits } from '../hooks/usePlanLimits';
+import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 
 export interface ParsedSub {
   name?: string;
@@ -35,6 +37,7 @@ export interface ParsedSub {
 
 interface Props {
   onSave: (sub: ParsedSub) => Promise<void>;
+  onSaveBulk?: (subs: ParsedSub[]) => Promise<void>;
   onEdit: (sub: ParsedSub) => void;
 }
 
@@ -204,12 +207,15 @@ type UIState =
   | { kind: 'idle' }
   | { kind: 'question'; text: string; field: string }
   | { kind: 'confirm'; subscription: ParsedSub }
+  | { kind: 'bulk'; subs: ParsedSub[]; checked: boolean[] }
   | { kind: 'plans'; plans: PlanOption[]; serviceName: string; iconUrl?: string; serviceUrl?: string; cancelUrl?: string; category?: string };
 
-export function AIWizard({ onSave, onEdit }: Props) {
+export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
+  const { isPro, activeCount, maxSubscriptions } = usePlanLimits();
+  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
   const [ui, setUi] = useState<UIState>({ kind: 'idle' });
   const [input, setInput] = useState('');
@@ -239,11 +245,60 @@ export function AIWizard({ onSave, onEdit }: Props) {
     setTimeout(fn, 100);
   };
 
+  // ── Limit check ──────────────────────────────────────────────────────────
+  const checkLimit = (needed = 1): boolean => {
+    if (isPro) return true;
+    const remaining = maxSubscriptions - activeCount;
+    if (remaining <= 0) {
+      Alert.alert(
+        t('add.limit_reached_title', 'Лимит подписок'),
+        t('add.limit_reached_msg', `Бесплатный план — максимум ${maxSubscriptions} подписки. Обнови до Pro для безлимита.`),
+        [{ text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro') }, { text: t('common.cancel', 'Закрыть'), style: 'cancel' }]
+      );
+      return false;
+    }
+    if (needed > remaining) {
+      Alert.alert(
+        t('add.limit_partial_title', 'Частичное добавление'),
+        t('add.limit_partial_msg', `Лимит: осталось ${remaining} из ${maxSubscriptions}. Добавим первые ${remaining}.`),
+        [{ text: 'OK' }]
+      );
+    }
+    return true;
+  };
+
   // ── Call backend wizard ──────────────────────────────────────────────────
   const callWizard = async (message: string) => {
     if (!message.trim()) return;
+
+    // Auto-detect bulk: if message looks like a list (commas/newlines/multiple amounts)
+    const looksLikeBulk = /[,\n]/.test(message) && (message.match(/\d+/g) || []).length >= 2;
+
+    if (looksLikeBulk) {
+      setLoading(true);
+      try {
+        const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru');
+        const data = res.data;
+        const subs: ParsedSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
+        if (subs.length > 1) {
+          if (!checkLimit(subs.length)) { setLoading(false); setInput(''); return; }
+          fade(() => setUi({ kind: 'bulk', subs, checked: subs.map(() => true) }));
+          setLoading(false);
+          setInput('');
+          return;
+        }
+        // Only 1 result — fall through to wizard below
+      } catch {
+        // fall through to wizard
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Single subscription wizard flow
+    if (!checkLimit(1)) { setInput(''); return; }
+
     setLoading(true);
-    // Add user message to history
     const newHistory = [...history, { role: 'user' as const, content: message }];
     setHistory(newHistory);
     try {
@@ -400,6 +455,62 @@ export function AIWizard({ onSave, onEdit }: Props) {
           );
         })()}
 
+        {/* ── Bulk confirm screen ─────────────────────────────────────── */}
+        {ui.kind === 'bulk' && (
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.question, { color: colors.text }]}>
+              {t('add.bulk_review', 'Выбери подписки')}
+            </Text>
+            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+              {t('add.bulk_auto_detected', `Найдено: ${ui.subs.length}`)}
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 }}>
+              <TouchableOpacity onPress={() => setUi({ ...ui, checked: ui.subs.map(() => true) })}>
+                <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>{t('add.bulk_select_all', 'Выбрать все')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setUi({ ...ui, checked: ui.subs.map(() => false) })}>
+                <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('add.bulk_deselect_all', 'Снять все')}</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+              {ui.subs.map((sub, i) => {
+                const isChecked = ui.checked[i] ?? true;
+                const periodMap: Record<string, string> = { MONTHLY: '/мес', YEARLY: '/год', WEEKLY: '/нед', QUARTERLY: '/квар' };
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => {
+                      const next = [...ui.checked];
+                      next[i] = !next[i];
+                      setUi({ ...ui, checked: next });
+                    }}
+                    style={[bulkStyles.card, {
+                      backgroundColor: isChecked ? colors.primary + '12' : (isDark ? '#1C1C2E' : '#F5F5F7'),
+                      borderColor: isChecked ? colors.primary : colors.border,
+                    }]}
+                    activeOpacity={0.75}
+                  >
+                    <View style={[bulkStyles.iconBox, { backgroundColor: colors.primary + '18' }]}>
+                      <Text style={[bulkStyles.iconLetter, { color: colors.primary }]}>
+                        {(sub.name || '?')[0].toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <Text style={[bulkStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                      <Text style={[bulkStyles.meta, { color: colors.textMuted }]}>
+                        {sub.currency ?? 'USD'} {(sub.amount ?? 0).toFixed(2)}{periodMap[sub.billingPeriod ?? 'MONTHLY'] ?? ''}
+                      </Text>
+                    </View>
+                    <View style={[bulkStyles.check, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
+                      {isChecked && <Ionicons name="checkmark" size={13} color="#fff" />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
         {/* ── Confirm screen ───────────────────────────────────────────── */}
         {ui.kind === 'confirm' && (() => {
           const s = ui.subscription;
@@ -442,7 +553,7 @@ export function AIWizard({ onSave, onEdit }: Props) {
         })()}
 
         {/* ── Input / Question screen ───────────────────────────────────── */}
-        {ui.kind !== 'confirm' && ui.kind !== 'plans' && (
+        {ui.kind !== 'confirm' && ui.kind !== 'plans' && ui.kind !== 'bulk' && (
           <View style={{ flex: 1 }}>
             <Text style={[styles.question, { color: colors.text }]}>{questionText}</Text>
             {!!hintText && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
@@ -505,7 +616,50 @@ export function AIWizard({ onSave, onEdit }: Props) {
 
       {/* ── Footer button ─────────────────────────────────────────────────── */}
       <View style={styles.footer}>
-        {ui.kind === 'plans' ? (
+        {ui.kind === 'bulk' ? (
+          <TouchableOpacity
+            style={[styles.actionBtn, { backgroundColor: '#10B981' }, saving && { opacity: 0.6 }]}
+            onPress={async () => {
+              const selected = ui.subs.filter((_, i) => ui.checked[i]);
+              if (!selected.length) {
+                Alert.alert('', t('add.bulk_select_at_least_one', 'Выбери хотя бы одну'));
+                return;
+              }
+              // Check limit for selected count
+              if (!isPro) {
+                const remaining = maxSubscriptions - activeCount;
+                const toAdd = Math.min(selected.length, remaining);
+                if (toAdd < selected.length) {
+                  const trimmed = selected.slice(0, toAdd);
+                  setSaving(true);
+                  try { if (onSaveBulk) await onSaveBulk(trimmed); } catch {}
+                  setSaving(false);
+                  reset();
+                  return;
+                }
+              }
+              setSaving(true);
+              try {
+                if (onSaveBulk) await onSaveBulk(selected);
+              } catch (err: any) {
+                Alert.alert(t('common.error'), err?.response?.data?.message || err?.message || '');
+              } finally {
+                setSaving(false);
+              }
+              reset();
+            }}
+            disabled={saving}
+          >
+            {saving ? <ActivityIndicator color="#fff" /> : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="checkmark-done" size={18} color="#fff" />
+                <Text style={styles.actionTxt}>
+                  {t('add.bulk_save', `Добавить ${ui.checked.filter(Boolean).length}`)}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        ) : ui.kind === 'plans' ? (
           <TouchableOpacity
             style={{ alignItems: 'center', paddingVertical: 14 }}
             onPress={() => {
@@ -609,4 +763,13 @@ const styles = StyleSheet.create({
   footer:       { paddingTop: 12 },
   actionBtn:    { borderRadius: 18, padding: 18, alignItems: 'center' },
   actionTxt:    { color: '#fff', fontSize: 17, fontWeight: '800' },
+});
+
+const bulkStyles = StyleSheet.create({
+  card:     { flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1.5, padding: 12, marginBottom: 8 },
+  iconBox:  { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  iconLetter: { fontSize: 18, fontWeight: '800' },
+  name:     { fontSize: 15, fontWeight: '700' },
+  meta:     { fontSize: 12, marginTop: 2 },
+  check:    { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
 });
