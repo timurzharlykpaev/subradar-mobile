@@ -509,7 +509,14 @@ export default function AnalyticsScreen() {
                     </View>
                     <View style={{ flex: 1, gap: 6 }}>
                       <View style={styles.cardBreakdownLabelRow}>
-                        <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{card.label || card.card?.nickname || card.nickname || (card.card?.last4 ? `····${card.card.last4} ${card.card.brand}` : t('analytics.card_label', { number: i + 1 }))}</Text>
+                        <Text style={[styles.cardBreakdownLabel, { color: colors.text }]} numberOfLines={1}>{(() => {
+                          const nick = card.label || card.card?.nickname || card.nickname;
+                          if (nick === 'Unassigned' || !nick) {
+                            if (card.card?.last4) return `····${card.card.last4} ${card.card.brand}`;
+                            return t('common.no_card');
+                          }
+                          return nick;
+                        })()}</Text>
                         <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${formatNum(amount, 2)}</Text>
                       </View>
                       <View style={[styles.barBg, { backgroundColor: colors.border }]}>
@@ -988,8 +995,8 @@ const styles = StyleSheet.create({
 
   // Top 5
   top5Card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14, borderWidth: 1, marginBottom: 10, position: 'relative' as const, overflow: 'hidden' as const },
-  top5Rank: { position: 'absolute' as const, top: -1, left: -1, width: 22, height: 22, borderRadius: 11, alignItems: 'center' as const, justifyContent: 'center' as const, zIndex: 1 },
-  top5RankText: { fontSize: 9, fontWeight: '800' as const, color: '#FFF' },
+  top5Rank: { position: 'absolute' as const, top: -1, left: -1, minWidth: 26, height: 22, borderRadius: 11, alignItems: 'center' as const, justifyContent: 'center' as const, zIndex: 1, paddingHorizontal: 6 },
+  top5RankText: { fontSize: 11, fontWeight: '800' as const, color: '#FFF' },
   top5Icon: { width: 40, height: 40, borderRadius: 12 },
   top5IconPlaceholder: { width: 40, height: 40, borderRadius: 12, alignItems: 'center' as const, justifyContent: 'center' as const },
   top5Name: { fontSize: 14, fontWeight: '700' },
