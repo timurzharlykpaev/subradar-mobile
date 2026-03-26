@@ -1,0 +1,592 @@
+/**
+ * BulkAddSheet — add multiple subscriptions at once via:
+ *   • Voice: "Netflix 15 dollars monthly, Spotify 10, iCloud 3"
+ *   • Text:  free-form, e.g. "Netflix $15/mo, Spotify $10, ChatGPT $20"
+ *   • Screenshot: photo of Apple/Google subscriptions list
+ *
+ * After parsing → shows checklist of detected subscriptions → user confirms → batch save.
+ */
+import React, { useState, useRef } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  TextInput, ActivityIndicator, Alert, Modal, Animated,
+  Dimensions, KeyboardAvoidingView, Platform, Image,
+  TouchableWithoutFeedback, Keyboard,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../theme';
+import { aiApi } from '../api/ai';
+import { subscriptionsApi } from '../api/subscriptions';
+import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
+import { useSettingsStore } from '../stores/settingsStore';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface BulkSub {
+  name: string;
+  amount: number;
+  currency: string;
+  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY';
+  category?: string;
+  iconUrl?: string;
+  serviceUrl?: string;
+  cancelUrl?: string;
+}
+
+type Mode = 'select' | 'voice' | 'text' | 'screenshot' | 'review';
+
+interface Props {
+  visible: boolean;
+  onClose: () => void;
+  onDone: (count: number) => void;
+}
+
+const VALID_CATEGORIES = [
+  'STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER',
+  'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE',
+  'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER',
+];
+const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+
+function normalizeCategory(c?: string) {
+  const up = (c || 'OTHER').toUpperCase().replace(/\s+/g, '_');
+  return VALID_CATEGORIES.includes(up) ? up : 'OTHER';
+}
+function normalizeBilling(b?: string) {
+  const up = (b || 'MONTHLY').toUpperCase();
+  return VALID_BILLING.includes(up) ? up : 'MONTHLY';
+}
+
+// ── Voice button ──────────────────────────────────────────────────────────────
+
+function VoiceBtn({ onVoice, loading, colors }: { onVoice: (uri: string) => void; loading: boolean; colors: any }) {
+  const { t } = useTranslation();
+  const { isRecording, durationFmt, start, stop } = useVoiceRecorder(onVoice);
+  const pulse = useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(pulse, { toValue: isRecording ? 1.4 : 1.15, duration: 500, useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 1, duration: 500, useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [isRecording]);
+
+  const bg = isRecording ? '#EF4444' : colors.primary;
+
+  return (
+    <View style={vStyles.wrap}>
+      <Animated.View style={[vStyles.ring, { backgroundColor: bg + '22', transform: [{ scale: pulse }] }]} />
+      <TouchableOpacity
+        onPress={() => (isRecording ? stop() : start())}
+        style={[vStyles.btn, { backgroundColor: bg, shadowColor: bg }]}
+        activeOpacity={0.85}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" size="large" />
+        ) : isRecording ? (
+          <Ionicons name="stop" size={32} color="#fff" />
+        ) : (
+          <Ionicons name="mic" size={36} color="#fff" />
+        )}
+      </TouchableOpacity>
+      <Text style={[vStyles.label, { color: isRecording ? '#EF4444' : colors.textSecondary }]}>
+        {loading ? t('common.loading') : isRecording ? durationFmt : t('add.tap_to_record')}
+      </Text>
+    </View>
+  );
+}
+
+const vStyles = StyleSheet.create({
+  wrap:  { alignItems: 'center', justifyContent: 'center', height: 160, marginVertical: 8 },
+  ring:  { position: 'absolute', width: 130, height: 130, borderRadius: 65, top: 15, alignSelf: 'center' },
+  btn:   { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 14, elevation: 10 },
+  label: { position: 'absolute', bottom: -2, fontSize: 13, fontWeight: '500' },
+});
+
+// ── SubCard ──────────────────────────────────────────────────────────────────
+
+function SubCard({ sub, checked, onToggle, colors }: { sub: BulkSub; checked: boolean; onToggle: () => void; colors: any }) {
+  const periodMap: Record<string, string> = { MONTHLY: 'мес', YEARLY: 'год', WEEKLY: 'нед', QUARTERLY: 'квар' };
+  return (
+    <TouchableOpacity
+      onPress={onToggle}
+      style={[cStyles.card, {
+        backgroundColor: checked ? colors.primary + '12' : colors.surface2,
+        borderColor: checked ? colors.primary : colors.border,
+      }]}
+      activeOpacity={0.75}
+    >
+      {/* Icon */}
+      {sub.iconUrl ? (
+        <Image source={{ uri: sub.iconUrl }} style={cStyles.icon} />
+      ) : (
+        <View style={[cStyles.iconFallback, { backgroundColor: colors.primary + '22' }]}>
+          <Text style={[cStyles.iconLetter, { color: colors.primary }]}>
+            {(sub.name || '?')[0].toUpperCase()}
+          </Text>
+        </View>
+      )}
+
+      {/* Info */}
+      <View style={{ flex: 1, marginLeft: 12 }}>
+        <Text style={[cStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+        <Text style={[cStyles.meta, { color: colors.textMuted }]}>
+          {sub.currency} {sub.amount.toFixed(2)} / {periodMap[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
+        </Text>
+      </View>
+
+      {/* Checkbox */}
+      <View style={[cStyles.checkbox, { borderColor: checked ? colors.primary : colors.border, backgroundColor: checked ? colors.primary : 'transparent' }]}>
+        {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const cStyles = StyleSheet.create({
+  card:        { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1.5, padding: 14, marginBottom: 10 },
+  icon:        { width: 44, height: 44, borderRadius: 11 },
+  iconFallback:{ width: 44, height: 44, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  iconLetter:  { fontSize: 20, fontWeight: '800' },
+  name:        { fontSize: 16, fontWeight: '700' },
+  meta:        { fontSize: 13, marginTop: 2 },
+  checkbox:    { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+});
+
+// ── TEXT EXAMPLES ─────────────────────────────────────────────────────────────
+const TEXT_EXAMPLES = [
+  'Netflix $15/mo, Spotify $10, iCloud+ $3',
+  'ChatGPT Plus 20 USD monthly, Notion 16 USD/year',
+  'Adobe Creative Cloud 600 rubles per month',
+  'YouTube Premium 169₽, Apple Music 169₽, 2GIS Pro 99₽',
+];
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export function BulkAddSheet({ visible, onClose, onDone }: Props) {
+  const { colors, isDark } = useTheme();
+  const { t, i18n } = useTranslation();
+  const { setSubscriptions } = useSubscriptionsStore();
+  const currency = useSettingsStore((s) => s.currency) ?? 'USD';
+
+  const [mode, setMode] = useState<Mode>('select');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [textInput, setTextInput] = useState('');
+  const [parsedSubs, setParsedSubs] = useState<BulkSub[]>([]);
+  const [checked, setChecked] = useState<boolean[]>([]);
+  const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      setMode('select');
+      setTextInput('');
+      setParsedSubs([]);
+      setChecked([]);
+      setScreenshotUri(null);
+      Animated.spring(slideAnim, { toValue: 0, damping: 20, stiffness: 200, useNativeDriver: true }).start();
+    } else {
+      Animated.timing(slideAnim, { toValue: SCREEN_HEIGHT, duration: 260, useNativeDriver: true }).start();
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    Animated.timing(slideAnim, { toValue: SCREEN_HEIGHT, duration: 220, useNativeDriver: true }).start(onClose);
+  };
+
+  // ── Parse helpers ────────────────────────────────────────────────────────
+
+  const showReview = (subs: BulkSub[]) => {
+    if (!subs.length) {
+      Alert.alert(t('add.bulk_no_subs', 'Не нашли подписок'), t('add.bulk_try_again', 'Попробуй другой текст или скриншот'));
+      return;
+    }
+    const enriched = subs.map((s) => ({
+      ...s,
+      currency: s.currency || currency,
+      billingPeriod: normalizeBilling(s.billingPeriod) as BulkSub['billingPeriod'],
+      category: normalizeCategory(s.category),
+      iconUrl: s.iconUrl || (s.name
+        ? `https://icon.horse/icon/${s.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`
+        : undefined),
+    }));
+    setParsedSubs(enriched);
+    setChecked(enriched.map(() => true));
+    setMode('review');
+  };
+
+  const parseText = async () => {
+    const text = textInput.trim();
+    if (!text) return;
+    Keyboard.dismiss();
+    setLoading(true);
+    try {
+      const res = await aiApi.parseBulkText(text, i18n.language || 'ru');
+      const data = res.data;
+      const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
+      showReview(subs);
+    } catch {
+      Alert.alert(t('common.error'), t('add.parse_failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const parseVoice = async (uri: string) => {
+    if (!uri) return;
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
+      formData.append('locale', i18n.language || 'ru');
+      const res = await aiApi.parseBulkVoice(formData);
+      const data = res.data;
+      const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
+      showReview(subs);
+    } catch {
+      Alert.alert(t('common.error'), t('add.parse_failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const parseScreenshot = async (uri: string) => {
+    setLoading(true);
+    try {
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const formData = new FormData();
+      formData.append('image', base64);
+      const res = await aiApi.parseScreenshot(formData);
+      const data = res.data;
+      // screenshot endpoint returns single or array
+      const subs: BulkSub[] = Array.isArray(data)
+        ? data
+        : data.subscriptions
+          ? data.subscriptions
+          : data.name
+            ? [data]
+            : [];
+      showReview(subs);
+    } catch {
+      Alert.alert(t('common.error'), t('add.parse_failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pickScreenshot = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
+    if (!res.canceled && res.assets[0]) {
+      const uri = res.assets[0].uri;
+      setScreenshotUri(uri);
+      setMode('screenshot');
+      parseScreenshot(uri);
+    }
+  };
+
+  // ── Save selected ────────────────────────────────────────────────────────
+
+  const saveSelected = async () => {
+    const selected = parsedSubs.filter((_, i) => checked[i]);
+    if (!selected.length) {
+      Alert.alert('', t('add.bulk_select_at_least_one', 'Выбери хотя бы одну'));
+      return;
+    }
+    setSaving(true);
+    let saved = 0;
+    for (const sub of selected) {
+      try {
+        await subscriptionsApi.create({
+          name: sub.name || 'Subscription',
+          category: normalizeCategory(sub.category),
+          amount: sub.amount || 0,
+          currency: sub.currency || currency,
+          billingPeriod: normalizeBilling(sub.billingPeriod) as any,
+          billingDay: 1,
+          status: 'ACTIVE',
+          serviceUrl: sub.serviceUrl || undefined,
+          cancelUrl: sub.cancelUrl || undefined,
+          iconUrl: sub.iconUrl || undefined,
+          startDate: new Date().toISOString().split('T')[0],
+          addedVia: 'AI_TEXT',
+        });
+        saved++;
+      } catch {
+        // continue with others
+      }
+    }
+    // Refresh store
+    try {
+      const r = await subscriptionsApi.getAll();
+      setSubscriptions(r.data || []);
+    } catch {}
+    setSaving(false);
+    onDone(saved);
+    handleClose();
+  };
+
+  // ── Render ───────────────────────────────────────────────────────────────
+
+  const bg = isDark ? '#12122A' : '#F5F5F7';
+
+  return (
+    <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
+      <TouchableWithoutFeedback onPress={handleClose}>
+        <View style={styles.backdrop} />
+      </TouchableWithoutFeedback>
+
+      <Animated.View style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}>
+        <View style={[styles.handle, { backgroundColor: colors.border }]} />
+
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.title, { color: colors.text }]}>
+                {mode === 'review'
+                  ? t('add.bulk_review', 'Выбери подписки')
+                  : t('add.bulk_title', 'Добавить несколько')}
+              </Text>
+              <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+                {mode === 'review'
+                  ? t('add.bulk_review_sub', `Найдено: ${parsedSubs.length}`)
+                  : t('add.bulk_subtitle', 'Голос, текст или скриншот')}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={handleClose} style={[styles.closeBtn, { backgroundColor: bg }]}>
+              <Ionicons name="close" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+
+            {/* ── Mode: select ─────────────────────────────────────────── */}
+            {mode === 'select' && (
+              <View style={{ gap: 12 }}>
+                <ModeCard
+                  icon="mic"
+                  color="#8B5CF6"
+                  title={t('add.bulk_voice', 'Голосом')}
+                  desc={t('add.bulk_voice_desc', '"Netflix 15 долларов, Spotify 10, iCloud 3"')}
+                  onPress={() => setMode('voice')}
+                  colors={colors}
+                />
+                <ModeCard
+                  icon="text"
+                  color="#06B6D4"
+                  title={t('add.bulk_text', 'Текстом')}
+                  desc={t('add.bulk_text_desc', 'Напиши список — AI распознает всё сразу')}
+                  onPress={() => setMode('text')}
+                  colors={colors}
+                />
+                <ModeCard
+                  icon="camera"
+                  color="#10B981"
+                  title={t('add.bulk_screenshot', 'Скриншот')}
+                  desc={t('add.bulk_screenshot_desc', 'Скриншот Apple/Google подписок — распознаем автоматически')}
+                  onPress={pickScreenshot}
+                  colors={colors}
+                />
+              </View>
+            )}
+
+            {/* ── Mode: voice ──────────────────────────────────────────── */}
+            {mode === 'voice' && (
+              <View style={{ alignItems: 'center' }}>
+                <Text style={[styles.modeTitle, { color: colors.text }]}>
+                  {t('add.bulk_voice_hint', 'Перечисли подписки голосом')}
+                </Text>
+                <Text style={[styles.modeExample, { color: colors.textMuted }]}>
+                  {t('add.bulk_voice_example', 'Например: "Netflix 15 долларов в месяц, Spotify 10, ChatGPT 20"')}
+                </Text>
+                <VoiceBtn onVoice={parseVoice} loading={loading} colors={colors} />
+                <TouchableOpacity onPress={() => setMode('select')} style={{ marginTop: 8 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('common.back', 'Назад')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* ── Mode: text ───────────────────────────────────────────── */}
+            {mode === 'text' && (
+              <View>
+                <Text style={[styles.modeTitle, { color: colors.text }]}>
+                  {t('add.bulk_text_hint', 'Список подписок текстом')}
+                </Text>
+
+                {/* Examples */}
+                <View style={[styles.examplesBox, { backgroundColor: isDark ? '#1C1C2E' : '#F0EFF8', borderColor: colors.border }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <Ionicons name="bulb-outline" size={14} color={colors.primary} />
+                    <Text style={[styles.examplesLabel, { color: colors.primary }]}>
+                      {t('add.bulk_examples', 'Примеры')}
+                    </Text>
+                  </View>
+                  {TEXT_EXAMPLES.map((ex, i) => (
+                    <TouchableOpacity key={i} onPress={() => setTextInput(ex)} style={styles.exampleRow}>
+                      <Text style={[styles.exampleText, { color: colors.textSecondary }]}>• {ex}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <TextInput
+                  style={[styles.textArea, { backgroundColor: bg, color: colors.text, borderColor: colors.border }]}
+                  value={textInput}
+                  onChangeText={setTextInput}
+                  placeholder={t('add.bulk_text_placeholder', 'Netflix $15/mo, Spotify $10, iCloud $3...')}
+                  placeholderTextColor={colors.textMuted}
+                  multiline
+                  numberOfLines={5}
+                  textAlignVertical="top"
+                />
+
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: colors.primary, opacity: (!textInput.trim() || loading) ? 0.5 : 1 }]}
+                  onPress={parseText}
+                  disabled={!textInput.trim() || loading}
+                >
+                  {loading
+                    ? <ActivityIndicator color="#fff" />
+                    : <Text style={styles.actionTxt}>{t('add.bulk_parse', 'Распознать →')}</Text>}
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => setMode('select')} style={{ alignItems: 'center', marginTop: 12 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('common.back', 'Назад')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* ── Mode: screenshot (parsing) ───────────────────────────── */}
+            {mode === 'screenshot' && (
+              <View style={{ alignItems: 'center', gap: 16 }}>
+                {screenshotUri && (
+                  <Image source={{ uri: screenshotUri }} style={styles.screenshotPreview} resizeMode="contain" />
+                )}
+                {loading ? (
+                  <>
+                    <ActivityIndicator color={colors.primary} size="large" />
+                    <Text style={{ color: colors.textSecondary }}>
+                      {t('add.bulk_parsing', 'AI распознаёт подписки...')}
+                    </Text>
+                  </>
+                ) : null}
+                <TouchableOpacity onPress={() => setMode('select')} style={{ marginTop: 4 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('common.back', 'Назад')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* ── Mode: review ─────────────────────────────────────────── */}
+            {mode === 'review' && (
+              <View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
+                  <TouchableOpacity onPress={() => setChecked(parsedSubs.map(() => true))}>
+                    <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>
+                      {t('add.bulk_select_all', 'Выбрать все')}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setChecked(parsedSubs.map(() => false))}>
+                    <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                      {t('add.bulk_deselect_all', 'Снять все')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {parsedSubs.map((sub, i) => (
+                  <SubCard
+                    key={i}
+                    sub={sub}
+                    checked={checked[i] ?? true}
+                    onToggle={() => setChecked((prev) => {
+                      const next = [...prev];
+                      next[i] = !next[i];
+                      return next;
+                    })}
+                    colors={colors}
+                  />
+                ))}
+
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: '#10B981', marginTop: 8, opacity: saving ? 0.6 : 1 }]}
+                  onPress={saveSelected}
+                  disabled={saving}
+                >
+                  {saving ? <ActivityIndicator color="#fff" /> : (
+                    <Text style={styles.actionTxt}>
+                      {t('add.bulk_save', `Добавить ${checked.filter(Boolean).length}`)}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => setMode('select')} style={{ alignItems: 'center', marginTop: 12 }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('add.bulk_retry', 'Попробовать снова')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Animated.View>
+    </Modal>
+  );
+}
+
+// ── ModeCard ──────────────────────────────────────────────────────────────────
+
+function ModeCard({ icon, color, title, desc, onPress, colors }: {
+  icon: string; color: string; title: string; desc: string; onPress: () => void; colors: any;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[mStyles.card, { backgroundColor: colors.surface2, borderColor: colors.border }]}
+      activeOpacity={0.75}
+    >
+      <View style={[mStyles.iconBox, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon as any} size={26} color={color} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[mStyles.title, { color: colors.text }]}>{title}</Text>
+        <Text style={[mStyles.desc, { color: colors.textMuted }]} numberOfLines={2}>{desc}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+    </TouchableOpacity>
+  );
+}
+
+const mStyles = StyleSheet.create({
+  card:    { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, borderWidth: 1, padding: 16 },
+  iconBox: { width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  title:   { fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  desc:    { fontSize: 13, lineHeight: 18 },
+});
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  backdrop:    { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet:       { position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT * 0.88, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' },
+  handle:      { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginTop: 10, marginBottom: 4 },
+  header:      { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 },
+  title:       { fontSize: 22, fontWeight: '900' },
+  subtitle:    { fontSize: 13, marginTop: 2 },
+  closeBtn:    { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  modeTitle:   { fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 6 },
+  modeExample: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 20, paddingHorizontal: 16 },
+  examplesBox: { borderRadius: 14, borderWidth: 1, padding: 14, marginBottom: 14 },
+  examplesLabel:{ fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  exampleRow:  { paddingVertical: 4 },
+  exampleText: { fontSize: 13, lineHeight: 18 },
+  textArea:    { borderRadius: 14, padding: 14, fontSize: 15, borderWidth: 1.5, minHeight: 120, marginBottom: 14 },
+  actionBtn:   { borderRadius: 16, paddingVertical: 17, alignItems: 'center' },
+  actionTxt:   { color: '#fff', fontSize: 16, fontWeight: '800' },
+  screenshotPreview: { width: '100%', height: 220, borderRadius: 16 },
+});

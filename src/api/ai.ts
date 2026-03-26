@@ -18,4 +18,12 @@ export const aiApi = {
     apiClient.post('/ai/voice-to-subscription', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  // Bulk: parse multiple subscriptions from free text
+  parseBulkText: (text: string, locale = 'ru') =>
+    apiClient.post('/ai/parse-bulk', { text, locale }),
+  // Bulk: parse multiple subscriptions from voice
+  parseBulkVoice: (formData: FormData) =>
+    apiClient.post('/ai/voice-bulk', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };

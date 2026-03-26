@@ -31,6 +31,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { VoiceRecorder } from './VoiceRecorder';
 import { AIWizard, ParsedSub } from './AIWizard';
 import { SuccessOverlay } from './SuccessOverlay';
+import { BulkAddSheet } from './BulkAddSheet';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useTheme } from '../theme';
 import {
@@ -139,6 +140,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState('');
   const [moreExpanded, setMoreExpanded] = useState(false);
+  const [showBulk, setShowBulk] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -356,6 +358,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   };
 
   return (
+    <>
     <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.backdrop} />
@@ -398,6 +401,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Bulk add banner */}
+          <TouchableOpacity
+            onPress={() => setShowBulk(true)}
+            style={[styles.bulkBanner, { backgroundColor: colors.primary + '14', borderColor: colors.primary + '40' }]}
+          >
+            <Ionicons name="layers-outline" size={16} color={colors.primary} />
+            <Text style={[styles.bulkBannerText, { color: colors.primary }]}>
+              {t('add.bulk_add_cta', 'Добавить несколько сразу →')}
+            </Text>
+          </TouchableOpacity>
 
           <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
             {/* tab === 0 → AI Assistant */}
@@ -955,6 +969,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         />
       </Animated.View>
     </Modal>
+
+    <BulkAddSheet
+      visible={showBulk}
+      onClose={() => setShowBulk(false)}
+      onDone={(count) => {
+        setShowBulk(false);
+        setSuccessName(`${count} ${t('add.bulk_saved', 'подписок')}`);
+        setShowSuccess(true);
+      }}
+    />
+    </>
   );
 }
 
@@ -1015,6 +1040,8 @@ const styles = StyleSheet.create({
   },
   tabText: { fontSize: 13, fontWeight: '600' },
   tabTextActive: { color: '#FFF' },
+  bulkBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 20, marginBottom: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
+  bulkBannerText: { fontSize: 13, fontWeight: '700' },
   content: { flex: 1, paddingHorizontal: 20 },
   aiTab: { gap: 12, paddingBottom: 40 },
   aiHint: { fontSize: 13, lineHeight: 18 },
