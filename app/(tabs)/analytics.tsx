@@ -165,9 +165,9 @@ function CategoryDonutChart({ categories, total }: {
             key={`lbl-${idx}`}
             x={slice.labelX}
             y={slice.labelY + 5}
-            fontSize={13}
+            fontSize={12}
             fontWeight="900"
-            fill="#FFFFFF"
+            fill="#FFF"
             textAnchor="middle"
           >
             {slice.pct}%
