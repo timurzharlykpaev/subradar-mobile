@@ -118,6 +118,8 @@
     "category": "Category",
     "card": "Payment Card",
     "notes": "Notes",
+    "tags": "Tags",
+    "tags_placeholder": "work, personal, shared",
     "save": "Save Subscription",
     "voice_hint": "Say something like: I pay $15 for Netflix monthly",
     "screenshot_hint": "Upload a receipt or confirmation email screenshot",
@@ -171,8 +173,6 @@
     "reminder_7d": "7 days",
     "card_color": "Card color",
     "color_auto": "Auto",
-    "tags": "Tags",
-    "tags_placeholder": "Type and press comma...",
     "parse_failed": "Could not parse. Try again.",
     "save_failed": "Failed to save subscription",
     "success_added": "Added!",
@@ -613,6 +613,14 @@
     "voice_error_title": "Voice Error",
     "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
     "voice_error": "Voice processing failed. Please try again."
+  },
+  "billing": {
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly",
+    "lifetime": "Lifetime",
+    "one_time": "One-time"
   },
   "categories": {
     "streaming": "Streaming",

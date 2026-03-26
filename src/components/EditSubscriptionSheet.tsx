@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, CATEGORIES, CURRENCIES, BILLING_PERIODS, CARD_BRANDS } from '../constants';
+import { CATEGORIES, CURRENCIES, BILLING_PERIODS, CARD_BRANDS } from '../constants';
 import { CategoryIcon } from './icons';
 import { subscriptionsApi } from '../api/subscriptions';
 import { cardsApi } from '../api/cards';
@@ -22,6 +22,7 @@ import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { Subscription } from '../types';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { CardBrand } from '../types';
+import { useTheme } from '../theme';
 
 interface Props {
   visible: boolean;
@@ -29,8 +30,18 @@ interface Props {
   subscription: Subscription;
 }
 
+const PERIOD_LABELS: Record<string, string> = {
+  WEEKLY: 'billing.weekly',
+  MONTHLY: 'billing.monthly',
+  QUARTERLY: 'billing.quarterly',
+  YEARLY: 'billing.yearly',
+  LIFETIME: 'billing.lifetime',
+  ONE_TIME: 'billing.one_time',
+};
+
 export function EditSubscriptionSheet({ visible, onClose, subscription }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const { updateSubscription } = useSubscriptionsStore();
   const { cards, addCard } = usePaymentCardsStore();
 
@@ -43,6 +54,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     billingDay: '1',
     paymentCardId: '',
     notes: '',
+    tags: '' as string,
   });
 
   const [saving, setSaving] = useState(false);
@@ -61,6 +73,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         billingDay: String(subscription.billingDay ?? 1),
         paymentCardId: subscription.paymentCardId ?? '',
         notes: subscription.notes ?? '',
+        tags: (subscription.tags ?? []).join(', '),
       });
       setShowAddCard(false);
     }
@@ -78,6 +91,10 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     }
     setSaving(true);
     try {
+      const tags = form.tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
       const payload: Record<string, any> = {
         name: form.name.trim(),
         amount: parseFloat(form.amount),
@@ -87,6 +104,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         billingDay: day,
         notes: form.notes.trim() || undefined,
         paymentCardId: form.paymentCardId || undefined,
+        tags: tags.length > 0 ? tags : undefined,
       };
       await subscriptionsApi.update(subscription.id, payload);
       updateSubscription(subscription.id, payload);
@@ -125,224 +143,249 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     }
   }, [newCard, addCard, t]);
 
+  const fieldLabel = { fontSize: 12, fontWeight: '600' as const, color: colors.textMuted, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.5 };
+  const inputStyle = { backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border };
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.sheetContainer}
         >
-          <View testID="edit-sub-sheet" style={styles.sheet}>
-            <View style={styles.handleBar} />
+          <View testID="edit-sub-sheet" style={[styles.sheet, { backgroundColor: colors.surface }]}>
+            <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
 
             <View style={styles.header}>
-              <Text style={styles.title}>{t('subscription.edit_title')}</Text>
-              <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                <Ionicons name="close" size={22} color={COLORS.text} />
+              <Text style={[styles.title, { color: colors.text }]}>{t('subscription.edit_title')}</Text>
+              <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}>
+                <Ionicons name="close" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+            <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               <View style={styles.form}>
                 {/* Name */}
-                <Field label={t('add.name') + ' *'}>
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.name')}</Text>
                   <TextInput
-                    style={styles.input}
+                    style={inputStyle}
                     value={form.name}
                     onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
                     placeholder={t('add.name_placeholder')}
-                    placeholderTextColor={COLORS.textMuted}
+                    placeholderTextColor={colors.textMuted}
                   />
-                </Field>
+                </View>
 
                 {/* Amount + Currency */}
                 <View style={styles.row}>
                   <View style={{ flex: 1 }}>
-                    <Field label={t('add.amount') + ' *'}>
-                      <TextInput
-                        style={styles.input}
-                        value={form.amount}
-                        onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
-                        placeholder="9.99"
-                        keyboardType="decimal-pad"
-                        placeholderTextColor={COLORS.textMuted}
-                      />
-                    </Field>
+                    <Text style={fieldLabel}>{t('add.amount')}</Text>
+                    <TextInput
+                      style={inputStyle}
+                      value={form.amount}
+                      onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
+                      placeholder="9.99"
+                      keyboardType="decimal-pad"
+                      placeholderTextColor={colors.textMuted}
+                    />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Field label={t('add.currency')}>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={styles.chips}>
-                          {CURRENCIES.map((cur) => (
-                            <TouchableOpacity
-                              key={cur}
-                              style={[styles.chip, form.currency === cur && styles.chipActive]}
-                              onPress={() => setForm((f) => ({ ...f, currency: cur }))}
-                            >
-                              <Text style={form.currency === cur ? styles.chipActiveText : styles.chipText}>
-                                {cur}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </ScrollView>
-                    </Field>
+                    <Text style={fieldLabel}>{t('add.currency')}</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                      <View style={styles.chips}>
+                        {CURRENCIES.map((cur) => (
+                          <TouchableOpacity
+                            key={cur}
+                            style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
+                              form.currency === cur && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+                            onPress={() => setForm((f) => ({ ...f, currency: cur }))}
+                          >
+                            <Text style={{ fontSize: 13, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
                   </View>
                 </View>
 
                 {/* Billing Period */}
-                <Field label={t('add.billing_cycle')}>
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.billing_cycle')}</Text>
                   <View style={styles.chips}>
                     {BILLING_PERIODS.map((p) => (
                       <TouchableOpacity
                         key={p}
-                        style={[styles.chip, form.billingPeriod === p && styles.chipActive]}
+                        style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
+                          form.billingPeriod === p && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                         onPress={() => setForm((f) => ({ ...f, billingPeriod: p }))}
                       >
-                        <Text style={form.billingPeriod === p ? styles.chipActiveText : styles.chipText}>
-                          {p}
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
+                          {t(PERIOD_LABELS[p] || p, p)}
                         </Text>
                       </TouchableOpacity>
                     ))}
                   </View>
-                </Field>
+                </View>
 
                 {/* Category */}
-                <Field label={t('add.category')}>
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.category')}</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={styles.chips}>
                       {CATEGORIES.map((cat) => (
                         <TouchableOpacity
                           key={cat.id}
-                          style={[
-                            styles.chip,
-                            form.category === cat.id && { backgroundColor: cat.color, borderColor: cat.color },
-                          ]}
+                          style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
+                            form.category === cat.id && { backgroundColor: cat.color, borderColor: cat.color }]}
                           onPress={() => setForm((f) => ({ ...f, category: cat.id }))}
                         >
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                             <CategoryIcon category={cat.id} size={14} />
-                            <Text style={form.category === cat.id ? styles.chipActiveText : styles.chipText}>{cat.label}</Text>
+                            <Text style={{ fontSize: 13, fontWeight: '600', color: form.category === cat.id ? '#FFF' : colors.text }}>
+                              {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
+                            </Text>
                           </View>
                         </TouchableOpacity>
                       ))}
                     </View>
                   </ScrollView>
-                </Field>
+                </View>
 
                 {/* Billing Day */}
-                <Field label={t('subscription.billing_day') + ' (1-31)'}>
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('subscription.billing_day')} (1-31)</Text>
                   <TextInput
-                    style={styles.input}
+                    style={inputStyle}
                     value={form.billingDay}
                     onChangeText={(v) => setForm((f) => ({ ...f, billingDay: v }))}
                     placeholder="1"
                     keyboardType="number-pad"
-                    placeholderTextColor={COLORS.textMuted}
+                    placeholderTextColor={colors.textMuted}
                     maxLength={2}
                   />
-                </Field>
+                </View>
 
                 {/* Payment Card */}
-                <Field label={t('add.card')}>
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.card')}</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={styles.chips}>
                       <TouchableOpacity
-                        style={[styles.chip, !form.paymentCardId && styles.chipActive]}
+                        style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
+                          !form.paymentCardId && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                         onPress={() => setForm((f) => ({ ...f, paymentCardId: '' }))}
                       >
-                        <Text style={!form.paymentCardId ? styles.chipActiveText : styles.chipText}>
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
                           {t('add.no_card')}
                         </Text>
                       </TouchableOpacity>
                       {cards.map((card) => (
                         <TouchableOpacity
                           key={card.id}
-                          style={[styles.chip, form.paymentCardId === card.id && styles.chipActive]}
+                          style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
+                            form.paymentCardId === card.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                           onPress={() => setForm((f) => ({ ...f, paymentCardId: card.id }))}
                         >
-                          <Text style={form.paymentCardId === card.id ? styles.chipActiveText : styles.chipText}>
+                          <Text style={{ fontSize: 13, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
                             ····{card.last4} ({card.brand})
                           </Text>
                         </TouchableOpacity>
                       ))}
                       <TouchableOpacity
-                        style={[styles.chip, styles.addCardChip]}
+                        style={[styles.chip, { borderColor: colors.primary, borderStyle: 'dashed', backgroundColor: 'transparent' }]}
                         onPress={() => setShowAddCard((v) => !v)}
                       >
-                        <Text style={styles.addCardChipText}>+ {t('subscription.add_card')}</Text>
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primary }}>+ {t('subscription.add_card')}</Text>
                       </TouchableOpacity>
                     </View>
                   </ScrollView>
-                </Field>
+                </View>
 
                 {/* Inline Add Card */}
                 {showAddCard && (
-                  <View style={styles.addCardBox}>
-                    <Field label={t('subscription.card_nickname')}>
+                  <View style={[styles.addCardBox, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+                    <View style={styles.field}>
+                      <Text style={fieldLabel}>{t('subscription.card_nickname')}</Text>
                       <TextInput
-                        style={styles.input}
+                        style={inputStyle}
                         value={newCard.nickname}
                         onChangeText={(v) => setNewCard((c) => ({ ...c, nickname: v }))}
                         placeholder={t('add.card_nickname_example')}
-                        placeholderTextColor={COLORS.textMuted}
+                        placeholderTextColor={colors.textMuted}
                       />
-                    </Field>
-                    <Field label={t('subscription.card_last4')}>
+                    </View>
+                    <View style={styles.field}>
+                      <Text style={fieldLabel}>{t('subscription.card_last4')}</Text>
                       <TextInput
-                        style={styles.input}
+                        style={inputStyle}
                         value={newCard.last4}
                         onChangeText={(v) => setNewCard((c) => ({ ...c, last4: v.replace(/\D/g, '').slice(0, 4) }))}
                         placeholder="1234"
                         keyboardType="number-pad"
-                        placeholderTextColor={COLORS.textMuted}
+                        placeholderTextColor={colors.textMuted}
                         maxLength={4}
                       />
-                    </Field>
-                    <Field label={t('subscription.card_brand')}>
+                    </View>
+                    <View style={styles.field}>
+                      <Text style={fieldLabel}>{t('subscription.card_brand')}</Text>
                       <View style={styles.chips}>
                         {CARD_BRANDS.map((b) => (
                           <TouchableOpacity
                             key={b}
-                            style={[styles.chip, newCard.brand === b && styles.chipActive]}
+                            style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
+                              newCard.brand === b && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                             onPress={() => setNewCard((c) => ({ ...c, brand: b }))}
                           >
-                            <Text style={newCard.brand === b ? styles.chipActiveText : styles.chipText}>{b}</Text>
+                            <Text style={{ fontSize: 13, fontWeight: '600', color: newCard.brand === b ? '#FFF' : colors.text }}>{b}</Text>
                           </TouchableOpacity>
                         ))}
                       </View>
-                    </Field>
+                    </View>
                     <TouchableOpacity
-                      style={[styles.addCardBtn, addingCard && { opacity: 0.6 }]}
+                      style={[styles.saveBtn, { backgroundColor: colors.success }, addingCard && { opacity: 0.6 }]}
                       onPress={handleAddCard}
                       disabled={addingCard}
                     >
                       {addingCard ? (
                         <ActivityIndicator color="#FFF" size="small" />
                       ) : (
-                        <Text style={styles.addCardBtnText}>{t('subscription.save_card')}</Text>
+                        <Text style={styles.saveBtnText}>{t('subscription.save_card')}</Text>
                       )}
                     </TouchableOpacity>
                   </View>
                 )}
 
-                {/* Notes */}
-                <Field label={t('add.notes')}>
+                {/* Tags */}
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.tags', 'Tags')}</Text>
                   <TextInput
-                    style={[styles.input, styles.multiline]}
+                    style={inputStyle}
+                    value={form.tags}
+                    onChangeText={(v) => setForm((f) => ({ ...f, tags: v }))}
+                    placeholder={t('add.tags_placeholder', 'work, personal, shared')}
+                    placeholderTextColor={colors.textMuted}
+                  />
+                </View>
+
+                {/* Notes */}
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.notes')}</Text>
+                  <TextInput
+                    style={[inputStyle, { height: 80, textAlignVertical: 'top', paddingTop: 12 }]}
                     value={form.notes}
                     onChangeText={(v) => setForm((f) => ({ ...f, notes: v }))}
                     placeholder={t('add.notes')}
-                    placeholderTextColor={COLORS.textMuted}
+                    placeholderTextColor={colors.textMuted}
                     multiline
                     numberOfLines={3}
                   />
-                </Field>
+                </View>
 
                 {/* Actions */}
                 <TouchableOpacity
                   testID="btn-save-edit"
-                  style={[styles.saveBtn, saving && { opacity: 0.6 }]}
+                  style={[styles.saveBtn, { backgroundColor: colors.primary }, saving && { opacity: 0.6 }]}
                   onPress={handleSave}
                   disabled={saving}
                 >
@@ -353,8 +396,8 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity testID="btn-cancel-edit" style={styles.cancelBtn} onPress={onClose}>
-                  <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+                <TouchableOpacity testID="btn-cancel-edit" style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={onClose}>
+                  <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -365,28 +408,10 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   );
 }
 
-const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <View style={{ marginBottom: 14 }}>
-    <Text style={fieldStyles.label}>{label}</Text>
-    {children}
-  </View>
-);
-
-const fieldStyles = StyleSheet.create({
-  label: { fontSize: 12, fontWeight: '600', color: COLORS.textSecondary, marginBottom: 6 },
-});
-
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheetContainer: {
-    maxHeight: '90%',
-  },
+  overlay: { flex: 1, justifyContent: 'flex-end' },
+  sheetContainer: { maxHeight: '92%' },
   sheet: {
-    backgroundColor: COLORS.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '100%',
@@ -396,92 +421,19 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 20,
   },
-  handleBar: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  title: { fontSize: 20, fontWeight: '800', color: COLORS.text },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  handleBar: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  title: { fontSize: 20, fontWeight: '800' },
+  closeBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   content: { paddingHorizontal: 20 },
   form: { paddingBottom: 40 },
-  row: { flexDirection: 'row', gap: 10 },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  multiline: { height: 80, textAlignVertical: 'top', paddingTop: 12 },
+  field: { marginBottom: 16 },
+  row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  chipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  chipText: { color: COLORS.text },
-  chipActiveText: { color: '#FFF', fontWeight: '700' },
-  addCardChip: {
-    borderColor: COLORS.primary,
-    borderStyle: 'dashed',
-  },
-  addCardChipText: { color: COLORS.primary, fontWeight: '600' },
-  addCardBox: {
-    backgroundColor: COLORS.background,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  addCardBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  addCardBtnText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
-  saveBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
+  chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+  addCardBox: { borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1 },
+  saveBtn: { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
   saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
-  cancelBtn: {
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  cancelBtnText: { color: COLORS.textSecondary, fontSize: 15, fontWeight: '600' },
+  cancelBtn: { borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 8, borderWidth: 1 },
+  cancelBtnText: { fontSize: 15, fontWeight: '600' },
 });
