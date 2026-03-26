@@ -33,6 +33,7 @@ import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 import { useTheme } from '../src/theme';
 import { SunIcon, MoonIcon, MailIcon } from '../src/components/icons';
+import * as Notifications from 'expo-notifications';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -904,7 +905,36 @@ export default function OnboardingScreen() {
       </Text>
     </View>,
 
-    // Step 6: Add first subscription
+    // Step 6: Enable notifications
+    <View key="notifications" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
+      <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: '#F59E0B20', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+        <Ionicons name="notifications" size={56} color="#F59E0B" />
+      </View>
+
+      <Text style={[styles.headline, { textAlign: 'center', color: colors.text }]}>
+        {t('onboarding.notifications_title', 'Never miss a payment')}
+      </Text>
+      <Text style={[styles.subheadline, { textAlign: 'center', color: colors.textSecondary, marginBottom: 16 }]}>
+        {t('onboarding.notifications_subtitle', 'Get reminders before your subscriptions renew so you never get surprised by a charge')}
+      </Text>
+
+      <TouchableOpacity
+        style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: '#F59E0B', flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
+        onPress={async () => {
+          await Notifications.requestPermissionsAsync();
+          setStep(step + 1);
+        }}
+      >
+        <Ionicons name="notifications-outline" size={22} color="#FFF" />
+        <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.enable_notifications', 'Enable notifications')}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setStep(step + 1)} style={{ paddingVertical: 12 }}>
+        <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.maybe_later', 'Maybe later')}</Text>
+      </TouchableOpacity>
+    </View>,
+
+    // Step 7: Add first subscription
     <View key="first_sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
       {/* Icon */}
       <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
@@ -963,7 +993,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {step > 0 && step !== 5 && step !== 6 && (
+        {step > 0 && step !== 5 && step !== 6 && step !== 7 && (
           <View style={styles.footerBtns}>
             {step > 1 && (
               <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
