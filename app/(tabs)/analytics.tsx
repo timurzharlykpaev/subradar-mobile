@@ -23,6 +23,7 @@ import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import ProFeatureModal from '../../src/components/ProFeatureModal';
+import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 
 const CHART_HEIGHT = 200;
 
@@ -114,9 +115,9 @@ function CategoryDonutChart({ categories, total }: {
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const size = 200;
-  const radius = 82;
-  const innerRadius = 46;
+  const size = 220;
+  const radius = 95;
+  const innerRadius = 55;
   const cx = size / 2;
   const cy = size / 2;
   const midRadius = (radius + innerRadius) / 2;
@@ -150,7 +151,7 @@ function CategoryDonutChart({ categories, total }: {
 
       startAngle += sweep;
       // Only show label inside segment if >= 15% (enough space to not overlap)
-      return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 15 };
+      return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 8 };
     }).filter(Boolean) as { d: string; color: string; pct: number; labelX: number; labelY: number; showLabel: boolean }[];
 
   return (
@@ -292,14 +293,19 @@ export default function AnalyticsScreen() {
     .slice(0, 5);
 
   // Card breakdown
+  const getCard = usePaymentCardsStore((s) => s.getCard);
   const cardBreakdown = byCardData.length > 0
     ? byCardData
     : (() => {
         const map = new Map<string, { label: string; total: number }>();
         activeSubs.forEach((s) => {
-          const cardLabel = s.paymentCardId
-            ? `Card ****${s.paymentCardId.slice(-4)}`
-            : t('common.no_card');
+          let cardLabel = t('common.no_card');
+          if (s.paymentCardId) {
+            const card = getCard(s.paymentCardId);
+            cardLabel = card
+              ? (card.nickname || `····${card.last4} ${card.brand}`)
+              : `Card ····${s.paymentCardId.slice(-4)}`;
+          }
           const key = s.paymentCardId || 'unknown';
           const existing = map.get(key);
           if (existing) {

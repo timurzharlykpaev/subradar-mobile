@@ -108,17 +108,19 @@ export default function SubscriptionPlanScreen() {
         borderColor: isCurrent ? d.color : colors.border,
         borderWidth: isCurrent ? 2 : 1,
       }]}>
-        {isCurrent && (
-          <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
-            <Text style={styles.currentBadgeText}>{t('subscription_plan.current_plan')}</Text>
-          </View>
-        )}
         <View style={styles.planCardHeader}>
           <View style={[styles.planIconWrap, { backgroundColor: d.color + '20' }]}>
             <Ionicons name={d.icon as any} size={20} color={d.color} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.planCardName, { color: colors.text }]}>{d.name}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={[styles.planCardName, { color: colors.text }]}>{d.name}</Text>
+              {isCurrent && (
+                <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
+                  <Text style={styles.currentBadgeText}>{t('subscription_plan.current_plan')}</Text>
+                </View>
+              )}
+            </View>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={[styles.planCardPrice, { color: d.color }]}>{price}</Text>
@@ -363,7 +365,7 @@ const styles = StyleSheet.create({
 
   // Plan cards
   planCard: { borderRadius: 20, padding: 18, gap: 10 },
-  currentBadge: { position: 'absolute', top: 12, right: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  currentBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   currentBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', textTransform: 'uppercase' },
   planCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   planIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
