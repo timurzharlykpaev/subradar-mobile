@@ -35,7 +35,14 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "SubRadar needs microphone access to add subscriptions by voice.",
         "NSLocalNetworkUsageDescription": "SubRadar needs local network access to connect to the development server.",
-        "NSBonjourServices": ["_http._tcp"]
+        "NSBonjourServices": [
+          "_http._tcp"
+        ]
+      },
+      "xcodeproj": {
+        "buildSettings": {
+          "CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION": "YES"
+        }
       }
     },
     "android": {
@@ -64,20 +71,26 @@
     },
     "plugins": [
       "expo-router",
-      ["expo-image-picker", {
-        "photosPermission": "Allow SubRadar to access your photos to scan receipts.",
-        "cameraPermission": "Allow SubRadar to take photos of receipts."
-      }],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow SubRadar to access your photos to scan receipts.",
+          "cameraPermission": "Allow SubRadar to take photos of receipts."
+        }
+      ],
       [
         "expo-audio",
         {
           "microphonePermission": "SubRadar needs microphone access to add subscriptions by voice."
         }
       ],
-      ["expo-notifications", {
-        "color": "#7C5CFF",
-        "defaultChannel": "default"
-      }],
+      [
+        "expo-notifications",
+        {
+          "color": "#7C5CFF",
+          "defaultChannel": "default"
+        }
+      ],
       [
         "expo-build-properties",
         {
