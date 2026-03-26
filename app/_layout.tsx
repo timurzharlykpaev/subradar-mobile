@@ -40,10 +40,12 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   }
   if (finalStatus !== 'granted') return null;
   try {
-    // Use native device token (FCM on Android, APNs on iOS)
-    // so firebase-admin on the backend can send push directly
-    const deviceToken = await Notifications.getDevicePushTokenAsync();
-    return deviceToken.data as string;
+    // Use Expo Push Token — works on iOS and Android,
+    // backend sends via Expo Push API (no Firebase Admin complexity)
+    const expoPushToken = await Notifications.getExpoPushTokenAsync({
+      projectId: 'b6fbf0f2-a22b-4eb7-8fb7-d03856c94551',
+    });
+    return expoPushToken.data; // "ExponentPushToken[xxx]"
   } catch {
     // Expo Go or simulator — ignore
     return null;
