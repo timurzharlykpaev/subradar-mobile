@@ -165,12 +165,10 @@ function CategoryDonutChart({ categories, total }: {
             key={`lbl-${idx}`}
             x={slice.labelX}
             y={slice.labelY + 5}
-            fontSize={14}
+            fontSize={13}
             fontWeight="900"
-            fill="#FFF"
+            fill="#1A1A1A"
             textAnchor="middle"
-            stroke="#00000030"
-            strokeWidth={0.5}
           >
             {slice.pct}%
           </SvgText>
@@ -455,19 +453,19 @@ export default function AnalyticsScreen() {
                 <View style={styles.legendContainer}>
                   {byCategory.map((cat, idx) => {
                     const pct = categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0;
-                    const label = cat.label && cat.label.length > 10 ? cat.label.slice(0, 8) + '\u2026' : cat.label;
                     return (
                       <View key={cat.id}>
-                        <View style={[styles.legendRow, { paddingVertical: 8 }]}>
+                        <View style={[styles.legendRow, { paddingVertical: 8, borderBottomColor: colors.border }]}>
                           <View style={[styles.legendDot, { backgroundColor: cat.color }]} />
                           <CategoryIcon category={cat.id} size={14} />
-                          <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>{label}</Text>
-                          <Text style={[styles.legendPercent, { color: colors.textMuted }]}>
+                          <Text style={[styles.legendLabel, { color: colors.text }]} numberOfLines={1}>
+                            {String(t(`categories.${cat.id.toLowerCase()}`, cat.label))}
+                          </Text>
+                          <Text style={[styles.legendPercent, { color: colors.textSecondary }]}>
                             {pct}%
                           </Text>
                           <Text style={[styles.legendAmount, { color: colors.primary }]}>${formatNum(cat.total)}</Text>
                         </View>
-                        {idx < byCategory.length - 1 && <View style={{ height: 1, backgroundColor: colors.border, opacity: 0.3 }} />}
                       </View>
                     );
                   })}
@@ -894,9 +892,9 @@ const styles = StyleSheet.create({
   },
   legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
   legendEmoji: { fontSize: 16, width: 22, textAlign: 'center' },
-  legendLabel: { flex: 1, fontSize: 13, fontWeight: '600' },
-  legendPercent: { fontSize: 12, width: 36, textAlign: 'right', fontWeight: '600' },
-  legendAmount: { fontSize: 13, fontWeight: '700', width: 64, textAlign: 'right' },
+  legendLabel: { flex: 1, fontSize: 13, fontWeight: '600', flexShrink: 1 },
+  legendPercent: { fontSize: 12, minWidth: 40, textAlign: 'right', fontWeight: '700', flexShrink: 0 },
+  legendAmount: { fontSize: 13, fontWeight: '800', minWidth: 70, textAlign: 'right', flexShrink: 0 },
 
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
