@@ -77,6 +77,11 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
         <View style={styles.tagsRow}>
           <CategoryBadge categoryId={subscription.category} size="sm" />
           {subscription.paymentCardId && <CardBadge cardId={subscription.paymentCardId} />}
+          {subscription.tags?.map((tag) => (
+            <View key={tag} style={[styles.tagBadge, { backgroundColor: colors.surface2 }]}>
+              <Text style={[styles.tagText, { color: colors.textSecondary }]}>#{tag}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
@@ -150,4 +155,6 @@ const styles = StyleSheet.create({
   nextDate: { fontSize: 11, fontWeight: '600' },
   trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },
   trialBadgeText: { fontSize: 10, fontWeight: '700' },
+  tagBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  tagText: { fontSize: 10, fontWeight: '600' },
 });

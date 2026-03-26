@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import { usePlanLimits } from '../../src/hooks/usePlanLimits';
+import { useUIStore } from '../../src/stores/uiStore';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 
@@ -44,7 +45,18 @@ export default function SubscriptionsScreen() {
     finally { setRefreshing(false); }
   }, []);
 
+  const addSheetVisible = useUIStore((s) => s.addSheetVisible);
+  const prevSheetVisible = useRef(addSheetVisible);
+
   useEffect(() => { fetchSubs(); }, []);
+
+  // Refresh when AddSubscriptionSheet closes
+  useEffect(() => {
+    if (prevSheetVisible.current && !addSheetVisible) {
+      fetchSubs();
+    }
+    prevSheetVisible.current = addSheetVisible;
+  }, [addSheetVisible]);
 
   const FILTERS: { label: string; value: FilterType; icon: string }[] = [
     { label: t('common.all'), value: 'all', icon: 'apps-outline' },
@@ -114,7 +126,7 @@ export default function SubscriptionsScreen() {
 
   return (
     <SafeAreaView testID="subscriptions-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={0}>
 
         {/* ── Header ────────────────────────────────────────── */}
         <View style={styles.header}>

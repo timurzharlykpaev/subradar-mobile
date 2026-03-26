@@ -253,7 +253,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setForm((f) => ({
         ...f,
         name: result.name ?? f.name,
-        category: (result.category as string)?.toLowerCase() ?? f.category,
+        category: (result.category as string)?.toUpperCase() ?? f.category,
         amount: planAmount > 0 ? String(planAmount) : f.amount,
         currency: firstPlan?.currency ?? f.currency,
         billingPeriod: planPeriod as any,
@@ -293,7 +293,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       amount: first.amount != null ? String(first.amount) : f.amount,
       currency: first.currency ?? f.currency,
       billingPeriod: (first.billingPeriod ?? f.billingPeriod) as any,
-      category: (first.category as string)?.toLowerCase() ?? f.category,
+      category: (first.category as string)?.toUpperCase() ?? f.category,
       serviceUrl: first.serviceUrl ?? f.serviceUrl,
       cancelUrl: first.cancelUrl ?? f.cancelUrl,
       iconUrl: iconUrl || f.iconUrl,
@@ -411,7 +411,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
                         : undefined);
 
-                    const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'NEWS', 'HEALTH', 'OTHER'];
+                    const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
                     const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
                     const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
 
@@ -448,7 +448,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       amount: sub.amount != null ? String(sub.amount) : f.amount,
                       currency: sub.currency ?? f.currency,
                       billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
-                      category: sub.category?.toLowerCase() ?? f.category,
+                      category: sub.category?.toUpperCase() ?? f.category,
                       serviceUrl: sub.serviceUrl ?? f.serviceUrl,
                       cancelUrl: sub.cancelUrl ?? f.cancelUrl,
                       iconUrl: sub.iconUrl ?? f.iconUrl,
