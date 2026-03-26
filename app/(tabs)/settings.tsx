@@ -202,7 +202,7 @@ export default function SettingsScreen() {
             testID="btn-plan-card"
             activeOpacity={0.9}
             onPress={() => router.push('/subscription-plan' as any)}
-            style={{ marginHorizontal: 20, backgroundColor: colors.primary, borderRadius: 20, padding: 20, gap: 10, overflow: 'hidden', shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
+            style={{ marginHorizontal: 20, backgroundColor: isPro ? colors.primary : '#64748B', borderRadius: 20, padding: 20, gap: 10, overflow: 'hidden', shadowColor: isPro ? colors.primary : '#64748B', shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8 }}
           >
             {/* Decorative circles */}
             <View style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.08)' }} />
@@ -242,10 +242,10 @@ export default function SettingsScreen() {
             ) : (
               <>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <SparklesIcon size={20} color="#FFF" />
-                  <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>{t('settings.subradar_pro')}</Text>
+                  <Ionicons name="person-outline" size={20} color="#FFF" />
+                  <Text style={{ fontSize: 20, fontWeight: '900', color: '#FFF' }}>{t('settings.subradar_free')}</Text>
                 </View>
-                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 }}>{t('settings.pro_features')}</Text>
+                <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 18 }}>{t('settings.free_features')}</Text>
                 {billing && (
                   <View style={{ backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 12, padding: 12, gap: 10 }}>
                     {renderProgressBar(
@@ -260,15 +260,18 @@ export default function SettingsScreen() {
                     )}
                   </View>
                 )}
+                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 16, textAlign: 'center' }}>
+                  Pro: {t('settings.pro_features')}
+                </Text>
                 <TouchableOpacity
-                  style={{ backgroundColor: '#FFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 }}
+                  style={{ backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 2 }}
                   onPress={canTrial ? handleStartTrial : handleUpgrade}
                   disabled={startTrialMutation.isPending}
                 >
                   {startTrialMutation.isPending ? (
-                    <ActivityIndicator color={colors.primary} />
+                    <ActivityIndicator color="#FFF" />
                   ) : (
-                    <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary }}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFF' }}>
                       {canTrial ? t('settings.start_trial') : t('settings.upgrade')}
                     </Text>
                   )}
@@ -276,8 +279,8 @@ export default function SettingsScreen() {
               </>
             )}
             {/* Tap hint */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{t('settings.manage_subscription')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 2 }}>
+              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{t('settings.tap_to_manage')}</Text>
               <Ionicons name="chevron-forward" size={12} color="rgba(255,255,255,0.6)" />
             </View>
           </TouchableOpacity>
@@ -331,7 +334,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Preferences */}
-        <Text style={sectionLabel}>{t('settings.default_currency')}</Text>
+        <Text style={sectionLabel}>{t('settings.preferences')}</Text>
         <View style={[card, { padding: 0 }]}>
           {renderSettingRow(
             'cash-outline',
@@ -358,11 +361,7 @@ export default function SettingsScreen() {
               </View>
             </ScrollView>
           </View>
-        </View>
-
-        {/* Language */}
-        <Text style={sectionLabel}>{t('settings.language')}</Text>
-        <View style={[card, { padding: 0 }]}>
+          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
           {renderSettingRow(
             'language-outline',
             '#3B82F6',
@@ -387,11 +386,7 @@ export default function SettingsScreen() {
               ))}
             </View>
           </View>
-        </View>
-
-        {/* Appearance & Notifications */}
-        <Text style={sectionLabel}>{t('settings.theme')}</Text>
-        <View style={[card, { padding: 0 }]}>
+          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
           {renderSettingRow(
             isDark ? 'moon' : 'sunny-outline',
             '#8B5CF6',

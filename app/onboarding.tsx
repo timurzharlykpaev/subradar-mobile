@@ -28,6 +28,7 @@ if (Platform.OS === 'ios') {
 }
 import { useAuthStore } from '../src/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
+import { useUIStore } from '../src/stores/uiStore';
 import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 import { useTheme } from '../src/theme';
@@ -913,7 +914,10 @@ export default function OnboardingScreen() {
       {/* Buttons */}
       <TouchableOpacity
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
-        onPress={() => navigateToApp()}
+        onPress={() => {
+          useUIStore.getState().openAddSheet();
+          navigateToApp();
+        }}
       >
         <Ionicons name="create-outline" size={22} color="#FFF" />
         <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_manually')}</Text>
@@ -922,8 +926,8 @@ export default function OnboardingScreen() {
       <TouchableOpacity
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
         onPress={() => {
-          setOnboarded();
-          router.replace('/(tabs)');
+          useUIStore.getState().openAddSheet();
+          navigateToApp();
         }}
       >
         <Ionicons name="sparkles-outline" size={22} color={colors.primary} />
