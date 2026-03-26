@@ -803,6 +803,13 @@ export default function OnboardingScreen() {
             <MailIcon size={18} color={colors.primary} />
             <Text style={[styles.socialText, { color: colors.text }]}>{t('auth.continue_email')}</Text>
           </TouchableOpacity>
+
+          {/* Trial promo badge */}
+          <View style={{ backgroundColor: colors.primary + '15', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16, marginTop: 16, alignItems: 'center' }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primary, textAlign: 'center' }}>
+              {'\u2728'} {t('onboarding.trial_promo', 'Get 7 days free with Pro after signup')}
+            </Text>
+          </View>
         </>
       ) : otpSent ? (
         <View style={styles.otpContainer}>

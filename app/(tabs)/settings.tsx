@@ -188,7 +188,7 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity
               testID="btn-edit-profile"
-              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primaryLight, borderWidth: 1, borderColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primaryLight, borderWidth: 1, borderColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' }}
               onPress={() => router.push('/edit-profile' as any)}
             >
               <Ionicons name="pencil-outline" size={16} color={colors.primary} />

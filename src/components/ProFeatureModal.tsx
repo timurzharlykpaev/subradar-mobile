@@ -130,7 +130,7 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
                 >
                   <Ionicons name="arrow-up-circle" size={18} color="#FFF" />
                   <Text style={styles.ctaBtnText}>
-                    {t('pro_modal.upgrade', 'Upgrade — $2.99/mo')}
+                    {t('pro_modal.upgrade_no_price', 'Upgrade to Pro')}
                   </Text>
                 </TouchableOpacity>
               )}

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
+import i18n from 'i18next';
 import {
   View,
   Text,
@@ -188,7 +189,7 @@ export default function SubscriptionDetailScreen() {
                 return (
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={[styles.detailValue, { color: col }]}>
-                      {d.toLocaleDateString('en', { day: 'numeric', month: 'long' })}
+                      {d.toLocaleDateString(i18n.language || 'en', { day: 'numeric', month: 'long' })}
                     </Text>
                     <Text style={{ fontSize: 11, color: col, fontWeight: '700', marginTop: 2 }}>
                       {days <= 0 ? t('subscription.trial_expired') : days === 0 ? t('subscription.trial_today') : t('subscription.trial_days_left', { count: days })}
@@ -200,7 +201,7 @@ export default function SubscriptionDetailScreen() {
           ) : subscription.nextPaymentDate ? (
             <DetailRow label={t("subscriptions.next_payment")}>
               <Text style={[styles.detailValue, { color: colors.text }]}>
-                {new Date(subscription.nextPaymentDate).toLocaleDateString('en', {
+                {new Date(subscription.nextPaymentDate).toLocaleDateString(i18n.language || 'en', {
                   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
                 })}
               </Text>
