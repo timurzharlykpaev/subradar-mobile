@@ -25,7 +25,7 @@ export function useCheckout() {
     },
     onError: (error: any) => {
       const msg = error?.response?.data?.message || error?.message || 'Payment provider error. Please try again.';
-      console.warn('Checkout error:', msg);
+      if (__DEV__) console.warn('Checkout error:', msg);
     },
   });
 }

@@ -129,7 +129,7 @@ function PushSetup() {
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const subId = response.notification.request.content.data?.subscriptionId as string | undefined;
-      if (subId) {
+      if (subId && /^[a-f0-9-]{36}$/.test(subId)) {
         router.push(`/subscription/${subId}` as any);
       }
     });
@@ -138,7 +138,7 @@ function PushSetup() {
       if (notificationListener.current) notificationListener.current.remove();
       if (responseListener.current) responseListener.current.remove();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   return null;
 }

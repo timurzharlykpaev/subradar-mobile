@@ -356,7 +356,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       setInput(text);
       await callWizard(text);
     } catch (err) {
-      console.warn('AIWizard voice error:', err);
+      if (__DEV__) console.warn('AIWizard voice error:', err);
       Alert.alert(t('ai.voice_error_title'), t('ai.voice_error'));
       setLoading(false);
     }

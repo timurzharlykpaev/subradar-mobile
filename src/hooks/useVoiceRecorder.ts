@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   useAudioRecorder,
   requestRecordingPermissionsAsync,
@@ -23,7 +23,7 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
       setDuration(0);
       timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
     } catch (e) {
-      console.warn('Voice start error', e);
+      if (__DEV__) console.warn('Voice start error', e);
     }
   }, [recorder]);
 
@@ -35,6 +35,15 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
     setDuration(0);
     if (recorder.uri) onDone(recorder.uri);
   }, [isRecording, recorder, onDone]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
 
   const fmt = (s: number) =>
     `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;

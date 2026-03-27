@@ -8,6 +8,7 @@ import {
 import { Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { Subscription } from '../types';
 import { STATUS_COLORS } from '../constants';
 import { CategoryBadge } from './CategoryBadge';
@@ -108,7 +109,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
           </View>
         ) : subscription.nextPaymentDate ? (
           <Text style={[styles.nextDate, { color: colors.primary }]}>
-            {new Date(subscription.nextPaymentDate).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+            {new Date(subscription.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
           </Text>
         ) : null}
       </View>

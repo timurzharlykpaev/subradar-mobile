@@ -18,7 +18,8 @@ try {
   // Native module not linked (Expo Go, simulator without dev build)
 }
 
-const API_KEY = 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
+// RevenueCat public API keys are designed to be in client code (not a secret)
+const API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
 
 let configured = false;
 
@@ -31,7 +32,7 @@ export function configureRevenueCat() {
     Purchases.configure({ apiKey: API_KEY, appUserID: null });
     configured = true;
   } catch (e) {
-    console.warn('RevenueCat configure failed:', e);
+    if (__DEV__) console.warn('RevenueCat configure failed:', e);
   }
 }
 
@@ -40,7 +41,7 @@ export async function loginRevenueCat(userId: string) {
   try {
     await Purchases.logIn(userId);
   } catch (e) {
-    console.warn('RevenueCat logIn failed:', e);
+    if (__DEV__) console.warn('RevenueCat logIn failed:', e);
   }
 }
 
@@ -49,7 +50,7 @@ export async function logoutRevenueCat() {
   try {
     await Purchases.logOut();
   } catch (e) {
-    console.warn('RevenueCat logOut failed:', e);
+    if (__DEV__) console.warn('RevenueCat logOut failed:', e);
   }
 }
 
@@ -73,7 +74,7 @@ export function useRevenueCat() {
           setOfferings(off);
         }
       } catch (e) {
-        console.warn('RevenueCat load failed:', e);
+        if (__DEV__) console.warn('RevenueCat load failed:', e);
       } finally {
         if (mounted) setLoading(false);
       }

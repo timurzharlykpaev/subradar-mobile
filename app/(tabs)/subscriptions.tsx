@@ -255,6 +255,10 @@ export default function SubscriptionsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          removeClippedSubviews={true}
           renderItem={({ item }) => (
             <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
           )}

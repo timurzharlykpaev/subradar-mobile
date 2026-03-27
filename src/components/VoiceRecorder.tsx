@@ -87,7 +87,7 @@ export const VoiceRecorder: React.FC<Props> = ({ onRecordingComplete, customButt
       ).start();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.warn('Recording error', msg);
+      if (__DEV__) console.warn('Recording error', msg);
     }
   };
 

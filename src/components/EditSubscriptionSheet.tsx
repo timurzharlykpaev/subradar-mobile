@@ -52,14 +52,16 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   const { cards, addCard } = usePaymentCardsStore();
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const [saving, setSaving] = useState(false);
 
   const handleClose = useCallback(() => {
+    if (saving) return;
     Animated.timing(slideAnim, {
       toValue: SCREEN_HEIGHT,
       duration: 250,
       useNativeDriver: true,
     }).start(() => onClose());
-  }, [onClose, slideAnim]);
+  }, [saving, onClose, slideAnim]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -107,7 +109,6 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     tags: '' as string,
   });
 
-  const [saving, setSaving] = useState(false);
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({ nickname: '', last4: '', brand: 'VISA' as CardBrand });
   const [addingCard, setAddingCard] = useState(false);

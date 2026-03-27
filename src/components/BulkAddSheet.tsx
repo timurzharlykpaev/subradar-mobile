@@ -38,6 +38,7 @@ export interface BulkSub {
   iconUrl?: string;
   serviceUrl?: string;
   cancelUrl?: string;
+  isDuplicate?: boolean;
 }
 
 type Mode = 'select' | 'voice' | 'text' | 'screenshot' | 'review';
@@ -115,6 +116,7 @@ const vStyles = StyleSheet.create({
 // ── SubCard ──────────────────────────────────────────────────────────────────
 
 function SubCard({ sub, checked, onToggle, colors }: { sub: BulkSub; checked: boolean; onToggle: () => void; colors: any }) {
+  const { t } = useTranslation();
   const periodMap: Record<string, string> = { MONTHLY: 'мес', YEARLY: 'год', WEEKLY: 'нед', QUARTERLY: 'квар' };
   return (
     <TouchableOpacity
@@ -142,6 +144,11 @@ function SubCard({ sub, checked, onToggle, colors }: { sub: BulkSub; checked: bo
         <Text style={[cStyles.meta, { color: colors.textMuted }]}>
           {sub.currency} {sub.amount.toFixed(2)} / {periodMap[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
         </Text>
+        {sub.isDuplicate && (
+          <Text style={{ fontSize: 10, color: '#FBBF24', marginTop: 2 }}>
+            {t('add.already_exists', '⚠ Уже добавлена')}
+          </Text>
+        )}
       </View>
 
       {/* Checkbox */}
@@ -175,7 +182,7 @@ const TEXT_EXAMPLES = [
 export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
-  const { setSubscriptions } = useSubscriptionsStore();
+  const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const currency = useSettingsStore((s) => s.currency) ?? 'USD';
   const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
 
@@ -234,8 +241,10 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       Alert.alert(t('add.bulk_no_subs', 'Не нашли подписок'), t('add.bulk_try_again', 'Попробуй другой текст или скриншот'));
       return;
     }
+    const existingNames = new Set(subscriptions.map(s => s.name.toLowerCase()));
     const enriched = subs.map((s) => ({
       ...s,
+      isDuplicate: existingNames.has(s.name.toLowerCase()),
       currency: s.currency || currency,
       billingPeriod: normalizeBilling(s.billingPeriod) as BulkSub['billingPeriod'],
       category: normalizeCategory(s.category),
@@ -244,7 +253,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
         : undefined),
     }));
     setParsedSubs(enriched);
-    setChecked(enriched.map(() => true));
+    setChecked(enriched.map((s) => !s.isDuplicate));
     setMode('review');
   };
 
