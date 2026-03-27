@@ -4,7 +4,7 @@ name: "35 - Filter: Filter by Category"
 - runFlow: ./00_setup_auth.yaml
 
 # Navigate to subscriptions
-- tapOn: "Subscriptions"
+- tapOn: "Subs"
 - assertVisible: "Subscriptions"
 
 # Tap category filter
@@ -12,22 +12,22 @@ name: "35 - Filter: Filter by Category"
     id: "filter-chip-category"
     optional: true
 - tapOn:
-    textContains: "Category"
+    text: "Category"
     optional: true
 
 # Should show category options
 - assertVisible:
-    textContains: "Streaming"
+    text: "Streaming"
     optional: true
 
 # Select Streaming
 - tapOn:
-    textContains: "Streaming"
+    text: "Streaming"
     optional: true
 
 # Verify filter applied
 - assertNotVisible:
-    textContains: "Productivity"
+    text: "Productivity"
     optional: true
 
 # Reset to All
@@ -35,7 +35,7 @@ name: "35 - Filter: Filter by Category"
     id: "filter-chip-all"
     optional: true
 - tapOn:
-    textContains: "All"
+    text: "All"
     optional: true
 
 # Sanity checks

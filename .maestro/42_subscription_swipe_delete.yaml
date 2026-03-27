@@ -4,7 +4,7 @@ name: "42 - Subscription: Swipe to Delete"
 - runFlow: ./00_setup_auth.yaml
 
 # Go to subscriptions
-- tapOn: "Subscriptions"
+- tapOn: "Subs"
 
 # Wait for list
 - extendedWaitUntil:
@@ -23,7 +23,7 @@ name: "42 - Subscription: Swipe to Delete"
 
 # Should see delete confirmation or delete button
 - assertVisible:
-    textContains: "Delete"
+    text: "Delete"
     optional: true
 
 # Cancel (don't actually delete)

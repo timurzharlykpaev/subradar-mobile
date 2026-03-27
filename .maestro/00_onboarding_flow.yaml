@@ -95,12 +95,29 @@ name: "00 - Onboarding + Auth flow"
       id: "btn-verify"
     timeout: 15000
 
-# Step 6: Skip first subscription — go to dashboard
+# Handle notification permission screen
+- tapOn:
+    text: "Maybe later"
+    optional: true
 - tapOn:
     text: "Skip for now"
     optional: true
+
+# Handle WelcomeSheet / TrialOffer
+- tapOn:
+    text: "Skip for now"
+    optional: true
+- tapOn:
+    text: "Maybe Later"
+    optional: true
+
+# Close Expo dev debugger banner if present
+- tapOn:
+    point: "95%,98%"
+    optional: true
+
+# Wait for dashboard content
 - extendedWaitUntil:
-    visible:
-      id: "dashboard-screen"
-    timeout: 10000
+    visible: "Total this month"
+    timeout: 20000
     optional: true

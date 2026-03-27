@@ -4,14 +4,14 @@ name: "41 - Add Subscription: AI Wizard Flow"
 - runFlow: ./00_setup_auth.yaml
 
 # Open add subscription
-- tapOn: "Subscriptions"
+- tapOn: "Subs"
 - tapOn:
     text: "+"
     optional: true
 
 # Should default to AI tab
 - assertVisible:
-    textContains: "AI"
+    text: "AI"
     optional: true
 
 # Type in the AI wizard input
@@ -36,7 +36,7 @@ name: "41 - Add Subscription: AI Wizard Flow"
 # Wait for AI response
 - extendedWaitUntil:
     visible:
-      textContains: "$"
+      text: "$"
     timeout: 15000
   optional: true
 

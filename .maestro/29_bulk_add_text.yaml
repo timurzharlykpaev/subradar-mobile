@@ -25,13 +25,13 @@ name: "29 - Bulk Add via Text"
 # Look for Quick Import / Bulk button
 - scrollUntilVisible:
     element:
-      textContains: "Quick Import"
+      text: "Quick Import"
     direction: DOWN
     timeout: 5000
   optional: true
 
 - tapOn:
-    textContains: "Quick Import"
+    text: "Quick Import"
     optional: true
 - takeScreenshot: 29_quick_import
 
@@ -47,26 +47,26 @@ name: "29 - Bulk Add via Text"
 
 # Parse
 - tapOn:
-    textContains: "Recognize"
+    text: "Recognize"
     optional: true
 - tapOn:
-    textContains: "Parse"
+    text: "Parse"
     optional: true
 
 # Wait for results
 - extendedWaitUntil:
     visible:
-      textContains: "Netflix"
+      text: "Netflix"
     timeout: 15000
   optional: true
 - takeScreenshot: 29_parsed_results
 
 # Should show found subscriptions
 - assertVisible:
-    textContains: "Netflix"
+    text: "Netflix"
     optional: true
 - assertVisible:
-    textContains: "Spotify"
+    text: "Spotify"
     optional: true
 
 # Sanity checks

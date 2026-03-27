@@ -7,19 +7,19 @@ name: "40 - Paywall: Plan Cards Display Correctly"
 - tapOn: "Settings"
 - scrollUntilVisible:
     element:
-      textContains: "Plan"
+      text: "Plan"
     direction: DOWN
     timeout: 5000
 - tapOn:
-    textContains: "Plan"
+    text: "Plan"
     optional: true
 
 # Should see plan options
 - assertVisible:
-    textContains: "Free"
+    text: "Free"
     optional: true
 - assertVisible:
-    textContains: "Pro"
+    text: "Pro"
     optional: true
 
 # Check no NaN in prices
@@ -28,17 +28,17 @@ name: "40 - Paywall: Plan Cards Display Correctly"
 
 # Check billing toggle
 - tapOn:
-    textContains: "Yearly"
+    text: "Yearly"
     optional: true
 
 # Check -30% badge
 - assertVisible:
-    textContains: "30%"
+    text: "30%"
     optional: true
 
 # Switch back to monthly
 - tapOn:
-    textContains: "Monthly"
+    text: "Monthly"
     optional: true
 
 # Close

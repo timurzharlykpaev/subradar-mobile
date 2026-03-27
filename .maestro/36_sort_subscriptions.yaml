@@ -4,14 +4,14 @@ name: "36 - Sort: Sort Subscriptions"
 - runFlow: ./00_setup_auth.yaml
 
 # Navigate to subscriptions
-- tapOn: "Subscriptions"
+- tapOn: "Subs"
 
 # Sort by price high to low
 - tapOn:
     id: "sort-chip-amount_high"
     optional: true
 - tapOn:
-    textContains: "Price"
+    text: "Price"
     optional: true
 
 # Sort by name
@@ -19,7 +19,7 @@ name: "36 - Sort: Sort Subscriptions"
     id: "sort-chip-name"
     optional: true
 - tapOn:
-    textContains: "A-Z"
+    text: "A-Z"
     optional: true
 
 # Sort by date
@@ -27,7 +27,7 @@ name: "36 - Sort: Sort Subscriptions"
     id: "sort-chip-next_date"
     optional: true
 - tapOn:
-    textContains: "Date"
+    text: "Date"
     optional: true
 
 # Sanity checks

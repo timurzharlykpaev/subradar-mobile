@@ -11,12 +11,12 @@ name: "27 - Workspace Flow"
 
 # Verify workspace screen loaded
 - assertVisible:
-    textContains: "Workspace"
+    text: "Workspace"
     optional: true
 
 # Empty state — should show upgrade or create button
 - assertVisible:
-    textContains: "team"
+    text: "team"
     optional: true
 - takeScreenshot: 27_workspace_empty_state
 

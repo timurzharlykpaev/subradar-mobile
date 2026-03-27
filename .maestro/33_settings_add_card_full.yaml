@@ -9,12 +9,12 @@ name: "33 - Settings: Full Add Card Flow with Validation"
 # Scroll to add card button
 - scrollUntilVisible:
     element:
-      textContains: "Add Card"
+      text: "Add Card"
     direction: DOWN
     timeout: 5000
 
 - tapOn:
-    textContains: "Add Card"
+    text: "Add Card"
 
 # Fill card form
 - tapOn:
@@ -34,7 +34,7 @@ name: "33 - Settings: Full Add Card Flow with Validation"
 
 # Save card
 - tapOn:
-    textContains: "Save"
+    text: "Save"
     optional: true
 - tapOn:
     id: "btn-save-card"
@@ -42,7 +42,7 @@ name: "33 - Settings: Full Add Card Flow with Validation"
 
 # Verify card appears in list
 - assertVisible:
-    textContains: "4242"
+    text: "4242"
     optional: true
 
 # Sanity checks

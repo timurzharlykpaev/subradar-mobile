@@ -10,7 +10,7 @@ name: "32 - Settings: Delete Payment Card"
 # Scroll to payment cards section
 - scrollUntilVisible:
     element:
-      textContains: "Card"
+      text: "Card"
     direction: DOWN
     timeout: 5000
 

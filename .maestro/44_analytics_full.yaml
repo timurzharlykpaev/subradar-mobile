@@ -9,7 +9,7 @@ name: "44 - Analytics: Full Screen Verification"
 
 # Stats row
 - assertVisible:
-    textContains: "$"
+    text: "$"
     optional: true
 
 # No NaN/undefined in any values
@@ -23,7 +23,7 @@ name: "44 - Analytics: Full Screen Verification"
 
 # Check for chart sections
 - assertVisible:
-    textContains: "Monthly"
+    text: "Monthly"
     optional: true
 
 # Scroll more
@@ -32,13 +32,13 @@ name: "44 - Analytics: Full Screen Verification"
 
 # Check for categories
 - assertVisible:
-    textContains: "Category"
+    text: "Category"
     optional: true
 
 # Check for forecast section
 - scrollUntilVisible:
     element:
-      textContains: "Forecast"
+      text: "Forecast"
     direction: DOWN
     timeout: 5000
   optional: true
@@ -46,7 +46,7 @@ name: "44 - Analytics: Full Screen Verification"
 # Check for top subscriptions
 - scrollUntilVisible:
     element:
-      textContains: "Top"
+      text: "Top"
     direction: DOWN
     timeout: 5000
   optional: true

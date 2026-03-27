@@ -11,7 +11,7 @@ name: "45 - Pull to Refresh: All Screens"
       left: 50%
 
 # Subscriptions pull to refresh
-- tapOn: "Subscriptions"
+- tapOn: "Subs"
 - scroll:
     direction: DOWN
     from:

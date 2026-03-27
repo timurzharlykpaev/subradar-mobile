@@ -4,7 +4,7 @@ name: "38 - Add Subscription: Manual with Trial Period"
 - runFlow: ./00_setup_auth.yaml
 
 # Open add subscription
-- tapOn: "Subscriptions"
+- tapOn: "Subs"
 - tapOn:
     text: "+"
     optional: true
@@ -14,7 +14,7 @@ name: "38 - Add Subscription: Manual with Trial Period"
     id: "tab-manual"
     optional: true
 - tapOn:
-    textContains: "Manual"
+    text: "Manual"
     optional: true
 
 # Fill name
@@ -32,36 +32,36 @@ name: "38 - Add Subscription: Manual with Trial Period"
 # Expand more options
 - scrollUntilVisible:
     element:
-      textContains: "More"
+      text: "More"
     direction: DOWN
     timeout: 5000
   optional: true
 
 - tapOn:
-    textContains: "More"
+    text: "More"
     optional: true
 
 # Toggle trial period
 - scrollUntilVisible:
     element:
-      textContains: "Trial"
+      text: "Trial"
     direction: DOWN
     timeout: 5000
   optional: true
 
 - tapOn:
-    textContains: "Trial"
+    text: "Trial"
     optional: true
 
 # Save
 - scrollUntilVisible:
     element:
-      textContains: "Save"
+      text: "Save"
     direction: DOWN
     timeout: 5000
 
 - tapOn:
-    textContains: "Save"
+    text: "Save"
     optional: true
 - tapOn:
     id: "btn-save-sub"

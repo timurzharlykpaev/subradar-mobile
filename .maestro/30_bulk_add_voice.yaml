@@ -14,13 +14,13 @@ name: "30 - Bulk Add via Voice (UI Verification)"
 # Look for Quick Import
 - scrollUntilVisible:
     element:
-      textContains: "Quick Import"
+      text: "Quick Import"
     direction: DOWN
     timeout: 5000
   optional: true
 
 - tapOn:
-    textContains: "Quick Import"
+    text: "Quick Import"
     optional: true
 - takeScreenshot: 30_quick_import
 
@@ -44,7 +44,7 @@ name: "30 - Bulk Add via Voice (UI Verification)"
     text: "Cancel"
     optional: true
 - tapOn:
-    textContains: "Close"
+    text: "Close"
     optional: true
 
 # Sanity checks

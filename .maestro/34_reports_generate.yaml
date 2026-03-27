@@ -8,33 +8,33 @@ name: "34 - Reports: Generate Report"
 
 - scrollUntilVisible:
     element:
-      textContains: "Report"
+      text: "Report"
     direction: DOWN
     timeout: 5000
 
 - tapOn:
-    textContains: "Report"
+    text: "Report"
     optional: true
 
 # Select report type
 - tapOn:
-    textContains: "Summary"
+    text: "Summary"
     optional: true
 
 # Select date range
 - tapOn:
-    textContains: "Month"
+    text: "Month"
     optional: true
 
 # Generate
 - tapOn:
-    textContains: "Generate"
+    text: "Generate"
     optional: true
 
 # Wait for generation
 - extendedWaitUntil:
     visible:
-      textContains: "Report"
+      text: "Report"
     timeout: 15000
   optional: true
 

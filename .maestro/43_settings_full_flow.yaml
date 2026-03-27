@@ -9,7 +9,7 @@ name: "43 - Settings: Complete Walkthrough"
 
 # Profile section visible
 - assertVisible:
-    textContains: "@"
+    text: "@"
     optional: true
 
 # Theme toggle
@@ -47,13 +47,13 @@ name: "43 - Settings: Complete Walkthrough"
 # Notifications section
 - scrollUntilVisible:
     element:
-      textContains: "Notification"
+      text: "Notification"
     direction: DOWN
     timeout: 5000
 
 # Reminder days
 - tapOn:
-    textContains: "3d"
+    text: "3d"
     optional: true
 - tapOn:
     id: "btn-reminder-3d"
@@ -62,10 +62,10 @@ name: "43 - Settings: Complete Walkthrough"
 # Scroll to bottom
 - scrollUntilVisible:
     element:
-      textContains: "Sign Out"
+      text: "Sign Out"
     direction: DOWN
     timeout: 5000
 
 # Check Sign Out exists
 - assertVisible:
-    textContains: "Sign Out"
+    text: "Sign Out"
