@@ -1,0 +1,28 @@
+appId: com.goalin.subradar
+name: "39 - Error States: No NaN/undefined/null on Any Screen"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Check dashboard doesn't show errors
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- assertNotVisible: "Error"
+
+# Go to subscriptions
+- tapOn: "Subscriptions"
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+
+# Go to analytics
+- tapOn: "Analytics"
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+
+# Go to settings
+- tapOn: "Settings"
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"

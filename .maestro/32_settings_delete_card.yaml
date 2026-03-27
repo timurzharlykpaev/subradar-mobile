@@ -1,0 +1,33 @@
+appId: com.goalin.subradar
+name: "32 - Settings: Delete Payment Card"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Go to settings
+- tapOn: "Settings"
+- assertVisible: "Settings"
+
+# Scroll to payment cards section
+- scrollUntilVisible:
+    element:
+      textContains: "Card"
+    direction: DOWN
+    timeout: 5000
+
+# If cards exist, try to delete
+- tapOn:
+    id: "btn-delete-card"
+    optional: true
+
+# Confirm deletion if dialog appears
+- tapOn:
+    text: "Delete"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

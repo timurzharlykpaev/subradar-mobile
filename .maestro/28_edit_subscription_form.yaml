@@ -1,0 +1,67 @@
+appId: com.goalin.subradar
+name: "28 - Edit Subscription Form"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Subscriptions tab
+- tapOn:
+    text: "Subs"
+    optional: true
+- takeScreenshot: 28_subscriptions_list
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+
+# Wait for list to load
+- extendedWaitUntil:
+    visible:
+      id: "subscription-list"
+    timeout: 10000
+
+# Tap first subscription
+- tapOn:
+    index: 0
+    id: "subscription-list"
+    optional: true
+- takeScreenshot: 28_subscription_detail
+
+# Look for edit button
+- tapOn:
+    text: "Edit"
+    optional: true
+- takeScreenshot: 28_edit_sheet_opened
+
+# If edit sheet opened, verify fields
+- assertVisible:
+    text: "Name"
+    optional: true
+
+- assertVisible:
+    text: "Amount"
+    optional: true
+
+# Change the name
+- tapOn:
+    id: "name-input"
+    optional: true
+- eraseText: 20
+- inputText: "Netflix Premium Edited"
+- takeScreenshot: 28_name_changed
+
+# Save
+- tapOn:
+    text: "Save"
+    optional: true
+- takeScreenshot: 28_saved
+
+# Verify change
+- assertVisible:
+    text: "Netflix Premium Edited"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

@@ -1,0 +1,36 @@
+appId: com.goalin.subradar
+name: "36 - Sort: Sort Subscriptions"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to subscriptions
+- tapOn: "Subscriptions"
+
+# Sort by price high to low
+- tapOn:
+    id: "sort-chip-amount_high"
+    optional: true
+- tapOn:
+    textContains: "Price"
+    optional: true
+
+# Sort by name
+- tapOn:
+    id: "sort-chip-name"
+    optional: true
+- tapOn:
+    textContains: "A-Z"
+    optional: true
+
+# Sort by date
+- tapOn:
+    id: "sort-chip-next_date"
+    optional: true
+- tapOn:
+    textContains: "Date"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

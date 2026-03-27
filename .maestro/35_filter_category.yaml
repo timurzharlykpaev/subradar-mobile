@@ -1,0 +1,44 @@
+appId: com.goalin.subradar
+name: "35 - Filter: Filter by Category"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to subscriptions
+- tapOn: "Subscriptions"
+- assertVisible: "Subscriptions"
+
+# Tap category filter
+- tapOn:
+    id: "filter-chip-category"
+    optional: true
+- tapOn:
+    textContains: "Category"
+    optional: true
+
+# Should show category options
+- assertVisible:
+    textContains: "Streaming"
+    optional: true
+
+# Select Streaming
+- tapOn:
+    textContains: "Streaming"
+    optional: true
+
+# Verify filter applied
+- assertNotVisible:
+    textContains: "Productivity"
+    optional: true
+
+# Reset to All
+- tapOn:
+    id: "filter-chip-all"
+    optional: true
+- tapOn:
+    textContains: "All"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

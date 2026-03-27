@@ -1,0 +1,71 @@
+appId: com.goalin.subradar
+name: "43 - Settings: Complete Walkthrough"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Go to settings
+- tapOn: "Settings"
+- assertVisible: "Settings"
+
+# Profile section visible
+- assertVisible:
+    textContains: "@"
+    optional: true
+
+# Theme toggle
+- tapOn:
+    id: "btn-theme-toggle"
+    optional: true
+# Toggle back
+- tapOn:
+    id: "btn-theme-toggle"
+    optional: true
+
+# Currency selection
+- scrollUntilVisible:
+    element:
+      text: "USD"
+    direction: DOWN
+    timeout: 5000
+- tapOn:
+    text: "EUR"
+    optional: true
+- tapOn:
+    text: "USD"
+    optional: true
+
+# Language selection
+- scrollUntilVisible:
+    element:
+      text: "English"
+    direction: DOWN
+    timeout: 5000
+- assertVisible:
+    text: "English"
+    optional: true
+
+# Notifications section
+- scrollUntilVisible:
+    element:
+      textContains: "Notification"
+    direction: DOWN
+    timeout: 5000
+
+# Reminder days
+- tapOn:
+    textContains: "3d"
+    optional: true
+- tapOn:
+    id: "btn-reminder-3d"
+    optional: true
+
+# Scroll to bottom
+- scrollUntilVisible:
+    element:
+      textContains: "Sign Out"
+    direction: DOWN
+    timeout: 5000
+
+# Check Sign Out exists
+- assertVisible:
+    textContains: "Sign Out"

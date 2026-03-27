@@ -1,0 +1,52 @@
+appId: com.goalin.subradar
+name: "44 - Analytics: Full Screen Verification"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Go to analytics
+- tapOn: "Analytics"
+- assertVisible: "Analytics"
+
+# Stats row
+- assertVisible:
+    textContains: "$"
+    optional: true
+
+# No NaN/undefined in any values
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+
+# Scroll to charts
+- scroll:
+    direction: DOWN
+
+# Check for chart sections
+- assertVisible:
+    textContains: "Monthly"
+    optional: true
+
+# Scroll more
+- scroll:
+    direction: DOWN
+
+# Check for categories
+- assertVisible:
+    textContains: "Category"
+    optional: true
+
+# Check for forecast section
+- scrollUntilVisible:
+    element:
+      textContains: "Forecast"
+    direction: DOWN
+    timeout: 5000
+  optional: true
+
+# Check for top subscriptions
+- scrollUntilVisible:
+    element:
+      textContains: "Top"
+    direction: DOWN
+    timeout: 5000
+  optional: true

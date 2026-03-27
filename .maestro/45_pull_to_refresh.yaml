@@ -1,0 +1,31 @@
+appId: com.goalin.subradar
+name: "45 - Pull to Refresh: All Screens"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Dashboard pull to refresh
+- scroll:
+    direction: DOWN
+    from:
+      top: 200
+      left: 50%
+
+# Subscriptions pull to refresh
+- tapOn: "Subscriptions"
+- scroll:
+    direction: DOWN
+    from:
+      top: 200
+      left: 50%
+
+# Analytics pull to refresh
+- tapOn: "Analytics"
+- scroll:
+    direction: DOWN
+    from:
+      top: 200
+      left: 50%
+
+# No crashes
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"

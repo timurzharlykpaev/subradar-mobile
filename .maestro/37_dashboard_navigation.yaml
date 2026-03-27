@@ -1,0 +1,38 @@
+appId: com.goalin.subradar
+name: "37 - Dashboard: Navigation to All Sections"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Should be on dashboard
+- assertVisible: "Dashboard"
+
+# Check hero card
+- assertVisible:
+    textContains: "$"
+    optional: true
+
+# Check stats row
+- assertVisible:
+    textContains: "Active"
+    optional: true
+
+# Navigate to subscriptions via "See All"
+- tapOn:
+    textContains: "See All"
+    optional: true
+- tapOn:
+    id: "btn-see-all-subs"
+    optional: true
+
+# Go back to dashboard
+- pressKey: back
+  optional: true
+- tapOn:
+    text: "Dashboard"
+    optional: true
+
+# Check for no NaN or undefined
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- assertNotVisible: "Render Error"

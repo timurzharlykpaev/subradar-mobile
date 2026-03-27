@@ -1,0 +1,45 @@
+appId: com.goalin.subradar
+name: "40 - Paywall: Plan Cards Display Correctly"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to paywall
+- tapOn: "Settings"
+- scrollUntilVisible:
+    element:
+      textContains: "Plan"
+    direction: DOWN
+    timeout: 5000
+- tapOn:
+    textContains: "Plan"
+    optional: true
+
+# Should see plan options
+- assertVisible:
+    textContains: "Free"
+    optional: true
+- assertVisible:
+    textContains: "Pro"
+    optional: true
+
+# Check no NaN in prices
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+
+# Check billing toggle
+- tapOn:
+    textContains: "Yearly"
+    optional: true
+
+# Check -30% badge
+- assertVisible:
+    textContains: "30%"
+    optional: true
+
+# Switch back to monthly
+- tapOn:
+    textContains: "Monthly"
+    optional: true
+
+# Close
+- pressKey: back

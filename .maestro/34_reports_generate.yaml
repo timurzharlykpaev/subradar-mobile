@@ -1,0 +1,44 @@
+appId: com.goalin.subradar
+name: "34 - Reports: Generate Report"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to reports (via settings or direct)
+- tapOn: "Settings"
+
+- scrollUntilVisible:
+    element:
+      textContains: "Report"
+    direction: DOWN
+    timeout: 5000
+
+- tapOn:
+    textContains: "Report"
+    optional: true
+
+# Select report type
+- tapOn:
+    textContains: "Summary"
+    optional: true
+
+# Select date range
+- tapOn:
+    textContains: "Month"
+    optional: true
+
+# Generate
+- tapOn:
+    textContains: "Generate"
+    optional: true
+
+# Wait for generation
+- extendedWaitUntil:
+    visible:
+      textContains: "Report"
+    timeout: 15000
+  optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

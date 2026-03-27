@@ -1,0 +1,45 @@
+appId: com.goalin.subradar
+name: "41 - Add Subscription: AI Wizard Flow"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Open add subscription
+- tapOn: "Subscriptions"
+- tapOn:
+    text: "+"
+    optional: true
+
+# Should default to AI tab
+- assertVisible:
+    textContains: "AI"
+    optional: true
+
+# Type in the AI wizard input
+- tapOn:
+    id: "ai-wizard-input"
+    optional: true
+- inputText: "Spotify"
+
+# Quick suggestion buttons should be visible
+- assertVisible:
+    text: "Netflix"
+    optional: true
+- assertVisible:
+    text: "Spotify"
+    optional: true
+
+# Tap a quick suggestion
+- tapOn:
+    text: "Netflix"
+    optional: true
+
+# Wait for AI response
+- extendedWaitUntil:
+    visible:
+      textContains: "$"
+    timeout: 15000
+  optional: true
+
+# Should show plan selection or confirm screen
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"

@@ -1,0 +1,73 @@
+appId: com.goalin.subradar
+name: "38 - Add Subscription: Manual with Trial Period"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Open add subscription
+- tapOn: "Subscriptions"
+- tapOn:
+    text: "+"
+    optional: true
+
+# Switch to manual tab
+- tapOn:
+    id: "tab-manual"
+    optional: true
+- tapOn:
+    textContains: "Manual"
+    optional: true
+
+# Fill name
+- tapOn:
+    id: "name-input"
+    optional: true
+- inputText: "Test Trial Sub"
+
+# Fill amount
+- tapOn:
+    id: "amount-input"
+    optional: true
+- inputText: "9.99"
+
+# Expand more options
+- scrollUntilVisible:
+    element:
+      textContains: "More"
+    direction: DOWN
+    timeout: 5000
+  optional: true
+
+- tapOn:
+    textContains: "More"
+    optional: true
+
+# Toggle trial period
+- scrollUntilVisible:
+    element:
+      textContains: "Trial"
+    direction: DOWN
+    timeout: 5000
+  optional: true
+
+- tapOn:
+    textContains: "Trial"
+    optional: true
+
+# Save
+- scrollUntilVisible:
+    element:
+      textContains: "Save"
+    direction: DOWN
+    timeout: 5000
+
+- tapOn:
+    textContains: "Save"
+    optional: true
+- tapOn:
+    id: "btn-save-sub"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

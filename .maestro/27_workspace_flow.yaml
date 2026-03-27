@@ -1,0 +1,35 @@
+appId: com.goalin.subradar
+name: "27 - Workspace Flow"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Workspace tab
+- tapOn:
+    text: "Workspace"
+    optional: true
+- takeScreenshot: 27_workspace_tab
+
+# Verify workspace screen loaded
+- assertVisible:
+    textContains: "Workspace"
+    optional: true
+
+# Empty state — should show upgrade or create button
+- assertVisible:
+    textContains: "team"
+    optional: true
+- takeScreenshot: 27_workspace_empty_state
+
+# If free plan — see upgrade prompt
+- tapOn:
+    text: "Need Team Plan"
+    optional: true
+- takeScreenshot: 27_upgrade_prompt
+
+# Go back
+- pressKey: back
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

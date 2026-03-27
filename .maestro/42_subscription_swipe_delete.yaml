@@ -1,0 +1,34 @@
+appId: com.goalin.subradar
+name: "42 - Subscription: Swipe to Delete"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Go to subscriptions
+- tapOn: "Subscriptions"
+
+# Wait for list
+- extendedWaitUntil:
+    visible:
+      id: "subscription-list"
+    timeout: 10000
+  optional: true
+
+# Swipe left on first subscription
+- swipe:
+    direction: LEFT
+    from:
+      id: "subscription-list"
+    duration: 300
+  optional: true
+
+# Should see delete confirmation or delete button
+- assertVisible:
+    textContains: "Delete"
+    optional: true
+
+# Cancel (don't actually delete)
+- tapOn:
+    text: "Cancel"
+    optional: true
+- pressKey: back
+  optional: true

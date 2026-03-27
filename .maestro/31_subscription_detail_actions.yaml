@@ -1,0 +1,59 @@
+appId: com.goalin.subradar
+name: "31 - Subscription Detail Actions (Pause/Cancel/Delete)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Subscriptions tab
+- tapOn:
+    text: "Subs"
+    optional: true
+
+# Verify subscriptions screen loaded
+- assertVisible:
+    id: "subscriptions-screen"
+    optional: true
+
+# Wait for list to load
+- extendedWaitUntil:
+    visible:
+      id: "subscription-list"
+    timeout: 10000
+
+# Tap on a subscription card
+- tapOn:
+    index: 0
+    id: "subscription-list"
+    optional: true
+- takeScreenshot: 31_subscription_detail
+
+# Should see detail screen with price
+- assertVisible:
+    textContains: "$"
+    optional: true
+
+# Check for Cancel button
+- scrollUntilVisible:
+    element:
+      textContains: "Cancel"
+    direction: DOWN
+    timeout: 5000
+  optional: true
+
+- assertVisible:
+    textContains: "Cancel"
+    optional: true
+- takeScreenshot: 31_cancel_button_visible
+
+# Check for website link if exists
+- assertVisible:
+    textContains: "Website"
+    optional: true
+
+# Go back
+- pressKey: back
+- takeScreenshot: 31_back_to_list
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

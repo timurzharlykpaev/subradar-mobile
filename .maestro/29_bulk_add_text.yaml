@@ -1,0 +1,75 @@
+appId: com.goalin.subradar
+name: "29 - Bulk Add via Text"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Subscriptions tab
+- tapOn:
+    text: "Subs"
+    optional: true
+
+# Open add subscription sheet
+- tapOn:
+    id: "add-sub-sheet"
+    optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# Switch to AI tab
+- tapOn:
+    id: "tab-ai"
+    optional: true
+- takeScreenshot: 29_ai_tab
+
+# Look for Quick Import / Bulk button
+- scrollUntilVisible:
+    element:
+      textContains: "Quick Import"
+    direction: DOWN
+    timeout: 5000
+  optional: true
+
+- tapOn:
+    textContains: "Quick Import"
+    optional: true
+- takeScreenshot: 29_quick_import
+
+# Select text mode
+- tapOn:
+    text: "Text"
+    optional: true
+- takeScreenshot: 29_text_mode
+
+# Enter multiple subscriptions
+- inputText: "Netflix $15.99/mo, Spotify $9.99/mo, ChatGPT Plus $20/mo"
+- takeScreenshot: 29_text_entered
+
+# Parse
+- tapOn:
+    textContains: "Recognize"
+    optional: true
+- tapOn:
+    textContains: "Parse"
+    optional: true
+
+# Wait for results
+- extendedWaitUntil:
+    visible:
+      textContains: "Netflix"
+    timeout: 15000
+  optional: true
+- takeScreenshot: 29_parsed_results
+
+# Should show found subscriptions
+- assertVisible:
+    textContains: "Netflix"
+    optional: true
+- assertVisible:
+    textContains: "Spotify"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

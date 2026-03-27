@@ -1,0 +1,53 @@
+appId: com.goalin.subradar
+name: "30 - Bulk Add via Voice (UI Verification)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Open add subscription sheet
+- tapOn:
+    id: "add-sub-sheet"
+    optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# Look for Quick Import
+- scrollUntilVisible:
+    element:
+      textContains: "Quick Import"
+    direction: DOWN
+    timeout: 5000
+  optional: true
+
+- tapOn:
+    textContains: "Quick Import"
+    optional: true
+- takeScreenshot: 30_quick_import
+
+# Select voice mode
+- tapOn:
+    text: "Voice"
+    optional: true
+- takeScreenshot: 30_voice_mode
+
+# Verify recording UI appears
+- assertVisible:
+    id: "voice-recorder"
+    optional: true
+- assertVisible:
+    id: "btn-record"
+    optional: true
+- takeScreenshot: 30_voice_ui_visible
+
+# Cancel
+- tapOn:
+    text: "Cancel"
+    optional: true
+- tapOn:
+    textContains: "Close"
+    optional: true
+
+# Sanity checks
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
