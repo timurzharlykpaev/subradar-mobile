@@ -7,6 +7,7 @@ import {
   Modal,
   Animated,
   Dimensions,
+  PanResponder,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
@@ -24,6 +25,43 @@ export function WelcomeSheet({ visible, onAddWithAI, onSkip }: Props) {
   const { colors } = useTheme();
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+
+  const handleClose = () => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: SCREEN_HEIGHT,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onSkip());
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) translateY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 100 || g.vy > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 200,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     if (visible) {
@@ -70,7 +108,10 @@ export function WelcomeSheet({ visible, onAddWithAI, onSkip }: Props) {
           },
         ]}
       >
-        <View style={[styles.handle, { backgroundColor: colors.border }]} />
+        {/* Drag handle */}
+        <View {...panResponder.panHandlers} style={{ paddingVertical: 12, alignItems: 'center' }}>
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+        </View>
         <Text style={[styles.emoji]}>👋</Text>
         <Text style={[styles.title, { color: colors.text }]}>
           {t('onboarding.welcome_title')}

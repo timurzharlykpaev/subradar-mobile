@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Animated,
+  Dimensions,
+  PanResponder,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORIES, CURRENCIES, BILLING_PERIODS, CARD_BRANDS } from '../constants';
@@ -30,6 +34,8 @@ interface Props {
   subscription: Subscription;
 }
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 const PERIOD_LABELS: Record<string, string> = {
   WEEKLY: 'billing.weekly',
   MONTHLY: 'billing.monthly',
@@ -44,6 +50,50 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   const { colors } = useTheme();
   const { updateSubscription } = useSubscriptionsStore();
   const { cards, addCard } = usePaymentCardsStore();
+
+  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  const handleClose = useCallback(() => {
+    Animated.timing(slideAnim, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => onClose());
+  }, [onClose, slideAnim]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) slideAnim.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 100 || g.vy > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 200,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      slideAnim.setValue(SCREEN_HEIGHT);
+    }
+  }, [visible]);
 
   const [form, setForm] = useState({
     name: '',
@@ -108,7 +158,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
       };
       await subscriptionsApi.update(subscription.id, payload);
       updateSubscription(subscription.id, payload);
-      onClose();
+      handleClose();
     } catch {
       Alert.alert(t('common.error'), '');
     } finally {
@@ -147,18 +197,24 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   const inputStyle = { backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+    <Modal visible={visible} animationType="none" transparent onRequestClose={handleClose}>
+      <TouchableWithoutFeedback onPress={handleClose}>
+        <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]} />
+      </TouchableWithoutFeedback>
+
+      <Animated.View testID="edit-sub-sheet" style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}>
+        {/* Drag handle */}
+        <View {...panResponder.panHandlers} style={{ paddingVertical: 12, alignItems: 'center' }}>
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+        </View>
+
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.sheetContainer}
+          style={{ flex: 1 }}
         >
-          <View testID="edit-sub-sheet" style={[styles.sheet, { backgroundColor: colors.surface }]}>
-            <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
-
             <View style={styles.header}>
               <Text style={[styles.title, { color: colors.text }]}>{t('subscription.edit_title')}</Text>
-              <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}>
+              <TouchableOpacity onPress={handleClose} style={[styles.closeBtn, { backgroundColor: colors.surface2 }]}>
                 <Ionicons name="close" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -396,32 +452,33 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   )}
                 </TouchableOpacity>
 
-                <TouchableOpacity testID="btn-cancel-edit" style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={onClose}>
+                <TouchableOpacity testID="btn-cancel-edit" style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={handleClose}>
                   <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
-          </View>
         </KeyboardAvoidingView>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: 'flex-end' },
-  sheetContainer: { maxHeight: '92%' },
+  overlay: { ...StyleSheet.absoluteFillObject },
   sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: SCREEN_HEIGHT * 0.9,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 20,
   },
-  handleBar: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 4 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
   title: { fontSize: 20, fontWeight: '800' },
   closeBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },

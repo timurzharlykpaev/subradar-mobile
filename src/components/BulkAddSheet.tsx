@@ -11,7 +11,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   TextInput, ActivityIndicator, Alert, Modal, Animated,
   Dimensions, KeyboardAvoidingView, Platform, Image,
-  TouchableWithoutFeedback, Keyboard,
+  TouchableWithoutFeedback, Keyboard, PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -23,6 +23,7 @@ import { subscriptionsApi } from '../api/subscriptions';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useSettingsStore } from '../stores/settingsStore';
+import { usePlanLimits } from '../hooks/usePlanLimits';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -176,6 +177,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const { t, i18n } = useTranslation();
   const { setSubscriptions } = useSubscriptionsStore();
   const currency = useSettingsStore((s) => s.currency) ?? 'USD';
+  const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
 
   const [mode, setMode] = useState<Mode>('select');
   const [loading, setLoading] = useState(false);
@@ -185,6 +187,28 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const [checked, setChecked] = useState<boolean[]>([]);
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) slideAnim.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 100 || g.vy > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 200,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   React.useEffect(() => {
     if (visible) {
@@ -301,6 +325,24 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       Alert.alert('', t('add.bulk_select_at_least_one', 'Выбери хотя бы одну'));
       return;
     }
+
+    // Check free plan limit
+    if (!isPro && maxSubscriptions !== Infinity) {
+      const remaining = maxSubscriptions - activeCount;
+      if (selected.length > remaining) {
+        Alert.alert(
+          t('paywall.title', 'Лимит'),
+          t('add.bulk_limit', {
+            defaultValue: 'Бесплатный план: до {{max}} подписок. У вас {{current}}, выбрано {{selected}}. Перейдите на Pro.',
+            max: maxSubscriptions,
+            current: activeCount,
+            selected: selected.length,
+          })
+        );
+        return;
+      }
+    }
+
     setSaving(true);
     let saved = 0;
     for (const sub of selected) {
@@ -345,7 +387,10 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       </TouchableWithoutFeedback>
 
       <Animated.View style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}>
-        <View style={[styles.handle, { backgroundColor: colors.border }]} />
+        {/* Drag handle */}
+        <View {...panResponder.panHandlers} style={{ paddingVertical: 12, alignItems: 'center' }}>
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+        </View>
 
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           {/* Header */}

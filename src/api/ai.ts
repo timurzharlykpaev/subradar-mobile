@@ -19,7 +19,7 @@ export const aiApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
   // Bulk: parse multiple subscriptions from free text
-  parseBulkText: (text: string, locale = 'ru') =>
+  parseBulkText: (text: string, locale = 'en') =>
     apiClient.post('/ai/parse-bulk', { text, locale }),
   // Bulk: parse multiple subscriptions from voice
   parseBulkVoice: (formData: FormData) =>

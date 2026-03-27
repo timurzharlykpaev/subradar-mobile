@@ -420,7 +420,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                     ? <Image source={{ uri: ui.iconUrl }} style={styles.plansLogo} />
                     : (
                       <View style={[styles.fallbackIcon, { backgroundColor: colors.primary, width: 44, height: 44, borderRadius: 11 }]}>
-                        <Text style={[styles.fallbackLetter, { fontSize: 20 }]}>{(ui.serviceName ?? '?')[0].toUpperCase()}</Text>
+                        <Text style={[styles.fallbackLetter, { fontSize: 20 }]}>{(ui.serviceName || '?')[0].toUpperCase()}</Text>
                       </View>
                     )}
                 <Text style={[styles.plansTitle, { color: colors.text }]}>{ui.serviceName}</Text>

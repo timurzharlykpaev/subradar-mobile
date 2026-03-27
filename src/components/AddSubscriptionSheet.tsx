@@ -18,6 +18,7 @@ import {
   Switch,
   TouchableWithoutFeedback,
   Keyboard,
+  PanResponder,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -144,17 +145,38 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) slideAnim.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 100 || g.vy > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 200,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
   const { addSubscription } = useSubscriptionsStore();
   const { cards } = usePaymentCardsStore();
   const { currency } = useSettingsStore();
 
   useEffect(() => {
     if (visible) {
-      Animated.spring(slideAnim, {
+      Animated.timing(slideAnim, {
         toValue: 0,
+        duration: 300,
         useNativeDriver: true,
-        damping: 20,
-        stiffness: 200,
       }).start();
     } else {
       Animated.timing(slideAnim, {
@@ -368,7 +390,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         testID="add-sub-sheet"
         style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}
       >
-        <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
+        {/* Drag handle */}
+        <View {...panResponder.panHandlers} style={{ paddingVertical: 12, alignItems: 'center' }}>
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+        </View>
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -495,12 +520,59 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     setTab(1);
                   }}
                 />
+
+                {/* Bulk import hint */}
+                <TouchableOpacity
+                  onPress={() => setShowBulk(true)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 8,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    marginTop: 12,
+                    borderRadius: 12,
+                    backgroundColor: colors.primary + '15',
+                    borderWidth: 1,
+                    borderColor: colors.primary + '30',
+                  }}
+                >
+                  <Ionicons name="flash" size={16} color={colors.primary} />
+                  <Text style={{ fontSize: 12, color: colors.primary, flex: 1 }}>
+                    {t('add.bulk_hint', 'Несколько подписок? Добавьте все сразу голосом или текстом')}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+                </TouchableOpacity>
               </View>
             )}
 
             {/* tab === 1 → Manual form */}
             {tab === 1 && (
               <View style={{ paddingBottom: 40 }}>
+                {/* Bulk import hint */}
+                <TouchableOpacity
+                  onPress={() => setShowBulk(true)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 8,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    marginHorizontal: 0,
+                    marginBottom: 8,
+                    borderRadius: 12,
+                    backgroundColor: colors.primary + '15',
+                    borderWidth: 1,
+                    borderColor: colors.primary + '30',
+                  }}
+                >
+                  <Ionicons name="flash" size={16} color={colors.primary} />
+                  <Text style={{ fontSize: 12, color: colors.primary, flex: 1 }}>
+                    {t('add.bulk_hint', 'Несколько подписок? Добавьте все сразу голосом или текстом')}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+                </TouchableOpacity>
+
                 {/* Essential fields — always visible, no section wrapper */}
                 <View style={{ marginBottom: 16 }}>
                   <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
