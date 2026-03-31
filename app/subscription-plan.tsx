@@ -72,10 +72,12 @@ export default function SubscriptionPlanScreen() {
     }
   };
 
-  const plan = billing?.plan ?? 'free';
-  const isPro = plan === 'pro' || plan === 'organization';
-  const isTeam = plan === 'organization';
-  const isTrialing = billing?.status === 'trialing';
+  const rawPlan = billing?.plan ?? 'free';
+  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const plan = isCancelled ? 'free' : rawPlan;
+  const isPro = (plan === 'pro' || plan === 'organization') && !isCancelled;
+  const isTeam = plan === 'organization' && !isCancelled;
+  const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
   const display = PLAN_DISPLAY[plan] ?? PLAN_DISPLAY.free;
   const features: string[] = t(`subscription_plan.feat_${plan === 'organization' ? 'org' : plan}`, { returnObjects: true }) as string[] ?? [];
@@ -89,9 +91,9 @@ export default function SubscriptionPlanScreen() {
   }
 
   const subsUsed = billing?.subscriptionCount ?? 0;
-  const subsLimit = billing?.subscriptionLimit;
+  const subsLimit = isCancelled && billing?.subscriptionLimit == null ? 3 : billing?.subscriptionLimit;
   const aiUsed = billing?.aiRequestsUsed ?? 0;
-  const aiLimit = billing?.aiRequestsLimit;
+  const aiLimit = isCancelled && billing?.aiRequestsLimit == null ? 5 : billing?.aiRequestsLimit;
   const subsPercent = subsLimit ? Math.min((subsUsed / subsLimit) * 100, 100) : 0;
   const aiPercent = aiLimit ? Math.min((aiUsed / aiLimit) * 100, 100) : 0;
 

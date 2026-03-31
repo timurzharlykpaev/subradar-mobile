@@ -42,7 +42,9 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
   const scaleAnim = useRef(new Animated.Value(0.85)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
-  const canTrial = billing && !billing.trialUsed && billing.plan === 'free';
+  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const effectivePlan = isCancelled ? 'free' : (billing?.plan ?? 'free');
+  const canTrial = billing && !billing.trialUsed && effectivePlan === 'free';
   const info = FEATURE_INFO[feature] ?? FEATURE_INFO.forecast;
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY' | 'LIFETIME' | 'ONE_TIME';
-export type SubscriptionStatus = 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'TRIAL';
+export type SubscriptionStatus = 'ACTIVE' | 'PAUSED' | 'CANCELLED' | 'TRIAL' | 'ARCHIVED';
 export type Category = 'STREAMING' | 'AI_SERVICES' | 'INFRASTRUCTURE' | 'MUSIC' | 'GAMING' | 'PRODUCTIVITY' | 'HEALTH' | 'NEWS' | 'DEVELOPER' | 'EDUCATION' | 'FINANCE' | 'DESIGN' | 'SECURITY' | 'SPORT' | 'BUSINESS' | 'OTHER';
 export type CardBrand = 'VISA' | 'MC' | 'AMEX' | 'MIR' | 'OTHER';
 export type SourceType = 'MANUAL' | 'AI_VOICE' | 'AI_SCREENSHOT' | 'AI_TEXT';

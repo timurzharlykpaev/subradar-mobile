@@ -20,7 +20,10 @@ export function useCreateSubscription() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: any) => subscriptionsApi.create(data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['subscriptions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subscriptions'] });
+      qc.invalidateQueries({ queryKey: ['billing', 'me'] });
+    },
   });
 }
 
@@ -37,6 +40,9 @@ export function useDeleteSubscription() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => subscriptionsApi.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['subscriptions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subscriptions'] });
+      qc.invalidateQueries({ queryKey: ['billing', 'me'] });
+    },
   });
 }
