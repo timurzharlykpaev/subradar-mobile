@@ -36,17 +36,13 @@ name: "44 - Analytics: Full Screen Verification"
     optional: true
 
 # Check for forecast section
-- scrollUntilVisible:
-    element:
-      text: "Forecast"
-    direction: DOWN
-    timeout: 5000
-  optional: true
+- scroll
+- assertVisible:
+    text: "Forecast"
+    optional: true
 
 # Check for top subscriptions
-- scrollUntilVisible:
-    element:
-      text: "Top"
-    direction: DOWN
-    timeout: 5000
-  optional: true
+- scroll
+- assertVisible:
+    text: "Top"
+    optional: true

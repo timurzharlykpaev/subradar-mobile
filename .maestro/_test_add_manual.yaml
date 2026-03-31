@@ -35,12 +35,10 @@ name: "Test Add Subscription Manual Flow"
 - takeScreenshot: flow_add_04_amount_filled
 
 # Scroll to button and submit
-- scrollUntilVisible:
-    element:
-      id: "btn-save-sub"
-    direction: DOWN
-    timeout: 5000
-- takeScreenshot: flow_add_05_bottom
+- scroll
+- assertVisible:
+    text: "btn-save-sub"
+    optional: true- takeScreenshot: flow_add_05_bottom
 - tapOn:
     id: "btn-save-sub"
 

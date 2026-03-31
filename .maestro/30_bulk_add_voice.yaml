@@ -12,12 +12,10 @@ name: "30 - Bulk Add via Voice (UI Verification)"
     optional: true
 
 # Look for Quick Import
-- scrollUntilVisible:
-    element:
-      text: "Quick Import"
-    direction: DOWN
-    timeout: 5000
-  optional: true
+- scroll
+- assertVisible:
+    text: "Quick Import"
+    optional: true
 
 - tapOn:
     text: "Quick Import"

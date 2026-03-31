@@ -23,12 +23,10 @@ name: "29 - Bulk Add via Text"
 - takeScreenshot: 29_ai_tab
 
 # Look for Quick Import / Bulk button
-- scrollUntilVisible:
-    element:
-      text: "Quick Import"
-    direction: DOWN
-    timeout: 5000
-  optional: true
+- scroll
+- assertVisible:
+    text: "Quick Import"
+    optional: true
 
 - tapOn:
     text: "Quick Import"

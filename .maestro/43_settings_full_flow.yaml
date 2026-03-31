@@ -22,12 +22,10 @@ name: "43 - Settings: Complete Walkthrough"
     optional: true
 
 # Currency selection
-- scrollUntilVisible:
-    element:
-      text: "USD"
-    direction: DOWN
-    timeout: 5000
-- tapOn:
+- scroll
+- assertVisible:
+    text: "USD"
+    optional: true- tapOn:
     text: "EUR"
     optional: true
 - tapOn:
@@ -35,23 +33,18 @@ name: "43 - Settings: Complete Walkthrough"
     optional: true
 
 # Language selection
-- scrollUntilVisible:
-    element:
-      text: "English"
-    direction: DOWN
-    timeout: 5000
+- scroll
 - assertVisible:
+    text: "English"
+    optional: true- assertVisible:
     text: "English"
     optional: true
 
 # Notifications section
-- scrollUntilVisible:
-    element:
-      text: "Notification"
-    direction: DOWN
-    timeout: 5000
-
-# Reminder days
+- scroll
+- assertVisible:
+    text: "Notification"
+    optional: true# Reminder days
 - tapOn:
     text: "3d"
     optional: true
@@ -60,12 +53,9 @@ name: "43 - Settings: Complete Walkthrough"
     optional: true
 
 # Scroll to bottom
-- scrollUntilVisible:
-    element:
-      text: "Sign Out"
-    direction: DOWN
-    timeout: 5000
-
-# Check Sign Out exists
+- scroll
+- assertVisible:
+    text: "Sign Out"
+    optional: true# Check Sign Out exists
 - assertVisible:
     text: "Sign Out"

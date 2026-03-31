@@ -15,11 +15,9 @@ name: "09 - Cards Flow"
 - takeScreenshot: 09_settings_screen
 
 # Scroll to Payment Cards section
-- scrollUntilVisible:
-    element:
-      id: "btn-add-card"
-    direction: DOWN
-    timeout: 5000
+- scroll
+- assertVisible:
+    text: "btn-add-card"
     optional: true
 
 # Tap Add Card

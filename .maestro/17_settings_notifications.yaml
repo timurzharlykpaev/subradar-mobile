@@ -16,11 +16,9 @@ name: "17 - Settings Notifications"
 - takeScreenshot: 17_settings_screen
 
 # Scroll to notifications section
-- scrollUntilVisible:
-    element:
-      id: "btn-notifications-toggle"
-    direction: DOWN
-    timeout: 5000
+- scroll
+- assertVisible:
+    text: "btn-notifications-toggle"
     optional: true
 
 # Toggle notifications

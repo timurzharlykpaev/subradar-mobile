@@ -20,11 +20,9 @@ name: "20 - Dashboard Charts Sanity"
     optional: true
 
 # Scroll to charts
-- scrollUntilVisible:
-    element:
-      id: "dashboard-monthly-chart"
-    direction: DOWN
-    timeout: 5000
+- scroll
+- assertVisible:
+    text: "dashboard-monthly-chart"
     optional: true
 - takeScreenshot: 20_monthly_chart
 

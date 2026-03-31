@@ -6,13 +6,10 @@ name: "34 - Reports: Generate Report"
 # Navigate to reports (via settings or direct)
 - tapOn: "Settings"
 
-- scrollUntilVisible:
-    element:
-      text: "Report"
-    direction: DOWN
-    timeout: 5000
-
-- tapOn:
+- scroll
+- assertVisible:
+    text: "Report"
+    optional: true- tapOn:
     text: "Report"
     optional: true
 

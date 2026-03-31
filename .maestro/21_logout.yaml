@@ -15,11 +15,9 @@ name: "21 - Logout Flow"
 - takeScreenshot: 21_settings_screen
 
 # Scroll down to find Sign Out button
-- scrollUntilVisible:
-    element:
-      text: "Sign Out"
-    direction: DOWN
-    timeout: 5000
+- scroll
+- assertVisible:
+    text: "Sign Out"
     optional: true
 
 # Tap Sign Out / Log Out

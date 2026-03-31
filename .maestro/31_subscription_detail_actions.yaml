@@ -32,12 +32,10 @@ name: "31 - Subscription Detail Actions (Pause/Cancel/Delete)"
     optional: true
 
 # Check for Cancel button
-- scrollUntilVisible:
-    element:
-      text: "Cancel"
-    direction: DOWN
-    timeout: 5000
-  optional: true
+- scroll
+- assertVisible:
+    text: "Cancel"
+    optional: true
 
 - assertVisible:
     text: "Cancel"

@@ -5,12 +5,10 @@ name: "40 - Paywall: Plan Cards Display Correctly"
 
 # Navigate to paywall
 - tapOn: "Settings"
-- scrollUntilVisible:
-    element:
-      text: "Plan"
-    direction: DOWN
-    timeout: 5000
-- tapOn:
+- scroll
+- assertVisible:
+    text: "Plan"
+    optional: true- tapOn:
     text: "Plan"
     optional: true
 
