@@ -539,7 +539,10 @@
       "팀 접근",
       "멤버 분석",
       "최대 10명"
-    ]
+    ],
+    "cancelled_until": "취소됨 · {{date}}까지",
+    "cancelled_badge": "취소됨",
+    "access_until": "{{date}}까지 이용 가능"
   },
   "workspace": {
     "name_placeholder": "예: 내 회사",

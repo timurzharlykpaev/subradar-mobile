@@ -539,7 +539,10 @@
       "团队访问",
       "成员分析",
       "最多10名成员"
-    ]
+    ],
+    "cancelled_until": "已取消 · 至 {{date}}",
+    "cancelled_badge": "已取消",
+    "access_until": "访问权限至 {{date}}"
   },
   "workspace": {
     "name_placeholder": "例：我的公司",

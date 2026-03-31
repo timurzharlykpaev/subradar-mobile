@@ -539,7 +539,10 @@
       "Team-Zugang",
       "Mitglieder-Analytik",
       "Bis 10 Mitglieder"
-    ]
+    ],
+    "cancelled_until": "Gekündigt · bis {{date}}",
+    "cancelled_badge": "Gekündigt",
+    "access_until": "Zugriff bis {{date}}"
   },
   "workspace": {
     "name_placeholder": "z.B. Mein Unternehmen",

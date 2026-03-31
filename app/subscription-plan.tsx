@@ -205,7 +205,24 @@ export default function SubscriptionPlanScreen() {
                   </Text>
                 </View>
               )}
-              {isPro && !isTrialing && (
+              {isCancelled && billing?.currentPeriodEnd && (
+                <View style={[styles.heroBadge, { backgroundColor: 'rgba(239,68,68,0.25)' }]}>
+                  <Ionicons name="close-circle-outline" size={12} color="#FCA5A5" />
+                  <Text style={styles.heroBadgeText}>
+                    {t('subscription_plan.cancelled_until', {
+                      date: new Date(billing.currentPeriodEnd).toLocaleDateString(),
+                      defaultValue: `Отменено · до ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`,
+                    })}
+                  </Text>
+                </View>
+              )}
+              {isCancelled && !billing?.currentPeriodEnd && (
+                <View style={[styles.heroBadge, { backgroundColor: 'rgba(239,68,68,0.25)' }]}>
+                  <Ionicons name="close-circle-outline" size={12} color="#FCA5A5" />
+                  <Text style={styles.heroBadgeText}>{t('subscription_plan.cancelled_badge', 'Отменено')}</Text>
+                </View>
+              )}
+              {isPro && !isTrialing && !isCancelled && (
                 <View style={[styles.heroBadge, { backgroundColor: 'rgba(34,197,94,0.25)' }]}>
                   <Ionicons name="checkmark-circle" size={12} color="#4ADE80" />
                   <Text style={styles.heroBadgeText}>{t('subscription_plan.active')}</Text>
@@ -289,7 +306,7 @@ export default function SubscriptionPlanScreen() {
               </TouchableOpacity>
             )}
 
-            {isPro && !isTrialing && (
+            {isPro && !isTrialing && !isCancelled && (
               <TouchableOpacity
                 style={[styles.actionOutline, { borderColor: '#EF444440' }]}
                 onPress={handleCancel}
@@ -302,6 +319,18 @@ export default function SubscriptionPlanScreen() {
                   </>
                 )}
               </TouchableOpacity>
+            )}
+
+            {isCancelled && billing?.currentPeriodEnd && (
+              <View style={[styles.cancelledNotice, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
+                <Ionicons name="information-circle-outline" size={18} color={colors.textMuted} />
+                <Text style={[styles.cancelledNoticeText, { color: colors.textMuted }]}>
+                  {t('subscription_plan.access_until', {
+                    date: new Date(billing.currentPeriodEnd).toLocaleDateString(),
+                    defaultValue: `Доступ сохраняется до ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`,
+                  })}
+                </Text>
+              </View>
             )}
 
             {isTrialing && (
@@ -386,6 +415,8 @@ const styles = StyleSheet.create({
   },
   actionPrimaryText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
   actionOutline: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 16, borderWidth: 1.5 },
+  cancelledNotice: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1 },
+  cancelledNoticeText: { fontSize: 13, flex: 1, lineHeight: 18 },
   actionOutlineText: { fontSize: 15, fontWeight: '700' },
 
   disclaimer: { textAlign: 'center', fontSize: 12, marginTop: 24, paddingHorizontal: 32, lineHeight: 18 },

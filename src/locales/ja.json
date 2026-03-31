@@ -539,7 +539,10 @@
       "チームアクセス",
       "メンバー分析",
       "最大10名"
-    ]
+    ],
+    "cancelled_until": "キャンセル済み · {{date}}まで",
+    "cancelled_badge": "キャンセル済み",
+    "access_until": "{{date}}まで利用可能"
   },
   "workspace": {
     "name_placeholder": "例：私の会社",

@@ -544,7 +544,10 @@
       "Командный доступ",
       "Аналитика участников",
       "До 10 участников"
-    ]
+    ],
+    "cancelled_until": "Отменено · до {{date}}",
+    "cancelled_badge": "Отменено",
+    "access_until": "Доступ сохраняется до {{date}}"
   },
   "workspace": {
     "name_placeholder": "Например: My Company",

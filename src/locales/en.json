@@ -544,7 +544,10 @@
       "Team access",
       "Member analytics",
       "Up to 10 members"
-    ]
+    ],
+    "cancelled_until": "Cancelled · until {{date}}",
+    "cancelled_badge": "Cancelled",
+    "access_until": "Access retained until {{date}}"
   },
   "workspace": {
     "name_placeholder": "e.g. My Company",

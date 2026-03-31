@@ -539,7 +539,10 @@
       "Accès équipe",
       "Analytique membres",
       "Jusqu'à 10 membres"
-    ]
+    ],
+    "cancelled_until": "Annulé · jusqu'au {{date}}",
+    "cancelled_badge": "Annulé",
+    "access_until": "Accès jusqu'au {{date}}"
   },
   "workspace": {
     "name_placeholder": "ex. Mon Entreprise",
