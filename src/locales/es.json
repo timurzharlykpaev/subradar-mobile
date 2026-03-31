@@ -204,7 +204,8 @@
     "bulk_no_subs": "No subscriptions found",
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
-    "bulk_retry": "Try again"
+    "bulk_retry": "Try again",
+    "bulk_hint": "Puedes listar varias suscripciones — la IA las reconocerá todas"
   },
   "settings": {
     "title": "Configuración",

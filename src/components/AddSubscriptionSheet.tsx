@@ -521,57 +521,20 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   }}
                 />
 
-                {/* Bulk import hint */}
-                <TouchableOpacity
-                  onPress={() => setShowBulk(true)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 8,
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    marginTop: 12,
-                    borderRadius: 12,
-                    backgroundColor: colors.primary + '15',
-                    borderWidth: 1,
-                    borderColor: colors.primary + '30',
-                  }}
-                >
-                  <Ionicons name="flash" size={16} color={colors.primary} />
-                  <Text style={{ fontSize: 12, color: colors.primary, flex: 1 }}>
-                    {t('add.bulk_hint', 'Несколько подписок? Добавьте все сразу голосом или текстом')}
+                {/* Bulk hint — just informational, no button */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, paddingHorizontal: 4 }}>
+                  <Ionicons name="information-circle-outline" size={14} color={colors.textMuted} />
+                  <Text style={{ fontSize: 12, color: colors.textMuted, flex: 1, lineHeight: 16 }}>
+                    {t('add.bulk_hint', 'Можно перечислить несколько подписок — AI распознает их все')}
                   </Text>
-                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-                </TouchableOpacity>
+                </View>
               </View>
             )}
 
             {/* tab === 1 → Manual form */}
             {tab === 1 && (
               <View style={{ paddingBottom: 40 }}>
-                {/* Bulk import hint */}
-                <TouchableOpacity
-                  onPress={() => setShowBulk(true)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 8,
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    marginHorizontal: 0,
-                    marginBottom: 8,
-                    borderRadius: 12,
-                    backgroundColor: colors.primary + '15',
-                    borderWidth: 1,
-                    borderColor: colors.primary + '30',
-                  }}
-                >
-                  <Ionicons name="flash" size={16} color={colors.primary} />
-                  <Text style={{ fontSize: 12, color: colors.primary, flex: 1 }}>
-                    {t('add.bulk_hint', 'Несколько подписок? Добавьте все сразу голосом или текстом')}
-                  </Text>
-                  <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-                </TouchableOpacity>
+
 
                 {/* Essential fields — always visible, no section wrapper */}
                 <View style={{ marginBottom: 16 }}>

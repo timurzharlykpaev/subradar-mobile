@@ -11,7 +11,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert, Image,
+  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert, Image, Platform,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -223,6 +223,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const [history, setHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim  = useRef(new Animated.Value(1)).current;
@@ -271,28 +272,25 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const callWizard = async (message: string) => {
     if (!message.trim()) return;
 
-    // Auto-detect bulk: if message looks like a list (commas/newlines/multiple amounts)
-    const looksLikeBulk = /[,\n]/.test(message) && (message.match(/\d+/g) || []).length >= 2;
-
-    if (looksLikeBulk) {
-      setLoading(true);
-      try {
-        const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru');
-        const data = res.data;
-        const subs: ParsedSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
-        if (subs.length > 1) {
-          if (!checkLimit(subs.length)) { setLoading(false); setInput(''); return; }
-          fade(() => setUi({ kind: 'bulk', subs, checked: subs.map(() => true) }));
-          setLoading(false);
-          setInput('');
-          return;
-        }
-        // Only 1 result — fall through to wizard below
-      } catch {
-        // fall through to wizard
-      } finally {
+    // Always try bulk first — AI decides if there are 1 or many subscriptions
+    setLoading(true);
+    try {
+      const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru');
+      const data = res.data;
+      const subs: ParsedSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
+      if (subs.length > 1) {
+        if (!checkLimit(subs.length)) { setLoading(false); setInput(''); return; }
+        setEditingIndex(null);
+        fade(() => setUi({ kind: 'bulk', subs, checked: subs.map(() => true) }));
         setLoading(false);
+        setInput('');
+        return;
       }
+      // Only 1 result — fall through to single wizard
+    } catch {
+      // fall through to wizard
+    } finally {
+      setLoading(false);
     }
 
     // Single subscription wizard flow
@@ -472,39 +470,124 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                 <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('add.bulk_deselect_all', 'Снять все')}</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {ui.subs.map((sub, i) => {
                 const isChecked = ui.checked[i] ?? true;
+                const isEditing = editingIndex === i;
                 const periodMap: Record<string, string> = { MONTHLY: '/мес', YEARLY: '/год', WEEKLY: '/нед', QUARTERLY: '/квар' };
                 return (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() => {
-                      const next = [...ui.checked];
-                      next[i] = !next[i];
+                  <View key={i} style={[bulkStyles.card, {
+                    backgroundColor: isChecked ? colors.primary + '12' : (isDark ? '#1C1C2E' : '#F5F5F7'),
+                    borderColor: isEditing ? colors.primary : (isChecked ? colors.primary + '60' : colors.border),
+                  }]}>
+                    {/* Header row: checkbox + name + edit button */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        const next = [...ui.checked];
+                        next[i] = !next[i];
+                        setUi({ ...ui, checked: next });
+                        if (isEditing) setEditingIndex(null);
+                      }}
+                      style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[bulkStyles.iconBox, { backgroundColor: colors.primary + '18' }]}>
+                        <Text style={[bulkStyles.iconLetter, { color: colors.primary }]}>
+                          {(sub.name || '?')[0].toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1, marginLeft: 10 }}>
+                        <Text style={[bulkStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                        <Text style={[bulkStyles.meta, { color: colors.textMuted }]}>
+                          {sub.currency ?? 'USD'} {(sub.amount ?? 0).toFixed(2)}{periodMap[sub.billingPeriod ?? 'MONTHLY'] ?? ''}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Edit button */}
+                    <TouchableOpacity
+                      onPress={() => setEditingIndex(isEditing ? null : i)}
+                      style={{ padding: 6, marginRight: 4 }}
+                    >
+                      <Ionicons name={isEditing ? 'checkmark-circle' : 'pencil-outline'} size={18} color={isEditing ? '#10B981' : colors.textMuted} />
+                    </TouchableOpacity>
+
+                    {/* Checkbox */}
+                    <TouchableOpacity onPress={() => {
+                      const next = [...ui.checked]; next[i] = !next[i];
                       setUi({ ...ui, checked: next });
-                    }}
-                    style={[bulkStyles.card, {
-                      backgroundColor: isChecked ? colors.primary + '12' : (isDark ? '#1C1C2E' : '#F5F5F7'),
-                      borderColor: isChecked ? colors.primary : colors.border,
-                    }]}
-                    activeOpacity={0.75}
-                  >
-                    <View style={[bulkStyles.iconBox, { backgroundColor: colors.primary + '18' }]}>
-                      <Text style={[bulkStyles.iconLetter, { color: colors.primary }]}>
-                        {(sub.name || '?')[0].toUpperCase()}
-                      </Text>
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                      <Text style={[bulkStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                      <Text style={[bulkStyles.meta, { color: colors.textMuted }]}>
-                        {sub.currency ?? 'USD'} {(sub.amount ?? 0).toFixed(2)}{periodMap[sub.billingPeriod ?? 'MONTHLY'] ?? ''}
-                      </Text>
-                    </View>
-                    <View style={[bulkStyles.check, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
-                      {isChecked && <Ionicons name="checkmark" size={13} color="#fff" />}
-                    </View>
-                  </TouchableOpacity>
+                    }}>
+                      <View style={[bulkStyles.check, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
+                        {isChecked && <Ionicons name="checkmark" size={13} color="#fff" />}
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Inline edit fields */}
+                    {isEditing && (
+                      <View style={bulkStyles.editPanel}>
+                        <View style={bulkStyles.editRow}>
+                          <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.name', 'Название')}</Text>
+                          <TextInput
+                            style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                            value={sub.name ?? ''}
+                            onChangeText={(v) => {
+                              const next = [...ui.subs];
+                              next[i] = { ...next[i], name: v };
+                              setUi({ ...ui, subs: next });
+                            }}
+                          />
+                        </View>
+                        <View style={bulkStyles.editRow}>
+                          <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.amount', 'Сумма')}</Text>
+                          <TextInput
+                            style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                            value={String(sub.amount ?? '')}
+                            keyboardType="decimal-pad"
+                            onChangeText={(v) => {
+                              const next = [...ui.subs];
+                              next[i] = { ...next[i], amount: parseFloat(v) || 0 };
+                              setUi({ ...ui, subs: next });
+                            }}
+                          />
+                        </View>
+                        <View style={bulkStyles.editRow}>
+                          <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.currency', 'Валюта')}</Text>
+                          <TextInput
+                            style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                            value={sub.currency ?? 'USD'}
+                            autoCapitalize="characters"
+                            maxLength={3}
+                            onChangeText={(v) => {
+                              const next = [...ui.subs];
+                              next[i] = { ...next[i], currency: v.toUpperCase() };
+                              setUi({ ...ui, subs: next });
+                            }}
+                          />
+                        </View>
+                        {/* Period picker */}
+                        <View style={[bulkStyles.editRow, { flexWrap: 'wrap', gap: 6 }]}>
+                          {(['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const).map((p) => (
+                            <TouchableOpacity
+                              key={p}
+                              onPress={() => {
+                                const next = [...ui.subs];
+                                next[i] = { ...next[i], billingPeriod: p };
+                                setUi({ ...ui, subs: next });
+                              }}
+                              style={[bulkStyles.periodChip, {
+                                backgroundColor: sub.billingPeriod === p ? colors.primary : colors.surface2,
+                                borderColor: sub.billingPeriod === p ? colors.primary : colors.border,
+                              }]}
+                            >
+                              <Text style={{ fontSize: 11, fontWeight: '700', color: sub.billingPeriod === p ? '#fff' : colors.textSecondary }}>
+                                {periodMap[p] ?? p}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                  </View>
                 );
               })}
             </ScrollView>
@@ -766,10 +849,15 @@ const styles = StyleSheet.create({
 });
 
 const bulkStyles = StyleSheet.create({
-  card:     { flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1.5, padding: 12, marginBottom: 8 },
-  iconBox:  { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  iconLetter: { fontSize: 18, fontWeight: '800' },
-  name:     { fontSize: 15, fontWeight: '700' },
-  meta:     { fontSize: 12, marginTop: 2 },
-  check:    { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  card:        { borderRadius: 14, borderWidth: 1.5, padding: 12, marginBottom: 8, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  iconBox:     { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  iconLetter:  { fontSize: 18, fontWeight: '800' },
+  name:        { fontSize: 15, fontWeight: '700' },
+  meta:        { fontSize: 12, marginTop: 2 },
+  check:       { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 4 },
+  editPanel:   { width: '100%', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.15)', gap: 8 },
+  editRow:     { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  editLabel:   { fontSize: 12, fontWeight: '600', width: 60 },
+  editInput:   { flex: 1, borderRadius: 8, borderWidth: 1, paddingHorizontal: 10, paddingVertical: Platform.OS === 'ios' ? 8 : 4, fontSize: 14 },
+  periodChip:  { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
 });
