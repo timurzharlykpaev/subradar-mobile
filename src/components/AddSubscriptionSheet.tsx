@@ -18,8 +18,8 @@ import {
   Switch,
   TouchableWithoutFeedback,
   Keyboard,
-  PanResponder,
 } from 'react-native';
+import { PanGestureHandler, GestureHandlerRootView, type PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -145,32 +145,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
-  const panResponder = useRef(
-    PanResponder.create({
-      // Capture immediately on touch start in the handle area
-      onStartShouldSetPanResponder: () => true,
-      onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 5 && Math.abs(g.dy) > Math.abs(g.dx),
-      onMoveShouldSetPanResponderCapture: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5,
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) slideAnim.setValue(g.dy);
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > 80 || g.vy > 0.4) {
-          handleClose();
-        } else {
-          Animated.spring(slideAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-            damping: 20,
-            stiffness: 200,
-          }).start();
-        }
-      },
-      onPanResponderTerminationRequest: () => false,
-    })
-  ).current;
-
   const { addSubscription } = useSubscriptionsStore();
   const { cards } = usePaymentCardsStore();
   const { currency } = useSettingsStore();
@@ -198,6 +172,30 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       useNativeDriver: true,
     }).start(() => onClose());
   }, [onClose]);
+
+  const onGestureEvent = useCallback((event: PanGestureHandlerGestureEvent) => {
+    const { translationY } = event.nativeEvent;
+    if (translationY > 0) {
+      slideAnim.setValue(translationY);
+    }
+  }, [slideAnim]);
+
+  const onHandlerStateChange = useCallback((event: PanGestureHandlerGestureEvent) => {
+    const { translationY, velocityY, state } = event.nativeEvent;
+    // State 5 = END
+    if (state === 5) {
+      if (translationY > 80 || velocityY > 500) {
+        handleClose();
+      } else {
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 20,
+          stiffness: 200,
+        }).start();
+      }
+    }
+  }, [slideAnim, handleClose]);
 
   const setF = useCallback((key: string, value: any) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -386,6 +384,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   return (
     <>
     <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.backdrop} />
       </TouchableWithoutFeedback>
@@ -394,13 +393,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         testID="add-sub-sheet"
         style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}
       >
-        {/* Drag handle — tall hit area for easy swipe-to-close */}
-        <View
-          {...panResponder.panHandlers}
-          style={{ paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center' }}
+        {/* Drag handle with native gesture handler */}
+        <PanGestureHandler
+          onGestureEvent={onGestureEvent}
+          onHandlerStateChange={onHandlerStateChange}
+          activeOffsetY={10}
+          failOffsetX={[-20, 20]}
         >
-          <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
-        </View>
+          <Animated.View style={{ paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' }}>
+            <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
+          </Animated.View>
+        </PanGestureHandler>
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -1035,6 +1038,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           }}
         />
       </Animated.View>
+      </GestureHandlerRootView>
     </Modal>
 
     <BulkAddSheet
