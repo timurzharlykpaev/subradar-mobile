@@ -147,13 +147,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx),
+      // Capture immediately on touch start in the handle area
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5 && Math.abs(g.dy) > Math.abs(g.dx),
+      onMoveShouldSetPanResponderCapture: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5,
       onPanResponderMove: (_, g) => {
         if (g.dy > 0) slideAnim.setValue(g.dy);
       },
       onPanResponderRelease: (_, g) => {
-        if (g.dy > 100 || g.vy > 0.5) {
+        if (g.dy > 80 || g.vy > 0.4) {
           handleClose();
         } else {
           Animated.spring(slideAnim, {
@@ -164,6 +167,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           }).start();
         }
       },
+      onPanResponderTerminationRequest: () => false,
     })
   ).current;
 
@@ -390,9 +394,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         testID="add-sub-sheet"
         style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}
       >
-        {/* Drag handle */}
-        <View {...panResponder.panHandlers} style={{ paddingVertical: 12, alignItems: 'center' }}>
-          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' }} />
+        {/* Drag handle — tall hit area for easy swipe-to-close */}
+        <View
+          {...panResponder.panHandlers}
+          style={{ paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center' }}
+        >
+          <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
         </View>
 
         <KeyboardAvoidingView
