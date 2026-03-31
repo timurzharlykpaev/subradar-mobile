@@ -607,7 +607,8 @@
     "upgrade_success_msg": "Proへようこそ！",
     "upgrade_success_msg_plan": "{{plan}}へようこそ！",
     "upgrade_success_hint": "すべての機能がアンロックされました。",
-    "upgrade_success_cta": "始める →"
+    "upgrade_success_cta": "始める →",
+    "switch_to_yearly": "年払いに切り替える →"
   },
   "ai": {
     "or_type": "または入力",

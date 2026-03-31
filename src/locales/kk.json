@@ -607,7 +607,8 @@
     "upgrade_success_msg": "Pro-ға қош келдіңіз!",
     "upgrade_success_msg_plan": "{{plan}} қош келдіңіз!",
     "upgrade_success_hint": "Барлық мүмкіндіктер бекітілді.",
-    "upgrade_success_cta": "Бастау →"
+    "upgrade_success_cta": "Бастау →",
+    "switch_to_yearly": "Жылдыққа өту →"
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",

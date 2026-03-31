@@ -612,7 +612,8 @@
     "upgrade_success_msg": "Добро пожаловать в Pro!",
     "upgrade_success_msg_plan": "Добро пожаловать в {{plan}}!",
     "upgrade_success_hint": "Все функции разблокированы и готовы к использованию.",
-    "upgrade_success_cta": "Начать →"
+    "upgrade_success_cta": "Начать →",
+    "switch_to_yearly": "Перейти на годовой →"
   },
   "pro_modal": {
     "title_default": "Pro функция",

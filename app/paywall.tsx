@@ -207,18 +207,25 @@ export default function PaywallScreen() {
   const getButtonLabel = () => {
     if (selected === 'free') return t('paywall.continue_free');
     if (canTrial && selected === 'pro') return `${t('subscription_plan.start_trial')} →`;
-    const currentMatch =
+    const planMatches =
       (selected === 'pro' && billing?.plan === 'pro') ||
       (selected === 'org' && billing?.plan === 'organization');
-    if (currentMatch && !isTrialing) return t('subscription_plan.active');
+    // If on same plan and switching to yearly — show "Switch to Yearly"
+    if (planMatches && !isTrialing && billingPeriod === 'yearly') {
+      return t('paywall.switch_to_yearly', 'Switch to Yearly →');
+    }
+    if (planMatches && !isTrialing && billingPeriod === 'monthly') {
+      return t('subscription_plan.active');
+    }
     if (selected === 'org') return t('subscription_plan.upgrade_team');
     return t('subscription_plan.upgrade_pro');
   };
 
+  // isCurrentPlan: only mark as "current" on monthly badge — yearly is always upgradable
   const isCurrentPlan = (planId: string) => {
     if (planId === 'free' && !isPro) return true;
-    if (planId === 'pro' && billing?.plan === 'pro') return true;
-    if (planId === 'org' && billing?.plan === 'organization') return true;
+    if (planId === 'pro' && billing?.plan === 'pro' && billingPeriod === 'monthly') return true;
+    if (planId === 'org' && billing?.plan === 'organization' && billingPeriod === 'monthly') return true;
     return false;
   };
 
@@ -390,21 +397,29 @@ export default function PaywallScreen() {
 
         {/* CTA */}
         {(() => {
-          const ctaCurrentMatch =
-            (selected === 'pro' && billing?.plan === 'pro' && !isTrialing) ||
-            (selected === 'org' && billing?.plan === 'organization' && !isTrialing);
+          // Only block if plan matches AND user is on yearly (can't downgrade period here)
+          // For monthly→yearly upgrade: always allow purchase even on same plan
+          // RevenueCat handles the crossgrade properly
+          const samePlanMonthlyBlock = false; // never block — RC handles period changes
+          const ctaCurrentMatch = samePlanMonthlyBlock;
           const ctaColor = selected === 'free'
             ? colors.textSecondary
             : (PLANS.find(p => p.id === selected)?.color ?? colors.primary);
+
+          // Label logic: show "Switch to yearly" when on same plan but yearly selected
+          const planMatches =
+            (selected === 'pro' && billing?.plan === 'pro' && !isTrialing) ||
+            (selected === 'org' && billing?.plan === 'organization' && !isTrialing);
+
           return (
         <TouchableOpacity
           style={[
             styles.ctaBtn,
-            { backgroundColor: ctaCurrentMatch ? (isDark ? '#2A2A3E' : '#E5E5EF') : ctaColor },
-            (isLoading || ctaCurrentMatch) && { opacity: ctaCurrentMatch ? 0.7 : 0.5 },
+            { backgroundColor: ctaColor },
+            isLoading && { opacity: 0.5 },
           ]}
           onPress={handleAction}
-          disabled={isLoading || ctaCurrentMatch}
+          disabled={isLoading}
           activeOpacity={0.85}
         >
           {isLoading ? (
@@ -412,14 +427,9 @@ export default function PaywallScreen() {
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Text style={styles.ctaBtnText}>{getButtonLabel()}</Text>
-              {(() => {
-                const currentMatch =
-                  (selected === 'pro' && billing?.plan === 'pro') ||
-                  (selected === 'org' && billing?.plan === 'organization');
-                return currentMatch && !isTrialing ? (
-                  <Ionicons name="checkmark-circle" size={18} color="#FFF" />
-                ) : null;
-              })()}
+              {planMatches && billingPeriod === 'monthly' ? (
+                <Ionicons name="checkmark-circle" size={18} color="#FFF" />
+              ) : null}
             </View>
           )}
         </TouchableOpacity>

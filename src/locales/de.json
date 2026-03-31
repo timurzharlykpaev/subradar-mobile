@@ -607,7 +607,8 @@
     "upgrade_success_msg": "Willkommen bei Pro!",
     "upgrade_success_msg_plan": "Willkommen bei {{plan}}!",
     "upgrade_success_hint": "Alle Funktionen sind jetzt freigeschaltet.",
-    "upgrade_success_cta": "Loslegen →"
+    "upgrade_success_cta": "Loslegen →",
+    "switch_to_yearly": "Zu Jährlich wechseln →"
   },
   "ai": {
     "or_type": "oder eingeben",

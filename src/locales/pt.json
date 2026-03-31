@@ -607,7 +607,8 @@
     "upgrade_success_msg": "Bem-vindo ao Pro!",
     "upgrade_success_msg_plan": "Bem-vindo ao {{plan}}!",
     "upgrade_success_hint": "Todos os recursos estão desbloqueados.",
-    "upgrade_success_cta": "Começar →"
+    "upgrade_success_cta": "Começar →",
+    "switch_to_yearly": "Mudar para anual →"
   },
   "ai": {
     "or_type": "ou digite",

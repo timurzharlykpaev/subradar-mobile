@@ -607,7 +607,8 @@
     "upgrade_success_msg": "Pro에 오신 것을 환영합니다!",
     "upgrade_success_msg_plan": "{{plan}}에 오신 것을 환영합니다!",
     "upgrade_success_hint": "모든 기능이 잠금 해제되었습니다.",
-    "upgrade_success_cta": "시작하기 →"
+    "upgrade_success_cta": "시작하기 →",
+    "switch_to_yearly": "연간으로 전환 →"
   },
   "ai": {
     "or_type": "또는 입력",

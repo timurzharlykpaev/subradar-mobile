@@ -607,7 +607,8 @@
     "upgrade_success_msg": "Bienvenue dans Pro !",
     "upgrade_success_msg_plan": "Bienvenue dans {{plan}} !",
     "upgrade_success_hint": "Toutes les fonctionnalités sont débloquées.",
-    "upgrade_success_cta": "Commencer →"
+    "upgrade_success_cta": "Commencer →",
+    "switch_to_yearly": "Passer à l'annuel →"
   },
   "ai": {
     "or_type": "ou tapez",

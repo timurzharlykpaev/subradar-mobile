@@ -607,7 +607,8 @@
     "upgrade_success_msg": "欢迎加入Pro！",
     "upgrade_success_msg_plan": "欢迎使用 {{plan}}！",
     "upgrade_success_hint": "所有功能已解锁，随时可用。",
-    "upgrade_success_cta": "开始探索 →"
+    "upgrade_success_cta": "开始探索 →",
+    "switch_to_yearly": "切换到年付 →"
   },
   "ai": {
     "or_type": "或输入",

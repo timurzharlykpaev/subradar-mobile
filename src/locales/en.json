@@ -612,7 +612,8 @@
     "upgrade_success_msg": "Welcome to Pro!",
     "upgrade_success_msg_plan": "Welcome to {{plan}}!",
     "upgrade_success_hint": "All features are now unlocked and ready to use.",
-    "upgrade_success_cta": "Start exploring →"
+    "upgrade_success_cta": "Start exploring →",
+    "switch_to_yearly": "Switch to Yearly →"
   },
   "pro_modal": {
     "title_default": "Pro Feature",
