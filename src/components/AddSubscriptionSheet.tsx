@@ -29,6 +29,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import { reportError } from '../utils/errorReporter';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
@@ -357,7 +358,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           ? [data.subscriptions]
           : (data.name && data.amount) ? [data] : [];
       if (subs.length > 0) applyParsedSubscriptions(subs);
-    } catch {
+    } catch (err: any) {
+      reportError(`AddSubscriptionSheet voice error: ${err?.message ?? err}`, err?.stack, { component: 'AddSubscriptionSheet.handleVoiceDone' });
       Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
     } finally {
       setAiLoading(false);

@@ -16,6 +16,7 @@ import {
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
+import { reportError } from '../utils/errorReporter';
 import { useTranslation } from 'react-i18next';
 import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
@@ -358,8 +359,8 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       }
       setInput(text);
       await callWizard(text);
-    } catch (err) {
-      if (__DEV__) console.warn('AIWizard voice error:', err);
+    } catch (err: any) {
+      reportError(`AIWizard voice error: ${err?.message ?? err}`, err?.stack, { component: 'AIWizard' });
       Alert.alert(t('ai.voice_error_title'), t('ai.voice_error'));
       setLoading(false);
     }
