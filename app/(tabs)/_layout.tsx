@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, InteractionManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
@@ -23,6 +23,17 @@ export default function TabsLayout() {
   const { addSheetVisible, openAddSheet, closeAddSheet } = useUIStore();
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
+
+  // Pre-mount AddSubscriptionSheet after tab interactions settle (~500ms after load).
+  // This eliminates the 1-2s delay on first open (heavy component: 800+ lines, many hooks).
+  // Sheet is rendered hidden until user opens it; once mounted stays in tree.
+  const [sheetMounted, setSheetMounted] = useState(false);
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setTimeout(() => setSheetMounted(true), 500);
+    });
+    return () => task.cancel();
+  }, []);
 
   return (
     <>
@@ -102,10 +113,12 @@ export default function TabsLayout() {
         />
       </Tabs>
 
-      <AddSubscriptionSheet
-        visible={addSheetVisible}
-        onClose={() => closeAddSheet()}
-      />
+      {sheetMounted && (
+        <AddSubscriptionSheet
+          visible={addSheetVisible}
+          onClose={() => closeAddSheet()}
+        />
+      )}
     </>
   );
 }
