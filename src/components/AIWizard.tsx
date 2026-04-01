@@ -348,7 +348,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     setLoading(true);
     try {
       // Use base64 JSON payload instead of FormData — avoids axios retry issues with streams
-      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
       const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {

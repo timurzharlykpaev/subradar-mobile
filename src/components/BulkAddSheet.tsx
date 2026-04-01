@@ -280,7 +280,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     if (!uri) return;
     setLoading(true);
     try {
-      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
       const res = await aiApi.parseBulkVoice({ audioBase64, locale: i18n.language || 'ru' });
       const data = res.data;
       const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
@@ -295,7 +295,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const parseScreenshot = async (uri: string) => {
     setLoading(true);
     try {
-      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
       const formData = new FormData();
       formData.append('image', base64);
       const res = await aiApi.parseScreenshot(formData);

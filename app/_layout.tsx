@@ -17,6 +17,10 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 import { schedulePaymentReminders } from '../src/utils/localNotifications';
 import { ErrorBoundary } from '../src/utils/ErrorBoundary';
+import { installConsoleInterceptors } from '../src/utils/errorReporter';
+
+// Install global console interceptors as early as possible
+installConsoleInterceptors();
 import { configureRevenueCat, loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
 
 Notifications.setNotificationHandler({

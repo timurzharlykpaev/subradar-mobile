@@ -346,7 +346,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (!uri) return;
     setAiLoading(true);
     try {
-      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
       const res = await aiApi.parseAudio({ audioBase64 });
       const data = res.data;
       // Если сервер вернул транскрипт — показываем его в поле

@@ -26,7 +26,7 @@ export async function reportError(
 
     recentErrors.set(key, now);
 
-    // Cleanup old entries
+    // Cleanup stale entries
     for (const [k, t] of recentErrors) {
       if (now - t > DEDUP_INTERVAL_MS) recentErrors.delete(k);
     }
@@ -41,4 +41,42 @@ export async function reportError(
   } catch {
     // Silently ignore — don't cause infinite error loops
   }
+}
+
+/**
+ * Install global console.warn / console.error interceptors.
+ * Call once on app startup (e.g. in _layout.tsx).
+ * Warnings that contain "WARN" or known crash-indicating keywords are forwarded
+ * to the monitoring endpoint so they appear in Telegram alerts.
+ */
+export function installConsoleInterceptors(): void {
+  const SKIP_PATTERNS = [
+    /VirtualizedList/,       // React Native perf noise
+    /Each child in a list/,  // React key warning
+    /^Warning: React.forwardRef/,
+    /^Warning: Unknown prop/,
+    /deprecated/i,           // deprecation warnings are ok
+  ];
+
+  const originalWarn = console.warn.bind(console);
+  const originalError = console.error.bind(console);
+
+  console.warn = (...args: unknown[]) => {
+    originalWarn(...args);
+    const msg = args.map(String).join(' ');
+    const skip = SKIP_PATTERNS.some((p) => p.test(msg));
+    if (!skip && msg.length > 10) {
+      reportError(`[WARN] ${msg.slice(0, 500)}`).catch(() => {});
+    }
+  };
+
+  console.error = (...args: unknown[]) => {
+    originalError(...args);
+    const msg = args.map(String).join(' ');
+    // Skip React render-phase logs that are noisy
+    const skip = SKIP_PATTERNS.some((p) => p.test(msg));
+    if (!skip && msg.length > 10) {
+      reportError(`[ERROR] ${msg.slice(0, 500)}`).catch(() => {});
+    }
+  };
 }
