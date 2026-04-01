@@ -10,10 +10,10 @@ export const aiApi = {
     apiClient.post('/ai/parse-screenshot', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  parseAudio: (formData: FormData) =>
-    apiClient.post('/ai/parse-audio', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+  parseAudio: (payload: FormData | { audioBase64: string; locale?: string }) =>
+    payload instanceof FormData
+      ? apiClient.post('/ai/parse-audio', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.post('/ai/parse-audio', payload),
   parseVoice: (formData: FormData) =>
     apiClient.post('/ai/voice-to-subscription', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -22,8 +22,8 @@ export const aiApi = {
   parseBulkText: (text: string, locale = 'en') =>
     apiClient.post('/ai/parse-bulk', { text, locale }),
   // Bulk: parse multiple subscriptions from voice
-  parseBulkVoice: (formData: FormData) =>
-    apiClient.post('/ai/voice-bulk', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+  parseBulkVoice: (payload: FormData | { audioBase64: string; locale?: string }) =>
+    payload instanceof FormData
+      ? apiClient.post('/ai/voice-bulk', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.post('/ai/voice-bulk', payload),
 };

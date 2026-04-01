@@ -28,6 +28,7 @@ import Reanimated, {
   runOnJS,
 } from 'react-native-reanimated';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
@@ -345,9 +346,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (!uri) return;
     setAiLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
-      const res = await aiApi.parseAudio(formData);
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const res = await aiApi.parseAudio({ audioBase64 });
       const data = res.data;
       // Если сервер вернул транскрипт — показываем его в поле
       if (data.text) setAiText(data.text);

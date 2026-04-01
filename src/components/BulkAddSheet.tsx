@@ -280,10 +280,8 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     if (!uri) return;
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
-      formData.append('locale', i18n.language || 'ru');
-      const res = await aiApi.parseBulkVoice(formData);
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const res = await aiApi.parseBulkVoice({ audioBase64, locale: i18n.language || 'ru' });
       const data = res.data;
       const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
       showReview(subs);

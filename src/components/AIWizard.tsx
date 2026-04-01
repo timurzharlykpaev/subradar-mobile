@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
+import * as FileSystem from 'expo-file-system';
 import { Pressable } from 'react-native';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
@@ -346,10 +347,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     Keyboard.dismiss();
     setLoading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as any);
-      fd.append('locale', i18n.language ?? 'en');
-      const transcribeRes = await aiApi.parseAudio(fd);
+      // Use base64 JSON payload instead of FormData — avoids axios retry issues with streams
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
         Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
