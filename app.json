@@ -17,7 +17,7 @@
       "bundleIdentifier": "com.goalin.subradar",
       "icon": "./assets/images/icon.png",
       "entitlements": {
-        "aps-environment": "development"
+        "aps-environment": "production"
       },
       "infoPlist": {
         "CFBundleURLTypes": [
@@ -43,7 +43,8 @@
         "buildSettings": {
           "CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION": "YES"
         }
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
