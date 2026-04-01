@@ -178,14 +178,15 @@ export default function PaywallScreen() {
           // User cancelled or error already shown by hook
           return;
         }
-        // Show success immediately — don't block UX waiting for webhook
+        // Show success immediately
         const planLabel = selected === 'org' ? 'Team' : 'Pro';
         setSuccessPlan(planLabel);
-        // Sync RC + invalidate cache in background (non-blocking)
+        // Sync RC then refetch billing so button state updates before user dismisses success screen
         billingApi.syncRevenueCat(pkg.product.identifier)
           .catch((e) => console.warn('RC sync failed:', e))
           .finally(() => {
             queryClient.invalidateQueries({ queryKey: ['billing'] });
+            queryClient.refetchQueries({ queryKey: ['billing'] });
           });
       } finally {
         setPurchasing(false);
@@ -396,29 +397,26 @@ export default function PaywallScreen() {
 
         {/* CTA */}
         {(() => {
-          // Only block if plan matches AND user is on yearly (can't downgrade period here)
-          // For monthly→yearly upgrade: always allow purchase even on same plan
-          // RevenueCat handles the crossgrade properly
-          const samePlanMonthlyBlock = false; // never block — RC handles period changes
-          const ctaCurrentMatch = samePlanMonthlyBlock;
           const ctaColor = selected === 'free'
             ? colors.textSecondary
             : (PLANS.find(p => p.id === selected)?.color ?? colors.primary);
 
-          // Label logic: show "Switch to yearly" when on same plan but yearly selected
+          // Plan already active on the selected billing period — disable button to prevent double-purchase
           const planMatches =
             (selected === 'pro' && billing?.plan === 'pro' && !isTrialing) ||
             (selected === 'org' && billing?.plan === 'organization' && !isTrialing);
+          const alreadyOnThisPlan = planMatches && billingPeriod === 'monthly';
+          const ctaDisabled = isLoading || alreadyOnThisPlan;
 
           return (
         <TouchableOpacity
           style={[
             styles.ctaBtn,
             { backgroundColor: ctaColor },
-            isLoading && { opacity: 0.5 },
+            ctaDisabled && { opacity: 0.5 },
           ]}
           onPress={handleAction}
-          disabled={isLoading}
+          disabled={ctaDisabled}
           activeOpacity={0.85}
         >
           {isLoading ? (
