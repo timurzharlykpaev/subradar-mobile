@@ -23,6 +23,7 @@ import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { Pressable } from 'react-native';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import { useRouter } from 'expo-router';
 
 export interface ParsedSub {
   name?: string;
@@ -215,6 +216,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const { t, i18n } = useTranslation();
   const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
   const { isPro, activeCount, maxSubscriptions } = usePlanLimits();
+  const router = useRouter();
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
   const [ui, setUi] = useState<UIState>({ kind: 'idle' });
@@ -254,7 +256,10 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       Alert.alert(
         t('add.limit_reached_title', 'Лимит подписок'),
         t('add.limit_reached_msg', `Бесплатный план — максимум ${maxSubscriptions} подписки. Обнови до Pro для безлимита.`),
-        [{ text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro') }, { text: t('common.cancel', 'Закрыть'), style: 'cancel' }]
+        [
+          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+          { text: t('common.cancel', 'Закрыть'), style: 'cancel' },
+        ]
       );
       return false;
     }

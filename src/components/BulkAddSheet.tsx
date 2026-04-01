@@ -24,6 +24,7 @@ import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useSettingsStore } from '../stores/settingsStore';
 import { usePlanLimits } from '../hooks/usePlanLimits';
+import { useRouter } from 'expo-router';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -185,6 +186,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const currency = useSettingsStore((s) => s.currency) ?? 'USD';
   const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
+  const router = useRouter();
 
   const [mode, setMode] = useState<Mode>('select');
   const [loading, setLoading] = useState(false);
@@ -346,7 +348,11 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
             max: maxSubscriptions,
             current: activeCount,
             selected: selected.length,
-          })
+          }),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+            { text: t('common.cancel', 'Закрыть'), style: 'cancel' },
+          ]
         );
         return;
       }
