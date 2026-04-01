@@ -41,6 +41,16 @@
       "cache": {
         "key": "subradar-npm-v1"
       }
+    },
+    "preview-prod": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1"
+      },
+      "ios": {
+        "simulator": false,
+        "autoIncrement": true
+      }
     }
   },
   "submit": {
