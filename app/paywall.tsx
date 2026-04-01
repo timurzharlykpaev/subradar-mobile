@@ -178,16 +178,15 @@ export default function PaywallScreen() {
           // User cancelled or error already shown by hook
           return;
         }
-        try {
-          await billingApi.syncRevenueCat(pkg.product.identifier);
-        } catch (e) {
-          console.warn('RC sync failed:', e);
-        }
-        // Small delay to let RC webhook reach the backend before invalidating cache
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await queryClient.invalidateQueries({ queryKey: ['billing'] });
+        // Show success immediately — don't block UX waiting for webhook
         const planLabel = selected === 'org' ? 'Team' : 'Pro';
         setSuccessPlan(planLabel);
+        // Sync RC + invalidate cache in background (non-blocking)
+        billingApi.syncRevenueCat(pkg.product.identifier)
+          .catch((e) => console.warn('RC sync failed:', e))
+          .finally(() => {
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
+          });
       } finally {
         setPurchasing(false);
       }
@@ -463,7 +462,7 @@ export default function PaywallScreen() {
               }
               await queryClient.invalidateQueries({ queryKey: ['billing'] });
               Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'),
-                [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
+                [{ text: 'OK', onPress: () => { try { router.dismissAll(); } catch {} router.replace('/(tabs)' as any); } }]
               );
             } else {
               Alert.alert(t('paywall.no_purchases', 'No active subscriptions found.'));
@@ -481,8 +480,9 @@ export default function PaywallScreen() {
         planName={successPlan ?? ''}
         onDone={() => {
           setSuccessPlan(null);
+          // Dismiss any modals in the stack, then navigate to tabs root
+          try { router.dismissAll(); } catch {}
           router.replace('/(tabs)' as any);
-          setTimeout(() => queryClient.invalidateQueries({ queryKey: ['billing'] }), 500);
         }}
       />
     </SafeAreaView>
