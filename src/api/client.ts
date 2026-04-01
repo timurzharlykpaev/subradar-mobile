@@ -76,11 +76,16 @@ apiClient.interceptors.response.use(
     }
 
     const status: number | undefined = error.response?.status;
-    if (!status || status >= 500) {
-      const url = error.config?.url ?? 'unknown';
-      const method = error.config?.method?.toUpperCase() ?? '?';
+    const url = error.config?.url ?? 'unknown';
+    const method = error.config?.method?.toUpperCase() ?? '?';
+
+    // Report all non-auth errors: 4xx (except 401/403) + 5xx + network errors
+    const isAuthError = status === 401 || status === 403;
+    const shouldReport = !isAuthError && (!status || status >= 400);
+    if (shouldReport) {
+      const serverMsg = error.response?.data?.message ?? error.response?.data?.error ?? '';
       reportError(
-        `API ${method} ${url} → ${status ?? 'network error'}`,
+        `API ${method} ${url} → ${status ?? 'network error'}${serverMsg ? `: ${serverMsg}` : ''}`,
         error.stack,
         { status, url, method },
       );
