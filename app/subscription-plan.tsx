@@ -119,7 +119,10 @@ export default function SubscriptionPlanScreen() {
               <Text style={[styles.planCardName, { color: colors.text }]}>{d.name}</Text>
               {isCurrent && (
                 <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
-                  <Text style={styles.currentBadgeText}>{t('subscription_plan.current_plan')}</Text>
+                  <Text style={styles.currentBadgeText}>
+                    {t('subscription_plan.current_plan')}
+                    {planKey !== 'free' ? ` · ${t('paywall.month', 'mo')}` : ''}
+                  </Text>
                 </View>
               )}
             </View>
@@ -143,15 +146,26 @@ export default function SubscriptionPlanScreen() {
         ))}
 
         {/* Action */}
-        {!isCurrent && planKey !== 'free' && (
-          <TouchableOpacity
-            style={[styles.planCardBtn, { backgroundColor: d.color }]}
-            onPress={() => router.push('/paywall' as any)}
-          >
-            <Text style={styles.planCardBtnText}>
-              {t('subscription_plan.upgrade_to', { plan: d.name })}
-            </Text>
-          </TouchableOpacity>
+        {planKey !== 'free' && (
+          (() => {
+            // On yearly tab: always show "Switch to Yearly" even if already on this plan monthly
+            const isYearlyUpgrade = isCurrent && billingPeriod === 'yearly';
+            if (!isCurrent || isYearlyUpgrade) {
+              return (
+                <TouchableOpacity
+                  style={[styles.planCardBtn, { backgroundColor: d.color }]}
+                  onPress={() => router.push('/paywall' as any)}
+                >
+                  <Text style={styles.planCardBtnText}>
+                    {isYearlyUpgrade
+                      ? t('paywall.switch_to_yearly', 'Switch to Yearly →')
+                      : t('subscription_plan.upgrade_to', { plan: d.name })}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+            return null;
+          })()
         )}
       </View>
     );
