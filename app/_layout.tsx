@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -208,6 +209,7 @@ export default function RootLayout() {
   if (showSplash) return <SplashScreen />;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <ErrorBoundary>
       <ThemeProvider>
       <View style={{ flex: 1 }}>
@@ -228,5 +230,6 @@ export default function RootLayout() {
       </View>
       </ThemeProvider>
     </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }

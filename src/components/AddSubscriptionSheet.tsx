@@ -19,7 +19,14 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import { PanGestureHandler, GestureHandlerRootView, type PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Reanimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  runOnJS,
+} from 'react-native-reanimated';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -143,7 +150,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [moreExpanded, setMoreExpanded] = useState(false);
   const [showBulk, setShowBulk] = useState(false);
 
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const translateY = useSharedValue(SCREEN_HEIGHT);
 
   const { addSubscription } = useSubscriptionsStore();
   const { cards } = usePaymentCardsStore();
@@ -151,51 +158,39 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   useEffect(() => {
     if (visible) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+      translateY.value = withTiming(0, { duration: 300 });
     } else {
-      Animated.timing(slideAnim, {
-        toValue: SCREEN_HEIGHT,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
+      translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 });
     }
   }, [visible]);
 
   const handleClose = useCallback(() => {
-    Animated.timing(slideAnim, {
-      toValue: SCREEN_HEIGHT,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => onClose());
+    translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
+      runOnJS(onClose)();
+    });
   }, [onClose]);
 
-  const onGestureEvent = useCallback((event: PanGestureHandlerGestureEvent) => {
-    const { translationY } = event.nativeEvent;
-    if (translationY > 0) {
-      slideAnim.setValue(translationY);
-    }
-  }, [slideAnim]);
-
-  const onHandlerStateChange = useCallback((event: PanGestureHandlerGestureEvent) => {
-    const { translationY, velocityY, state } = event.nativeEvent;
-    // State 5 = END
-    if (state === 5) {
-      if (translationY > 80 || velocityY > 500) {
-        handleClose();
-      } else {
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 20,
-          stiffness: 200,
-        }).start();
+  const panGesture = Gesture.Pan()
+    .activeOffsetY(10)
+    .failOffsetX([-20, 20])
+    .onUpdate((event) => {
+      if (event.translationY > 0) {
+        translateY.value = event.translationY;
       }
-    }
-  }, [slideAnim, handleClose]);
+    })
+    .onEnd((event) => {
+      if (event.translationY > 80 || event.velocityY > 500) {
+        translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
+          runOnJS(onClose)();
+        });
+      } else {
+        translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+      }
+    });
+
+  const animatedSheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const setF = useCallback((key: string, value: any) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -384,26 +379,20 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   return (
     <>
     <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.backdrop} />
       </TouchableWithoutFeedback>
 
-      <Animated.View
+      <Reanimated.View
         testID="add-sub-sheet"
-        style={[styles.sheet, { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] }]}
+        style={[styles.sheet, { backgroundColor: colors.surface }, animatedSheetStyle]}
       >
-        {/* Drag handle with native gesture handler */}
-        <PanGestureHandler
-          onGestureEvent={onGestureEvent}
-          onHandlerStateChange={onHandlerStateChange}
-          activeOffsetY={10}
-          failOffsetX={[-20, 20]}
-        >
-          <Animated.View style={{ paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' }}>
+        {/* Drag handle with Gesture API v2 */}
+        <GestureDetector gesture={panGesture}>
+          <Reanimated.View style={{ paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' }}>
             <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
-          </Animated.View>
-        </PanGestureHandler>
+          </Reanimated.View>
+        </GestureDetector>
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -1037,8 +1026,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             handleClose();
           }}
         />
-      </Animated.View>
-      </GestureHandlerRootView>
+      </Reanimated.View>
     </Modal>
 
     <BulkAddSheet
