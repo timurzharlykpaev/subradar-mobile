@@ -259,6 +259,8 @@ export default function SubscriptionsScreen() {
           maxToRenderPerBatch={10}
           updateCellsBatchingPeriod={50}
           removeClippedSubviews={true}
+          windowSize={5}
+          getItemLayout={(_data, index) => ({ length: 88, offset: 88 * index, index })}
           renderItem={({ item }) => (
             <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
           )}

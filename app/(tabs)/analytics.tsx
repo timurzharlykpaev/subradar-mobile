@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -247,9 +247,12 @@ export default function AnalyticsScreen() {
     setRefreshing(false);
   }, [fetchAll]);
 
-  const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
+  const activeSubs = useMemo(
+    () => subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL'),
+    [subscriptions],
+  );
 
-  const getMonthlyAmount = (s: typeof activeSubs[0]) => {
+  const getMonthlyAmount = useCallback((s: typeof activeSubs[0]) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4
       : s.billingPeriod === 'QUARTERLY' ? 1 / 3
       : s.billingPeriod === 'YEARLY' ? 1 / 12
@@ -257,16 +260,22 @@ export default function AnalyticsScreen() {
       : s.billingPeriod === 'ONE_TIME' ? 0
       : 1;
     return s.amount * mult;
-  };
+  }, []);
 
-  const totalMonthly = summary?.totalMonthly ?? activeSubs.reduce((sum, s) => sum + getMonthlyAmount(s), 0);
-  const totalYearly = summary?.totalYearly ?? totalMonthly * 12;
-  const mostExpensive = activeSubs.reduce<typeof activeSubs[0] | null>(
-    (max, s) => (!max || getMonthlyAmount(s) > getMonthlyAmount(max) ? s : max), null,
+  const totalMonthly = useMemo(
+    () => summary?.totalMonthly ?? activeSubs.reduce((sum, s) => sum + getMonthlyAmount(s), 0),
+    [summary, activeSubs, getMonthlyAmount],
+  );
+  const totalYearly = useMemo(() => summary?.totalYearly ?? totalMonthly * 12, [summary, totalMonthly]);
+  const mostExpensive = useMemo(
+    () => activeSubs.reduce<typeof activeSubs[0] | null>(
+      (max, s) => (!max || getMonthlyAmount(s) > getMonthlyAmount(max) ? s : max), null,
+    ),
+    [activeSubs, getMonthlyAmount],
   );
 
-  // Category breakdown
-  const byCategory = byCategoryData.length > 0
+  // Category breakdown — memoized
+  const byCategory = useMemo(() => byCategoryData.length > 0
     ? byCategoryData.map((d: any) => {
         const cat = CATEGORIES.find((c) => c.id.toUpperCase() === (d.category || '').toUpperCase());
         return {
@@ -281,18 +290,21 @@ export default function AnalyticsScreen() {
     : CATEGORIES.map((cat) => {
         const catSubs = activeSubs.filter((s) => s.category?.toUpperCase() === cat.id.toUpperCase());
         return { ...cat, total: catSubs.reduce((sum, s) => sum + s.amount, 0), count: catSubs.length };
-      }).filter((c) => c.count > 0);
+      }).filter((c) => c.count > 0),
+    [byCategoryData, activeSubs],
+  );
 
-  const categoryTotal = byCategory.reduce((sum, c) => sum + c.total, 0);
+  const categoryTotal = useMemo(() => byCategory.reduce((sum, c) => sum + c.total, 0), [byCategory]);
 
-  // Top 5 most expensive
-  const top5 = [...activeSubs]
-    .sort((a, b) => getMonthlyAmount(b) - getMonthlyAmount(a))
-    .slice(0, 5);
+  // Top 5 most expensive — memoized
+  const top5 = useMemo(
+    () => [...activeSubs].sort((a, b) => getMonthlyAmount(b) - getMonthlyAmount(a)).slice(0, 5),
+    [activeSubs, getMonthlyAmount],
+  );
 
-  // Card breakdown
+  // Card breakdown — memoized
   const getCard = usePaymentCardsStore((s) => s.getCard);
-  const cardBreakdown = byCardData.length > 0
+  const cardBreakdown = useMemo(() => byCardData.length > 0
     ? byCardData
     : (() => {
         const map = new Map<string, { label: string; total: number }>();
@@ -313,9 +325,11 @@ export default function AnalyticsScreen() {
           }
         });
         return Array.from(map.values());
-      })();
+      })(),
+    [byCardData, activeSubs, getCard, getMonthlyAmount, t],
+  );
 
-  const cardMax = Math.max(...cardBreakdown.map((c: any) => c.total ?? c.amount ?? 0), 1);
+  const cardMax = useMemo(() => Math.max(...cardBreakdown.map((c: any) => c.total ?? c.amount ?? 0), 1), [cardBreakdown]);
 
   const hasNoData = activeSubs.length === 0 && !summary && byCategoryData.length === 0 && monthlyData.length === 0;
 
