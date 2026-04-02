@@ -499,6 +499,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       addedVia: 'AI_TEXT',
                     });
                     addSubscription(res.data);
+                    // Prefetch icon into React Native image cache
+                    if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
                     setSuccessName(sub.name || '');
                     setShowSuccess(true);
                     // Sync list from server
