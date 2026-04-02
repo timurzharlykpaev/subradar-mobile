@@ -702,69 +702,78 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                       </View>
                     </TouchableOpacity>
 
-                    {/* Inline edit fields */}
+                    {/* Inline edit panel */}
                     {isEditing && (
                       <View style={bulkStyles.editPanel}>
-                        <View style={bulkStyles.editRow}>
-                          <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.name', 'Название')}</Text>
-                          <TextInput
-                            style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-                            value={sub.name ?? ''}
-                            onChangeText={(v) => {
-                              const next = [...ui.subs];
-                              next[i] = { ...next[i], name: v };
-                              setUi({ ...ui, subs: next });
-                            }}
-                          />
+                        {/* Name */}
+                        <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.name', 'Название')}</Text>
+                        <TextInput
+                          style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.primary + '60', backgroundColor: colors.background }]}
+                          value={sub.name ?? ''}
+                          autoFocus
+                          returnKeyType="next"
+                          onChangeText={(v) => {
+                            const next = [...ui.subs]; next[i] = { ...next[i], name: v }; setUi({ ...ui, subs: next });
+                          }}
+                        />
+
+                        {/* Amount + Currency row */}
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <View style={{ flex: 2 }}>
+                            <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.amount', 'Сумма')}</Text>
+                            <TextInput
+                              style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                              value={String(sub.amount ?? '')}
+                              keyboardType="decimal-pad"
+                              returnKeyType="done"
+                              onChangeText={(v) => {
+                                const next = [...ui.subs]; next[i] = { ...next[i], amount: parseFloat(v) || 0 }; setUi({ ...ui, subs: next });
+                              }}
+                            />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.currency', 'Валюта')}</Text>
+                            <TextInput
+                              style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+                              value={sub.currency ?? 'USD'}
+                              autoCapitalize="characters"
+                              maxLength={3}
+                              onChangeText={(v) => {
+                                const next = [...ui.subs]; next[i] = { ...next[i], currency: v.toUpperCase() }; setUi({ ...ui, subs: next });
+                              }}
+                            />
+                          </View>
                         </View>
-                        <View style={bulkStyles.editRow}>
-                          <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.amount', 'Сумма')}</Text>
-                          <TextInput
-                            style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-                            value={String(sub.amount ?? '')}
-                            keyboardType="decimal-pad"
-                            onChangeText={(v) => {
-                              const next = [...ui.subs];
-                              next[i] = { ...next[i], amount: parseFloat(v) || 0 };
-                              setUi({ ...ui, subs: next });
-                            }}
-                          />
-                        </View>
-                        <View style={bulkStyles.editRow}>
-                          <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.currency', 'Валюта')}</Text>
-                          <TextInput
-                            style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-                            value={sub.currency ?? 'USD'}
-                            autoCapitalize="characters"
-                            maxLength={3}
-                            onChangeText={(v) => {
-                              const next = [...ui.subs];
-                              next[i] = { ...next[i], currency: v.toUpperCase() };
-                              setUi({ ...ui, subs: next });
-                            }}
-                          />
-                        </View>
-                        {/* Period picker */}
-                        <View style={[bulkStyles.editRow, { flexWrap: 'wrap', gap: 6 }]}>
+
+                        {/* Period chips */}
+                        <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.billing_cycle', 'Период')}</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
                           {(['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const).map((p) => (
                             <TouchableOpacity
                               key={p}
                               onPress={() => {
-                                const next = [...ui.subs];
-                                next[i] = { ...next[i], billingPeriod: p };
-                                setUi({ ...ui, subs: next });
+                                const next = [...ui.subs]; next[i] = { ...next[i], billingPeriod: p }; setUi({ ...ui, subs: next });
                               }}
                               style={[bulkStyles.periodChip, {
                                 backgroundColor: sub.billingPeriod === p ? colors.primary : colors.surface2,
                                 borderColor: sub.billingPeriod === p ? colors.primary : colors.border,
                               }]}
                             >
-                              <Text style={{ fontSize: 11, fontWeight: '700', color: sub.billingPeriod === p ? '#fff' : colors.textSecondary }}>
+                              <Text style={{ fontSize: 12, fontWeight: '700', color: sub.billingPeriod === p ? '#fff' : colors.textSecondary }}>
                                 {periodMap[p] ?? p}
                               </Text>
                             </TouchableOpacity>
                           ))}
                         </View>
+
+                        {/* Done button */}
+                        <TouchableOpacity
+                          onPress={() => setEditingIndex(null)}
+                          style={[bulkStyles.doneBtn, { backgroundColor: colors.primary }]}
+                        >
+                          <Ionicons name="checkmark" size={14} color="#fff" />
+                          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>{t('common.done', 'Готово')}</Text>
+                        </TouchableOpacity>
                       </View>
                     )}
                   </View>
@@ -1061,9 +1070,10 @@ const bulkStyles = StyleSheet.create({
   name:        { fontSize: 15, fontWeight: '700' },
   meta:        { fontSize: 12, marginTop: 2 },
   check:       { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 4 },
-  editPanel:   { width: '100%', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.15)', gap: 8 },
+  editPanel:   { width: '100%', marginTop: 10, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.15)', gap: 10 },
   editRow:     { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  editLabel:   { fontSize: 12, fontWeight: '600', width: 60 },
-  editInput:   { flex: 1, borderRadius: 8, borderWidth: 1, paddingHorizontal: 10, paddingVertical: Platform.OS === 'ios' ? 8 : 4, fontSize: 14 },
-  periodChip:  { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
+  editLabel:   { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  editInput:   { borderRadius: 10, borderWidth: 1.5, paddingHorizontal: 12, paddingVertical: Platform.OS === 'ios' ? 10 : 6, fontSize: 15, fontWeight: '500' },
+  periodChip:  { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10, borderWidth: 1.5 },
+  doneBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 12, marginTop: 4 },
 });
