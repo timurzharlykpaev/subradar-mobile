@@ -492,13 +492,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
           cancelUrl: data.cancelUrl,
           iconUrl: data.iconUrl,
         }));
-        if (plansAsSubs.length === 1) {
-          // Single plan — go to confirm directly
-          fade(() => setUi({ kind: 'confirm', subscription: plansAsSubs[0] }));
-        } else {
-          // Multiple plans — show as bulk so user can pick/edit/add all
-          fade(() => setUi({ kind: 'bulk', subs: plansAsSubs, checked: plansAsSubs.map(() => true) }));
-        }
+        // Always show bulk so user can review/edit/add plans
+        // (even 1 plan goes to bulk for consistency)
+        fade(() => setUi({ kind: 'bulk', subs: plansAsSubs, checked: plansAsSubs.map(() => true) }));
       } else if (data.done && data.subscription) {
         const newCtx = { ...context, ...data.partialContext };
         setContext(newCtx);
@@ -1048,7 +1044,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Ionicons name="checkmark-done" size={18} color="#fff" />
                 <Text style={styles.actionTxt}>
-                  {t('add.bulk_save', `Добавить ${ui.checked.filter(Boolean).length}`)}
+                  {t('add.bulk_save', { count: ui.checked.filter(Boolean).length, defaultValue: `Добавить ${ui.checked.filter(Boolean).length}` })}
                 </Text>
               </View>
             )}
