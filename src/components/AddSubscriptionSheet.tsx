@@ -512,6 +512,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
                     const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
                     let saved = 0;
+                    const failed: string[] = [];
                     for (const sub of subs) {
                       try {
                         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
@@ -535,14 +536,41 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                         addSubscription(res.data);
                         if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
                         saved++;
-                      } catch {}
+                      } catch (err: any) {
+                        const code = err?.response?.data?.error?.code;
+                        if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
+                          failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
+                          break; // Stop trying — all remaining will also fail
+                        }
+                        failed.push(sub.name || '?');
+                      }
                     }
                     // Sync
                     subscriptionsApi.getAll().then((r) => {
                       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
                     }).catch(() => {});
-                    setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
-                    setShowSuccess(true);
+                    if (failed.length > 0 && saved > 0) {
+                      setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
+                      setShowSuccess(true);
+                      setTimeout(() => {
+                        Alert.alert(
+                          t('add.bulk_partial_title', 'Some not added'),
+                          t('add.bulk_partial_msg', { names: failed.join(', '), defaultValue: 'Could not add: {{names}}' }),
+                        );
+                      }, 2000);
+                    } else if (failed.length > 0 && saved === 0) {
+                      Alert.alert(
+                        t('add.limit_reached_title', 'Subscription limit reached'),
+                        t('add.limit_reached_msg', { max: 3, defaultValue: 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.' }),
+                        [
+                          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { handleClose(); router.push('/paywall'); } },
+                          { text: t('common.cancel'), style: 'cancel' },
+                        ]
+                      );
+                    } else {
+                      setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
+                      setShowSuccess(true);
+                    }
                   }}
                   onEdit={(sub) => {
                     setForm((f) => ({

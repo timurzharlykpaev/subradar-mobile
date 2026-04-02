@@ -342,6 +342,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
+  const userCountry = require('../stores/settingsStore').useSettingsStore((s: any) => s.country) ?? '';
   const { isPro, activeCount, maxSubscriptions, cards: planCards, maxCards, cardsLimitReached } = usePlanLimits();
   const { cards, addCard } = usePaymentCardsStore();
   const [addingCard, setAddingCard] = useState(false);
@@ -415,7 +416,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     setLoading(true);
     setLoadingStage('analyzing');
     try {
-      const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru');
+      const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru', userCurrency, userCountry);
       const data = res.data;
       // Handle both array and object responses
       let subs: ParsedSub[] = [];
