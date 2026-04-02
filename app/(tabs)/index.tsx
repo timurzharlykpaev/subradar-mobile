@@ -273,8 +273,8 @@ export default function DashboardScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
           <View testID="dashboard-forecast-row" style={styles.forecastRow}>
             <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={`${currency} ${forecast30.toFixed(0)}`} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
-            <ForecastBox icon="trending-up" label="6 {t('paywall.month', 'mo')}" amount={`${currency} ${(totalMonthly * 6).toFixed(0)}`} sub={t('dashboard.forecast_title')} color={colors.success} />
-            <ForecastBox icon="analytics" label="12 {t('paywall.month', 'mo')}" amount={`${currency} ${(totalMonthly * 12).toFixed(0)}`} sub={t('dashboard.annually')} color={colors.warning} />
+            <ForecastBox icon="trending-up" label={`6 ${t('paywall.month', 'mo')}`} amount={`${currency} ${(totalMonthly * 6).toFixed(0)}`} sub={t('dashboard.forecast_title')} color={colors.success} />
+            <ForecastBox icon="analytics" label={`12 ${t('paywall.month', 'mo')}`} amount={`${currency} ${(totalMonthly * 12).toFixed(0)}`} sub={t('dashboard.annually')} color={colors.warning} />
           </View>
         </View>
 

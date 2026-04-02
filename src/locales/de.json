@@ -662,5 +662,13 @@
     "news": "Nachrichten & Medien",
     "business": "Business",
     "other": "Sonstiges"
+  },
+  "billing": {
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "quarterly": "Vierteljährlich",
+    "yearly": "Jährlich",
+    "lifetime": "Lebenslang",
+    "one_time": "Einmalig"
   }
 }

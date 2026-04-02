@@ -662,5 +662,13 @@
     "news": "Noticias y medios",
     "business": "Negocios",
     "other": "Otros"
+  },
+  "billing": {
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "quarterly": "Trimestral",
+    "yearly": "Anual",
+    "lifetime": "De por vida",
+    "one_time": "Único"
   }
 }

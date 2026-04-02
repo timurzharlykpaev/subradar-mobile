@@ -662,5 +662,13 @@
     "news": "ニュース・メディア",
     "business": "ビジネス",
     "other": "その他"
+  },
+  "billing": {
+    "weekly": "週間",
+    "monthly": "月額",
+    "quarterly": "四半期",
+    "yearly": "年額",
+    "lifetime": "永久",
+    "one_time": "一回"
   }
 }

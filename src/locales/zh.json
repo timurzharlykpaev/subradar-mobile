@@ -662,5 +662,13 @@
     "news": "新闻媒体",
     "business": "商务",
     "other": "其他"
+  },
+  "billing": {
+    "weekly": "每周",
+    "monthly": "每月",
+    "quarterly": "每季",
+    "yearly": "每年",
+    "lifetime": "终身",
+    "one_time": "一次性"
   }
 }
