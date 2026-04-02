@@ -380,7 +380,12 @@
     "total": "Total",
     "empty_title": "No subscriptions yet",
     "empty_subtitle": "Add your first subscription to see spending analytics",
-    "loading": "Loading analytics..."
+    "add_first": "Add subscription →",
+    "loading": "Loading analytics...",
+    "active_count": "Active",
+    "subscriptions": "subscriptions",
+    "error_title": "Could not load analytics",
+    "error_subtitle": "Check your connection and try again"
   },
   "subscription": {
     "billing_day": "Billing Day",
