@@ -73,10 +73,11 @@ export default function SubscriptionDetailScreen() {
                 Linking.openURL(subscription.cancelUrl);
               }
               updateSubscription(id!, { status: 'CANCELLED' });
-              // Sync full list from server
-              subscriptionsApi.getAll().then((r) => {
+              // Sync full list from server BEFORE navigating back
+              try {
+                const r = await subscriptionsApi.getAll();
                 useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-              }).catch(() => {});
+              } catch {}
               Alert.alert(
                 t('subscriptions.cancel_title'),
                 t('subscription.cancel_success', 'Подписка отменена'),

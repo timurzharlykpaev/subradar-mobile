@@ -14,7 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { reportError } from '../../src/utils/errorReporter';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptionsStore, FilterType } from '../../src/stores/subscriptionsStore';
@@ -51,6 +51,13 @@ export default function SubscriptionsScreen() {
   const prevSheetVisible = useRef(addSheetVisible);
 
   useEffect(() => { fetchSubs(); }, []);
+
+  // Refresh when screen comes back into focus (e.g. after cancel/delete on detail screen)
+  useFocusEffect(
+    useCallback(() => {
+      fetchSubs();
+    }, [fetchSubs])
+  );
 
   // Refresh when AddSubscriptionSheet closes
   useEffect(() => {
