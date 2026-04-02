@@ -169,6 +169,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
   }, [visible]);
 
+  const handleClose = useCallback(() => {
+    translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
+      runOnJS(onClose)();
+    });
+  }, [onClose]);
+
   // Android back button
   useEffect(() => {
     if (!visible) return;
@@ -178,12 +184,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     });
     return () => sub.remove();
   }, [visible, handleClose]);
-
-  const handleClose = useCallback(() => {
-    translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
-      runOnJS(onClose)();
-    });
-  }, [onClose]);
 
   const panGesture = Gesture.Pan()
     .activeOffsetY(10)
