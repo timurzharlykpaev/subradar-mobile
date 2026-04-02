@@ -172,6 +172,14 @@ function LoadingIndicator({ stage, colors, lang }: { stage: LoadingStage; colors
 
   return (
     <View style={loadStyles.wrap}>
+      {/* Pulsing icon */}
+      <Animated.View style={{ opacity: dotAnim, marginBottom: 16 }}>
+        <View style={[loadStyles.iconCircle, { backgroundColor: colors.primary + '20' }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </Animated.View>
+      {/* Stage label */}
+      <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 12 }}>{label}</Text>
       {/* Progress bar */}
       <View style={[loadStyles.track, { backgroundColor: colors.border }]}>
         <Animated.View style={[loadStyles.fill, {
@@ -179,19 +187,15 @@ function LoadingIndicator({ stage, colors, lang }: { stage: LoadingStage; colors
           width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
         }]} />
       </View>
-      {/* Stage label */}
-      <Animated.View style={{ opacity: dotAnim, flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}>
-        <ActivityIndicator size="small" color={colors.primary} />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary }}>{label}</Text>
-      </Animated.View>
     </View>
   );
 }
 
 const loadStyles = StyleSheet.create({
-  wrap:  { alignItems: 'center', paddingVertical: 20 },
-  track: { width: '80%', height: 4, borderRadius: 2, overflow: 'hidden' },
-  fill:  { height: '100%', borderRadius: 2 },
+  wrap:       { alignItems: 'center', justifyContent: 'center', height: 170, marginVertical: 16 },
+  iconCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  track:      { width: '70%', height: 4, borderRadius: 2, overflow: 'hidden' },
+  fill:       { height: '100%', borderRadius: 2 },
 });
 
 // ── MicButton ────────────────────────────────────────────────────────────────
@@ -764,57 +768,68 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         {ui.kind !== 'confirm' && ui.kind !== 'plans' && ui.kind !== 'bulk' && (
           <View style={{ flex: 1 }}>
             <Text style={[styles.question, { color: colors.text }]}>{questionText}</Text>
-            {!!hintText && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
+            {!!hintText && !loadingStage && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
 
-            {/* Big mic */}
-            <MicButton onVoice={handleVoice} loadingStage={loadingStage} colors={colors} t={t} lang={i18n.language ?? 'en'} />
-
-            {/* OR divider */}
-            <View style={styles.orRow}>
-              <View style={[styles.line, { backgroundColor: colors.border }]} />
-              <Text style={[styles.orText, { color: colors.textMuted }]}>{t('common.or')}</Text>
-              <View style={[styles.line, { backgroundColor: colors.border }]} />
-            </View>
-
-            {/* Text input — multiline textarea */}
-            <TextInput
-              testID="ai-wizard-input"
-              style={[styles.textInput, {
-                backgroundColor: bg,
-                color: colors.text,
-                borderColor: colors.border,
-                minHeight: 56,
-                maxHeight: 120,
-                textAlignVertical: 'top',
-                paddingTop: 14,
-              }]}
-              value={input}
-              onChangeText={setInput}
-              placeholder={ui.kind === 'idle' ? 'Netflix, Spotify, ChatGPT...' : ''}
-              placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={2}
-              blurOnSubmit={true}
-              returnKeyType="send"
-              onSubmitEditing={() => { if (input.trim()) { Keyboard.dismiss(); callWizard(input.trim()); } }}
-            />
-
-            {/* Quick chips — only on idle */}
-            {ui.kind === 'idle' && (
+            {/* Loading stages indicator — shown for both voice and text */}
+            {loadingStage ? (
+              <LoadingIndicator stage={loadingStage} colors={colors} lang={i18n.language ?? 'en'} />
+            ) : (
               <>
-                <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>{t('ai.popular_services')}</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {QUICK.map(svc => (
-                    <TouchableOpacity
-                      key={svc.name}
-                      style={[styles.chip, { backgroundColor: card, borderColor: colors.border }]}
-                      onPress={() => handleQuick(svc)}
-                    >
-                      <svc.Icon size={20} />
-                      <Text style={[styles.chipText, { color: colors.text }]}>{svc.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                {/* Big mic */}
+                <MicButton onVoice={handleVoice} loadingStage={null} colors={colors} t={t} lang={i18n.language ?? 'en'} />
+
+                {/* OR divider */}
+                <View style={styles.orRow}>
+                  <View style={[styles.line, { backgroundColor: colors.border }]} />
+                  <Text style={[styles.orText, { color: colors.textMuted }]}>{t('common.or')}</Text>
+                  <View style={[styles.line, { backgroundColor: colors.border }]} />
+                </View>
+              </>
+            )}
+
+            {/* Text input + chips — hidden during loading */}
+            {!loadingStage && (
+              <>
+                <TextInput
+                  testID="ai-wizard-input"
+                  style={[styles.textInput, {
+                    backgroundColor: bg,
+                    color: colors.text,
+                    borderColor: colors.border,
+                    minHeight: 56,
+                    maxHeight: 120,
+                    textAlignVertical: 'top',
+                    paddingTop: 14,
+                  }]}
+                  value={input}
+                  onChangeText={setInput}
+                  placeholder={ui.kind === 'idle' ? 'Netflix, Spotify, ChatGPT...' : ''}
+                  placeholderTextColor={colors.textMuted}
+                  multiline
+                  numberOfLines={2}
+                  blurOnSubmit={true}
+                  returnKeyType="send"
+                  onSubmitEditing={() => { if (input.trim()) { Keyboard.dismiss(); callWizard(input.trim()); } }}
+                />
+
+                {/* Quick chips — only on idle */}
+                {ui.kind === 'idle' && (
+                  <>
+                    <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>{t('ai.popular_services')}</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                      {QUICK.map(svc => (
+                        <TouchableOpacity
+                          key={svc.name}
+                          style={[styles.chip, { backgroundColor: card, borderColor: colors.border }]}
+                          onPress={() => handleQuick(svc)}
+                        >
+                          <svc.Icon size={20} />
+                          <Text style={[styles.chipText, { color: colors.text }]}>{svc.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </>
+                )}
               </>
             )}
           </View>
