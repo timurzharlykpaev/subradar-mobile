@@ -173,21 +173,27 @@ export default function PaywallScreen() {
       // Native IAP purchase
       setPurchasing(true);
       try {
-        const success = await purchasePackage(pkg);
-        if (!success) {
+        const purchaseSuccess = await purchasePackage(pkg);
+        console.log('[Paywall] purchasePackage result:', purchaseSuccess);
+        if (!purchaseSuccess) {
           // User cancelled or error already shown by hook
+          setPurchasing(false);
           return;
         }
         // Show success immediately
         const planLabel = selected === 'org' ? 'Team' : 'Pro';
         setSuccessPlan(planLabel);
         // Sync RC then refetch billing so button state updates before user dismisses success screen
-        billingApi.syncRevenueCat(pkg.product.identifier)
-          .catch((e) => console.warn('RC sync failed:', e))
-          .finally(() => {
-            queryClient.invalidateQueries({ queryKey: ['billing'] });
-            queryClient.refetchQueries({ queryKey: ['billing'] });
-          });
+        try {
+          await billingApi.syncRevenueCat(pkg.product.identifier);
+          console.log('[Paywall] RC sync done');
+        } catch (e) {
+          console.warn('[Paywall] RC sync failed:', e);
+        }
+        await queryClient.refetchQueries({ queryKey: ['billing'] });
+      } catch (e: any) {
+        console.error('[Paywall] Purchase error:', e?.message);
+        Alert.alert(t('common.error'), e?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
       } finally {
         setPurchasing(false);
       }
