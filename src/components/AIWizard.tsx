@@ -745,10 +745,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                             fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
                           }
                         }}
-                        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: colors.primary + '12' }}
+                        style={{ padding: 8, borderRadius: 8, backgroundColor: colors.primary + '12' }}
                       >
-                        <Ionicons name="pencil" size={13} color={colors.primary} />
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>{t('common.edit', 'Edit')}</Text>
+                        <Ionicons name="pencil" size={16} color={colors.primary} />
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -759,10 +758,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                           setUi({ ...ui, subs: newSubs, checked: newChecked });
                           if (editingIndex === i) setEditingIndex(null);
                         }}
-                        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: '#EF444412' }}
+                        style={{ padding: 8, borderRadius: 8, backgroundColor: '#EF444412' }}
                       >
-                        <Ionicons name="trash-outline" size={13} color="#EF4444" />
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#EF4444' }}>{t('common.delete', 'Delete')}</Text>
+                        <Ionicons name="trash-outline" size={16} color="#EF4444" />
                       </TouchableOpacity>
                     </View>
 
