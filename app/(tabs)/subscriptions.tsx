@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { reportError } from '../../src/utils/errorReporter';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscriptionsStore, FilterType } from '../../src/stores/subscriptionsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
@@ -41,8 +42,9 @@ export default function SubscriptionsScreen() {
     try {
       const res = await subscriptionsApi.getAll();
       setSubscriptions(res.data || []);
-    } catch {}
-    finally { setRefreshing(false); }
+    } catch (err: any) {
+      reportError(`subscriptions.fetchSubs: ${err?.message ?? err}`, err?.stack);
+    } finally { setRefreshing(false); }
   }, []);
 
   const addSheetVisible = useUIStore((s) => s.addSheetVisible);
