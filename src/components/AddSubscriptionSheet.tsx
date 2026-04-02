@@ -528,10 +528,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                           serviceUrl: sub.serviceUrl || undefined,
                           cancelUrl: sub.cancelUrl || undefined,
                           iconUrl: iconUrl || undefined,
+                          paymentCardId: sub.paymentCardId || undefined,
                           startDate: new Date().toISOString().split('T')[0],
                           addedVia: 'AI_TEXT',
                         });
                         addSubscription(res.data);
+                        if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
                         saved++;
                       } catch {}
                     }

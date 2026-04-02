@@ -25,6 +25,8 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { Pressable } from 'react-native';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import { usePaymentCardsStore } from '../stores/paymentCardsStore';
+import { cardsApi } from '../api/cards';
 import { useRouter } from 'expo-router';
 
 export interface ParsedSub {
@@ -36,6 +38,7 @@ export interface ParsedSub {
   serviceUrl?: string;
   cancelUrl?: string;
   iconUrl?: string;
+  paymentCardId?: string;
 }
 
 interface Props {
@@ -338,7 +341,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
-  const { isPro, activeCount, maxSubscriptions } = usePlanLimits();
+  const { isPro, activeCount, maxSubscriptions, cards: planCards, maxCards, cardsLimitReached } = usePlanLimits();
+  const { cards, addCard } = usePaymentCardsStore();
+  const [addingCard, setAddingCard] = useState(false);
   const router = useRouter();
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
@@ -765,6 +770,65 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                             </TouchableOpacity>
                           ))}
                         </View>
+
+                        {/* Card selector */}
+                        <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.card', 'Карта')}</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                          <View style={{ flexDirection: 'row', gap: 6 }}>
+                            {/* No card option */}
+                            <TouchableOpacity
+                              onPress={() => {
+                                const next = [...ui.subs]; next[i] = { ...next[i], paymentCardId: undefined }; setUi({ ...ui, subs: next });
+                              }}
+                              style={[bulkStyles.periodChip, {
+                                backgroundColor: !sub.paymentCardId ? colors.primary : colors.surface2,
+                                borderColor: !sub.paymentCardId ? colors.primary : colors.border,
+                              }]}
+                            >
+                              <Text style={{ fontSize: 12, fontWeight: '700', color: !sub.paymentCardId ? '#fff' : colors.textSecondary }}>—</Text>
+                            </TouchableOpacity>
+                            {/* Existing cards */}
+                            {cards.map((card) => (
+                              <TouchableOpacity
+                                key={card.id}
+                                onPress={() => {
+                                  const next = [...ui.subs]; next[i] = { ...next[i], paymentCardId: card.id }; setUi({ ...ui, subs: next });
+                                }}
+                                style={[bulkStyles.periodChip, {
+                                  backgroundColor: sub.paymentCardId === card.id ? colors.primary : colors.surface2,
+                                  borderColor: sub.paymentCardId === card.id ? colors.primary : colors.border,
+                                }]}
+                              >
+                                <Text style={{ fontSize: 11, fontWeight: '700', color: sub.paymentCardId === card.id ? '#fff' : colors.textSecondary }}>
+                                  ••{card.last4}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                            {/* Add new card button (if limit not reached) */}
+                            {!cardsLimitReached && (
+                              <TouchableOpacity
+                                onPress={async () => {
+                                  Alert.prompt(
+                                    t('add.card_add_title', 'Добавить карту'),
+                                    t('add.card_last4', 'Последние 4 цифры'),
+                                    async (last4) => {
+                                      if (!last4 || last4.length < 4) return;
+                                      try {
+                                        const res = await cardsApi.create({ last4: last4.slice(-4), brand: 'Unknown', nickname: '' });
+                                        addCard(res.data);
+                                        const next = [...ui.subs]; next[i] = { ...next[i], paymentCardId: res.data.id }; setUi({ ...ui, subs: next });
+                                      } catch {}
+                                    },
+                                    'plain-text', '', 'numeric'
+                                  );
+                                }}
+                                style={[bulkStyles.periodChip, { borderStyle: 'dashed', borderColor: colors.primary }]}
+                              >
+                                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>+ {t('add.card_add', 'Карта')}</Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        </ScrollView>
 
                         {/* Done button */}
                         <TouchableOpacity
