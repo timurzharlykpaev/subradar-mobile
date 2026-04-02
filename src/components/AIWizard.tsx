@@ -229,33 +229,43 @@ function MicButton({ onVoice, loadingStage, colors, t, lang }: { onVoice: (uri: 
 
   return (
     <View style={micStyles.wrap}>
-      <Animated.View style={[micStyles.ring, { backgroundColor: bg + '20', transform: [{ scale: ring1 }] }]} />
+      {/* Outer glow ring */}
+      <Animated.View style={[
+        micStyles.ring,
+        {
+          backgroundColor: bg + (isRecording ? '25' : '18'),
+          transform: [{ scale: ring1 }],
+        },
+      ]} />
 
+      {/* Pressable mic button */}
       <Pressable onPress={toggle} style={micStyles.pressable}>
         <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
           {isRecording ? <StopSvg /> : <MicSvg size={34} />}
         </View>
       </Pressable>
 
-      {/* Recording timer + progress */}
-      {isRecording ? (
-        <View style={micStyles.timerWrap}>
-          <Text style={[micStyles.timer, { color: '#EF4444' }]}>{durationFmt}</Text>
-          <View style={micStyles.progressTrack}>
-            <View style={[micStyles.progressFill, {
-              width: `${progress * 100}%`,
-              backgroundColor: progress > 0.8 ? '#EF4444' : colors.primary,
-            }]} />
-          </View>
-          <Text style={[micStyles.limit, { color: colors.textMuted }]}>
-            {t('add.max_recording', { sec: maxDuration, defaultValue: 'max {{sec}}s' })}
+      {/* Label / Timer below button */}
+      <View style={micStyles.labelWrap}>
+        {isRecording ? (
+          <>
+            <Text style={[micStyles.timer, { color: '#EF4444' }]}>{durationFmt}</Text>
+            <View style={micStyles.progressTrack}>
+              <View style={[micStyles.progressFill, {
+                width: `${progress * 100}%`,
+                backgroundColor: progress > 0.8 ? '#EF4444' : colors.primary,
+              }]} />
+            </View>
+            <Text style={[micStyles.limit, { color: colors.textMuted }]}>
+              {t('add.max_recording', { sec: maxDuration, defaultValue: 'max {{sec}}s' })}
+            </Text>
+          </>
+        ) : (
+          <Text style={[micStyles.label, { color: colors.textSecondary }]}>
+            {t('add.tap_to_record', 'Нажмите для записи')}
           </Text>
-        </View>
-      ) : (
-        <Text style={[micStyles.label, { color: colors.textSecondary }]}>
-          {t('add.tap_to_record', 'Tap to record')}
-        </Text>
-      )}
+        )}
+      </View>
     </View>
   );
 }
@@ -269,16 +279,16 @@ function StopSvg() {
 }
 
 const micStyles = StyleSheet.create({
-  wrap:          { alignItems: 'center', justifyContent: 'center', marginVertical: 16, height: 170 },
-  ring:          { position: 'absolute', width: 120, height: 120, borderRadius: 60, top: 15, alignSelf: 'center' },
+  wrap:          { alignItems: 'center', justifyContent: 'center', marginVertical: 8, gap: 14 },
+  ring:          { position: 'absolute', width: 124, height: 124, borderRadius: 62, alignSelf: 'center' },
   pressable:     { zIndex: 2 },
-  btn:           { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
-  label:         { position: 'absolute', bottom: 0, fontSize: 13, fontWeight: '500' },
-  timerWrap:     { position: 'absolute', bottom: 0, alignItems: 'center', width: '100%' },
-  timer:         { fontSize: 18, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  progressTrack: { width: 140, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 6, overflow: 'hidden' },
+  btn:           { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 12 },
+  labelWrap:     { alignItems: 'center', minHeight: 44 },
+  label:         { fontSize: 14, fontWeight: '600', letterSpacing: 0.1 },
+  timer:         { fontSize: 20, fontWeight: '900', fontVariant: ['tabular-nums'] },
+  progressTrack: { width: 150, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(128,128,128,0.2)', marginTop: 8, overflow: 'hidden' },
   progressFill:  { height: '100%', borderRadius: 1.5 },
-  limit:         { fontSize: 11, fontWeight: '500', marginTop: 4 },
+  limit:         { fontSize: 11, fontWeight: '500', marginTop: 4, opacity: 0.6 },
 });
 
 // ── Component ────────────────────────────────────────────────────────────────
