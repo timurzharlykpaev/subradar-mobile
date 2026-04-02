@@ -58,10 +58,11 @@ export default function SettingsScreen() {
     setRefreshing(false);
   }, [queryClient]);
 
-  const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
-  const isTeam = billing?.plan === 'organization';
-  const isTrialing = billing?.status === 'trialing';
-  const canTrial = billing && !billing.trialUsed && !isPro;
+  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
+  const isTeam = billing?.plan === 'organization' && !isCancelled;
+  const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
+  const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
 
   const handleStartTrial = async () => {
     try {

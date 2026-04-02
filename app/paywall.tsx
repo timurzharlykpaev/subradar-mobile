@@ -482,8 +482,13 @@ export default function PaywallScreen() {
       <PurchaseSuccessScreen
         visible={!!successPlan}
         planName={successPlan ?? ''}
-        onDone={() => {
+        onDone={async () => {
           setSuccessPlan(null);
+          // Force refresh all billing & subscription data before navigating
+          await Promise.all([
+            queryClient.refetchQueries({ queryKey: ['billing'] }),
+            queryClient.refetchQueries({ queryKey: ['subscriptions'] }),
+          ]);
           // Dismiss any modals in the stack, then navigate to tabs root
           try { router.dismissAll(); } catch {}
           router.replace('/(tabs)' as any);

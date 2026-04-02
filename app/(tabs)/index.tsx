@@ -8,8 +8,10 @@ import {
   ActivityIndicator,
   RefreshControl,
   useWindowDimensions,
+  Image,
+  AppState,
+  type AppStateStatus,
 } from 'react-native';
-import { Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -20,6 +22,7 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
+import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
@@ -36,6 +39,7 @@ export default function DashboardScreen() {
   const { currency } = useSettingsStore();
   const { colors, isDark } = useTheme();
   const { data: billing } = useBillingStatus();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [monthlyTrend, setMonthlyTrend] = React.useState<{ month: string; amount: number }[]>([]);
@@ -82,6 +86,17 @@ export default function DashboardScreen() {
   };
 
   useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, []);
+
+  // Refetch billing when app returns to foreground (e.g. after purchase)
+  useEffect(() => {
+    const handleAppState = (next: AppStateStatus) => {
+      if (next === 'active') {
+        queryClient.invalidateQueries({ queryKey: ['billing'] });
+      }
+    };
+    const sub = AppState.addEventListener('change', handleAppState);
+    return () => sub.remove();
+  }, [queryClient]);
 
   // Show WelcomeSheet on first visit with no subscriptions
   useEffect(() => {
@@ -147,7 +162,8 @@ export default function DashboardScreen() {
     }, {} as Record<string, number>)
   ).filter(([, count]) => count > 1);
 
-  const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
+  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
 
   if (loading) {
     return (
@@ -164,7 +180,7 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); }} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); queryClient.invalidateQueries({ queryKey: ['billing'] }); }} />
         }
       >
         <View style={{ paddingHorizontal: 20, paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end' }}>
