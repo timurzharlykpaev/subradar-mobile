@@ -335,6 +335,7 @@ type UIState =
   | { kind: 'question'; text: string; field: string }
   | { kind: 'confirm'; subscription: ParsedSub }
   | { kind: 'bulk'; subs: ParsedSub[]; checked: boolean[] }
+  | { kind: 'bulk-edit'; subs: ParsedSub[]; checked: boolean[]; editIdx: number }
   | { kind: 'plans'; plans: PlanOption[]; serviceName: string; iconUrl?: string; serviceUrl?: string; cancelUrl?: string; category?: string };
 
 export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
@@ -716,12 +717,16 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                       </View>
                     </TouchableOpacity>
 
-                    {/* Edit button */}
+                    {/* Edit button — opens detail edit screen */}
                     <TouchableOpacity
-                      onPress={() => setEditingIndex(isEditing ? null : i)}
+                      onPress={() => {
+                        if (ui.kind === 'bulk') {
+                          fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
+                        }
+                      }}
                       style={{ padding: 6 }}
                     >
-                      <Ionicons name={isEditing ? 'checkmark-circle' : 'pencil-outline'} size={18} color={isEditing ? '#10B981' : colors.textMuted} />
+                      <Ionicons name="pencil-outline" size={18} color={colors.textMuted} />
                     </TouchableOpacity>
 
                     {/* Delete button */}
@@ -748,145 +753,95 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                       </View>
                     </TouchableOpacity>
 
-                    {/* Inline edit panel */}
-                    {isEditing && (
-                      <View style={bulkStyles.editPanel}>
-                        {/* Name */}
-                        <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.name', 'Название')}</Text>
-                        <TextInput
-                          style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.primary + '60', backgroundColor: colors.background }]}
-                          value={sub.name ?? ''}
-                          autoFocus
-                          returnKeyType="next"
-                          onChangeText={(v) => {
-                            const next = [...ui.subs]; next[i] = { ...next[i], name: v }; setUi({ ...ui, subs: next });
-                          }}
-                        />
-
-                        {/* Amount + Currency row */}
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
-                          <View style={{ flex: 2 }}>
-                            <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.amount', 'Сумма')}</Text>
-                            <TextInput
-                              style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-                              value={String(sub.amount ?? '')}
-                              keyboardType="decimal-pad"
-                              returnKeyType="done"
-                              onChangeText={(v) => {
-                                const next = [...ui.subs]; next[i] = { ...next[i], amount: parseFloat(v) || 0 }; setUi({ ...ui, subs: next });
-                              }}
-                            />
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.currency', 'Валюта')}</Text>
-                            <TextInput
-                              style={[bulkStyles.editInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-                              value={sub.currency ?? 'USD'}
-                              autoCapitalize="characters"
-                              maxLength={3}
-                              onChangeText={(v) => {
-                                const next = [...ui.subs]; next[i] = { ...next[i], currency: v.toUpperCase() }; setUi({ ...ui, subs: next });
-                              }}
-                            />
-                          </View>
-                        </View>
-
-                        {/* Period chips */}
-                        <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.billing_cycle', 'Период')}</Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                          {(['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const).map((p) => (
-                            <TouchableOpacity
-                              key={p}
-                              onPress={() => {
-                                const next = [...ui.subs]; next[i] = { ...next[i], billingPeriod: p }; setUi({ ...ui, subs: next });
-                              }}
-                              style={[bulkStyles.periodChip, {
-                                backgroundColor: sub.billingPeriod === p ? colors.primary : colors.surface2,
-                                borderColor: sub.billingPeriod === p ? colors.primary : colors.border,
-                              }]}
-                            >
-                              <Text style={{ fontSize: 12, fontWeight: '700', color: sub.billingPeriod === p ? '#fff' : colors.textSecondary }}>
-                                {periodMap[p] ?? p}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-
-                        {/* Card selector */}
-                        <Text style={[bulkStyles.editLabel, { color: colors.textSecondary }]}>{t('add.card', 'Карта')}</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                          <View style={{ flexDirection: 'row', gap: 6 }}>
-                            {/* No card option */}
-                            <TouchableOpacity
-                              onPress={() => {
-                                const next = [...ui.subs]; next[i] = { ...next[i], paymentCardId: undefined }; setUi({ ...ui, subs: next });
-                              }}
-                              style={[bulkStyles.periodChip, {
-                                backgroundColor: !sub.paymentCardId ? colors.primary : colors.surface2,
-                                borderColor: !sub.paymentCardId ? colors.primary : colors.border,
-                              }]}
-                            >
-                              <Text style={{ fontSize: 12, fontWeight: '700', color: !sub.paymentCardId ? '#fff' : colors.textSecondary }}>—</Text>
-                            </TouchableOpacity>
-                            {/* Existing cards */}
-                            {cards.map((card) => (
-                              <TouchableOpacity
-                                key={card.id}
-                                onPress={() => {
-                                  const next = [...ui.subs]; next[i] = { ...next[i], paymentCardId: card.id }; setUi({ ...ui, subs: next });
-                                }}
-                                style={[bulkStyles.periodChip, {
-                                  backgroundColor: sub.paymentCardId === card.id ? colors.primary : colors.surface2,
-                                  borderColor: sub.paymentCardId === card.id ? colors.primary : colors.border,
-                                }]}
-                              >
-                                <Text style={{ fontSize: 11, fontWeight: '700', color: sub.paymentCardId === card.id ? '#fff' : colors.textSecondary }}>
-                                  ••{card.last4}
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
-                            {/* Add new card button (if limit not reached) */}
-                            {!cardsLimitReached && (
-                              <TouchableOpacity
-                                onPress={async () => {
-                                  Alert.prompt(
-                                    t('add.card_add_title', 'Добавить карту'),
-                                    t('add.card_last4', 'Последние 4 цифры'),
-                                    async (last4) => {
-                                      if (!last4 || last4.length < 4) return;
-                                      try {
-                                        const res = await cardsApi.create({ last4: last4.slice(-4), brand: 'Unknown', nickname: '' });
-                                        addCard(res.data);
-                                        const next = [...ui.subs]; next[i] = { ...next[i], paymentCardId: res.data.id }; setUi({ ...ui, subs: next });
-                                      } catch {}
-                                    },
-                                    'plain-text', '', 'numeric'
-                                  );
-                                }}
-                                style={[bulkStyles.periodChip, { borderStyle: 'dashed', borderColor: colors.primary }]}
-                              >
-                                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>+ {t('add.card_add', 'Карта')}</Text>
-                              </TouchableOpacity>
-                            )}
-                          </View>
-                        </ScrollView>
-
-                        {/* Done button */}
-                        <TouchableOpacity
-                          onPress={() => setEditingIndex(null)}
-                          style={[bulkStyles.doneBtn, { backgroundColor: colors.primary }]}
-                        >
-                          <Ionicons name="checkmark" size={14} color="#fff" />
-                          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>{t('common.done', 'Готово')}</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
                   </View>
                 );
               })}
             </ScrollView>
           </View>
         )}
+
+        {/* ── Bulk-edit detail screen ────────────────────────────────────── */}
+        {ui.kind === 'bulk-edit' && (() => {
+          const sub = ui.subs[ui.editIdx];
+          if (!sub) return null;
+          const updateSub = (patch: Partial<ParsedSub>) => {
+            const next = [...ui.subs];
+            next[ui.editIdx] = { ...next[ui.editIdx], ...patch };
+            setUi({ ...ui, subs: next });
+          };
+          const inputStyle = {
+            borderRadius: 10, borderWidth: 1.5, paddingHorizontal: 12,
+            paddingVertical: Platform.OS === 'ios' ? 10 : 6,
+            fontSize: 15, fontWeight: '500' as const,
+            color: colors.text, borderColor: colors.border,
+            backgroundColor: colors.background,
+          };
+          const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const;
+          const periodLabel = (p: string) => ({ MONTHLY: '/мес', YEARLY: '/год', WEEKLY: '/нед', QUARTERLY: '/квар' }[p] ?? p);
+          return (
+            <View style={{ flex: 1 }}>
+              {/* Back button */}
+              <TouchableOpacity
+                onPress={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}
+              >
+                <Ionicons name="arrow-back" size={20} color={colors.primary} />
+                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>{t('common.back', 'Назад к списку')}</Text>
+              </TouchableOpacity>
+
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                {/* Service name with icon */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                  {sub.iconUrl
+                    ? <Image source={{ uri: sub.iconUrl }} style={{ width: 36, height: 36, borderRadius: 9 }} />
+                    : <View style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>{(sub.name || '?')[0].toUpperCase()}</Text>
+                      </View>
+                  }
+                  <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>{sub.name}</Text>
+                </View>
+
+                {/* Name */}
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.name', 'Название')}</Text>
+                <TextInput style={[inputStyle, { marginBottom: 12 }]} value={sub.name ?? ''} onChangeText={(v) => updateSub({ name: v })} placeholder={t('add.name_placeholder', 'Название')} placeholderTextColor={colors.textMuted} />
+
+                {/* Amount + Currency */}
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                  <View style={{ flex: 2 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.amount', 'Сумма')}</Text>
+                    <TextInput style={inputStyle} value={String(sub.amount ?? '')} keyboardType="decimal-pad" onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.currency', 'Валюта')}</Text>
+                    <TextInput style={inputStyle} value={sub.currency ?? 'USD'} autoCapitalize="characters" maxLength={3} onChangeText={(v) => updateSub({ currency: v.toUpperCase() })} />
+                  </View>
+                </View>
+
+                {/* Period */}
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{t('add.billing_cycle', 'Период')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                  {PERIODS.map((p) => (
+                    <TouchableOpacity key={p} onPress={() => updateSub({ billingPeriod: p })}
+                      style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1.5,
+                        backgroundColor: sub.billingPeriod === p ? colors.primary : colors.surface2,
+                        borderColor: sub.billingPeriod === p ? colors.primary : colors.border }}>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: sub.billingPeriod === p ? '#fff' : colors.textSecondary }}>{periodLabel(p)}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Done → back to list */}
+                <TouchableOpacity
+                  onPress={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
+                  style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: 20 }}
+                >
+                  <Ionicons name="checkmark" size={16} color="#fff" />
+                  <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{t('common.done', 'Готово')}</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          );
+        })()}
 
         {/* ── Confirm screen ───────────────────────────────────────────── */}
         {ui.kind === 'confirm' && (() => {
@@ -930,7 +885,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         })()}
 
         {/* ── Input / Question screen ───────────────────────────────────── */}
-        {ui.kind !== 'confirm' && ui.kind !== 'plans' && ui.kind !== 'bulk' && (
+        {ui.kind !== 'confirm' && ui.kind !== 'plans' && ui.kind !== 'bulk' && ui.kind !== 'bulk-edit' && (
           <View style={{ flex: 1 }}>
             <Text style={[styles.question, { color: colors.text }]}>{questionText}</Text>
             {!!hintText && !loadingStage && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
@@ -1004,7 +959,8 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
 
       {/* ── Footer button ─────────────────────────────────────────────────── */}
       <View style={styles.footer}>
-        {ui.kind === 'bulk' ? (
+        {/* bulk-edit screen has its own Done button — hide footer */}
+        {ui.kind === 'bulk-edit' ? null : ui.kind === 'bulk' ? (
           <TouchableOpacity
             style={[styles.actionBtn, { backgroundColor: '#10B981' }, saving && { opacity: 0.6 }]}
             onPress={async () => {
