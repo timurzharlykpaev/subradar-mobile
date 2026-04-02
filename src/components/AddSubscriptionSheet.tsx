@@ -9,8 +9,8 @@ import {
   ScrollView,
   Alert,
   Image,
-  Modal,
   Animated,
+  BackHandler,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -153,6 +153,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [showBulk, setShowBulk] = useState(false);
 
   const translateY = useSharedValue(SCREEN_HEIGHT);
+  const backdropOpacity = useSharedValue(0);
 
   const { addSubscription } = useSubscriptionsStore();
   const { cards } = usePaymentCardsStore();
@@ -160,11 +161,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   useEffect(() => {
     if (visible) {
+      backdropOpacity.value = withTiming(1, { duration: 250 });
       translateY.value = withTiming(0, { duration: 300 });
     } else {
       translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 });
+      backdropOpacity.value = withTiming(0, { duration: 250 });
     }
   }, [visible]);
+
+  // Android back button
+  useEffect(() => {
+    if (!visible) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [visible, handleClose]);
 
   const handleClose = useCallback(() => {
     translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
@@ -192,6 +205,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const animatedSheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
+  }));
+
+  const animatedBackdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value,
+    pointerEvents: backdropOpacity.value > 0 ? 'auto' as const : 'none' as const,
   }));
 
   const setF = useCallback((key: string, value: any) => {
@@ -380,9 +398,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   return (
     <>
-    <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
+    <View style={StyleSheet.absoluteFill} pointerEvents={visible ? 'auto' : 'none'}>
       <TouchableWithoutFeedback onPress={handleClose}>
-        <View style={styles.backdrop} />
+        <Reanimated.View style={[styles.backdrop, animatedBackdropStyle]} />
       </TouchableWithoutFeedback>
 
       <Reanimated.View
@@ -1029,7 +1047,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           }}
         />
       </Reanimated.View>
-    </Modal>
+    </View>
 
     <BulkAddSheet
       visible={showBulk}
