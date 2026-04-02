@@ -8,13 +8,15 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh"
       },
       "ios": {
         "simulator": false,
@@ -28,7 +30,8 @@
     "production": {
       "distribution": "store",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "REPLACE_WITH_PROD_RC_KEY"
       },
       "ios": {
         "autoIncrement": true
@@ -45,7 +48,8 @@
     "preview-prod": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh"
       },
       "ios": {
         "simulator": false,

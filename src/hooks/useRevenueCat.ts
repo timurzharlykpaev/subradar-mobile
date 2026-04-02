@@ -18,8 +18,13 @@ try {
   // Native module not linked (Expo Go, simulator without dev build)
 }
 
-// RevenueCat public API keys are designed to be in client code (not a secret)
-const API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
+// RevenueCat public API keys are designed to be in client code (not a secret).
+// Production key set via EXPO_PUBLIC_REVENUECAT_KEY in eas.json (production profile).
+// Dev/TestFlight use test key (set via eas.json preview profiles or .env.local).
+import { Platform } from 'react-native';
+const RC_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS || process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
+const RC_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_KEY_ANDROID || process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
+const API_KEY = Platform.OS === 'ios' ? RC_KEY_IOS : RC_KEY_ANDROID;
 
 let configured = false;
 
