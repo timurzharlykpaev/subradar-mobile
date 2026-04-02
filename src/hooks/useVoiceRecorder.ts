@@ -33,7 +33,12 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
     await recorder.stop();
     setIsRecording(false);
     setDuration(0);
-    if (recorder.uri) onDone(recorder.uri);
+    console.log('[VoiceRecorder] Recording stopped, uri:', recorder.uri);
+    if (recorder.uri) {
+      onDone(recorder.uri);
+    } else {
+      console.warn('[VoiceRecorder] No URI after recording stop');
+    }
   }, [isRecording, recorder, onDone]);
 
   useEffect(() => {

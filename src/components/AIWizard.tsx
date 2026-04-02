@@ -344,24 +344,31 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
 
   // ── Voice handler ────────────────────────────────────────────────────────
   const handleVoice = async (uri: string) => {
-    if (!uri) return;
+    console.log('[Voice] handleVoice called, uri:', uri);
+    if (!uri) { console.warn('[Voice] No URI provided'); return; }
     Keyboard.dismiss();
     setLoading(true);
     try {
-      // Use base64 JSON payload instead of FormData — avoids axios retry issues with streams
+      console.log('[Voice] Reading file as base64...');
       const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
+      console.log('[Voice] Base64 length:', audioBase64.length);
+      console.log('[Voice] Sending to parseAudio, locale:', i18n.language);
       const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
+      console.log('[Voice] parseAudio response:', JSON.stringify(transcribeRes.data).slice(0, 200));
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
+        console.warn('[Voice] Empty transcription');
         Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
         setLoading(false);
         return;
       }
+      console.log('[Voice] Transcribed text:', text);
       setInput(text);
       await callWizard(text);
     } catch (err: any) {
+      console.error('[Voice] ERROR:', err?.message, err?.response?.status, err?.response?.data);
       reportError(`AIWizard voice error: ${err?.message ?? err}`, err?.stack, { component: 'AIWizard' });
-      Alert.alert(t('ai.voice_error_title'), t('ai.voice_error'));
+      Alert.alert(t('ai.voice_error_title'), err?.response?.data?.message || t('ai.voice_error'));
       setLoading(false);
     }
   };
