@@ -406,13 +406,28 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const callWizard = async (message: string) => {
     if (!message.trim()) return;
 
+    // Detect if message mentions multiple services (comma/slash/and separated)
+    const multiServicePattern = /[,\/]|\b(and|и|плюс|также|ещё|еще)\b/i;
+    const looksLikeMultiple = multiServicePattern.test(message) || message.trim().split(/\s+/).length >= 4;
+
     // Always try bulk first — AI decides if there are 1 or many subscriptions
     setLoading(true);
     setLoadingStage('analyzing');
     try {
       const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru');
       const data = res.data;
-      const subs: ParsedSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
+      // Handle both array and object responses
+      let subs: ParsedSub[] = [];
+      if (Array.isArray(data)) {
+        subs = data;
+      } else if (Array.isArray(data?.subscriptions)) {
+        subs = data.subscriptions;
+      } else if (data && typeof data === 'object' && data.name) {
+        subs = [data]; // single sub returned as object
+      }
+      // Filter out items with no name
+      subs = subs.filter((s) => s.name && s.name.trim());
+
       if (subs.length > 1) {
         if (!checkLimit(subs.length)) { setLoading(false); setLoadingStage(null); setInput(''); return; }
         setEditingIndex(null);
@@ -423,7 +438,8 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         return;
       }
       // Only 1 result — fall through to single wizard
-    } catch {
+    } catch (e) {
+      reportError(`parseBulkText error: ${(e as any)?.message ?? e}`, (e as any)?.stack);
       // fall through to wizard
     } finally {
       setLoading(false);
@@ -441,6 +457,26 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       const contextWithCurrency = { ...context, preferredCurrency: userCurrency };
       const res = await aiApi.wizard(message, contextWithCurrency, i18n.language ?? 'en', newHistory);
       const data = res.data;
+      // If wizard returned plans but input looks like multiple services — retry as bulk with explicit instruction
+      if (data.done && data.plans && Array.isArray(data.plans) && looksLikeMultiple) {
+        // Convert each plan to a separate subscription for bulk review
+        const subs: ParsedSub[] = data.plans.map((p: any) => ({
+          name: p.name || data.serviceName || message.split(',')[0].trim(),
+          amount: p.amount || p.price || 0,
+          currency: p.currency || 'USD',
+          billingPeriod: p.billingPeriod || 'MONTHLY',
+          category: data.category,
+          serviceUrl: data.serviceUrl,
+          cancelUrl: data.cancelUrl,
+          iconUrl: data.iconUrl,
+        }));
+        if (subs.length > 0) {
+          setEditingIndex(null);
+          fade(() => setUi({ kind: 'bulk', subs, checked: subs.map(() => true) }));
+          return;
+        }
+      }
+
       if (data.done && data.plans && Array.isArray(data.plans) && data.plans.length > 0) {
         const newCtx = { ...context, ...data.partialContext };
         setContext(newCtx);
