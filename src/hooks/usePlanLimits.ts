@@ -1,4 +1,5 @@
 import { useBillingStatus } from './useBilling';
+import { useRevenueCat } from './useRevenueCat';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 
@@ -15,11 +16,13 @@ export const PRO_LIMITS = {
 export function usePlanLimits() {
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
   const { data: billing } = useBillingStatus();
+  const { isPro: rcIsPro } = useRevenueCat();
 
   const rawPlan = billing?.plan ?? 'free';
   const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
   const plan = isCancelled ? 'free' : rawPlan;
-  const isPro = (plan === 'pro' || plan === 'organization') && !isCancelled;
+  // Trust RevenueCat as source of truth for Pro status (handles sandbox/test purchases)
+  const isPro = rcIsPro || ((plan === 'pro' || plan === 'organization') && !isCancelled);
 
   const activeCount = subscriptions.filter(
     (s) => s.status === 'ACTIVE' || s.status === 'TRIAL'
