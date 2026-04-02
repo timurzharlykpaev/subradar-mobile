@@ -273,8 +273,24 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         useSubscriptionsStore.getState().setSubscriptions(r.data || []);
       }).catch(() => {});
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || t('add.save_failed');
-      Alert.alert(t('common.error'), msg);
+      const errorData = err?.response?.data?.error || err?.response?.data;
+      const code = errorData?.code || '';
+      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429;
+
+      if (isLimitError) {
+        Alert.alert(
+          t('add.limit_reached_title', 'Subscription limit reached'),
+          t('add.limit_reached_msg', { max: errorData?.limit ?? 3, defaultValue: 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.' }),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { onClose(); router.push('/paywall'); } },
+            { text: t('common.cancel'), style: 'cancel' },
+          ]
+        );
+      } else {
+        const msg = typeof errorData === 'string' ? errorData
+          : errorData?.message || errorData?.message_key || err?.message || t('add.save_failed');
+        Alert.alert(t('common.error'), String(msg));
+      }
     }
   }, [form, handleClose, subsLimitReached, onClose, router, t, addSubscription]);
 

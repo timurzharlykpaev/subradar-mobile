@@ -768,7 +768,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
               try {
                 if (onSaveBulk) await onSaveBulk(selected);
               } catch (err: any) {
-                Alert.alert(t('common.error'), err?.response?.data?.message || err?.message || '');
+                const errorData = err?.response?.data?.error || err?.response?.data;
+                const msg = typeof errorData === 'string' ? errorData : errorData?.message || errorData?.message_key || err?.message || '';
+                Alert.alert(t('common.error'), String(msg));
               } finally {
                 setSaving(false);
               }
@@ -814,8 +816,21 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                 try {
                   await onSave(ui.subscription);
                 } catch (err: any) {
-                  const msg = err?.response?.data?.message || err?.message || 'Error';
-                  Alert.alert(t('common.error'), msg);
+                  const errorData = err?.response?.data?.error || err?.response?.data;
+                  const code = errorData?.code || '';
+                  if (code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429) {
+                    Alert.alert(
+                      t('add.limit_reached_title', 'Subscription limit reached'),
+                      t('add.limit_reached_msg', { max: errorData?.limit ?? 3, defaultValue: 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.' }),
+                      [
+                        { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+                        { text: t('common.cancel'), style: 'cancel' },
+                      ]
+                    );
+                  } else {
+                    const msg = typeof errorData === 'string' ? errorData : errorData?.message || errorData?.message_key || err?.message || 'Error';
+                    Alert.alert(t('common.error'), String(msg));
+                  }
                 } finally {
                   setSaving(false);
                 }
