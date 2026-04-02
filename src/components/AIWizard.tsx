@@ -429,7 +429,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       // Filter out items with no name
       subs = subs.filter((s) => s.name && s.name.trim());
 
-      if (subs.length > 1) {
+      // If we got any results from bulk AND input looks like multiple services → show bulk
+      // (even 1 result for multi-service input should go to bulk for user review)
+      if (subs.length > 0 && (subs.length > 1 || looksLikeMultiple)) {
         if (!checkLimit(subs.length)) { setLoading(false); setLoadingStage(null); setInput(''); return; }
         setEditingIndex(null);
         fade(() => setUi({ kind: 'bulk', subs, checked: subs.map(() => true) }));
@@ -438,7 +440,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         setInput('');
         return;
       }
-      // Only 1 result — fall through to single wizard
+      // Single result for single-service input — fall through to single wizard
     } catch (e) {
       reportError(`parseBulkText error: ${(e as any)?.message ?? e}`, (e as any)?.stack);
       // fall through to wizard
@@ -717,16 +719,17 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                       </View>
                     </TouchableOpacity>
 
-                    {/* Edit button — opens detail edit screen */}
+                    {/* Edit button */}
                     <TouchableOpacity
                       onPress={() => {
                         if (ui.kind === 'bulk') {
                           fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
                         }
                       }}
-                      style={{ padding: 6 }}
+                      style={{ padding: 10, borderRadius: 10, backgroundColor: colors.primary + '15' }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
                     >
-                      <Ionicons name="pencil-outline" size={18} color={colors.textMuted} />
+                      <Ionicons name="pencil" size={16} color={colors.primary} />
                     </TouchableOpacity>
 
                     {/* Delete button */}
@@ -738,9 +741,10 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                         setUi({ ...ui, subs: newSubs, checked: newChecked });
                         if (editingIndex === i) setEditingIndex(null);
                       }}
-                      style={{ padding: 6 }}
+                      style={{ padding: 10, borderRadius: 10, backgroundColor: '#EF444415' }}
+                      hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
                     >
-                      <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                      <Ionicons name="trash" size={16} color="#EF4444" />
                     </TouchableOpacity>
 
                     {/* Checkbox */}
