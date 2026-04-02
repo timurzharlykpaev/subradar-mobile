@@ -98,10 +98,14 @@ export function useRevenueCat() {
     };
   }, []);
 
-  const isPro = !!(
-    customerInfo?.entitlements?.active?.['pro'] ||
-    customerInfo?.entitlements?.active?.['team']
-  );
+  // Check entitlements case-insensitively (RC dashboard may use Pro/pro/PRO)
+  const activeEntitlements = customerInfo?.entitlements?.active ?? {};
+  const activeKeys = Object.keys(activeEntitlements);
+  const isPro = activeKeys.some((k: string) => /^(pro|team)$/i.test(k)) || activeKeys.length > 0;
+
+  if (__DEV__ && customerInfo) {
+    console.log('[RevenueCat] Active entitlements:', activeKeys, 'isPro:', isPro);
+  }
 
   const isTeam = !!customerInfo?.entitlements?.active?.['team'];
 

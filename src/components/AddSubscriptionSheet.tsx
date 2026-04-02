@@ -106,7 +106,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
-  const { subsLimitReached } = usePlanLimits();
+  const { subsLimitReached, isPro, activeCount, maxSubscriptions } = usePlanLimits();
+  if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
   const [tab, setTab] = useState(0);
   const [form, setForm] = useState(emptyForm);
   const [aiText, setAiText] = useState('');
