@@ -6,7 +6,8 @@ export function useBillingStatus() {
   return useQuery({
     queryKey: ['billing', 'me'],
     queryFn: () => billingApi.getMe().then((r) => r.data),
-    staleTime: 30000,
+    staleTime: 5000,
+    refetchOnMount: 'always',
   });
 }
 
