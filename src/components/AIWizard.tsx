@@ -192,9 +192,9 @@ function LoadingIndicator({ stage, colors, lang }: { stage: LoadingStage; colors
 }
 
 const loadStyles = StyleSheet.create({
-  wrap:       { alignItems: 'center', justifyContent: 'center', height: 170, marginVertical: 16 },
-  iconCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
-  track:      { width: '70%', height: 4, borderRadius: 2, overflow: 'hidden' },
+  wrap:       { alignItems: 'center', justifyContent: 'center', paddingVertical: 32, flex: 1 },
+  iconCircle: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
+  track:      { width: '60%', height: 4, borderRadius: 2, overflow: 'hidden' },
   fill:       { height: '100%', borderRadius: 2 },
 });
 
@@ -673,9 +673,23 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                     {/* Edit button */}
                     <TouchableOpacity
                       onPress={() => setEditingIndex(isEditing ? null : i)}
-                      style={{ padding: 6, marginRight: 4 }}
+                      style={{ padding: 6 }}
                     >
                       <Ionicons name={isEditing ? 'checkmark-circle' : 'pencil-outline'} size={18} color={isEditing ? '#10B981' : colors.textMuted} />
+                    </TouchableOpacity>
+
+                    {/* Delete button */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        const newSubs = ui.subs.filter((_, j) => j !== i);
+                        const newChecked = ui.checked.filter((_, j) => j !== i);
+                        if (newSubs.length === 0) { reset(); return; }
+                        setUi({ ...ui, subs: newSubs, checked: newChecked });
+                        if (editingIndex === i) setEditingIndex(null);
+                      }}
+                      style={{ padding: 6 }}
+                    >
+                      <Ionicons name="trash-outline" size={16} color="#EF4444" />
                     </TouchableOpacity>
 
                     {/* Checkbox */}
