@@ -228,24 +228,26 @@ function MicButton({ onVoice, loadingStage, colors, t, lang }: { onVoice: (uri: 
   }
 
   return (
-    <View style={micStyles.wrap}>
-      {/* Outer glow ring */}
-      <Animated.View style={[
-        micStyles.ring,
-        {
-          backgroundColor: bg + (isRecording ? '25' : '18'),
-          transform: [{ scale: ring1 }],
-        },
-      ]} />
+    <View style={micStyles.container}>
+      {/* Button + ring together, perfectly centered */}
+      <View style={micStyles.btnArea}>
+        {/* Pulsing glow ring — same center as button */}
+        <Animated.View style={[
+          micStyles.ring,
+          {
+            backgroundColor: bg + (isRecording ? '28' : '20'),
+            transform: [{ scale: ring1 }],
+          },
+        ]} />
+        {/* Button */}
+        <Pressable onPress={toggle} style={micStyles.pressable}>
+          <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
+            {isRecording ? <StopSvg /> : <MicSvg size={34} />}
+          </View>
+        </Pressable>
+      </View>
 
-      {/* Pressable mic button */}
-      <Pressable onPress={toggle} style={micStyles.pressable}>
-        <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
-          {isRecording ? <StopSvg /> : <MicSvg size={34} />}
-        </View>
-      </Pressable>
-
-      {/* Label / Timer below button */}
+      {/* Label / Timer — always centered below button */}
       <View style={micStyles.labelWrap}>
         {isRecording ? (
           <>
@@ -278,11 +280,36 @@ function StopSvg() {
   );
 }
 
+const BTN_SIZE = 84;
+const RING_SIZE = 128;
+
 const micStyles = StyleSheet.create({
-  wrap:          { alignItems: 'center', justifyContent: 'center', marginVertical: 8, gap: 14 },
-  ring:          { position: 'absolute', width: 124, height: 124, borderRadius: 62, alignSelf: 'center' },
+  container:     { alignItems: 'center', marginVertical: 8, gap: 14 },
+  // btnArea is sized to the ring — button sits perfectly in the center
+  btnArea:       {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring:          {
+    position: 'absolute',
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+  },
   pressable:     { zIndex: 2 },
-  btn:           { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 12 },
+  btn:           {
+    width: BTN_SIZE,
+    height: BTN_SIZE,
+    borderRadius: BTN_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 12,
+  },
   labelWrap:     { alignItems: 'center', minHeight: 44 },
   label:         { fontSize: 14, fontWeight: '600', letterSpacing: 0.1 },
   timer:         { fontSize: 20, fontWeight: '900', fontVariant: ['tabular-nums'] },
