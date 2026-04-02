@@ -696,67 +696,74 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                     backgroundColor: isChecked ? colors.primary + '12' : (isDark ? '#1C1C2E' : '#F5F5F7'),
                     borderColor: isEditing ? colors.primary : (isChecked ? colors.primary + '60' : colors.border),
                   }]}>
-                    {/* Header row: checkbox + name + edit button */}
-                    <TouchableOpacity
-                      onPress={() => {
-                        const next = [...ui.checked];
-                        next[i] = !next[i];
+                    {/* Top row: checkbox + icon + name/price */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                      {/* Checkbox */}
+                      <TouchableOpacity onPress={() => {
+                        const next = [...ui.checked]; next[i] = !next[i];
                         setUi({ ...ui, checked: next });
-                        if (isEditing) setEditingIndex(null);
-                      }}
-                      style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[bulkStyles.iconBox, { backgroundColor: colors.primary + '18' }]}>
-                        <Text style={[bulkStyles.iconLetter, { color: colors.primary }]}>
-                          {(sub.name || '?')[0].toUpperCase()}
-                        </Text>
-                      </View>
-                      <View style={{ flex: 1, marginLeft: 10 }}>
+                      }}>
+                        <View style={[bulkStyles.check, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
+                          {isChecked && <Ionicons name="checkmark" size={13} color="#fff" />}
+                        </View>
+                      </TouchableOpacity>
+
+                      {/* Icon */}
+                      {sub.iconUrl
+                        ? <Image source={{ uri: sub.iconUrl }} style={{ width: 34, height: 34, borderRadius: 8 }} />
+                        : <View style={[bulkStyles.iconBox, { backgroundColor: colors.primary + '18' }]}>
+                            <Text style={[bulkStyles.iconLetter, { color: colors.primary }]}>
+                              {(sub.name || '?')[0].toUpperCase()}
+                            </Text>
+                          </View>
+                      }
+
+                      {/* Name + price */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (ui.kind === 'bulk') {
+                            fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
+                          }
+                        }}
+                        style={{ flex: 1 }}
+                        activeOpacity={0.7}
+                      >
                         <Text style={[bulkStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                         <Text style={[bulkStyles.meta, { color: colors.textMuted }]}>
                           {sub.currency ?? 'USD'} {(sub.amount ?? 0).toFixed(2)}{periodMap[sub.billingPeriod ?? 'MONTHLY'] ?? ''}
+                          {sub.category ? `  ·  ${sub.category.toLowerCase()}` : ''}
                         </Text>
-                      </View>
-                    </TouchableOpacity>
+                      </TouchableOpacity>
+                    </View>
 
-                    {/* Edit button */}
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (ui.kind === 'bulk') {
-                          fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
-                        }
-                      }}
-                      style={{ padding: 10, borderRadius: 10, backgroundColor: colors.primary + '15' }}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
-                    >
-                      <Ionicons name="pencil" size={16} color={colors.primary} />
-                    </TouchableOpacity>
+                    {/* Action buttons row */}
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, paddingLeft: 34 }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (ui.kind === 'bulk') {
+                            fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
+                          }
+                        }}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: colors.primary + '12' }}
+                      >
+                        <Ionicons name="pencil" size={13} color={colors.primary} />
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>{t('common.edit', 'Edit')}</Text>
+                      </TouchableOpacity>
 
-                    {/* Delete button */}
-                    <TouchableOpacity
-                      onPress={() => {
-                        const newSubs = ui.subs.filter((_, j) => j !== i);
-                        const newChecked = ui.checked.filter((_, j) => j !== i);
-                        if (newSubs.length === 0) { reset(); return; }
-                        setUi({ ...ui, subs: newSubs, checked: newChecked });
-                        if (editingIndex === i) setEditingIndex(null);
-                      }}
-                      style={{ padding: 10, borderRadius: 10, backgroundColor: '#EF444415' }}
-                      hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
-                    >
-                      <Ionicons name="trash" size={16} color="#EF4444" />
-                    </TouchableOpacity>
-
-                    {/* Checkbox */}
-                    <TouchableOpacity onPress={() => {
-                      const next = [...ui.checked]; next[i] = !next[i];
-                      setUi({ ...ui, checked: next });
-                    }}>
-                      <View style={[bulkStyles.check, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
-                        {isChecked && <Ionicons name="checkmark" size={13} color="#fff" />}
-                      </View>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          const newSubs = ui.subs.filter((_, j) => j !== i);
+                          const newChecked = ui.checked.filter((_, j) => j !== i);
+                          if (newSubs.length === 0) { reset(); return; }
+                          setUi({ ...ui, subs: newSubs, checked: newChecked });
+                          if (editingIndex === i) setEditingIndex(null);
+                        }}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: '#EF444412' }}
+                      >
+                        <Ionicons name="trash-outline" size={13} color="#EF4444" />
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#EF4444' }}>{t('common.delete', 'Delete')}</Text>
+                      </TouchableOpacity>
+                    </View>
 
                   </View>
                 );
@@ -834,6 +841,27 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                     </TouchableOpacity>
                   ))}
                 </View>
+
+                {/* Category */}
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{t('add.category', 'Категория')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                  {['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DEVELOPER', 'EDUCATION', 'HEALTH', 'OTHER'].map((cat) => (
+                    <TouchableOpacity key={cat} onPress={() => updateSub({ category: cat })}
+                      style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1,
+                        backgroundColor: sub.category === cat ? colors.primary : colors.surface2,
+                        borderColor: sub.category === cat ? colors.primary : colors.border }}>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: sub.category === cat ? '#fff' : colors.textMuted }}>{cat.replace('_', ' ').toLowerCase()}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Service URL */}
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.service_url', 'Сайт сервиса')}</Text>
+                <TextInput style={[inputStyle, { marginBottom: 12 }]} value={sub.serviceUrl ?? ''} onChangeText={(v) => updateSub({ serviceUrl: v })} placeholder="https://..." placeholderTextColor={colors.textMuted} autoCapitalize="none" keyboardType="url" />
+
+                {/* Cancel URL */}
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.cancel_url', 'Ссылка для отмены')}</Text>
+                <TextInput style={[inputStyle, { marginBottom: 16 }]} value={sub.cancelUrl ?? ''} onChangeText={(v) => updateSub({ cancelUrl: v })} placeholder="https://..." placeholderTextColor={colors.textMuted} autoCapitalize="none" keyboardType="url" />
 
                 {/* Done → back to list */}
                 <TouchableOpacity
