@@ -384,21 +384,22 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     if (isPro) return true;
     const remaining = maxSubscriptions - activeCount;
     if (remaining <= 0) {
-      Alert.alert(
-        t('add.limit_reached_title', 'Лимит подписок'),
-        t('add.limit_reached_msg', `Бесплатный план — максимум ${maxSubscriptions} подписки. Обнови до Pro для безлимита.`),
-        [
-          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-          { text: t('common.cancel', 'Закрыть'), style: 'cancel' },
-        ]
-      );
+      // Direct redirect to paywall — no Alert needed
+      router.push('/paywall' as any);
       return false;
     }
     if (needed > remaining) {
       Alert.alert(
-        t('add.limit_partial_title', 'Частичное добавление'),
-        t('add.limit_partial_msg', `Лимит: осталось ${remaining} из ${maxSubscriptions}. Добавим первые ${remaining}.`),
-        [{ text: 'OK' }]
+        t('add.limit_partial_title', 'Partial add'),
+        t('add.limit_partial_msg', {
+          remaining,
+          max: maxSubscriptions,
+          defaultValue: 'Only {{remaining}} of {{max}} slots left. First {{remaining}} will be added. Upgrade to Pro for unlimited.',
+        }),
+        [
+          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+          { text: t('common.ok', 'OK') },
+        ]
       );
     }
     return true;
@@ -1070,14 +1071,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                   const errorData = err?.response?.data?.error || err?.response?.data;
                   const code = errorData?.code || '';
                   if (code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429) {
-                    Alert.alert(
-                      t('add.limit_reached_title', 'Subscription limit reached'),
-                      t('add.limit_reached_msg', { max: errorData?.limit ?? 3, defaultValue: 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.' }),
-                      [
-                        { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-                        { text: t('common.cancel'), style: 'cancel' },
-                      ]
-                    );
+                    router.push('/paywall' as any);
                   } else {
                     const msg = typeof errorData === 'string' ? errorData : errorData?.message || errorData?.message_key || err?.message || 'Error';
                     Alert.alert(t('common.error'), String(msg));

@@ -278,14 +278,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429;
 
       if (isLimitError) {
-        Alert.alert(
-          t('add.limit_reached_title', 'Subscription limit reached'),
-          t('add.limit_reached_msg', { max: errorData?.limit ?? 3, defaultValue: 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.' }),
-          [
-            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { onClose(); router.push('/paywall'); } },
-            { text: t('common.cancel'), style: 'cancel' },
-          ]
-        );
+        onClose();
+        router.push('/paywall');
       } else {
         const msg = typeof errorData === 'string' ? errorData
           : errorData?.message || errorData?.message_key || err?.message || t('add.save_failed');
@@ -550,23 +544,28 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
                     }).catch(() => {});
                     if (failed.length > 0 && saved > 0) {
+                      // Partial success — show success then offer upgrade
                       setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
                       setShowSuccess(true);
                       setTimeout(() => {
                         Alert.alert(
-                          t('add.bulk_partial_title', 'Some not added'),
-                          t('add.bulk_partial_msg', { names: failed.join(', '), defaultValue: 'Could not add: {{names}}' }),
+                          t('add.bulk_partial_title', 'Limit reached'),
+                          t('add.bulk_partial_upgrade', {
+                            saved,
+                            total: saved + failed.length,
+                            names: failed.join(', '),
+                            defaultValue: 'Added {{saved}} of {{total}}. Could not add: {{names}}. Upgrade to Pro for unlimited subscriptions.',
+                          }),
+                          [
+                            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { handleClose(); router.push('/paywall'); } },
+                            { text: t('common.ok', 'OK'), style: 'cancel' },
+                          ]
                         );
-                      }, 2000);
+                      }, 2500);
                     } else if (failed.length > 0 && saved === 0) {
-                      Alert.alert(
-                        t('add.limit_reached_title', 'Subscription limit reached'),
-                        t('add.limit_reached_msg', { max: 3, defaultValue: 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.' }),
-                        [
-                          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { handleClose(); router.push('/paywall'); } },
-                          { text: t('common.cancel'), style: 'cancel' },
-                        ]
-                      );
+                      // All failed — go to paywall
+                      handleClose();
+                      router.push('/paywall');
                     } else {
                       setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
                       setShowSuccess(true);
