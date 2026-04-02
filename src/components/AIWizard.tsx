@@ -133,13 +133,74 @@ const QUICK = [
   { name: 'Disney+',   Icon: DisneyIcon,   amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://www.disneyplus.com/account/subscription', serviceUrl: 'https://disneyplus.com', iconUrl: 'https://icon.horse/icon/disneyplus.com' },
 ] as const;
 
+// ── Loading stages ───────────────────────────────────────────────────────────
+
+type LoadingStage = 'transcribing' | 'analyzing' | 'searching' | 'preparing' | null;
+
+const STAGE_LABELS: Record<string, Record<string, string>> = {
+  transcribing: { en: 'Transcribing audio...', ru: 'Распознаю речь...' },
+  analyzing:    { en: 'Analyzing request...', ru: 'Анализирую запрос...' },
+  searching:    { en: 'Searching services...', ru: 'Ищу сервисы...' },
+  preparing:    { en: 'Preparing options...', ru: 'Подбираю варианты...' },
+};
+
+function LoadingIndicator({ stage, colors, lang }: { stage: LoadingStage; colors: any; lang: string }) {
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const dotAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    progressAnim.setValue(0);
+    const stages: LoadingStage[] = ['transcribing', 'analyzing', 'searching', 'preparing'];
+    const idx = stages.indexOf(stage ?? 'transcribing');
+    Animated.timing(progressAnim, {
+      toValue: Math.min((idx + 1) / stages.length, 0.95),
+      duration: 600,
+      useNativeDriver: false,
+    }).start();
+  }, [stage]);
+
+  useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(dotAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(dotAnim, { toValue: 0.3, duration: 500, useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
+  const label = STAGE_LABELS[stage ?? 'transcribing']?.[lang] ?? STAGE_LABELS[stage ?? 'transcribing']?.en ?? '';
+
+  return (
+    <View style={loadStyles.wrap}>
+      {/* Progress bar */}
+      <View style={[loadStyles.track, { backgroundColor: colors.border }]}>
+        <Animated.View style={[loadStyles.fill, {
+          backgroundColor: colors.primary,
+          width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+        }]} />
+      </View>
+      {/* Stage label */}
+      <Animated.View style={{ opacity: dotAnim, flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}>
+        <ActivityIndicator size="small" color={colors.primary} />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary }}>{label}</Text>
+      </Animated.View>
+    </View>
+  );
+}
+
+const loadStyles = StyleSheet.create({
+  wrap:  { alignItems: 'center', paddingVertical: 20 },
+  track: { width: '80%', height: 4, borderRadius: 2, overflow: 'hidden' },
+  fill:  { height: '100%', borderRadius: 2 },
+});
+
 // ── MicButton ────────────────────────────────────────────────────────────────
 
-function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => void; loading: boolean; colors: any; t: any }) {
-  const { isRecording, durationFmt, start, stop } = useVoiceRecorder(onVoice);
+function MicButton({ onVoice, loadingStage, colors, t, lang }: { onVoice: (uri: string) => void; loadingStage: LoadingStage; colors: any; t: any; lang: string }) {
+  const { isRecording, duration, maxDuration, durationFmt, start, stop } = useVoiceRecorder(onVoice);
   const ring1 = useRef(new Animated.Value(1)).current;
+  const loading = !!loadingStage;
 
-  // Single gentle pulse — no heavy dual-ring animation
   React.useEffect(() => {
     const loop = Animated.loop(Animated.sequence([
       Animated.timing(ring1, { toValue: isRecording ? 1.3 : 1.15, duration: isRecording ? 500 : 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
@@ -150,11 +211,17 @@ function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => 
   }, [isRecording]);
 
   const bg = isRecording ? '#EF4444' : colors.primary;
+  const progress = duration / maxDuration;
 
   const toggle = () => {
+    if (loading) return;
     if (isRecording) stop();
     else start();
   };
+
+  if (loading) {
+    return <LoadingIndicator stage={loadingStage} colors={colors} lang={lang} />;
+  }
 
   return (
     <View style={micStyles.wrap}>
@@ -162,21 +229,29 @@ function MicButton({ onVoice, loading, colors, t }: { onVoice: (uri: string) => 
 
       <Pressable onPress={toggle} style={micStyles.pressable}>
         <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
-          {loading
-            ? <ActivityIndicator color="#fff" size="large" />
-            : isRecording
-              ? <StopSvg />
-              : <MicSvg size={34} />}
+          {isRecording ? <StopSvg /> : <MicSvg size={34} />}
         </View>
       </Pressable>
 
-      <Text style={[micStyles.label, { color: isRecording ? '#EF4444' : colors.textSecondary }]}>
-        {loading
-          ? t('common.loading', 'Распознаю...')
-          : isRecording
-            ? durationFmt
-            : t('add.tap_to_record', 'Нажми для записи')}
-      </Text>
+      {/* Recording timer + progress */}
+      {isRecording ? (
+        <View style={micStyles.timerWrap}>
+          <Text style={[micStyles.timer, { color: '#EF4444' }]}>{durationFmt}</Text>
+          <View style={micStyles.progressTrack}>
+            <View style={[micStyles.progressFill, {
+              width: `${progress * 100}%`,
+              backgroundColor: progress > 0.8 ? '#EF4444' : colors.primary,
+            }]} />
+          </View>
+          <Text style={[micStyles.limit, { color: colors.textMuted }]}>
+            {t('add.max_recording', { sec: maxDuration, defaultValue: 'max {{sec}}s' })}
+          </Text>
+        </View>
+      ) : (
+        <Text style={[micStyles.label, { color: colors.textSecondary }]}>
+          {t('add.tap_to_record', 'Tap to record')}
+        </Text>
+      )}
     </View>
   );
 }
@@ -190,11 +265,16 @@ function StopSvg() {
 }
 
 const micStyles = StyleSheet.create({
-  wrap:      { alignItems: 'center', justifyContent: 'center', marginVertical: 16, height: 150 },
-  ring:      { position: 'absolute', width: 120, height: 120, borderRadius: 60, top: 15, alignSelf: 'center' },
-  pressable: { zIndex: 2 },
-  btn:       { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
-  label:     { position: 'absolute', bottom: -4, fontSize: 13, fontWeight: '500' },
+  wrap:          { alignItems: 'center', justifyContent: 'center', marginVertical: 16, height: 170 },
+  ring:          { position: 'absolute', width: 120, height: 120, borderRadius: 60, top: 15, alignSelf: 'center' },
+  pressable:     { zIndex: 2 },
+  btn:           { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 12, elevation: 10 },
+  label:         { position: 'absolute', bottom: 0, fontSize: 13, fontWeight: '500' },
+  timerWrap:     { position: 'absolute', bottom: 0, alignItems: 'center', width: '100%' },
+  timer:         { fontSize: 18, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  progressTrack: { width: 140, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 6, overflow: 'hidden' },
+  progressFill:  { height: '100%', borderRadius: 1.5 },
+  limit:         { fontSize: 11, fontWeight: '500', marginTop: 4 },
 });
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -226,6 +306,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const [context, setContext] = useState<Record<string, any>>({});
   const [history, setHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState<LoadingStage>(null);
   const [saving, setSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -281,15 +362,17 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
 
     // Always try bulk first — AI decides if there are 1 or many subscriptions
     setLoading(true);
+    setLoadingStage('analyzing');
     try {
       const res = await aiApi.parseBulkText(message, i18n.language ?? 'ru');
       const data = res.data;
       const subs: ParsedSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
       if (subs.length > 1) {
-        if (!checkLimit(subs.length)) { setLoading(false); setInput(''); return; }
+        if (!checkLimit(subs.length)) { setLoading(false); setLoadingStage(null); setInput(''); return; }
         setEditingIndex(null);
         fade(() => setUi({ kind: 'bulk', subs, checked: subs.map(() => true) }));
         setLoading(false);
+        setLoadingStage(null);
         setInput('');
         return;
       }
@@ -301,12 +384,14 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     }
 
     // Single subscription wizard flow
-    if (!checkLimit(1)) { setInput(''); return; }
+    if (!checkLimit(1)) { setInput(''); setLoadingStage(null); return; }
 
     setLoading(true);
+    setLoadingStage('searching');
     const newHistory = [...history, { role: 'user' as const, content: message }];
     setHistory(newHistory);
     try {
+      setLoadingStage('preparing');
       const contextWithCurrency = { ...context, preferredCurrency: userCurrency };
       const res = await aiApi.wizard(message, contextWithCurrency, i18n.language ?? 'en', newHistory);
       const data = res.data;
@@ -353,35 +438,31 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       }
     } finally {
       setLoading(false);
+      setLoadingStage(null);
       setInput('');
     }
   };
 
   // ── Voice handler ────────────────────────────────────────────────────────
   const handleVoice = async (uri: string) => {
-    console.log('[Voice] handleVoice called, uri:', uri);
-    if (!uri) { console.warn('[Voice] No URI provided'); return; }
+    if (!uri) return;
     Keyboard.dismiss();
     setLoading(true);
+    setLoadingStage('transcribing');
     try {
-      console.log('[Voice] Reading file as base64...');
       const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
-      console.log('[Voice] Base64 length:', audioBase64.length);
-      console.log('[Voice] Sending to parseAudio, locale:', i18n.language);
       const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
-      console.log('[Voice] parseAudio response:', JSON.stringify(transcribeRes.data).slice(0, 200));
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
-        console.warn('[Voice] Empty transcription');
         Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
         setLoading(false);
+        setLoadingStage(null);
         return;
       }
-      console.log('[Voice] Transcribed text:', text);
       setInput(text);
+      setLoadingStage('analyzing');
       await callWizard(text);
     } catch (err: any) {
-      console.error('[Voice] ERROR:', err?.message, err?.response?.status, err?.response?.data);
       const status = err?.response?.status;
       const msg = err?.response?.data?.message || '';
       const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
@@ -400,6 +481,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         Alert.alert(t('ai.voice_error_title'), msg || t('ai.voice_error'));
       }
       setLoading(false);
+      setLoadingStage(null);
     }
   };
 
@@ -685,7 +767,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
             {!!hintText && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
 
             {/* Big mic */}
-            <MicButton onVoice={handleVoice} loading={loading} colors={colors} t={t} />
+            <MicButton onVoice={handleVoice} loadingStage={loadingStage} colors={colors} t={t} lang={i18n.language ?? 'en'} />
 
             {/* OR divider */}
             <View style={styles.orRow}>

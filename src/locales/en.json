@@ -206,6 +206,7 @@
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
     "bulk_hint": "You can list multiple subscriptions — AI will recognize them all",
+    "max_recording": "max {{sec}}s",
     "ai_limit_title": "AI Request Limit Reached",
     "ai_limit_msg": "You've used all your free AI requests this month. Upgrade to Pro for 200 requests/month.",
     "limit_reached_title": "Subscription Limit",

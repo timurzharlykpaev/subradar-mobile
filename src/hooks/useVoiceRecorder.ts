@@ -6,11 +6,27 @@ import {
   RecordingPresets,
 } from 'expo-audio';
 
+export const MAX_RECORDING_SECONDS = 30;
+
 export function useVoiceRecorder(onDone: (uri: string) => void) {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stoppingRef = useRef(false);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+
+  const stop = useCallback(async () => {
+    if (!isRecording || stoppingRef.current) return;
+    stoppingRef.current = true;
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    await recorder.stop();
+    setIsRecording(false);
+    setDuration(0);
+    stoppingRef.current = false;
+    if (recorder.uri) {
+      onDone(recorder.uri);
+    }
+  }, [isRecording, recorder, onDone]);
 
   const start = useCallback(async () => {
     try {
@@ -27,19 +43,12 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
     }
   }, [recorder]);
 
-  const stop = useCallback(async () => {
-    if (!isRecording) return;
-    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-    await recorder.stop();
-    setIsRecording(false);
-    setDuration(0);
-    console.log('[VoiceRecorder] Recording stopped, uri:', recorder.uri);
-    if (recorder.uri) {
-      onDone(recorder.uri);
-    } else {
-      console.warn('[VoiceRecorder] No URI after recording stop');
+  // Auto-stop at max duration
+  useEffect(() => {
+    if (isRecording && duration >= MAX_RECORDING_SECONDS) {
+      stop();
     }
-  }, [isRecording, recorder, onDone]);
+  }, [duration, isRecording, stop]);
 
   useEffect(() => {
     return () => {
@@ -53,5 +62,5 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
   const fmt = (s: number) =>
     `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
-  return { isRecording, duration, durationFmt: fmt(duration), start, stop };
+  return { isRecording, duration, maxDuration: MAX_RECORDING_SECONDS, durationFmt: fmt(duration), start, stop };
 }
