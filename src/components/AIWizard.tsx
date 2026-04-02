@@ -334,8 +334,23 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         setHistory((h) => [...h, { role: 'assistant', content: data.question }]);
         fade(() => setUi({ kind: 'question', text: data.question, field: data.field ?? 'clarify' }));
       }
-    } catch {
-      fade(() => setUi({ kind: 'question', text: t('ai.could_not_parse'), field: 'clarify' }));
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || '';
+      const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+
+      if (isLimitError) {
+        Alert.alert(
+          t('add.ai_limit_title', 'AI request limit reached'),
+          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+            { text: t('common.cancel', 'Close'), style: 'cancel' },
+          ]
+        );
+      } else {
+        fade(() => setUi({ kind: 'question', text: t('ai.could_not_parse'), field: 'clarify' }));
+      }
     } finally {
       setLoading(false);
       setInput('');
@@ -367,8 +382,23 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
       await callWizard(text);
     } catch (err: any) {
       console.error('[Voice] ERROR:', err?.message, err?.response?.status, err?.response?.data);
-      reportError(`AIWizard voice error: ${err?.message ?? err}`, err?.stack, { component: 'AIWizard' });
-      Alert.alert(t('ai.voice_error_title'), err?.response?.data?.message || t('ai.voice_error'));
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || '';
+      const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+
+      if (isLimitError) {
+        Alert.alert(
+          t('add.ai_limit_title', 'AI request limit reached'),
+          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+            { text: t('common.cancel', 'Close'), style: 'cancel' },
+          ]
+        );
+      } else {
+        reportError(`AIWizard voice error: ${err?.message ?? err}`, err?.stack, { component: 'AIWizard' });
+        Alert.alert(t('ai.voice_error_title'), msg || t('ai.voice_error'));
+      }
       setLoading(false);
     }
   };

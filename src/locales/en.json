@@ -205,7 +205,11 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "You can list multiple subscriptions — AI will recognize them all"
+    "bulk_hint": "You can list multiple subscriptions — AI will recognize them all",
+    "ai_limit_title": "AI Request Limit Reached",
+    "ai_limit_msg": "You've used all your free AI requests this month. Upgrade to Pro for 200 requests/month.",
+    "limit_reached_title": "Subscription Limit",
+    "limit_reached_msg": "Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited."
   },
   "periods": {
     "WEEKLY": "Weekly",
