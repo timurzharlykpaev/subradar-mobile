@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Pressable } from 'react-native';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
