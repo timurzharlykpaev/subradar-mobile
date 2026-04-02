@@ -481,15 +481,24 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
         const newCtx = { ...context, ...data.partialContext };
         setContext(newCtx);
         setHistory((h) => [...h, { role: 'assistant', content: JSON.stringify(data) }]);
-        fade(() => setUi({
-          kind: 'plans',
-          plans: data.plans,
-          serviceName: data.serviceName ?? '',
-          iconUrl: data.iconUrl,
+        // Convert plans to bulk list so user can select multiple, edit each, and add all at once
+        const plansAsSubs: ParsedSub[] = data.plans.map((p: any) => ({
+          name: p.name || data.serviceName || '',
+          amount: p.amount || p.price || 0,
+          currency: p.currency || 'USD',
+          billingPeriod: (p.billingPeriod || 'MONTHLY') as ParsedSub['billingPeriod'],
+          category: data.category,
           serviceUrl: data.serviceUrl,
           cancelUrl: data.cancelUrl,
-          category: data.category,
+          iconUrl: data.iconUrl,
         }));
+        if (plansAsSubs.length === 1) {
+          // Single plan — go to confirm directly
+          fade(() => setUi({ kind: 'confirm', subscription: plansAsSubs[0] }));
+        } else {
+          // Multiple plans — show as bulk so user can pick/edit/add all
+          fade(() => setUi({ kind: 'bulk', subs: plansAsSubs, checked: plansAsSubs.map(() => true) }));
+        }
       } else if (data.done && data.subscription) {
         const newCtx = { ...context, ...data.partialContext };
         setContext(newCtx);
