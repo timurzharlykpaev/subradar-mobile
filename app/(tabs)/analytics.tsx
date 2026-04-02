@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
@@ -193,9 +193,11 @@ const PERIOD_SHORT: Record<string, string> = {
 
 export default function AnalyticsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { subscriptions } = useSubscriptionsStore();
   const { data: billingStatus } = useBillingStatus();
-  const isPro = billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization';
+  const isCancelled = billingStatus?.status === 'cancelled' || (billingStatus?.status === 'trialing' && billingStatus?.cancelAtPeriodEnd);
+  const isPro = (billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization') && !isCancelled;
   const { colors, isDark } = useTheme();
 
   const [summary, setSummary] = useState<any>(null);
@@ -203,13 +205,16 @@ export default function AnalyticsScreen() {
   const [byCategoryData, setByCategoryData] = useState<any[]>([]);
   const [byCardData, setByCardData] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any>(null);
+  const [savings, setSavings] = useState<any>(null);
   const [proModal, setProModal] = useState<{ visible: boolean; feature: string }>({ visible: false, feature: 'forecast' });
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   const fetchAll = useCallback(async () => {
+    let errors = 0;
     const promises = [
-      analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => {}),
+      analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => { errors++; }),
       analyticsApi.getMonthly().then((r) => {
         const raw = r.data || [];
         const data = raw.map((d: any) => ({
@@ -217,16 +222,26 @@ export default function AnalyticsScreen() {
           total: d.total ?? d.amount ?? 0,
         }));
         setMonthlyData(data.slice(-12));
-      }).catch(() => {}),
+      }).catch(() => { errors++; }),
       analyticsApi.getByCategory().then((r) => {
         setByCategoryData(r.data || []);
-      }).catch(() => {}),
+      }).catch(() => { errors++; }),
       analyticsApi.getByCard().then((r) => {
         setByCardData(r.data || []);
       }).catch(() => {}),
-      analyticsApi.getForecast().then((r) => setForecast(r.data)).catch(() => {}),
+      analyticsApi.getForecast().then((r) => {
+        const d = r.data;
+        setForecast({
+          day30: d?.forecast30d ?? d?.day30 ?? null,
+          month6: d?.forecast6mo ?? d?.month6 ?? null,
+          month12: d?.forecast12mo ?? d?.month12 ?? null,
+          currency: d?.currency ?? 'USD',
+        });
+      }).catch(() => {}),
+      analyticsApi.getSavings().then((r) => setSavings(r.data)).catch(() => {}),
     ];
     await Promise.all(promises);
+    setFetchError(errors >= 3); // Most data failed
   }, []);
 
   // Initial load
@@ -253,13 +268,13 @@ export default function AnalyticsScreen() {
   );
 
   const getMonthlyAmount = useCallback((s: typeof activeSubs[0]) => {
-    const mult = s.billingPeriod === 'WEEKLY' ? 4
+    const mult = s.billingPeriod === 'WEEKLY' ? 4.33
       : s.billingPeriod === 'QUARTERLY' ? 1 / 3
       : s.billingPeriod === 'YEARLY' ? 1 / 12
       : s.billingPeriod === 'LIFETIME' ? 0
       : s.billingPeriod === 'ONE_TIME' ? 0
       : 1;
-    return s.amount * mult;
+    return (Number(s.amount) || 0) * mult;
   }, []);
 
   const totalMonthly = useMemo(
@@ -289,7 +304,7 @@ export default function AnalyticsScreen() {
       }).filter((c) => c.total > 0)
     : CATEGORIES.map((cat) => {
         const catSubs = activeSubs.filter((s) => s.category?.toUpperCase() === cat.id.toUpperCase());
-        return { ...cat, total: catSubs.reduce((sum, s) => sum + s.amount, 0), count: catSubs.length };
+        return { ...cat, total: catSubs.reduce((sum, s) => sum + getMonthlyAmount(s), 0), count: catSubs.length };
       }).filter((c) => c.count > 0),
     [byCategoryData, activeSubs],
   );
@@ -356,6 +371,29 @@ export default function AnalyticsScreen() {
     );
   }
 
+  // Error state — most requests failed
+  if (fetchError && !summary && monthlyData.length === 0) {
+    return (
+      <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 }}>
+          <Ionicons name="cloud-offline-outline" size={48} color={colors.textMuted} />
+          <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text, textAlign: 'center', marginTop: 16 }}>
+            {t('analytics.error_title', 'Could not load analytics')}
+          </Text>
+          <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center', marginTop: 8 }}>
+            {t('analytics.error_subtitle', 'Check your connection and try again')}
+          </Text>
+          <TouchableOpacity
+            onPress={() => { setFetchError(false); setLoading(true); fetchAll().finally(() => setLoading(false)); }}
+            style={{ marginTop: 24, paddingHorizontal: 28, paddingVertical: 14, borderRadius: 14, backgroundColor: colors.primary }}
+          >
+            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{t('common.retry', 'Retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Empty state — no subscriptions at all
   if (hasNoData) {
     return (
@@ -382,6 +420,12 @@ export default function AnalyticsScreen() {
             <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
               {t('analytics.empty_subtitle')}
             </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/subscriptions' as any)}
+              style={{ marginTop: 24, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 14, backgroundColor: colors.primary }}
+            >
+              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{t('analytics.add_first', 'Add subscription →')}</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -418,6 +462,13 @@ export default function AnalyticsScreen() {
             label={t('analytics.total_year')}
             value={`$${formatNum(totalYearly)}`}
             color={colors.success}
+          />
+          <StatCard
+            icon="repeat-outline"
+            label={t('analytics.active_count', 'Active')}
+            value={`${activeSubs.length}`}
+            sub={t('analytics.subscriptions', 'subscriptions')}
+            color="#3B82F6"
           />
           {mostExpensive && (
             <StatCard
@@ -628,11 +679,22 @@ export default function AnalyticsScreen() {
                   <Ionicons name="leaf" size={20} color={colors.success} />
                 </View>
                 <Text style={[styles.savingsAmount, { color: colors.success }]}>
-                  ${formatNum(summary?.savingsPossible ?? 0, 2)}
+                  ${formatNum(savings?.estimatedMonthlySavings ?? summary?.savingsPossible ?? 0, 2)}
                 </Text>
                 <Text style={[styles.savingsLabel, { color: colors.textMuted }]}>{t('analytics.potential_savings')}</Text>
               </View>
-              <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
+              {savings?.duplicates && savings.duplicates.length > 0 ? (
+                <View style={{ gap: 8, marginTop: 8 }}>
+                  {savings.duplicates.map((d: any, i: number) => (
+                    <View key={i} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={{ fontSize: 13, color: colors.textSecondary }}>{d.name || d.category}</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.success }}>${formatNum(d.potentialSavings ?? d.amount ?? 0, 2)}/{t('common.mo', 'mo')}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
+              )}
             </View>
           ) : (
             <TouchableOpacity
