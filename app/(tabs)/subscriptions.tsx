@@ -37,8 +37,8 @@ export default function SubscriptionsScreen() {
   const [sortBy, setSortBy] = useState<SortType>('next_date');
   const [showSearch, setShowSearch] = useState(false);
 
-  const fetchSubs = useCallback(async () => {
-    setRefreshing(true);
+  const fetchSubs = useCallback(async (silent = false) => {
+    if (!silent) setRefreshing(true);
     try {
       const res = await subscriptionsApi.getAll();
       setSubscriptions(res.data || []);
@@ -50,22 +50,31 @@ export default function SubscriptionsScreen() {
   const addSheetVisible = useUIStore((s) => s.addSheetVisible);
   const prevSheetVisible = useRef(addSheetVisible);
 
+  // Always fetch on mount
   useEffect(() => { fetchSubs(); }, []);
 
-  // Refresh when screen comes back into focus (e.g. after cancel/delete on detail screen)
+  // Always fetch when screen gains focus (back from detail, other tabs, etc.)
   useFocusEffect(
     useCallback(() => {
-      fetchSubs();
+      fetchSubs(true); // silent — don't show spinner
     }, [fetchSubs])
   );
 
   // Refresh when AddSubscriptionSheet closes
   useEffect(() => {
     if (prevSheetVisible.current && !addSheetVisible) {
-      fetchSubs();
+      fetchSubs(true);
     }
     prevSheetVisible.current = addSheetVisible;
   }, [addSheetVisible]);
+
+  // Periodic refresh every 15 seconds while screen is visible
+  useFocusEffect(
+    useCallback(() => {
+      const interval = setInterval(() => fetchSubs(true), 15000);
+      return () => clearInterval(interval);
+    }, [fetchSubs])
+  );
 
   const FILTERS: { label: string; value: FilterType; icon: string }[] = [
     { label: t('common.all'), value: 'all', icon: 'apps-outline' },

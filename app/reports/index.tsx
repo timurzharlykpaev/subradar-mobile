@@ -12,7 +12,7 @@ import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { useAuthStore } from '../../src/stores/authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
 
 export default function ReportsScreen() {
   const router = useRouter();
@@ -61,7 +61,7 @@ export default function ReportsScreen() {
       const { from, to } = getPeriodDates();
 
       // 1. Создаём отчёт на сервере
-      const res = await fetch(`${API_URL}/api/v1/reports/generate`, {
+      const res = await fetch(`${API_URL}/reports/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ export default function ReportsScreen() {
       const localPath = `${FileSystem.documentDirectory ?? ''}${filename}`;
 
       const download = await FileSystem.downloadAsync(
-        `${API_URL}/api/v1/reports/${reportId}/download`,
+        `${API_URL}/reports/${reportId}/download`,
         localPath,
         { headers: { Authorization: `Bearer ${token}` } }
       );
