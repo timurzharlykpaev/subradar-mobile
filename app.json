@@ -3,9 +3,12 @@
     "name": "SubRadar",
     "slug": "subradar",
     "version": "1.0.0",
+    "description": "AI-powered subscription tracker. Add by voice, scan receipts, get reminders before charges, analyze spending across all your subscriptions.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
+    "primaryColor": "#8B5CF6",
+    "githubUrl": "https://github.com/timurzharlykpaev/subradar-mobile",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
@@ -17,7 +20,11 @@
       "bundleIdentifier": "com.goalin.subradar",
       "icon": "./assets/images/icon.png",
       "entitlements": {
-        "aps-environment": "production"
+        "aps-environment": "production",
+        "com.apple.developer.associated-domains": [
+          "applinks:subradar.ai",
+          "applinks:app.subradar.ai"
+        ]
       },
       "infoPlist": {
         "CFBundleURLTypes": [
@@ -25,13 +32,9 @@
             "CFBundleURLSchemes": [
               "com.googleusercontent.apps.140914936328-hftqahkh20bdie089g2mfdcnuuker4cm"
             ]
-          },
-          {
-            "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.140914936328-hftqahkh20bdie089g2mfdcnuuker4cm"
-            ]
           }
         ],
+        "CFBundleLocalizations": ["en", "ru", "kk", "de", "fr", "es", "zh-Hans", "ja", "ko"],
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "SubRadar needs microphone access to add subscriptions by voice.",
         "NSLocalNetworkUsageDescription": "SubRadar needs local network access to connect to the development server.",
@@ -57,6 +60,17 @@
         "backgroundColor": "#11111F"
       },
       "package": "com.goalin.subradar",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "subradar.ai", "pathPrefix": "/app" },
+            { "scheme": "https", "host": "app.subradar.ai" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
