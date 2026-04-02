@@ -101,38 +101,6 @@ const emptyForm = {
   tags: [] as string[],
 };
 
-// FormSection component — groups form fields visually
-function FormSection({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
-  const { colors } = useTheme();
-  return (
-    <View style={{
-      backgroundColor: colors.surface2,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12,
-      marginTop: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-    }}>
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginBottom: 12,
-      }}>
-        {icon}
-        <Text style={{
-          fontSize: 13,
-          fontWeight: '700',
-          color: colors.textMuted,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-        }}>{title}</Text>
-      </View>
-      {children}
-    </View>
-  );
-}
 
 export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { t } = useTranslation();
@@ -151,6 +119,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [successName, setSuccessName] = useState('');
   const [moreExpanded, setMoreExpanded] = useState(false);
   const [showBulk, setShowBulk] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [addedViaSource, setAddedViaSource] = useState<'MANUAL' | 'AI_TEXT' | 'AI_SCREENSHOT'>('MANUAL');
 
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const backdropOpacity = useSharedValue(0);
@@ -173,6 +143,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
       runOnJS(onClose)();
     });
+    // Reset form state after animation starts
+    setTimeout(() => {
+      setTab(0);
+      setForm(emptyForm);
+      setScreenshotUri(null);
+      setMoreExpanded(false);
+      setAddedViaSource('MANUAL');
+    }, 300);
   }, [onClose]);
 
   // Android back button
@@ -217,6 +195,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   }, []);
 
   const handleSave = useCallback(async () => {
+    if (saving) return; // prevent double tap
     if (subsLimitReached) {
       onClose();
       router.push('/paywall');
@@ -226,6 +205,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       Alert.alert(t('add.required'), t('add.fill_required'));
       return;
     }
+    setSaving(true);
     try {
       let iconUrl = form.iconUrl;
       if (!iconUrl && form.serviceUrl) {
@@ -263,7 +243,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
         color: form.color || undefined,
         tags: form.tags.length > 0 ? form.tags : undefined,
-        addedVia: 'MANUAL',
+        addedVia: addedViaSource,
       });
       addSubscription(res.data);
       setSuccessName(form.name);
@@ -285,8 +265,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           : errorData?.message || errorData?.message_key || err?.message || t('add.save_failed');
         Alert.alert(t('common.error'), String(msg));
       }
+    } finally {
+      setSaving(false);
     }
-  }, [form, handleClose, subsLimitReached, onClose, router, t, addSubscription]);
+  }, [form, handleClose, subsLimitReached, onClose, router, t, addSubscription, saving, addedViaSource]);
 
   const handleAILookup = useCallback(async () => {
     if (!aiQuery.trim()) return;
@@ -350,48 +332,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       iconUrl: iconUrl || f.iconUrl,
     }));
     setTab(1); // переходим на Manual для редактирования
-  };
-
-  // Распознать текст через AI
-  const handleRecognize = async () => {
-    const text = aiText.trim();
-    if (!text) return;
-    setAiLoading(true);
-    try {
-      const res = await aiApi.parseText(text);
-      const data = res.data;
-      // parseText может вернуть массив или объект
-      const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
-      applyParsedSubscriptions(subs);
-    } catch {
-      Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
-  // Распознать голос через AI
-  const handleVoiceDone = async (uri: string) => {
-    if (!uri) return;
-    setAiLoading(true);
-    try {
-      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
-      const res = await aiApi.parseAudio({ audioBase64 });
-      const data = res.data;
-      // Если сервер вернул транскрипт — показываем его в поле
-      if (data.text) setAiText(data.text);
-      const subs = Array.isArray(data.subscriptions)
-        ? data.subscriptions
-        : data.subscriptions
-          ? [data.subscriptions]
-          : (data.name && data.amount) ? [data] : [];
-      if (subs.length > 0) applyParsedSubscriptions(subs);
-    } catch (err: any) {
-      reportError(`AddSubscriptionSheet voice error: ${err?.message ?? err}`, err?.stack, { component: 'AddSubscriptionSheet.handleVoiceDone' });
-      Alert.alert(t('common.error'), t('add.parse_failed', 'Could not parse. Try again.'));
-    } finally {
-      setAiLoading(false);
-    }
+    setAddedViaSource('AI_SCREENSHOT');
   };
 
   // Shared input style
@@ -839,6 +780,39 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       />
                     </View>
 
+                    {/* Cancel URL */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                        {t('add.cancel_url', 'Cancel URL')}
+                      </Text>
+                      <TextInput
+                        style={inputStyle}
+                        value={form.cancelUrl}
+                        onChangeText={(v) => setF('cancelUrl', v)}
+                        placeholder="https://netflix.com/cancelplan"
+                        placeholderTextColor={colors.textMuted}
+                        autoCapitalize="none"
+                        keyboardType="url"
+                        autoCorrect={false}
+                      />
+                    </View>
+
+                    {/* Billing Day */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+                        {t('add.billing_day', 'Billing day')}
+                      </Text>
+                      <TextInput
+                        style={inputStyle}
+                        value={form.billingDay}
+                        onChangeText={(v) => setF('billingDay', v.replace(/[^0-9]/g, ''))}
+                        placeholder="1"
+                        placeholderTextColor={colors.textMuted}
+                        keyboardType="number-pad"
+                        maxLength={2}
+                      />
+                    </View>
+
                     {/* Notes */}
                     <View style={{ marginBottom: 16 }}>
                       <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
@@ -1015,10 +989,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
                 <TouchableOpacity
                   testID="btn-save-sub"
-                  style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }}
+                  style={[{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }, saving && { opacity: 0.6 }]}
                   onPress={handleSave}
+                  disabled={saving}
                 >
-                  <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.add_subscription')}</Text>
+                  {saving ? (
+                    <ActivityIndicator color="#FFF" />
+                  ) : (
+                    <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.add_subscription')}</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             )}
