@@ -1,0 +1,82 @@
+appId: com.goalin.subradar
+name: "51 - Subscription Pause & Cancel actions"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to subscriptions
+- tapOn:
+    text: "Subscriptions"
+    optional: true
+- tapOn:
+    text: "Подписки"
+    optional: true
+
+# Wait for list to load
+- extendedWaitUntil:
+    visible:
+        id: "subscriptions-screen"
+    timeout: 10000
+
+# Tap first subscription to open detail
+- tapOn:
+    id: "subscription-card-0"
+    optional: true
+- scroll
+- takeScreenshot: 51_subscription_detail
+
+# Try Pause button
+- tapOn:
+    text: "Pause"
+    optional: true
+- tapOn:
+    text: "Приостановить"
+    optional: true
+- takeScreenshot: 51_after_pause_tap
+
+# If confirmation appeared, confirm
+- tapOn:
+    text: "Confirm"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+- tapOn:
+    text: "Подтвердить"
+    optional: true
+
+# Go back and re-open
+- back
+- extendedWaitUntil:
+    visible:
+        id: "subscriptions-screen"
+    timeout: 5000
+
+# Tap first subscription again
+- tapOn:
+    id: "subscription-card-0"
+    optional: true
+- scroll
+
+# Try Cancel button
+- tapOn:
+    text: "Cancel subscription"
+    optional: true
+- tapOn:
+    text: "Отменить подписку"
+    optional: true
+- takeScreenshot: 51_cancel_dialog
+
+# Confirm cancel
+- tapOn:
+    text: "Cancel Subscription"
+    optional: true
+- tapOn:
+    text: "Отменить"
+    optional: true
+    style: "destructive"
+- takeScreenshot: 51_after_cancel
+
+# Sanity
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

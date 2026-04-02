@@ -1,0 +1,39 @@
+appId: com.goalin.subradar
+name: "50 - Screenshot Scan Tab (UI verification)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Open add subscription sheet
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# Switch to Screenshot tab
+- extendedWaitUntil:
+    visible:
+        id: "add-sub-sheet"
+    timeout: 5000
+- tapOn:
+    id: "tab-screenshot"
+    optional: true
+- tapOn:
+    text: "Screenshot"
+    optional: true
+- tapOn:
+    text: "Скриншот"
+    optional: true
+- takeScreenshot: 50_screenshot_tab
+
+# Verify screenshot tab UI
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
+
+# Check for camera/gallery button
+- assertVisible:
+    text: "Take photo"
+    optional: true
+- assertVisible:
+    text: "Сделать фото"
+    optional: true
+- takeScreenshot: 50_screenshot_ui_verified

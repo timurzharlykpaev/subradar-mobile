@@ -1,0 +1,328 @@
+appId: com.goalin.subradar
+name: "99 - Full User Journey: onboarding → all features → logout"
+---
+# ═══════════════════════════════════════════════════════
+# PHASE 1: Clean start + Onboarding + Auth
+# ═══════════════════════════════════════════════════════
+- clearState
+- launchApp
+- extendedWaitUntil:
+    visible:
+        id: "btn-get-started"
+    timeout: 30000
+
+# Showcase
+- tapOn:
+    id: "btn-get-started"
+
+# Language
+- extendedWaitUntil:
+    visible:
+        id: "step-language"
+    timeout: 5000
+- tapOn:
+    id: "lang-en"
+    optional: true
+- tapOn:
+    id: "btn-next"
+
+# Welcome
+- extendedWaitUntil:
+    visible:
+        id: "step-welcome"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Features
+- extendedWaitUntil:
+    visible:
+        id: "step-features"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Currency
+- extendedWaitUntil:
+    visible:
+        id: "step-currency"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+# Auth via email
+- extendedWaitUntil:
+    visible:
+        id: "step-auth"
+    timeout: 5000
+- tapOn:
+    id: "btn-email"
+- extendedWaitUntil:
+    visible:
+        id: "email-input"
+    timeout: 5000
+- tapOn:
+    id: "email-input"
+- inputText: "demo@subradar.ai"
+- tapOn:
+    id: "btn-send-code"
+- extendedWaitUntil:
+    visible:
+        id: "otp-input-0"
+    timeout: 15000
+- tapOn:
+    id: "otp-input-0"
+- inputText: "1"
+- inputText: "2"
+- inputText: "3"
+- inputText: "4"
+- inputText: "5"
+- inputText: "6"
+- extendedWaitUntil:
+    visible:
+        id: "btn-verify"
+    timeout: 5000
+- tapOn:
+    id: "btn-verify"
+- extendedWaitUntil:
+    notVisible:
+        id: "btn-verify"
+    timeout: 15000
+
+# Dismiss modals
+- tapOn:
+    text: "Maybe later"
+    optional: true
+- tapOn:
+    text: "Skip for now"
+    optional: true
+- tapOn:
+    text: "Maybe Later"
+    optional: true
+- tapOn:
+    point: "95%,98%"
+    optional: true
+- takeScreenshot: 99_01_dashboard_loaded
+
+# ═══════════════════════════════════════════════════════
+# PHASE 2: Dashboard verification
+# ═══════════════════════════════════════════════════════
+- assertVisible:
+    id: "dashboard-screen"
+    optional: true
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: 99_02_dashboard_verified
+
+# ═══════════════════════════════════════════════════════
+# PHASE 3: Add subscription via AI
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "ai-wizard"
+    timeout: 5000
+- tapOn:
+    id: "ai-wizard-input"
+- inputText: "Spotify"
+- tapOn:
+    text: "Далее →"
+    optional: true
+- tapOn:
+    text: "Next →"
+    optional: true
+
+# Wait for AI response
+- extendedWaitUntil:
+    notVisible:
+        text: "Analyzing"
+    timeout: 30000
+    optional: true
+- takeScreenshot: 99_03_ai_response
+
+# Tap Add/Confirm if visible
+- tapOn:
+    text: "Add"
+    optional: true
+- tapOn:
+    text: "Добавить"
+    optional: true
+- takeScreenshot: 99_04_subscription_added
+
+# Close success overlay
+- tapOn:
+    text: "Done"
+    optional: true
+- tapOn:
+    text: "Готово"
+    optional: true
+
+# ═══════════════════════════════════════════════════════
+# PHASE 4: Subscriptions list — verify, search, filter
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    text: "Subscriptions"
+    optional: true
+- tapOn:
+    text: "Подписки"
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "subscriptions-screen"
+    timeout: 10000
+- takeScreenshot: 99_05_subscriptions_list
+
+# Search
+- tapOn:
+    id: "btn-toggle-search"
+    optional: true
+- tapOn:
+    id: "search-input"
+    optional: true
+- inputText: "Spot"
+- takeScreenshot: 99_06_search_results
+- tapOn:
+    id: "btn-clear-search"
+    optional: true
+
+# ═══════════════════════════════════════════════════════
+# PHASE 5: Analytics
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    text: "Analytics"
+    optional: true
+- tapOn:
+    text: "Аналитика"
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "analytics-screen"
+    timeout: 10000
+- takeScreenshot: 99_07_analytics
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+
+# ═══════════════════════════════════════════════════════
+# PHASE 6: Settings — theme, currency, profile
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    text: "Settings"
+    optional: true
+- tapOn:
+    text: "Настройки"
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "settings-screen"
+    timeout: 10000
+- takeScreenshot: 99_08_settings
+
+# Toggle theme
+- tapOn:
+    id: "btn-theme-toggle"
+- takeScreenshot: 99_09_theme_toggled
+- tapOn:
+    id: "btn-theme-toggle"
+
+# View plan
+- scroll
+- tapOn:
+    id: "btn-plan-card"
+    optional: true
+- takeScreenshot: 99_10_plan_card
+- back
+
+# ═══════════════════════════════════════════════════════
+# PHASE 7: Edit subscription
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    text: "Subscriptions"
+    optional: true
+- tapOn:
+    text: "Подписки"
+    optional: true
+- tapOn:
+    id: "subscription-card-0"
+    optional: true
+- takeScreenshot: 99_11_subscription_detail
+- assertNotVisible: "undefined"
+- assertNotVisible: "null"
+- back
+
+# ═══════════════════════════════════════════════════════
+# PHASE 8: Delete subscription
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    id: "subscription-card-0"
+    optional: true
+- scroll
+- tapOn:
+    text: "Delete"
+    optional: true
+- tapOn:
+    text: "Удалить"
+    optional: true
+# Confirm
+- tapOn:
+    text: "Delete"
+    optional: true
+- tapOn:
+    text: "Удалить"
+    optional: true
+- takeScreenshot: 99_12_after_delete
+
+# ═══════════════════════════════════════════════════════
+# PHASE 9: Logout
+# ═══════════════════════════════════════════════════════
+- tapOn:
+    text: "Settings"
+    optional: true
+- tapOn:
+    text: "Настройки"
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "settings-screen"
+    timeout: 10000
+- scroll
+- scroll
+
+# Tap logout
+- tapOn:
+    text: "Sign out"
+    optional: true
+- tapOn:
+    text: "Выйти"
+    optional: true
+- takeScreenshot: 99_13_logout_confirm
+
+# Confirm logout
+- tapOn:
+    text: "Sign out"
+    optional: true
+- tapOn:
+    text: "Выйти"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+
+# Should be back on onboarding/login
+- extendedWaitUntil:
+    visible:
+        id: "btn-get-started"
+    timeout: 15000
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "btn-email"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 99_14_logged_out
+
+# Final sanity
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

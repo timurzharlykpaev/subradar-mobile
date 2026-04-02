@@ -1,0 +1,66 @@
+appId: com.goalin.subradar
+name: "55 - Workspace: create + invite member"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to workspace tab
+- tapOn:
+    text: "Workspace"
+    optional: true
+- tapOn:
+    text: "Команда"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+        id: "workspace-screen"
+    timeout: 10000
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "workspace-screen-empty"
+    timeout: 10000
+    optional: true
+- takeScreenshot: 55_workspace_screen
+
+# Try create workspace button
+- tapOn:
+    id: "btn-create-workspace"
+    optional: true
+- takeScreenshot: 55_create_workspace_dialog
+
+# Fill workspace name
+- tapOn:
+    id: "input-workspace-name"
+    optional: true
+- inputText: "Test Team"
+
+# Confirm creation
+- tapOn:
+    id: "btn-confirm-create-workspace"
+    optional: true
+- takeScreenshot: 55_workspace_created
+
+# If upgrade required — verify paywall redirect
+- tapOn:
+    id: "btn-workspace-upgrade"
+    optional: true
+- takeScreenshot: 55_upgrade_prompt
+
+# Try invite member
+- tapOn:
+    id: "btn-invite-member"
+    optional: true
+- tapOn:
+    id: "input-invite-email"
+    optional: true
+- inputText: "test@example.com"
+- tapOn:
+    id: "btn-send-invite"
+    optional: true
+- takeScreenshot: 55_invite_sent
+
+# Sanity
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

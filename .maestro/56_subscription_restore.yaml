@@ -1,0 +1,60 @@
+appId: com.goalin.subradar
+name: "56 - Subscription Restore (reactivate cancelled)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to subscriptions
+- tapOn:
+    text: "Subscriptions"
+    optional: true
+- tapOn:
+    text: "Подписки"
+    optional: true
+
+# Filter cancelled
+- extendedWaitUntil:
+    visible:
+        id: "subscriptions-screen"
+    timeout: 10000
+- tapOn:
+    id: "filter-chip-cancelled"
+    optional: true
+- tapOn:
+    text: "Cancelled"
+    optional: true
+- tapOn:
+    text: "Отменённые"
+    optional: true
+- takeScreenshot: 56_cancelled_list
+
+# Tap first cancelled subscription
+- tapOn:
+    id: "subscription-card-0"
+    optional: true
+- scroll
+- takeScreenshot: 56_cancelled_detail
+
+# Try Restore/Reactivate button
+- tapOn:
+    text: "Restore"
+    optional: true
+- tapOn:
+    text: "Reactivate"
+    optional: true
+- tapOn:
+    text: "Восстановить"
+    optional: true
+- takeScreenshot: 56_after_restore
+
+# Confirm if needed
+- tapOn:
+    text: "Confirm"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+
+# Sanity
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

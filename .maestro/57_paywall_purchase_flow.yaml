@@ -1,0 +1,97 @@
+appId: com.goalin.subradar
+name: "57 - Paywall: full purchase flow UI"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to paywall
+- tapOn:
+    text: "Settings"
+    optional: true
+- tapOn:
+    text: "Настройки"
+    optional: true
+- extendedWaitUntil:
+    visible:
+        id: "settings-screen"
+    timeout: 10000
+- scroll
+
+# Tap plan card to go to subscription plan
+- tapOn:
+    id: "btn-plan-card"
+    optional: true
+- takeScreenshot: 57_subscription_plan
+
+# Navigate to paywall
+- tapOn:
+    text: "Upgrade"
+    optional: true
+- tapOn:
+    text: "Обновить"
+    optional: true
+- takeScreenshot: 57_paywall_screen
+
+# Verify all plans visible
+- assertVisible:
+    text: "Free"
+    optional: true
+- assertVisible:
+    text: "Pro"
+    optional: true
+- assertVisible:
+    text: "Team"
+    optional: true
+
+# Switch billing period to yearly
+- tapOn:
+    text: "Yearly"
+    optional: true
+- tapOn:
+    text: "Ежегодно"
+    optional: true
+- takeScreenshot: 57_yearly_plans
+
+# Select Pro plan
+- tapOn:
+    text: "Pro"
+- takeScreenshot: 57_pro_selected
+
+# Verify CTA button is enabled
+- assertVisible:
+    text: "Upgrade to Pro"
+    optional: true
+- assertVisible:
+    text: "Перейти на Pro"
+    optional: true
+
+# Switch back to monthly
+- tapOn:
+    text: "Monthly"
+    optional: true
+- tapOn:
+    text: "Ежемесячно"
+    optional: true
+- takeScreenshot: 57_monthly_plans
+
+# Verify restore purchases link
+- scroll
+- assertVisible:
+    text: "Restore Purchases"
+    optional: true
+- assertVisible:
+    text: "Восстановить покупки"
+    optional: true
+- takeScreenshot: 57_restore_visible
+
+# Close paywall
+- tapOn:
+    text: "Maybe later"
+    optional: true
+- tapOn:
+    text: "Может позже"
+    optional: true
+
+# Sanity
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

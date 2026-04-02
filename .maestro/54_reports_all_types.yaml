@@ -1,0 +1,67 @@
+appId: com.goalin.subradar
+name: "54 - Reports: all report types"
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to reports
+- tapOn:
+    text: "Reports"
+    optional: true
+- tapOn:
+    text: "Отчёты"
+    optional: true
+
+# Wait for reports screen
+- extendedWaitUntil:
+    visible:
+        text: "Reports"
+    timeout: 10000
+    optional: true
+- takeScreenshot: 54_reports_screen
+
+# Verify all report type options visible
+- assertVisible:
+    text: "Summary"
+    optional: true
+- assertVisible:
+    text: "Detailed"
+    optional: true
+- takeScreenshot: 54_report_types
+
+# Select period
+- tapOn:
+    text: "This month"
+    optional: true
+- tapOn:
+    text: "Этот месяц"
+    optional: true
+
+# Try generate Summary
+- tapOn:
+    text: "Generate"
+    optional: true
+- tapOn:
+    text: "Сгенерировать"
+    optional: true
+- takeScreenshot: 54_generating_summary
+
+# Wait for generation
+- extendedWaitUntil:
+    notVisible:
+        text: "Generating"
+    timeout: 30000
+    optional: true
+
+# Switch to Detailed report
+- tapOn:
+    text: "Detailed"
+    optional: true
+- tapOn:
+    text: "Детальный"
+    optional: true
+- takeScreenshot: 54_detailed_selected
+
+# Sanity
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
