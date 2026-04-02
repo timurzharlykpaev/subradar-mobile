@@ -205,7 +205,12 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "Бірнеше жазылымды тізімдеуге болады — AI барлығын таниды"
+    "bulk_hint": "Бірнеше жазылымды тізімдеуге болады — AI барлығын таниды",
+    "max_recording": "макс {{sec}} сек",
+    "ai_limit_title": "AI сұраулар лимиті таусылды",
+    "ai_limit_msg": "Осы айдағы тегін AI сұрауларыңыз таусылды. Pro-ға көшіңіз — 200 сұрау/ай.",
+    "limit_reached_title": "Жазылымдар лимиті",
+    "limit_reached_msg": "Тегін жоспар {{max}} жазылымға дейін. Pro — шексіз."
   },
   "periods": {
     "WEEKLY": "Апта сайын",
@@ -341,7 +346,11 @@
     "trial_title": "Алғашқы жазылым қосылды!",
     "trial_description": "SubRadar Pro-ны 7 күн тегін қолданып көріңіз. Сынақ аяқталғаннан кейін ғана ақша есептен шығарылады.",
     "trial_start": "Сынақты бастау →",
-    "trial_skip": "Тегін жалғастыру"
+    "trial_skip": "Тегін жалғастыру",
+    "notifications_title": "Төлемді жіберіп алмаңыз",
+    "notifications_subtitle": "Жазылымдарыңыз жаңартылмас бұрын еске салу алыңыз",
+    "enable_notifications": "Хабарландыруларды қосу",
+    "maybe_later": "Кейінірек"
   },
   "analytics": {
     "title": "Аналитика",
@@ -371,7 +380,12 @@
     "total": "Жиыны",
     "empty_title": "Жазылымдар әлі жоқ",
     "empty_subtitle": "Шығын аналитикасын көру үшін алғашқы жазылымды қосыңыз",
-    "loading": "Аналитика жүктелуде..."
+    "loading": "Аналитика жүктелуде...",
+    "add_first": "Жазылым қосу →",
+    "active_count": "Белсенді",
+    "subscriptions": "жазылым",
+    "error_title": "Аналитиканы жүктеу мүмкін болмады",
+    "error_subtitle": "Қосылымды тексеріп, қайталаңыз"
   },
   "subscription": {
     "billing_day": "Есептен шығару күні",
@@ -543,7 +557,8 @@
     ],
     "cancelled_until": "Болдырылмады · {{date}} дейін",
     "cancelled_badge": "Болдырылмады",
-    "access_until": "{{date}} дейін қолжетімді"
+    "access_until": "{{date}} дейін қолжетімді",
+    "upgrade_to": "{{plan}}-ға көшу"
   },
   "workspace": {
     "name_placeholder": "мыс. Менің компаниям",

@@ -205,7 +205,12 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "Puedes listar varias suscripciones — la IA las reconocerá todas"
+    "bulk_hint": "Puedes listar varias suscripciones — la IA las reconocerá todas",
+    "max_recording": "máx {{sec}}s",
+    "ai_limit_title": "Límite de solicitudes IA alcanzado",
+    "ai_limit_msg": "Has usado todas tus solicitudes IA gratuitas este mes. Actualiza a Pro para 200 solicitudes/mes.",
+    "limit_reached_title": "Límite de suscripciones",
+    "limit_reached_msg": "El plan gratuito permite hasta {{max}} suscripciones. Actualiza a Pro para ilimitadas."
   },
   "settings": {
     "title": "Configuración",
@@ -333,7 +338,11 @@
     "trial_title": "¡Primera suscripción agregada!",
     "trial_description": "Prueba SubRadar Pro gratis por 7 días. Solo se cobrará después del período de prueba.",
     "trial_start": "Iniciar prueba →",
-    "trial_skip": "Continuar gratis"
+    "trial_skip": "Continuar gratis",
+    "notifications_title": "No te pierdas un pago",
+    "notifications_subtitle": "Recibe recordatorios antes de que se renueven tus suscripciones",
+    "enable_notifications": "Activar notificaciones",
+    "maybe_later": "Quizás después"
   },
   "analytics": {
     "title": "Analítica",
@@ -363,7 +372,12 @@
     "total": "Total",
     "empty_title": "Aún no hay suscripciones",
     "empty_subtitle": "Agrega tu primera suscripción para ver la analítica de gastos",
-    "loading": "Cargando analítica..."
+    "loading": "Cargando analítica...",
+    "add_first": "Agregar suscripción →",
+    "active_count": "Activas",
+    "subscriptions": "suscripciones",
+    "error_title": "No se pudo cargar el análisis",
+    "error_subtitle": "Verifica tu conexión e intenta de nuevo"
   },
   "subscription": {
     "billing_day": "Día de cobro",
@@ -543,7 +557,8 @@
     ],
     "cancelled_until": "Cancelado · hasta {{date}}",
     "cancelled_badge": "Cancelado",
-    "access_until": "Acceso hasta {{date}}"
+    "access_until": "Acceso hasta {{date}}",
+    "upgrade_to": "Actualizar a {{plan}}"
   },
   "workspace": {
     "name_placeholder": "ej. Mi Empresa",

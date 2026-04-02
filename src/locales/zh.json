@@ -205,7 +205,12 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "可以列出多个订阅 — AI 会识别所有"
+    "bulk_hint": "可以列出多个订阅 — AI 会识别所有",
+    "max_recording": "最长{{sec}}秒",
+    "ai_limit_title": "AI请求限额已达",
+    "ai_limit_msg": "您已用完本月免费AI请求。升级至Pro获得每月200次请求。",
+    "limit_reached_title": "订阅限制",
+    "limit_reached_msg": "免费计划最多{{max}}个订阅。升级至Pro获得无限。"
   },
   "settings": {
     "title": "设置",
@@ -333,7 +338,11 @@
     "trial_title": "第一个订阅已添加！",
     "trial_description": "免费试用SubRadar Pro 7天。试用期结束后才会收费。",
     "trial_start": "开始试用 →",
-    "trial_skip": "免费继续"
+    "trial_skip": "免费继续",
+    "notifications_title": "不要错过任何付款",
+    "notifications_subtitle": "在订阅续费前收到提醒",
+    "enable_notifications": "开启通知",
+    "maybe_later": "以后再说"
   },
   "analytics": {
     "title": "分析",
@@ -363,7 +372,12 @@
     "total": "总计",
     "empty_title": "暂无订阅",
     "empty_subtitle": "添加第一个订阅以查看支出分析",
-    "loading": "正在加载分析..."
+    "loading": "正在加载分析...",
+    "add_first": "添加订阅 →",
+    "active_count": "活跃",
+    "subscriptions": "订阅",
+    "error_title": "无法加载分析",
+    "error_subtitle": "请检查连接并重试"
   },
   "subscription": {
     "billing_day": "扣款日",
@@ -543,7 +557,8 @@
     ],
     "cancelled_until": "已取消 · 至 {{date}}",
     "cancelled_badge": "已取消",
-    "access_until": "访问权限至 {{date}}"
+    "access_until": "访问权限至 {{date}}",
+    "upgrade_to": "升级至{{plan}}"
   },
   "workspace": {
     "name_placeholder": "例：我的公司",

@@ -205,7 +205,12 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "Listez plusieurs abonnements — l'IA les reconnaîtra tous"
+    "bulk_hint": "Listez plusieurs abonnements — l'IA les reconnaîtra tous",
+    "max_recording": "max {{sec}}s",
+    "ai_limit_title": "Limite de requêtes IA atteinte",
+    "ai_limit_msg": "Vous avez utilisé toutes vos requêtes IA gratuites ce mois. Passez à Pro pour 200 requêtes/mois.",
+    "limit_reached_title": "Limite d'abonnements",
+    "limit_reached_msg": "Le plan gratuit permet jusqu'à {{max}} abonnements. Passez à Pro pour illimité."
   },
   "settings": {
     "title": "Paramètres",
@@ -333,7 +338,11 @@
     "trial_title": "Premier abonnement ajouté !",
     "trial_description": "Essayez SubRadar Pro gratuitement pendant 7 jours. Vous ne serez facturé qu'après la période d'essai.",
     "trial_start": "Commencer l'essai →",
-    "trial_skip": "Continuer gratuitement"
+    "trial_skip": "Continuer gratuitement",
+    "notifications_title": "Ne manquez aucun paiement",
+    "notifications_subtitle": "Recevez des rappels avant le renouvellement de vos abonnements",
+    "enable_notifications": "Activer les notifications",
+    "maybe_later": "Peut-être plus tard"
   },
   "analytics": {
     "title": "Analytique",
@@ -363,7 +372,12 @@
     "total": "Total",
     "empty_title": "Aucun abonnement pour l'instant",
     "empty_subtitle": "Ajoutez votre premier abonnement pour voir l'analytique des dépenses",
-    "loading": "Chargement de l'analytique..."
+    "loading": "Chargement de l'analytique...",
+    "add_first": "Ajouter un abonnement →",
+    "active_count": "Actifs",
+    "subscriptions": "abonnements",
+    "error_title": "Impossible de charger les analyses",
+    "error_subtitle": "Vérifiez votre connexion et réessayez"
   },
   "subscription": {
     "billing_day": "Jour de facturation",
@@ -543,7 +557,8 @@
     ],
     "cancelled_until": "Annulé · jusqu'au {{date}}",
     "cancelled_badge": "Annulé",
-    "access_until": "Accès jusqu'au {{date}}"
+    "access_until": "Accès jusqu'au {{date}}",
+    "upgrade_to": "Passer à {{plan}}"
   },
   "workspace": {
     "name_placeholder": "ex. Mon Entreprise",

@@ -205,7 +205,12 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "여러 구독을 나열하세요 — AI가 모두 인식합니다"
+    "bulk_hint": "여러 구독을 나열하세요 — AI가 모두 인식합니다",
+    "max_recording": "최대 {{sec}}초",
+    "ai_limit_title": "AI 요청 한도 도달",
+    "ai_limit_msg": "이번 달 무료 AI 요청을 모두 사용했습니다. Pro로 업그레이드하여 월 200건.",
+    "limit_reached_title": "구독 한도",
+    "limit_reached_msg": "무료 플랜은 최대 {{max}}개. Pro로 업그레이드하면 무제한."
   },
   "settings": {
     "title": "설정",
@@ -333,7 +338,11 @@
     "trial_title": "첫 번째 구독이 추가되었습니다!",
     "trial_description": "SubRadar Pro를 7일간 무료로 체험하세요. 체험 기간이 끝난 후에만 결제됩니다.",
     "trial_start": "체험 시작 →",
-    "trial_skip": "무료로 계속"
+    "trial_skip": "무료로 계속",
+    "notifications_title": "결제를 놓치지 마세요",
+    "notifications_subtitle": "구독 갱신 전에 알림을 받으세요",
+    "enable_notifications": "알림 활성화",
+    "maybe_later": "나중에"
   },
   "analytics": {
     "title": "분석",
@@ -363,7 +372,12 @@
     "total": "합계",
     "empty_title": "아직 구독이 없습니다",
     "empty_subtitle": "첫 번째 구독을 추가하여 지출 분석을 확인하세요",
-    "loading": "분석 로딩 중..."
+    "loading": "분석 로딩 중...",
+    "add_first": "구독 추가 →",
+    "active_count": "활성",
+    "subscriptions": "구독",
+    "error_title": "분석을 로드할 수 없습니다",
+    "error_subtitle": "연결을 확인하고 다시 시도하세요"
   },
   "subscription": {
     "billing_day": "결제일",
@@ -543,7 +557,8 @@
     ],
     "cancelled_until": "취소됨 · {{date}}까지",
     "cancelled_badge": "취소됨",
-    "access_until": "{{date}}까지 이용 가능"
+    "access_until": "{{date}}까지 이용 가능",
+    "upgrade_to": "{{plan}}으로 업그레이드"
   },
   "workspace": {
     "name_placeholder": "예: 내 회사",

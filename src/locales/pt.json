@@ -205,7 +205,12 @@
     "bulk_try_again": "Try different text or screenshot",
     "bulk_select_at_least_one": "Select at least one",
     "bulk_retry": "Try again",
-    "bulk_hint": "Liste várias assinaturas — a IA reconhecerá todas"
+    "bulk_hint": "Liste várias assinaturas — a IA reconhecerá todas",
+    "max_recording": "máx {{sec}}s",
+    "ai_limit_title": "Limite de solicitações IA atingido",
+    "ai_limit_msg": "Você usou todas as suas solicitações IA gratuitas este mês. Atualize para Pro para 200 solicitações/mês.",
+    "limit_reached_title": "Limite de assinaturas",
+    "limit_reached_msg": "O plano gratuito permite até {{max}} assinaturas. Atualize para Pro para ilimitado."
   },
   "settings": {
     "title": "Configurações",
@@ -333,7 +338,11 @@
     "trial_title": "Primeira assinatura adicionada!",
     "trial_description": "Experimente o SubRadar Pro grátis por 7 dias. Você só será cobrado após o período de teste.",
     "trial_start": "Iniciar teste →",
-    "trial_skip": "Continuar grátis"
+    "trial_skip": "Continuar grátis",
+    "notifications_title": "Não perca um pagamento",
+    "notifications_subtitle": "Receba lembretes antes das suas assinaturas renovarem",
+    "enable_notifications": "Ativar notificações",
+    "maybe_later": "Talvez depois"
   },
   "analytics": {
     "title": "Análises",
@@ -363,7 +372,12 @@
     "total": "Total",
     "empty_title": "Ainda sem assinaturas",
     "empty_subtitle": "Adicione sua primeira assinatura para ver a análise de gastos",
-    "loading": "Carregando análises..."
+    "loading": "Carregando análises...",
+    "add_first": "Adicionar assinatura →",
+    "active_count": "Ativas",
+    "subscriptions": "assinaturas",
+    "error_title": "Não foi possível carregar análises",
+    "error_subtitle": "Verifique sua conexão e tente novamente"
   },
   "subscription": {
     "billing_day": "Dia de cobrança",
@@ -543,7 +557,8 @@
     ],
     "cancelled_until": "Cancelado · até {{date}}",
     "cancelled_badge": "Cancelado",
-    "access_until": "Acesso até {{date}}"
+    "access_until": "Acesso até {{date}}",
+    "upgrade_to": "Atualizar para {{plan}}"
   },
   "workspace": {
     "name_placeholder": "ex. Minha Empresa",
