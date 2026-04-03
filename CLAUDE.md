@@ -126,6 +126,34 @@ npm test                    # Jest unit tests
 npm run test:e2e            # Maestro E2E (все тесты)
 ```
 
+## Версионирование (Semantic Versioning)
+
+Формат: `MAJOR.MINOR.PATCH` (например `1.2.3`)
+
+| Тип | Когда | Команда | Пример |
+|-----|-------|---------|--------|
+| **PATCH** (1.0.0 → 1.0.1) | Баг-фиксы, мелкие правки UI, исправления переводов | `npm run version:patch` | Фикс краша, исправление отображения |
+| **MINOR** (1.0.0 → 1.1.0) | Новая фича, новый экран, новый API endpoint | `npm run version:minor` | AI голосовой ввод, отчёты, workspace |
+| **MAJOR** (1.0.0 → 2.0.0) | Breaking changes, полный редизайн, смена архитектуры | `npm run version:major` | Переход на новый бэкенд, редизайн |
+
+**Правила:**
+- `version:*` скрипты обновляют **и** `package.json` **и** `app.json` одновременно
+- `buildNumber` (iOS) / `versionCode` (Android) инкрементируются автоматически EAS (`autoIncrement: true`)
+- **Перед каждым билдом в TestFlight/App Store** — поднять версию если были изменения
+- Коммит версии отдельно: `git commit -m "chore: bump version to X.Y.Z"`
+
+**Workflow:**
+```bash
+# Баг-фикс → patch
+npm run version:patch && git add -A && git commit -m "chore: bump 1.0.1" && npm run build:testflight
+
+# Новая фича → minor
+npm run version:minor && git add -A && git commit -m "chore: bump 1.1.0" && npm run build:testflight
+
+# Мажорный релиз → major
+npm run version:major && git add -A && git commit -m "chore: bump 2.0.0" && npm run build:production
+```
+
 ## EAS Build профили
 
 | Профиль | RC Key | API | Куда |
