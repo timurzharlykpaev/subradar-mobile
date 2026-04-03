@@ -38,12 +38,17 @@ import { aiApi } from '../api/ai';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { VoiceRecorder } from './VoiceRecorder';
 import { AIWizard, ParsedSub } from './AIWizard';
 import { SuccessOverlay } from './SuccessOverlay';
 import { BulkAddSheet } from './BulkAddSheet';
+import { TranscriptionConfirm } from './TranscriptionConfirm';
+import { InlineConfirmCard, ConfirmCardData } from './InlineConfirmCard';
+import { AICreditsBadge } from './AICreditsBadge';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useTheme } from '../theme';
+import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
+import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
+import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
 import {
   MovieIcon, MusicIcon, PlayIcon, InfrastructureIcon, FolderIcon,
   BriefcaseIcon, PaletteIcon, ChartBarIcon, AiServicesIcon,
@@ -58,27 +63,30 @@ interface Props {
   onClose: () => void;
 }
 
-// Tab keys - labels resolved via t() below
-// Order: AI first, then Manual, then Screenshot
-const TAB_KEYS = ['add.ai_assistant', 'add.manual', 'add.screenshot'] as const;
+// ── Quick chips (hardcoded, 0 AI credits, 0 network) ─────────────────────────
 
-const POPULAR_SERVICES = [
-  { name: 'Netflix', Icon: MovieIcon },
-  { name: 'Spotify', Icon: MusicIcon },
-  { name: 'YouTube Premium', Icon: PlayIcon },
-  { name: 'Apple iCloud', Icon: InfrastructureIcon },
-  { name: 'Google One', Icon: FolderIcon },
-  { name: 'LinkedIn Premium', Icon: BriefcaseIcon },
-  { name: 'Adobe Creative Cloud', Icon: PaletteIcon },
-  { name: 'Microsoft 365', Icon: ChartBarIcon },
-  { name: 'ChatGPT Plus', Icon: AiServicesIcon },
-  { name: 'Notion', Icon: PenIcon },
-  { name: 'Figma', Icon: BrushIcon },
-  { name: 'GitHub', Icon: OctopusIcon },
-  { name: 'DigitalOcean', Icon: WaveDropIcon },
-  { name: 'Dropbox', Icon: OtherIcon },
-  { name: 'Disney+', Icon: SparklesIcon },
-];
+const QUICK_CHIPS = [
+  { name: 'Netflix', Icon: MovieIcon, amount: 15.49, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/netflix.com', serviceUrl: 'https://netflix.com', cancelUrl: 'https://www.netflix.com/cancelplan', plans: [{ name: 'Standard with Ads', priceMonthly: 6.99, currency: 'USD' }, { name: 'Standard', priceMonthly: 15.49, currency: 'USD' }, { name: 'Premium', priceMonthly: 22.99, currency: 'USD' }] },
+  { name: 'Spotify', Icon: MusicIcon, amount: 9.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'MUSIC', iconUrl: 'https://icon.horse/icon/spotify.com', serviceUrl: 'https://spotify.com', cancelUrl: 'https://www.spotify.com/account/subscription/cancel', plans: [{ name: 'Individual', priceMonthly: 9.99, currency: 'USD' }, { name: 'Duo', priceMonthly: 14.99, currency: 'USD' }, { name: 'Family', priceMonthly: 16.99, currency: 'USD' }] },
+  { name: 'ChatGPT', Icon: AiServicesIcon, amount: 20, currency: 'USD', billingPeriod: 'MONTHLY', category: 'AI_SERVICES', iconUrl: 'https://icon.horse/icon/openai.com', serviceUrl: 'https://chat.openai.com', cancelUrl: 'https://help.openai.com/en/articles/7232013', plans: [{ name: 'Plus', priceMonthly: 20, currency: 'USD' }, { name: 'Pro', priceMonthly: 200, currency: 'USD' }] },
+  { name: 'iCloud+', Icon: InfrastructureIcon, amount: 0.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'INFRASTRUCTURE', iconUrl: 'https://icon.horse/icon/apple.com', serviceUrl: 'https://icloud.com', cancelUrl: 'https://support.apple.com/billing', plans: [{ name: '50 GB', priceMonthly: 0.99, currency: 'USD' }, { name: '200 GB', priceMonthly: 2.99, currency: 'USD' }, { name: '2 TB', priceMonthly: 9.99, currency: 'USD' }] },
+  { name: 'YouTube', Icon: PlayIcon, amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/youtube.com', serviceUrl: 'https://youtube.com', cancelUrl: 'https://youtube.com/paid_memberships', plans: [{ name: 'Individual', priceMonthly: 13.99, currency: 'USD' }, { name: 'Family', priceMonthly: 22.99, currency: 'USD' }] },
+  { name: 'Disney+', Icon: SparklesIcon, amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/disneyplus.com', serviceUrl: 'https://disneyplus.com', cancelUrl: 'https://www.disneyplus.com/account/subscription', plans: [{ name: 'Basic', priceMonthly: 7.99, currency: 'USD' }, { name: 'Premium', priceMonthly: 13.99, currency: 'USD' }] },
+  { name: 'Apple Music', Icon: MusicIcon, amount: 10.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'MUSIC', iconUrl: 'https://icon.horse/icon/music.apple.com', serviceUrl: 'https://music.apple.com', cancelUrl: 'https://support.apple.com/billing', plans: [{ name: 'Individual', priceMonthly: 10.99, currency: 'USD' }, { name: 'Family', priceMonthly: 16.99, currency: 'USD' }] },
+  { name: 'Amazon Prime', Icon: FolderIcon, amount: 14.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/amazon.com', serviceUrl: 'https://amazon.com', cancelUrl: 'https://www.amazon.com/mc/cancel', plans: [{ name: 'Monthly', priceMonthly: 14.99, currency: 'USD' }, { name: 'Annual', priceMonthly: 11.58, currency: 'USD' }] },
+] as const;
+
+// ── Flow state machine ──────────────────────────────────────────────────────
+
+type FlowState =
+  | 'idle'
+  | 'loading'
+  | 'transcription'
+  | 'confirm'
+  | 'bulk-confirm'
+  | 'wizard'
+  | 'manual'
+  | 'success';
 
 const emptyForm = {
   name: '',
@@ -103,25 +111,35 @@ const emptyForm = {
 
 
 export function AddSubscriptionSheet({ visible, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
   const { subsLimitReached, isPro, activeCount, maxSubscriptions } = usePlanLimits();
   if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
-  const [tab, setTab] = useState(0);
+
+  // ── Form state (kept for manual mode) ───────────────────────────────────
   const [form, setForm] = useState(emptyForm);
-  const [aiText, setAiText] = useState('');
-  const [aiQuery, setAiQuery] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [foundService, setFoundService] = useState<any>(null);
-  const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
-  const [parsingScreenshot, setParsingScreenshot] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successName, setSuccessName] = useState('');
   const [moreExpanded, setMoreExpanded] = useState(false);
-  const [showBulk, setShowBulk] = useState(false);
   const [saving, setSaving] = useState(false);
   const [addedViaSource, setAddedViaSource] = useState<'MANUAL' | 'AI_TEXT' | 'AI_SCREENSHOT'>('MANUAL');
+
+  // ── Unified flow state ──────────────────────────────────────────────────
+  const [flowState, setFlowState] = useState<FlowState>('idle');
+  const [smartInput, setSmartInput] = useState('');
+  const [transcribedText, setTranscribedText] = useState('');
+  const [confirmData, setConfirmData] = useState<ConfirmCardData | null>(null);
+  const [bulkItems, setBulkItems] = useState<ParsedSub[]>([]);
+  const [manualExpanded, setManualExpanded] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successName, setSuccessName] = useState('');
+  const [showBulk, setShowBulk] = useState(false);
+
+  // ── Screenshot state ────────────────────────────────────────────────────
+  const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
+  const [parsingScreenshot, setParsingScreenshot] = useState(false);
+
+  // ── Legacy states kept for AIWizard integration ─────────────────────────
+  const [foundService, setFoundService] = useState<any>(null);
 
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const backdropOpacity = useSharedValue(0);
@@ -140,19 +158,26 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
   }, [visible]);
 
+  const resetAll = useCallback(() => {
+    setFlowState('idle');
+    setSmartInput('');
+    setTranscribedText('');
+    setConfirmData(null);
+    setBulkItems([]);
+    setManualExpanded(false);
+    setForm(emptyForm);
+    setScreenshotUri(null);
+    setMoreExpanded(false);
+    setAddedViaSource('MANUAL');
+    setFoundService(null);
+  }, []);
+
   const handleClose = useCallback(() => {
     translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
       runOnJS(onClose)();
     });
-    // Reset form state after animation starts
-    setTimeout(() => {
-      setTab(0);
-      setForm(emptyForm);
-      setScreenshotUri(null);
-      setMoreExpanded(false);
-      setAddedViaSource('MANUAL');
-    }, 300);
-  }, [onClose]);
+    setTimeout(resetAll, 300);
+  }, [onClose, resetAll]);
 
   // Android back button
   useEffect(() => {
@@ -195,8 +220,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setForm((f) => ({ ...f, [key]: value }));
   }, []);
 
+  // ── handleSave (manual form) — KEPT AS-IS ──────────────────────────────
   const handleSave = useCallback(async () => {
-    if (saving) return; // prevent double tap
+    if (saving) return;
     if (subsLimitReached) {
       onClose();
       router.push('/paywall');
@@ -249,7 +275,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       addSubscription(res.data);
       setSuccessName(form.name);
       setShowSuccess(true);
-      // Sync list from server in background
       subscriptionsApi.getAll().then((r) => {
         useSubscriptionsStore.getState().setSubscriptions(r.data || []);
       }).catch(() => {});
@@ -271,70 +296,279 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
   }, [form, handleClose, subsLimitReached, onClose, router, t, addSubscription, saving, addedViaSource]);
 
-  const handleAILookup = useCallback(async () => {
-    if (!aiQuery.trim()) return;
-    setAiLoading(true);
-    try {
-      const res = await aiApi.lookupService(aiQuery.trim());
-      const result = res.data;
-      setFoundService(result);
-      const firstPlan = result.plans?.[0];
-      const planAmount = firstPlan?.amount ?? firstPlan?.price ?? 0;
-      const planPeriod = ((firstPlan?.billingCycle ?? firstPlan?.period ?? 'MONTHLY') as string).toUpperCase();
-      const iconUrl = result.iconUrl ?? result.logoUrl ?? (result.serviceUrl
-        ? `https://www.google.com/s2/favicons?domain=${new URL(result.serviceUrl).hostname}&sz=64`
-        : '');
-      setForm((f) => ({
-        ...f,
-        name: result.name ?? f.name,
-        category: (result.category as string)?.toUpperCase() ?? f.category,
-        amount: planAmount > 0 ? String(planAmount) : f.amount,
-        currency: firstPlan?.currency ?? f.currency,
-        billingPeriod: planPeriod as any,
-        currentPlan: firstPlan?.name ?? f.currentPlan,
-        serviceUrl: result.serviceUrl ?? f.serviceUrl,
-        cancelUrl: result.cancelUrl ?? f.cancelUrl,
-        iconUrl,
-      }));
-      // Switch to manual tab (index 1) to let user review/confirm
-      setTab(1);
-    } catch {
-      Alert.alert(t('common.error'), t('add.service_not_found'));
-    } finally {
-      setAiLoading(false);
+  // ── Save from InlineConfirmCard ─────────────────────────────────────────
+  const handleConfirmSave = useCallback(async (data: any) => {
+    if (subsLimitReached) {
+      onClose();
+      router.push('/paywall');
+      return;
     }
-  }, [aiQuery]);
 
-  const pickScreenshot = async () => {
+    const iconUrl = data.iconUrl || (data.serviceUrl
+      ? `https://icon.horse/icon/${(() => { try { return new URL(data.serviceUrl).hostname; } catch { return ''; } })()}`
+      : data.name
+        ? `https://icon.horse/icon/${data.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
+        : undefined);
+
+    const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
+    const rawCategory = (data.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
+    const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
+
+    const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+    const rawBillingPeriod = (data.billingPeriod || 'MONTHLY').toUpperCase();
+    const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
+
+    const res = await subscriptionsApi.create({
+      name: data.name || 'Subscription',
+      category: safeCategory,
+      amount: data.amount || 0,
+      currency: data.currency || currency || 'USD',
+      billingPeriod: safeBillingPeriod,
+      billingDay: 1,
+      status: 'ACTIVE',
+      serviceUrl: data.serviceUrl || undefined,
+      cancelUrl: data.cancelUrl || undefined,
+      iconUrl: iconUrl || undefined,
+      currentPlan: data.currentPlan || undefined,
+      startDate: new Date().toISOString().split('T')[0],
+      addedVia: addedViaSource,
+    });
+    addSubscription(res.data);
+    if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+    setSuccessName(data.name || '');
+    setShowSuccess(true);
+    subscriptionsApi.getAll().then((r) => {
+      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+    }).catch(() => {});
+  }, [subsLimitReached, onClose, router, currency, addSubscription, addedViaSource]);
+
+  // ── Convert CatalogEntry to ConfirmCardData ─────────────────────────────
+  const catalogToConfirmData = (entry: CatalogEntry): ConfirmCardData => ({
+    name: { value: entry.name, confidence: 'high' },
+    amount: { value: entry.amount, confidence: entry.amount > 0 ? 'high' : 'low' },
+    currency: { value: entry.currency, confidence: 'high' },
+    billingPeriod: { value: entry.billingPeriod, confidence: 'high' },
+    category: { value: entry.category || 'OTHER', confidence: 'medium' },
+    iconUrl: entry.iconUrl,
+    serviceUrl: entry.serviceUrl,
+    cancelUrl: entry.cancelUrl,
+    plans: entry.plans?.map(p => ({ name: p.name, priceMonthly: p.amount, currency: p.currency })),
+  });
+
+  // ── Smart input submit ──────────────────────────────────────────────────
+  const handleSmartSubmit = useCallback(async (text?: string) => {
+    const input = (text || smartInput).trim();
+    if (!input) return;
+
+    Keyboard.dismiss();
+
+    // Check if bulk input
+    if (isBulkInput(input)) {
+      setFlowState('loading');
+      setAddedViaSource('AI_TEXT');
+      try {
+        // Try bulk parse via AI
+        const res = await aiApi.parseBulkText(input, i18n.language ?? 'en', currency);
+        const data = res.data;
+        let subs: ParsedSub[] = [];
+        if (Array.isArray(data)) subs = data;
+        else if (Array.isArray(data?.subscriptions)) subs = data.subscriptions;
+        else if (data && typeof data === 'object' && data.name) subs = [data];
+        subs = subs.filter((s: any) => s.name && s.name.trim());
+
+        if (subs.length > 0) {
+          setBulkItems(subs);
+          setFlowState('bulk-confirm');
+          return;
+        }
+      } catch (err: any) {
+        reportError(`Smart bulk parse error: ${err?.message ?? err}`, err?.stack);
+      }
+      setFlowState('idle');
+      Alert.alert(t('common.error'), t('add.service_not_found'));
+      return;
+    }
+
+    // Single service lookup
+    setFlowState('loading');
+    setAddedViaSource('AI_TEXT');
+
+    // Step 1: Free lookup (local catalog + backend service-catalog)
+    try {
+      const entry = await lookupService(input);
+      if (entry) {
+        setConfirmData(catalogToConfirmData(entry));
+        setFlowState('confirm');
+        return;
+      }
+    } catch {
+      // fall through
+    }
+
+    // Step 2: AI lookup (1 credit)
+    try {
+      const result = await lookupServiceWithAI(input, i18n.language ?? 'en', currency);
+      if (result.found && result.entry) {
+        setConfirmData(catalogToConfirmData(result.entry));
+        setFlowState('confirm');
+        return;
+      }
+      if (result.question) {
+        // AI needs more info — fall back to wizard
+        setSmartInput(input);
+        setFlowState('wizard');
+        return;
+      }
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || '';
+      const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+      if (isLimitError) {
+        Alert.alert(
+          t('add.ai_limit_title', 'AI request limit reached'),
+          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+            { text: t('common.cancel', 'Close'), style: 'cancel' },
+          ]
+        );
+        setFlowState('idle');
+        return;
+      }
+    }
+
+    // Nothing found — show wizard as fallback
+    setFlowState('wizard');
+  }, [smartInput, i18n.language, currency, t, router]);
+
+  // ── Quick chip tap ──────────────────────────────────────────────────────
+  const handleQuickChip = useCallback((chip: typeof QUICK_CHIPS[number]) => {
+    setAddedViaSource('AI_TEXT');
+    setConfirmData({
+      name: { value: chip.name, confidence: 'high' },
+      amount: { value: chip.amount, confidence: 'high' },
+      currency: { value: chip.currency, confidence: 'high' },
+      billingPeriod: { value: chip.billingPeriod, confidence: 'high' },
+      category: { value: chip.category, confidence: 'high' },
+      iconUrl: chip.iconUrl,
+      serviceUrl: chip.serviceUrl,
+      cancelUrl: chip.cancelUrl,
+      plans: chip.plans?.map(p => ({ name: p.name, priceMonthly: p.priceMonthly, currency: p.currency })),
+    });
+    setFlowState('confirm');
+  }, []);
+
+  // ── Voice handler ───────────────────────────────────────────────────────
+  const handleVoiceComplete = useCallback(async (uri: string) => {
+    if (!uri) return;
+    Keyboard.dismiss();
+    setFlowState('loading');
+    setAddedViaSource('AI_TEXT');
+    try {
+      const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
+      const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
+      const text: string = transcribeRes.data?.text ?? '';
+      if (!text.trim()) {
+        Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
+        setFlowState('idle');
+        return;
+      }
+      setTranscribedText(text);
+      setFlowState('transcription');
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || '';
+      const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+      if (isLimitError) {
+        Alert.alert(
+          t('add.ai_limit_title', 'AI request limit reached'),
+          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+            { text: t('common.cancel', 'Close'), style: 'cancel' },
+          ]
+        );
+      } else {
+        reportError(`Voice error: ${err?.message ?? err}`, err?.stack);
+        Alert.alert(t('ai.voice_error_title'), msg || t('ai.voice_error'));
+      }
+      setFlowState('idle');
+    }
+  }, [i18n.language, t, router]);
+
+  const { isRecording, durationFmt, start: startRecording, stop: stopRecording } = useVoiceRecorder(handleVoiceComplete);
+
+  // ── Camera/Screenshot handler ───────────────────────────────────────────
+  const handleCamera = useCallback(async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 0.8,
+      quality: 0.7,
     });
-    if (!result.canceled) {
-      setScreenshotUri(result.assets[0].uri);
-    }
-  };
+    if (result.canceled) return;
 
-  // Применяем распарсенные подписки от AI
-  const applyParsedSubscriptions = (subs: any[]) => {
-    if (!subs || subs.length === 0) return;
-    const first = subs[0];
-    const iconUrl = first.iconUrl ?? first.logoUrl ??
-      (first.serviceUrl ? `https://www.google.com/s2/favicons?domain=${(() => { try { return new URL(first.serviceUrl).hostname; } catch { return ''; } })()}&sz=64` : '');
+    const uri = result.assets[0].uri;
+    setScreenshotUri(uri);
+    setFlowState('loading');
+    setAddedViaSource('AI_SCREENSHOT');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', {
+        uri,
+        type: 'image/jpeg',
+        name: 'screenshot.jpg',
+      } as any);
+      const res = await aiApi.parseScreenshot(formData);
+      const data = res.data;
+      const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
+      const validSubs = subs.filter((s: any) => s && s.name);
+
+      if (validSubs.length === 0) {
+        Alert.alert(t('common.error'), t('add.service_not_found'));
+        setFlowState('idle');
+        return;
+      }
+
+      if (validSubs.length === 1) {
+        const s = validSubs[0];
+        setConfirmData({
+          name: { value: s.name, confidence: 'medium' },
+          amount: { value: s.amount || 0, confidence: s.amount ? 'medium' : 'low' },
+          currency: { value: s.currency || 'USD', confidence: 'medium' },
+          billingPeriod: { value: (s.billingPeriod || 'MONTHLY').toUpperCase(), confidence: 'medium' },
+          category: { value: (s.category || 'OTHER').toUpperCase(), confidence: 'medium' },
+          iconUrl: s.iconUrl,
+          serviceUrl: s.serviceUrl,
+          cancelUrl: s.cancelUrl,
+        });
+        setFlowState('confirm');
+      } else {
+        setBulkItems(validSubs);
+        setFlowState('bulk-confirm');
+      }
+    } catch {
+      Alert.alert(t('common.error'), t('add.service_not_found'));
+      setFlowState('idle');
+    }
+  }, [t]);
+
+  // ── Edit from confirm → manual ──────────────────────────────────────────
+  const handleEditFromConfirm = useCallback((data: any) => {
     setForm(f => ({
       ...f,
-      name: first.name ?? f.name,
-      amount: first.amount != null ? String(first.amount) : f.amount,
-      currency: first.currency ?? f.currency,
-      billingPeriod: (first.billingPeriod ?? f.billingPeriod) as any,
-      category: (first.category as string)?.toUpperCase() ?? f.category,
-      serviceUrl: first.serviceUrl ?? f.serviceUrl,
-      cancelUrl: first.cancelUrl ?? f.cancelUrl,
-      iconUrl: iconUrl || f.iconUrl,
+      name: data.name?.value ?? data.name ?? f.name,
+      amount: data.amount?.value != null ? String(data.amount.value) : (data.amount != null ? String(data.amount) : f.amount),
+      currency: data.currency?.value ?? data.currency ?? f.currency,
+      billingPeriod: (data.billingPeriod?.value ?? data.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
+      category: (data.category?.value ?? data.category ?? f.category).toUpperCase(),
+      serviceUrl: data.serviceUrl ?? f.serviceUrl,
+      cancelUrl: data.cancelUrl ?? f.cancelUrl,
+      iconUrl: data.iconUrl ?? f.iconUrl,
+      currentPlan: data.currentPlan ?? f.currentPlan,
     }));
-    setTab(1); // переходим на Manual для редактирования
-    setAddedViaSource('AI_SCREENSHOT');
-  };
+    setManualExpanded(true);
+    setFlowState('manual');
+  }, []);
 
   // Shared input style
   const inputStyle = {
@@ -348,6 +582,862 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     marginTop: 6,
   };
 
+  // ── Render: idle state (main screen) ────────────────────────────────────
+  const renderIdle = () => (
+    <View style={{ gap: 16, paddingBottom: 40 }}>
+      {/* Smart input with mic & camera */}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
+          {t('add.smart_input_label', 'What subscription?')}
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <TextInput
+              testID="smart-input"
+              style={[inputStyle, { marginTop: 0 }]}
+              value={smartInput}
+              onChangeText={setSmartInput}
+              placeholder={t('add.smart_input_placeholder', 'Netflix, Spotify $9.99/mo...')}
+              placeholderTextColor={colors.textMuted}
+              returnKeyType="search"
+              onSubmitEditing={() => handleSmartSubmit()}
+              autoCorrect={false}
+            />
+          </View>
+          {/* Mic button */}
+          <TouchableOpacity
+            style={[styles.iconBtn, { backgroundColor: isRecording ? '#EF4444' : colors.primary }]}
+            onPress={() => { if (isRecording) stopRecording(); else startRecording(); }}
+          >
+            <Ionicons name={isRecording ? 'stop' : 'mic'} size={20} color="#FFF" />
+          </TouchableOpacity>
+          {/* Camera button */}
+          <TouchableOpacity
+            style={[styles.iconBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
+            onPress={handleCamera}
+          >
+            <CameraIcon size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+        {isRecording && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' }} />
+            <Text style={{ color: '#EF4444', fontSize: 13, fontWeight: '600' }}>{durationFmt}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+              {t('add.tap_stop', 'Tap mic to stop')}
+            </Text>
+          </View>
+        )}
+        {/* Submit button if text entered */}
+        {smartInput.trim().length > 0 && (
+          <TouchableOpacity
+            style={{ backgroundColor: colors.primary, borderRadius: 12, padding: 14, alignItems: 'center' }}
+            onPress={() => handleSmartSubmit()}
+          >
+            <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '700' }}>
+              {t('add.search', 'Search')}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Quick chips */}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary }}>
+          {t('add.popular', 'Popular')}
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {QUICK_CHIPS.map((chip) => (
+            <TouchableOpacity
+              key={chip.name}
+              style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
+              onPress={() => handleQuickChip(chip)}
+            >
+              <chip.Icon size={20} color={colors.text} />
+              <Text style={[styles.quickChipText, { color: colors.text }]}>{chip.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* "or enter manually" collapsible */}
+      <TouchableOpacity
+        onPress={() => {
+          setManualExpanded(!manualExpanded);
+          if (!manualExpanded) setFlowState('manual');
+        }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+          paddingVertical: 14,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        }}
+      >
+        <Ionicons
+          name={manualExpanded ? 'chevron-up' : 'chevron-down'}
+          size={16}
+          color={colors.textSecondary}
+        />
+        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
+          {t('add.or_manual', 'or enter manually')}
+        </Text>
+      </TouchableOpacity>
+
+      {/* AI Credits Badge */}
+      <AICreditsBadge />
+    </View>
+  );
+
+  // ── Render: loading ─────────────────────────────────────────────────────
+  const renderLoading = () => (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
+      <ActivityIndicator size="large" color={colors.primary} />
+      <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 16 }}>
+        {t('add.searching', 'Searching...')}
+      </Text>
+    </View>
+  );
+
+  // ── Render: transcription confirm ───────────────────────────────────────
+  const renderTranscription = () => (
+    <TranscriptionConfirm
+      text={transcribedText}
+      onConfirm={(text) => {
+        setSmartInput(text);
+        handleSmartSubmit(text);
+      }}
+      onCancel={() => setFlowState('idle')}
+    />
+  );
+
+  // ── Render: inline confirm card ─────────────────────────────────────────
+  const renderConfirm = () => {
+    if (!confirmData) return null;
+    return (
+      <InlineConfirmCard
+        data={confirmData}
+        onSave={handleConfirmSave}
+        onCancel={() => setFlowState('idle')}
+        saving={saving}
+      />
+    );
+  };
+
+  // ── Render: bulk confirm (reuse AIWizard bulk UI via passing to wizard) ─
+  const renderBulkConfirm = () => (
+    <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
+      <AIWizard
+        onSave={async (sub) => {
+          const iconUrl = sub.iconUrl || (sub.serviceUrl
+            ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
+            : sub.name
+              ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
+              : undefined);
+
+          const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
+          const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
+          const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
+
+          const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+          const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+          const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
+
+          const res = await subscriptionsApi.create({
+            name: sub.name || 'Subscription',
+            category: safeCategory,
+            amount: sub.amount || 0,
+            currency: sub.currency || currency || 'USD',
+            billingPeriod: safeBillingPeriod,
+            billingDay: 1,
+            status: 'ACTIVE',
+            serviceUrl: sub.serviceUrl || undefined,
+            cancelUrl: sub.cancelUrl || undefined,
+            iconUrl: iconUrl || undefined,
+            startDate: new Date().toISOString().split('T')[0],
+            addedVia: 'AI_TEXT',
+          });
+          addSubscription(res.data);
+          if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+          setSuccessName(sub.name || '');
+          setShowSuccess(true);
+          subscriptionsApi.getAll().then((r) => {
+            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+          }).catch(() => {});
+        }}
+        onSaveBulk={async (subs) => {
+          const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
+          const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
+          let saved = 0;
+          const failed: string[] = [];
+          for (const sub of subs) {
+            try {
+              const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
+              const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+              const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+              const res = await subscriptionsApi.create({
+                name: sub.name || 'Subscription',
+                category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
+                amount: sub.amount || 0,
+                currency: sub.currency || currency || 'USD',
+                billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
+                billingDay: 1,
+                status: 'ACTIVE',
+                serviceUrl: sub.serviceUrl || undefined,
+                cancelUrl: sub.cancelUrl || undefined,
+                iconUrl: iconUrl || undefined,
+                paymentCardId: sub.paymentCardId || undefined,
+                startDate: new Date().toISOString().split('T')[0],
+                addedVia: 'AI_TEXT',
+              });
+              addSubscription(res.data);
+              if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+              saved++;
+            } catch (err: any) {
+              const code = err?.response?.data?.error?.code;
+              if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
+                failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
+                break;
+              }
+              failed.push(sub.name || '?');
+            }
+          }
+          subscriptionsApi.getAll().then((r) => {
+            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+          }).catch(() => {});
+          if (failed.length > 0 && saved > 0) {
+            setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
+            setShowSuccess(true);
+            setTimeout(() => {
+              Alert.alert(
+                t('add.bulk_partial_title', 'Limit reached'),
+                t('add.bulk_partial_upgrade', {
+                  saved,
+                  total: saved + failed.length,
+                  names: failed.join(', '),
+                  defaultValue: 'Added {{saved}} of {{total}}. Could not add: {{names}}. Upgrade to Pro for unlimited subscriptions.',
+                }),
+                [
+                  { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { handleClose(); router.push('/paywall'); } },
+                  { text: t('common.ok', 'OK'), style: 'cancel' },
+                ]
+              );
+            }, 2500);
+          } else if (failed.length > 0 && saved === 0) {
+            handleClose();
+            router.push('/paywall');
+          } else {
+            setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
+            setShowSuccess(true);
+          }
+        }}
+        onEdit={(sub) => {
+          setForm((f) => ({
+            ...f,
+            name: sub.name ?? f.name,
+            amount: sub.amount != null ? String(sub.amount) : f.amount,
+            currency: sub.currency ?? f.currency,
+            billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
+            category: sub.category?.toUpperCase() ?? f.category,
+            serviceUrl: sub.serviceUrl ?? f.serviceUrl,
+            cancelUrl: sub.cancelUrl ?? f.cancelUrl,
+            iconUrl: sub.iconUrl ?? f.iconUrl,
+          }));
+          setManualExpanded(true);
+          setFlowState('manual');
+        }}
+      />
+    </View>
+  );
+
+  // ── Render: wizard fallback ─────────────────────────────────────────────
+  const renderWizard = () => (
+    <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
+      <TouchableOpacity
+        onPress={() => setFlowState('idle')}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 8 }}
+      >
+        <Ionicons name="arrow-back" size={18} color={colors.textSecondary} />
+        <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.back', 'Back')}</Text>
+      </TouchableOpacity>
+      <AIWizard
+        onSave={async (sub) => {
+          const iconUrl = sub.iconUrl || (sub.serviceUrl
+            ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
+            : sub.name
+              ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
+              : undefined);
+
+          const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
+          const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
+          const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
+
+          const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+          const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+          const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
+
+          const res = await subscriptionsApi.create({
+            name: sub.name || 'Subscription',
+            category: safeCategory,
+            amount: sub.amount || 0,
+            currency: sub.currency || currency || 'USD',
+            billingPeriod: safeBillingPeriod,
+            billingDay: 1,
+            status: 'ACTIVE',
+            serviceUrl: sub.serviceUrl || undefined,
+            cancelUrl: sub.cancelUrl || undefined,
+            iconUrl: iconUrl || undefined,
+            startDate: new Date().toISOString().split('T')[0],
+            addedVia: 'AI_TEXT',
+          });
+          addSubscription(res.data);
+          if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+          setSuccessName(sub.name || '');
+          setShowSuccess(true);
+          subscriptionsApi.getAll().then((r) => {
+            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+          }).catch(() => {});
+        }}
+        onSaveBulk={async (subs) => {
+          // Same bulk save logic
+          const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
+          const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
+          let saved = 0;
+          const failed: string[] = [];
+          for (const sub of subs) {
+            try {
+              const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
+              const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+              const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+              const res = await subscriptionsApi.create({
+                name: sub.name || 'Subscription',
+                category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
+                amount: sub.amount || 0,
+                currency: sub.currency || currency || 'USD',
+                billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
+                billingDay: 1, status: 'ACTIVE',
+                serviceUrl: sub.serviceUrl || undefined,
+                cancelUrl: sub.cancelUrl || undefined,
+                iconUrl: iconUrl || undefined,
+                startDate: new Date().toISOString().split('T')[0],
+                addedVia: 'AI_TEXT',
+              });
+              addSubscription(res.data);
+              saved++;
+            } catch (err: any) {
+              const code = err?.response?.data?.error?.code;
+              if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
+                failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
+                break;
+              }
+              failed.push(sub.name || '?');
+            }
+          }
+          subscriptionsApi.getAll().then((r) => {
+            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+          }).catch(() => {});
+          if (saved > 0) {
+            setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
+            setShowSuccess(true);
+          }
+          if (failed.length > 0 && saved === 0) {
+            handleClose();
+            router.push('/paywall');
+          }
+        }}
+        onEdit={(sub) => {
+          setForm((f) => ({
+            ...f,
+            name: sub.name ?? f.name,
+            amount: sub.amount != null ? String(sub.amount) : f.amount,
+            currency: sub.currency ?? f.currency,
+            billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
+            category: sub.category?.toUpperCase() ?? f.category,
+            serviceUrl: sub.serviceUrl ?? f.serviceUrl,
+            cancelUrl: sub.cancelUrl ?? f.cancelUrl,
+            iconUrl: sub.iconUrl ?? f.iconUrl,
+          }));
+          setManualExpanded(true);
+          setFlowState('manual');
+        }}
+      />
+    </View>
+  );
+
+  // ── Render: manual form ─────────────────────────────────────────────────
+  const renderManual = () => (
+    <View style={{ paddingBottom: 40 }}>
+      {/* Back to main */}
+      <TouchableOpacity
+        onPress={() => { setManualExpanded(false); setFlowState('idle'); }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 12 }}
+      >
+        <Ionicons name="arrow-back" size={18} color={colors.textSecondary} />
+        <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.back', 'Back')}</Text>
+      </TouchableOpacity>
+
+      {/* Essential fields */}
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+          {t('add.name')} *
+        </Text>
+        <TextInput
+          testID="name-input"
+          style={inputStyle}
+          value={form.name}
+          onChangeText={(v) => setF('name', v)}
+          placeholder={t('add.name_placeholder')}
+          placeholderTextColor={colors.textMuted}
+        />
+      </View>
+
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+          {t('add.amount')} *
+        </Text>
+        <TextInput
+          testID="amount-input"
+          style={inputStyle}
+          value={form.amount}
+          onChangeText={(v) => setF('amount', v)}
+          placeholder="9.99"
+          keyboardType="decimal-pad"
+          placeholderTextColor={colors.textMuted}
+        />
+      </View>
+
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+          {t('add.currency')}
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
+            {CURRENCIES.map((cur) => (
+              <TouchableOpacity
+                key={cur}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 7,
+                  borderRadius: 20,
+                  backgroundColor: form.currency === cur ? colors.primary : colors.background,
+                  borderWidth: 1,
+                  borderColor: form.currency === cur ? colors.primary : colors.border,
+                }}
+                onPress={() => setF('currency', cur)}
+              >
+                <Text style={{ fontSize: 13, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
+                  {cur}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+          {t('add.billing_cycle')}
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
+            {BILLING_PERIODS.map((p) => (
+              <TouchableOpacity
+                key={p}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
+                  borderWidth: 1,
+                  borderColor: form.billingPeriod === p ? colors.primary : colors.border,
+                }}
+                onPress={() => setF('billingPeriod', p)}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
+                  {t(`periods.${p}`, { defaultValue: p })}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+          {t('add.start_date', 'Start date')}
+        </Text>
+        <TextInput
+          style={inputStyle}
+          value={form.startDate}
+          onChangeText={(v) => setF('startDate', v)}
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor={colors.textMuted}
+          keyboardType="numbers-and-punctuation"
+        />
+      </View>
+
+      {/* "More" toggle */}
+      <TouchableOpacity
+        onPress={() => setMoreExpanded(!moreExpanded)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+          paddingVertical: 14,
+          marginTop: 4,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        }}
+      >
+        <Ionicons
+          name={moreExpanded ? 'chevron-up' : 'chevron-down'}
+          size={16}
+          color={colors.textSecondary}
+        />
+        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
+          {moreExpanded ? t('add.show_less', 'Less') : t('add.show_more', 'More options')}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Optional fields */}
+      {moreExpanded && (
+        <View style={{ marginTop: 8 }}>
+          {/* Category */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+              {t('add.category')}
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
+                {CATEGORIES.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 20,
+                      backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
+                      borderWidth: 1,
+                      borderColor: form.category === cat.id ? colors.primary : colors.border,
+                    }}
+                    onPress={() => setF('category', cat.id)}
+                  >
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
+                      {cat.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Payment Card */}
+          {cards.length > 0 && (
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+                {t('add.card')}
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 20,
+                      backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
+                      borderWidth: 1,
+                      borderColor: !form.paymentCardId ? colors.primary : colors.border,
+                    }}
+                    onPress={() => setF('paymentCardId', '')}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
+                      {t('add.no_card')}
+                    </Text>
+                  </TouchableOpacity>
+                  {cards.map((card) => (
+                    <TouchableOpacity
+                      key={card.id}
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
+                        borderWidth: 1,
+                        borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
+                      }}
+                      onPress={() => setF('paymentCardId', card.id)}
+                    >
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
+                        ••••{card.last4} ({card.brand})
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Plan name */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+              {t('add.plan')}
+            </Text>
+            <TextInput
+              style={inputStyle}
+              value={form.currentPlan}
+              onChangeText={(v) => setF('currentPlan', v)}
+              placeholder={t('add.plan_placeholder')}
+              placeholderTextColor={colors.textMuted}
+            />
+          </View>
+
+          {/* Service URL */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+              {t('add.website')}
+            </Text>
+            <TextInput
+              style={inputStyle}
+              value={form.serviceUrl}
+              onChangeText={(v) => setF('serviceUrl', v)}
+              placeholder="https://netflix.com"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="none"
+              keyboardType="url"
+              autoCorrect={false}
+            />
+          </View>
+
+          {/* Cancel URL */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+              {t('add.cancel_url', 'Cancel URL')}
+            </Text>
+            <TextInput
+              style={inputStyle}
+              value={form.cancelUrl}
+              onChangeText={(v) => setF('cancelUrl', v)}
+              placeholder="https://netflix.com/cancelplan"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="none"
+              keyboardType="url"
+              autoCorrect={false}
+            />
+          </View>
+
+          {/* Billing Day */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+              {t('add.billing_day', 'Billing day')}
+            </Text>
+            <TextInput
+              style={inputStyle}
+              value={form.billingDay}
+              onChangeText={(v) => setF('billingDay', v.replace(/[^0-9]/g, ''))}
+              placeholder="1"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="number-pad"
+              maxLength={2}
+            />
+          </View>
+
+          {/* Notes */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
+              {t('add.notes')}
+            </Text>
+            <TextInput
+              style={[inputStyle, { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }]}
+              value={form.notes}
+              onChangeText={(v) => setF('notes', v)}
+              placeholder={t('add.notes_placeholder')}
+              placeholderTextColor={colors.textMuted}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          {/* Reminder */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+              {t('add.reminder', 'Reminder')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {[
+                { label: t('add.reminder_off', 'Off'), value: [] as number[] },
+                { label: t('add.reminder_1d', '1d'), value: [1] },
+                { label: t('add.reminder_3d', '3d'), value: [3] },
+                { label: t('add.reminder_7d', '7d'), value: [7] },
+              ].map((opt) => {
+                const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
+                return (
+                  <TouchableOpacity
+                    key={opt.label}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 20,
+                      backgroundColor: isSelected ? colors.primary : colors.background,
+                      borderWidth: 1,
+                      borderColor: isSelected ? colors.primary : colors.border,
+                    }}
+                    onPress={() => setF('reminderDaysBefore', opt.value)}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Card color */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+              {t('add.card_color', 'Card color')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { label: t('add.color_auto', 'Auto'), value: '', hex: colors.primary },
+                { value: '#3B82F6', hex: '#3B82F6' },
+                { value: '#10B981', hex: '#10B981' },
+                { value: '#EF4444', hex: '#EF4444' },
+                { value: '#F59E0B', hex: '#F59E0B' },
+                { value: '#EC4899', hex: '#EC4899' },
+                { value: '#06B6D4', hex: '#06B6D4' },
+                { value: '#6B7280', hex: '#6B7280' },
+              ].map((c) => (
+                <TouchableOpacity
+                  key={c.value || 'auto'}
+                  onPress={() => setF('color', c.value)}
+                  style={{
+                    width: 32, height: 32, borderRadius: 16,
+                    backgroundColor: c.hex,
+                    borderWidth: 2.5,
+                    borderColor: form.color === c.value ? colors.text : 'transparent',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  {'label' in c && c.label && (
+                    <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>{c.label}</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Tags */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+              {t('add.tags', 'Tags')}
+            </Text>
+            {form.tags.length > 0 && (
+              <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                {form.tags.map((tag, idx) => (
+                  <View key={idx} style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 4,
+                    backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+                  }}>
+                    <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
+                    <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_: string, i: number) => i !== idx))}>
+                      <Ionicons name="close" size={14} color={colors.primary} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+            <TextInput
+              style={inputStyle}
+              placeholder={t('add.tags_placeholder', 'Type and press comma...')}
+              placeholderTextColor={colors.textMuted}
+              onChangeText={(v) => {
+                if (v.includes(',')) {
+                  const tag = v.replace(',', '').trim();
+                  if (tag && !form.tags.includes(tag)) {
+                    setF('tags', [...form.tags, tag]);
+                  }
+                }
+              }}
+              onSubmitEditing={(e) => {
+                const tag = e.nativeEvent.text.trim();
+                if (tag && !form.tags.includes(tag)) {
+                  setF('tags', [...form.tags, tag]);
+                }
+              }}
+              returnKeyType="done"
+            />
+          </View>
+
+          {/* Trial toggle + date */}
+          <View style={{ marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <GiftIcon size={16} color={colors.text} />
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                    {t('add.trial_period')}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                  {t('add.trial_desc')}
+                </Text>
+              </View>
+              <Switch
+                value={form.isTrial}
+                onValueChange={(v) => setForm((f) => ({
+                  ...f,
+                  isTrial: v,
+                  trialEndDate: v
+                    ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+                    : '',
+                }))}
+                trackColor={{ false: colors.border, true: '#F59E0B' }}
+                thumbColor={form.isTrial ? '#FFF' : '#999'}
+              />
+            </View>
+
+            {form.isTrial && (
+              <>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
+                  {t('add.trial_end_date')}
+                </Text>
+                <TextInput
+                  style={inputStyle}
+                  value={form.trialEndDate}
+                  onChangeText={(v) => setF('trialEndDate', v)}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </>
+            )}
+          </View>
+        </View>
+      )}
+
+      <TouchableOpacity
+        testID="btn-save-sub"
+        style={[{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }, saving && { opacity: 0.6 }]}
+        onPress={handleSave}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator color="#FFF" />
+        ) : (
+          <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.add_subscription')}</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  // ── Main render ─────────────────────────────────────────────────────────
   return (
     <>
     <View style={StyleSheet.absoluteFill} pointerEvents={visible ? 'auto' : 'none'}>
@@ -359,7 +1449,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         testID="add-sub-sheet"
         style={[styles.sheet, { backgroundColor: colors.surface }, animatedSheetStyle]}
       >
-        {/* Drag handle with Gesture API v2 */}
+        {/* Drag handle */}
         <GestureDetector gesture={panGesture}>
           <Reanimated.View style={{ paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' }}>
             <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
@@ -377,687 +1467,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.tabs}>
-            {TAB_KEYS.map((tabKey, i) => (
-              <TouchableOpacity
-                key={tabKey}
-                testID={i === 0 ? 'tab-ai' : i === 1 ? 'tab-manual' : 'tab-screenshot'}
-                style={[
-                  styles.tab,
-                  { backgroundColor: colors.background },
-                  tab === i && { backgroundColor: colors.primary },
-                ]}
-                onPress={() => setTab(i)}
-              >
-                <Text style={[
-                  styles.tabText,
-                  { color: colors.textSecondary },
-                  tab === i && styles.tabTextActive,
-                ]}>{t(tabKey)}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-
-
           <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-            {/* tab === 0 → AI Assistant */}
-            {tab === 0 && (
-              <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
-                <AIWizard
-                  onSave={async (sub) => {
-                    const iconUrl = sub.iconUrl || (sub.serviceUrl
-                      ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
-                      : sub.name
-                        ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
-                        : undefined);
-
-                    const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
-                    const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
-                    const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
-
-                    const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
-                    const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-                    const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
-
-                    const res = await subscriptionsApi.create({
-                      name: sub.name || 'Subscription',
-                      category: safeCategory,
-                      amount: sub.amount || 0,
-                      currency: sub.currency || currency || 'USD',
-                      billingPeriod: safeBillingPeriod,
-                      billingDay: 1,
-                      status: 'ACTIVE',
-                      serviceUrl: sub.serviceUrl || undefined,
-                      cancelUrl: sub.cancelUrl || undefined,
-                      iconUrl: iconUrl || undefined,
-                      startDate: new Date().toISOString().split('T')[0],
-                      addedVia: 'AI_TEXT',
-                    });
-                    addSubscription(res.data);
-                    // Prefetch icon into React Native image cache
-                    if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
-                    setSuccessName(sub.name || '');
-                    setShowSuccess(true);
-                    // Sync list from server
-                    subscriptionsApi.getAll().then((r) => {
-                      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-                    }).catch(() => {});
-                  }}
-                  onSaveBulk={async (subs) => {
-                    const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
-                    const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
-                    let saved = 0;
-                    const failed: string[] = [];
-                    for (const sub of subs) {
-                      try {
-                        const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
-                        const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-                        const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
-                        const res = await subscriptionsApi.create({
-                          name: sub.name || 'Subscription',
-                          category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
-                          amount: sub.amount || 0,
-                          currency: sub.currency || currency || 'USD',
-                          billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
-                          billingDay: 1,
-                          status: 'ACTIVE',
-                          serviceUrl: sub.serviceUrl || undefined,
-                          cancelUrl: sub.cancelUrl || undefined,
-                          iconUrl: iconUrl || undefined,
-                          paymentCardId: sub.paymentCardId || undefined,
-                          startDate: new Date().toISOString().split('T')[0],
-                          addedVia: 'AI_TEXT',
-                        });
-                        addSubscription(res.data);
-                        if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
-                        saved++;
-                      } catch (err: any) {
-                        const code = err?.response?.data?.error?.code;
-                        if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
-                          failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
-                          break; // Stop trying — all remaining will also fail
-                        }
-                        failed.push(sub.name || '?');
-                      }
-                    }
-                    // Sync
-                    subscriptionsApi.getAll().then((r) => {
-                      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-                    }).catch(() => {});
-                    if (failed.length > 0 && saved > 0) {
-                      // Partial success — show success then offer upgrade
-                      setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
-                      setShowSuccess(true);
-                      setTimeout(() => {
-                        Alert.alert(
-                          t('add.bulk_partial_title', 'Limit reached'),
-                          t('add.bulk_partial_upgrade', {
-                            saved,
-                            total: saved + failed.length,
-                            names: failed.join(', '),
-                            defaultValue: 'Added {{saved}} of {{total}}. Could not add: {{names}}. Upgrade to Pro for unlimited subscriptions.',
-                          }),
-                          [
-                            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { handleClose(); router.push('/paywall'); } },
-                            { text: t('common.ok', 'OK'), style: 'cancel' },
-                          ]
-                        );
-                      }, 2500);
-                    } else if (failed.length > 0 && saved === 0) {
-                      // All failed — go to paywall
-                      handleClose();
-                      router.push('/paywall');
-                    } else {
-                      setSuccessName(`${saved} ${t('add.bulk_saved','подписок')}`);
-                      setShowSuccess(true);
-                    }
-                  }}
-                  onEdit={(sub) => {
-                    setForm((f) => ({
-                      ...f,
-                      name: sub.name ?? f.name,
-                      amount: sub.amount != null ? String(sub.amount) : f.amount,
-                      currency: sub.currency ?? f.currency,
-                      billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
-                      category: sub.category?.toUpperCase() ?? f.category,
-                      serviceUrl: sub.serviceUrl ?? f.serviceUrl,
-                      cancelUrl: sub.cancelUrl ?? f.cancelUrl,
-                      iconUrl: sub.iconUrl ?? f.iconUrl,
-                    }));
-                    setTab(1);
-                  }}
-                />
-
-                {/* Bulk hint — just informational, no button */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, paddingHorizontal: 4 }}>
-                  <Ionicons name="information-circle-outline" size={14} color={colors.textMuted} />
-                  <Text style={{ fontSize: 12, color: colors.textMuted, flex: 1, lineHeight: 16 }}>
-                    {t('add.bulk_hint', 'Можно перечислить несколько подписок — AI распознает их все')}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* tab === 1 → Manual form */}
-            {tab === 1 && (
-              <View style={{ paddingBottom: 40 }}>
-
-
-                {/* Essential fields — always visible, no section wrapper */}
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                    {t('add.name')} *
-                  </Text>
-                  <TextInput
-                    testID="name-input"
-                    style={inputStyle}
-                    value={form.name}
-                    onChangeText={(v) => setF('name', v)}
-                    placeholder={t('add.name_placeholder')}
-                    placeholderTextColor={colors.textMuted}
-                  />
-                </View>
-
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                    {t('add.amount')} *
-                  </Text>
-                  <TextInput
-                    testID="amount-input"
-                    style={inputStyle}
-                    value={form.amount}
-                    onChangeText={(v) => setF('amount', v)}
-                    placeholder="9.99"
-                    keyboardType="decimal-pad"
-                    placeholderTextColor={colors.textMuted}
-                  />
-                </View>
-
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                    {t('add.currency')}
-                  </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
-                      {CURRENCIES.map((cur) => (
-                        <TouchableOpacity
-                          key={cur}
-                          style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 7,
-                            borderRadius: 20,
-                            backgroundColor: form.currency === cur ? colors.primary : colors.background,
-                            borderWidth: 1,
-                            borderColor: form.currency === cur ? colors.primary : colors.border,
-                          }}
-                          onPress={() => setF('currency', cur)}
-                        >
-                          <Text style={{ fontSize: 13, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
-                            {cur}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </ScrollView>
-                </View>
-
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                    {t('add.billing_cycle')}
-                  </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
-                      {BILLING_PERIODS.map((p) => (
-                        <TouchableOpacity
-                          key={p}
-                          style={{
-                            paddingHorizontal: 10,
-                            paddingVertical: 6,
-                            borderRadius: 20,
-                            backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
-                            borderWidth: 1,
-                            borderColor: form.billingPeriod === p ? colors.primary : colors.border,
-                          }}
-                          onPress={() => setF('billingPeriod', p)}
-                        >
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
-                            {t(`periods.${p}`, { defaultValue: p })}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </ScrollView>
-                </View>
-
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                    {t('add.start_date', 'Start date')}
-                  </Text>
-                  <TextInput
-                    style={inputStyle}
-                    value={form.startDate}
-                    onChangeText={(v) => setF('startDate', v)}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor={colors.textMuted}
-                    keyboardType="numbers-and-punctuation"
-                  />
-                </View>
-
-                {/* "More" toggle button */}
-                <TouchableOpacity
-                  onPress={() => setMoreExpanded(!moreExpanded)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                    paddingVertical: 14,
-                    marginTop: 4,
-                    borderTopWidth: 1,
-                    borderTopColor: colors.border,
-                  }}
-                >
-                  <Ionicons
-                    name={moreExpanded ? 'chevron-up' : 'chevron-down'}
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
-                    {moreExpanded ? t('add.show_less', 'Less') : t('add.show_more', 'More options')}
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Optional fields — collapsed by default */}
-                {moreExpanded && (
-                  <View style={{ marginTop: 8 }}>
-                    {/* Category */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                        {t('add.category')}
-                      </Text>
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
-                          {CATEGORIES.map((cat) => (
-                            <TouchableOpacity
-                              key={cat.id}
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: 6,
-                                paddingHorizontal: 10,
-                                paddingVertical: 6,
-                                borderRadius: 20,
-                                backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
-                                borderWidth: 1,
-                                borderColor: form.category === cat.id ? colors.primary : colors.border,
-                              }}
-                              onPress={() => setF('category', cat.id)}
-                            >
-                              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
-                              <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
-                                {cat.label}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </ScrollView>
-                    </View>
-
-                    {/* Payment Card */}
-                    {cards.length > 0 && (
-                      <View style={{ marginBottom: 16 }}>
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                          {t('add.card')}
-                        </Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                          <View style={{ flexDirection: 'row', gap: 6 }}>
-                            <TouchableOpacity
-                              style={{
-                                paddingHorizontal: 10,
-                                paddingVertical: 6,
-                                borderRadius: 20,
-                                backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
-                                borderWidth: 1,
-                                borderColor: !form.paymentCardId ? colors.primary : colors.border,
-                              }}
-                              onPress={() => setF('paymentCardId', '')}
-                            >
-                              <Text style={{ fontSize: 12, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
-                                {t('add.no_card')}
-                              </Text>
-                            </TouchableOpacity>
-                            {cards.map((card) => (
-                              <TouchableOpacity
-                                key={card.id}
-                                style={{
-                                  paddingHorizontal: 10,
-                                  paddingVertical: 6,
-                                  borderRadius: 20,
-                                  backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
-                                  borderWidth: 1,
-                                  borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
-                                }}
-                                onPress={() => setF('paymentCardId', card.id)}
-                              >
-                                <Text style={{ fontSize: 12, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
-                                  ••••{card.last4} ({card.brand})
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
-                          </View>
-                        </ScrollView>
-                      </View>
-                    )}
-
-                    {/* Plan name */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                        {t('add.plan')}
-                      </Text>
-                      <TextInput
-                        style={inputStyle}
-                        value={form.currentPlan}
-                        onChangeText={(v) => setF('currentPlan', v)}
-                        placeholder={t('add.plan_placeholder')}
-                        placeholderTextColor={colors.textMuted}
-                      />
-                    </View>
-
-                    {/* Service URL */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                        {t('add.website')}
-                      </Text>
-                      <TextInput
-                        style={inputStyle}
-                        value={form.serviceUrl}
-                        onChangeText={(v) => setF('serviceUrl', v)}
-                        placeholder="https://netflix.com"
-                        placeholderTextColor={colors.textMuted}
-                        autoCapitalize="none"
-                        keyboardType="url"
-                        autoCorrect={false}
-                      />
-                    </View>
-
-                    {/* Cancel URL */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                        {t('add.cancel_url', 'Cancel URL')}
-                      </Text>
-                      <TextInput
-                        style={inputStyle}
-                        value={form.cancelUrl}
-                        onChangeText={(v) => setF('cancelUrl', v)}
-                        placeholder="https://netflix.com/cancelplan"
-                        placeholderTextColor={colors.textMuted}
-                        autoCapitalize="none"
-                        keyboardType="url"
-                        autoCorrect={false}
-                      />
-                    </View>
-
-                    {/* Billing Day */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                        {t('add.billing_day', 'Billing day')}
-                      </Text>
-                      <TextInput
-                        style={inputStyle}
-                        value={form.billingDay}
-                        onChangeText={(v) => setF('billingDay', v.replace(/[^0-9]/g, ''))}
-                        placeholder="1"
-                        placeholderTextColor={colors.textMuted}
-                        keyboardType="number-pad"
-                        maxLength={2}
-                      />
-                    </View>
-
-                    {/* Notes */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-                        {t('add.notes')}
-                      </Text>
-                      <TextInput
-                        style={[inputStyle, { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }]}
-                        value={form.notes}
-                        onChangeText={(v) => setF('notes', v)}
-                        placeholder={t('add.notes_placeholder')}
-                        placeholderTextColor={colors.textMuted}
-                        multiline
-                        numberOfLines={3}
-                      />
-                    </View>
-
-                    {/* Reminder */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                        {t('add.reminder', 'Reminder')}
-                      </Text>
-                      <View style={{ flexDirection: 'row', gap: 6 }}>
-                        {[
-                          { label: t('add.reminder_off', 'Off'), value: [] as number[] },
-                          { label: t('add.reminder_1d', '1d'), value: [1] },
-                          { label: t('add.reminder_3d', '3d'), value: [3] },
-                          { label: t('add.reminder_7d', '7d'), value: [7] },
-                        ].map((opt) => {
-                          const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
-                          return (
-                            <TouchableOpacity
-                              key={opt.label}
-                              style={{
-                                paddingHorizontal: 12,
-                                paddingVertical: 6,
-                                borderRadius: 20,
-                                backgroundColor: isSelected ? colors.primary : colors.background,
-                                borderWidth: 1,
-                                borderColor: isSelected ? colors.primary : colors.border,
-                              }}
-                              onPress={() => setF('reminderDaysBefore', opt.value)}
-                            >
-                              <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
-                                {opt.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                    </View>
-
-                    {/* Card color */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                        {t('add.card_color', 'Card color')}
-                      </Text>
-                      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                        {[
-                          { label: t('add.color_auto', 'Auto'), value: '', hex: colors.primary },
-                          { value: '#3B82F6', hex: '#3B82F6' },
-                          { value: '#10B981', hex: '#10B981' },
-                          { value: '#EF4444', hex: '#EF4444' },
-                          { value: '#F59E0B', hex: '#F59E0B' },
-                          { value: '#EC4899', hex: '#EC4899' },
-                          { value: '#06B6D4', hex: '#06B6D4' },
-                          { value: '#6B7280', hex: '#6B7280' },
-                        ].map((c) => (
-                          <TouchableOpacity
-                            key={c.value || 'auto'}
-                            onPress={() => setF('color', c.value)}
-                            style={{
-                              width: 32, height: 32, borderRadius: 16,
-                              backgroundColor: c.hex,
-                              borderWidth: 2.5,
-                              borderColor: form.color === c.value ? colors.text : 'transparent',
-                              alignItems: 'center', justifyContent: 'center',
-                            }}
-                          >
-                            {c.label && (
-                              <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>{c.label}</Text>
-                            )}
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </View>
-
-                    {/* Tags */}
-                    <View style={{ marginBottom: 16 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                        {t('add.tags', 'Tags')}
-                      </Text>
-                      {form.tags.length > 0 && (
-                        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                          {form.tags.map((tag, idx) => (
-                            <View key={idx} style={{
-                              flexDirection: 'row', alignItems: 'center', gap: 4,
-                              backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
-                            }}>
-                              <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
-                              <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_: string, i: number) => i !== idx))}>
-                                <Ionicons name="close" size={14} color={colors.primary} />
-                              </TouchableOpacity>
-                            </View>
-                          ))}
-                        </View>
-                      )}
-                      <TextInput
-                        style={inputStyle}
-                        placeholder={t('add.tags_placeholder', 'Type and press comma...')}
-                        placeholderTextColor={colors.textMuted}
-                        onChangeText={(v) => {
-                          if (v.includes(',')) {
-                            const tag = v.replace(',', '').trim();
-                            if (tag && !form.tags.includes(tag)) {
-                              setF('tags', [...form.tags, tag]);
-                            }
-                          }
-                        }}
-                        onSubmitEditing={(e) => {
-                          const tag = e.nativeEvent.text.trim();
-                          if (tag && !form.tags.includes(tag)) {
-                            setF('tags', [...form.tags, tag]);
-                          }
-                        }}
-                        returnKeyType="done"
-                      />
-                    </View>
-
-                    {/* Trial toggle + date */}
-                    <View style={{ marginBottom: 16 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <View style={{ flex: 1 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                            <GiftIcon size={16} color={colors.text} />
-                            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                              {t('add.trial_period')}
-                            </Text>
-                          </View>
-                          <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
-                            {t('add.trial_desc')}
-                          </Text>
-                        </View>
-                        <Switch
-                          value={form.isTrial}
-                          onValueChange={(v) => setForm((f) => ({
-                            ...f,
-                            isTrial: v,
-                            trialEndDate: v
-                              ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-                              : '',
-                          }))}
-                          trackColor={{ false: colors.border, true: '#F59E0B' }}
-                          thumbColor={form.isTrial ? '#FFF' : '#999'}
-                        />
-                      </View>
-
-                      {form.isTrial && (
-                        <>
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
-                            {t('add.trial_end_date')}
-                          </Text>
-                          <TextInput
-                            style={inputStyle}
-                            value={form.trialEndDate}
-                            onChangeText={(v) => setF('trialEndDate', v)}
-                            placeholder="YYYY-MM-DD"
-                            placeholderTextColor={colors.textMuted}
-                          />
-                        </>
-                      )}
-                    </View>
-                  </View>
-                )}
-
-                <TouchableOpacity
-                  testID="btn-save-sub"
-                  style={[{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }, saving && { opacity: 0.6 }]}
-                  onPress={handleSave}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <ActivityIndicator color="#FFF" />
-                  ) : (
-                    <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.add_subscription')}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* tab === 2 → Screenshot */}
-            {tab === 2 && (
-              <View style={styles.screenshotTab}>
-                <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
-                  {t('add.screenshot_ai_hint')}
-                </Text>
-                <TouchableOpacity
-                  style={[styles.screenshotPicker, { borderColor: colors.border }]}
-                  onPress={pickScreenshot}
-                >
-                  {screenshotUri ? (
-                    <Image source={{ uri: screenshotUri }} style={styles.screenshot} resizeMode="contain" />
-                  ) : (
-                    <View style={styles.screenshotPlaceholder}>
-                      <CameraIcon size={24} color={colors.textSecondary} />
-                      <Text style={[styles.screenshotText, { color: colors.textSecondary }]}>{t('add.tap_to_pick')}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-                {screenshotUri && (
-                  <TouchableOpacity
-                    style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8, opacity: parsingScreenshot ? 0.6 : 1 }}
-                    disabled={parsingScreenshot}
-                    onPress={async () => {
-                      setParsingScreenshot(true);
-                      try {
-                        const formData = new FormData();
-                        formData.append('file', {
-                          uri: screenshotUri,
-                          type: 'image/jpeg',
-                          name: 'screenshot.jpg',
-                        } as any);
-                        const res = await aiApi.parseScreenshot(formData);
-                        const data = res.data;
-                        const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
-                        applyParsedSubscriptions(subs);
-                      } catch {
-                        Alert.alert(t('common.error'), t('add.service_not_found'));
-                      } finally {
-                        setParsingScreenshot(false);
-                      }
-                    }}
-                  >
-                    {parsingScreenshot ? (
-                      <ActivityIndicator color="#FFF" />
-                    ) : (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <SparklesIcon size={16} color="#FFF" />
-                        <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.parse_screenshot')}</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+            {flowState === 'idle' && renderIdle()}
+            {flowState === 'loading' && renderLoading()}
+            {flowState === 'transcription' && renderTranscription()}
+            {flowState === 'confirm' && renderConfirm()}
+            {flowState === 'bulk-confirm' && renderBulkConfirm()}
+            {flowState === 'wizard' && renderWizard()}
+            {flowState === 'manual' && renderManual()}
           </ScrollView>
         </KeyboardAvoidingView>
         <SuccessOverlay
@@ -1066,10 +1483,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           onFinish={() => {
             setShowSuccess(false);
             setSuccessName('');
-            setForm(emptyForm);
-            setFoundService(null);
-            setAiQuery('');
-            setTab(0);
+            resetAll();
             handleClose();
           }}
         />
@@ -1081,7 +1495,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       onClose={() => setShowBulk(false)}
       onDone={(count) => {
         setShowBulk(false);
-        setSuccessName(`${count} ${t('add.bulk_saved', 'подписок')}`);
+        setSuccessName(`${count} ${t('add.bulk_saved', 'subscriptions')}`);
         setShowSuccess(true);
       }}
     />
@@ -1131,53 +1545,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeBtnText: { fontSize: 14, fontWeight: '600' },
-  tabs: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 8,
-    marginBottom: 12,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  tabText: { fontSize: 13, fontWeight: '600' },
-  tabTextActive: { color: '#FFF' },
-  bulkBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 20, marginBottom: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
-  bulkBannerText: { fontSize: 13, fontWeight: '700' },
   content: { flex: 1, paddingHorizontal: 20 },
-  aiTab: { gap: 12, paddingBottom: 40 },
-  aiHint: { fontSize: 13, lineHeight: 18 },
-  aiSectionTitle: { fontSize: 15, fontWeight: '700' },
-  aiRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  aiSearchBtn: {
-    borderRadius: 10,
+  iconBtn: {
     width: 44,
     height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  aiSearchBtnText: { fontSize: 20, color: '#FFF', fontWeight: '700' },
-  foundServiceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  foundServiceIcon: { width: 40, height: 40, borderRadius: 10 },
-  foundServiceName: { fontSize: 15, fontWeight: '700' },
-  foundServiceMeta: { fontSize: 12, marginTop: 2 },
-  aiDivider: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  aiDividerLine: { flex: 1, height: 1 },
-  aiDividerText: { fontSize: 12 },
-  popularTitle: { fontSize: 13, fontWeight: '600', marginTop: 4 },
-  popularGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  popularChip: {
+  quickChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -1186,18 +1562,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  popularEmoji: { fontSize: 16 },
-  popularName: { fontSize: 13, fontWeight: '600', maxWidth: 110 },
-  screenshotTab: { gap: 16, paddingBottom: 40 },
-  screenshotPicker: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    minHeight: 200,
+  quickChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    maxWidth: 110,
   },
-  screenshot: { width: '100%', height: 300 },
-  screenshotPlaceholder: { alignItems: 'center', justifyContent: 'center', padding: 40, gap: 8 },
-  screenshotIcon: { fontSize: 48 },
-  screenshotText: { fontSize: 15 },
 });
