@@ -37,6 +37,12 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // User not found (deleted account, stale JWT) — force logout
+    if (error.response?.status === 404 && error.response?.data?.message === 'User not found') {
+      useAuthStore.getState().logout();
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       const { refreshToken } = useAuthStore.getState();
 
