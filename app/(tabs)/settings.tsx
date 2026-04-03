@@ -570,62 +570,72 @@ export default function SettingsScreen() {
       </ScrollView>
 
       {/* Add Card Modal */}
-      <Modal visible={showAddCard} transparent animationType="slide">
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 40 }}>
-            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 4 }} />
-            <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text }}>{t('settings.add_card_title')}</Text>
+      <Modal visible={showAddCard} transparent animationType="fade" onRequestClose={() => setShowAddCard(false)}>
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+          activeOpacity={1}
+          onPress={() => setShowAddCard(false)}
+        >
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+              <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 40 }}>
+                <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 4 }} />
+                <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text }}>{t('settings.add_card_title')}</Text>
 
-            <TextInput
-              testID="input-card-nickname"
-              style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
-              value={cardForm.nickname}
-              onChangeText={(v) => setCardForm((f) => ({ ...f, nickname: v }))}
-              placeholder={t('settings.card_nickname_placeholder')}
-              placeholderTextColor={colors.textMuted}
-            />
-            <TextInput
-              testID="input-card-last4"
-              style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
-              value={cardForm.last4}
-              onChangeText={(v) => setCardForm((f) => ({ ...f, last4: v.slice(0, 4) }))}
-              placeholder={t('settings.card_last4_placeholder')}
-              keyboardType="number-pad"
-              maxLength={4}
-              placeholderTextColor={colors.textMuted}
-            />
+                <TextInput
+                  testID="input-card-nickname"
+                  style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
+                  value={cardForm.nickname}
+                  onChangeText={(v) => setCardForm((f) => ({ ...f, nickname: v }))}
+                  placeholder={t('settings.card_nickname_placeholder')}
+                  placeholderTextColor={colors.textMuted}
+                  autoFocus
+                  returnKeyType="next"
+                />
+                <TextInput
+                  testID="input-card-last4"
+                  style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border }}
+                  value={cardForm.last4}
+                  onChangeText={(v) => setCardForm((f) => ({ ...f, last4: v.replace(/\D/g, '').slice(0, 4) }))}
+                  placeholder={t('settings.card_last4_placeholder')}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  placeholderTextColor={colors.textMuted}
+                />
 
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 }}>{t('settings.card_brand')}</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {CARD_BRANDS.map((brand) => (
-                <TouchableOpacity
-                  key={brand}
-                  style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: cardForm.brand === brand ? colors.primary : colors.surface2, borderWidth: 1, borderColor: cardForm.brand === brand ? colors.primary : colors.border }}
-                  onPress={() => setCardForm((f) => ({ ...f, brand: brand as PaymentCard['brand'] }))}
-                >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: cardForm.brand === brand ? '#FFF' : colors.textSecondary }}>{brand}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 }}>{t('settings.card_brand')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {CARD_BRANDS.map((brand) => (
+                    <TouchableOpacity
+                      key={brand}
+                      style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: cardForm.brand === brand ? colors.primary : colors.surface2, borderWidth: 1, borderColor: cardForm.brand === brand ? colors.primary : colors.border }}
+                      onPress={() => setCardForm((f) => ({ ...f, brand: brand as PaymentCard['brand'] }))}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: cardForm.brand === brand ? '#FFF' : colors.textSecondary }}>{brand}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
-              <TouchableOpacity
-                testID="btn-cancel-add-card"
-                style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.surface2, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
-                onPress={() => setShowAddCard(false)}
-              >
-                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textSecondary }}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                testID="btn-save-card"
-                style={{ flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center' }}
-                onPress={handleAddCard}
-              >
-                <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFF' }}>{t('common.save')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+                  <TouchableOpacity
+                    testID="btn-cancel-add-card"
+                    style={{ flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.surface2, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                    onPress={() => setShowAddCard(false)}
+                  >
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textSecondary }}>{t('common.cancel')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    testID="btn-save-card"
+                    style={{ flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center' }}
+                    onPress={handleAddCard}
+                  >
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFF' }}>{t('common.save')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </KeyboardAvoidingView>
+        </TouchableOpacity>
       </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
