@@ -2,7 +2,7 @@
   "expo": {
     "name": "SubRadar",
     "slug": "subradar",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "AI-powered subscription tracker. Add by voice, scan receipts, get reminders before charges, analyze spending across all your subscriptions.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -34,7 +34,17 @@
             ]
           }
         ],
-        "CFBundleLocalizations": ["en", "ru", "kk", "de", "fr", "es", "zh-Hans", "ja", "ko"],
+        "CFBundleLocalizations": [
+          "en",
+          "ru",
+          "kk",
+          "de",
+          "fr",
+          "es",
+          "zh-Hans",
+          "ja",
+          "ko"
+        ],
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "SubRadar needs microphone access to add subscriptions by voice.",
         "NSLocalNetworkUsageDescription": "SubRadar needs local network access to connect to the development server.",
@@ -65,10 +75,20 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            { "scheme": "https", "host": "subradar.ai", "pathPrefix": "/app" },
-            { "scheme": "https", "host": "app.subradar.ai" }
+            {
+              "scheme": "https",
+              "host": "subradar.ai",
+              "pathPrefix": "/app"
+            },
+            {
+              "scheme": "https",
+              "host": "app.subradar.ai"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "permissions": [
