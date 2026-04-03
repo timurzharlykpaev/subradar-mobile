@@ -113,10 +113,11 @@ export default function SubscriptionDetailScreen() {
           try {
             await subscriptionsApi.delete(id!);
             removeSubscription(id!);
-            // Refresh subscriptions list from server
-            subscriptionsApi.getAll().then((r) => {
+            // Refresh subscriptions list from server BEFORE navigating back
+            try {
+              const r = await subscriptionsApi.getAll();
               useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-            }).catch(() => {});
+            } catch {}
             router.back();
           } catch (err: any) {
             const msg = err?.response?.data?.message || err?.message || t('common.error');
