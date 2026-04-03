@@ -26,4 +26,15 @@ export const aiApi = {
     payload instanceof FormData
       ? apiClient.post('/ai/voice-bulk', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
       : apiClient.post('/ai/voice-bulk', payload),
+  serviceCatalogLookup: async (serviceName: string) => {
+    const { data } = await apiClient.get(`/ai/service-catalog/${encodeURIComponent(serviceName)}`);
+    return data as {
+      name: string;
+      category: string;
+      iconUrl?: string;
+      serviceUrl?: string;
+      cancelUrl?: string;
+      plans?: { name: string; priceMonthly: number; currency: string }[];
+    };
+  },
 };
