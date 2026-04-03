@@ -133,3 +133,79 @@ export interface AISearchResult {
   serviceUrl?: string;
   iconUrl?: string;
 }
+
+// Analysis types
+export type AnalysisJobStatus = 'QUEUED' | 'COLLECTING' | 'NORMALIZING' | 'LOOKING_UP' | 'ANALYZING' | 'COMPLETED' | 'FAILED';
+export type RecommendationType = 'CANCEL' | 'DOWNGRADE' | 'SWITCH_PLAN' | 'SWITCH_PROVIDER' | 'BUNDLE' | 'LOW_USAGE';
+export type RecommendationPriority = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export interface Recommendation {
+  type: RecommendationType;
+  priority: RecommendationPriority;
+  subscriptionId: string;
+  subscriptionName: string;
+  title: string;
+  description: string;
+  estimatedSavingsMonthly: number;
+  alternativeProvider?: string;
+  alternativePrice?: number;
+  alternativePlan?: string;
+  confidence: number;
+}
+
+export interface DuplicateGroup {
+  reason: string;
+  subscriptions: { id: string; name: string; amount: number }[];
+  suggestion: string;
+  estimatedSavingsMonthly: number;
+}
+
+export interface AnalysisLatestResponse {
+  result: {
+    id: string;
+    summary: string;
+    totalMonthlySavings: number;
+    currency: string;
+    recommendations: Recommendation[];
+    duplicates: DuplicateGroup[];
+    subscriptionCount: number;
+    createdAt: string;
+    expiresAt: string;
+  } | null;
+  job: {
+    id: string;
+    status: AnalysisJobStatus;
+    createdAt: string;
+  } | null;
+  canRunManual: boolean;
+  nextAutoAnalysis: string | null;
+}
+
+export interface AnalysisStatusResponse {
+  id: string;
+  status: AnalysisJobStatus;
+  stageProgress: {
+    collect: 'pending' | 'done';
+    normalize: 'pending' | 'done';
+    marketLookup: 'pending' | 'done';
+    aiAnalyze: 'pending' | 'done';
+    store: 'pending' | 'done';
+  };
+  resultId: string | null;
+  error: string | null;
+  createdAt: string;
+  completedAt: string | null;
+}
+
+export interface AnalysisUsageResponse {
+  autoAnalysesUsed: number;
+  autoAnalysesLimit: number;
+  manualAnalysesUsed: number;
+  manualAnalysesLimit: number;
+  tokensUsed: number;
+  tokensLimit: number;
+  periodStart: string;
+  periodEnd: string;
+  lastAnalysisAt: string | null;
+  cooldownEndsAt: string | null;
+}
