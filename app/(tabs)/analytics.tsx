@@ -683,14 +683,39 @@ export default function AnalyticsScreen() {
                 </Text>
                 <Text style={[styles.savingsLabel, { color: colors.textMuted }]}>{t('analytics.potential_savings')}</Text>
               </View>
-              {savings?.duplicates && savings.duplicates.length > 0 ? (
-                <View style={{ gap: 8, marginTop: 8 }}>
-                  {savings.duplicates.map((d: any, i: number) => (
-                    <View key={i} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text style={{ fontSize: 13, color: colors.textSecondary }}>{d.name || d.category}</Text>
-                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.success }}>${formatNum(d.potentialSavings ?? d.amount ?? 0, 2)}/{t('common.mo', 'mo')}</Text>
+              {/* Insights */}
+              {savings?.insights && savings.insights.length > 0 && (
+                <View style={{ marginTop: 12, gap: 6 }}>
+                  {savings.insights.map((insight: string, i: number) => (
+                    <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+                      <Ionicons name="bulb-outline" size={14} color={colors.warning} style={{ marginTop: 2 }} />
+                      <Text style={{ fontSize: 13, color: colors.textSecondary, flex: 1, lineHeight: 18 }}>{insight}</Text>
                     </View>
                   ))}
+                </View>
+              )}
+
+              {/* Duplicates list */}
+              {savings?.duplicates && savings.duplicates.length > 0 ? (
+                <View style={{ gap: 10, marginTop: 12 }}>
+                  {savings.duplicates.slice(0, 5).map((d: any, i: number) => (
+                    <View key={i} style={{ padding: 12, borderRadius: 12, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', gap: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, flex: 1 }} numberOfLines={1}>{d.name}</Text>
+                        <View style={{ backgroundColor: colors.success + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: colors.success }}>-${formatNum(d.potentialSavings ?? 0, 2)}/{t('common.mo', 'mo')}</Text>
+                        </View>
+                      </View>
+                      <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                        {d.count ?? 2} {t('analytics.subs_in_category', 'subs in')} {(d.category ?? '').toLowerCase()} · ${formatNum(d.totalMonthly ?? 0, 2)}/{t('common.mo', 'mo')} {t('analytics.total_spend', 'total')}
+                      </Text>
+                    </View>
+                  ))}
+                  {savings.duplicates.length > 5 && (
+                    <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center' }}>
+                      +{savings.duplicates.length - 5} {t('common.more', 'more')}
+                    </Text>
+                  )}
                 </View>
               ) : (
                 <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
