@@ -693,5 +693,32 @@
     "news": "Новости и медиа",
     "business": "Бизнес",
     "other": "Другое"
+  },
+  "analysis": {
+    "teaser_title": "AI Анализ",
+    "teaser_description": "AI найдёт дубликаты, предложит дешёвые альтернативы и поможет сэкономить до 30% на подписках",
+    "teaser_duplicates": "Обнаружение дубликатов",
+    "teaser_alternatives": "Анализ рыночных цен",
+    "teaser_reports": "Еженедельный AI-отчёт",
+    "teaser_cta": "Попробовать Pro бесплатно",
+    "summary_title": "AI Анализ",
+    "potential_savings": "Возможная экономия",
+    "mo": "мес",
+    "last_updated": "Обновлено",
+    "today": "Сегодня",
+    "days_ago": "{{count}} дн. назад",
+    "refresh": "Обновить",
+    "recommendations_title": "Рекомендации",
+    "duplicates_title": "Дубликаты подписок",
+    "save": "Экономия",
+    "loading_title": "AI анализирует ваши подписки...",
+    "stage_collect": "Сбор данных",
+    "stage_normalize": "Нормализация сервисов",
+    "stage_market": "Проверка рыночных цен",
+    "stage_ai": "AI анализ",
+    "stage_store": "Формирование рекомендаций",
+    "loading_hint": "Обычно занимает 15-30 секунд",
+    "error_title": "Ошибка анализа",
+    "retry": "Попробовать снова"
   }
 }

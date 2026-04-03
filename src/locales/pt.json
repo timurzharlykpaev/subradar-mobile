@@ -693,5 +693,32 @@
     "yearly": "Anual",
     "lifetime": "Vitalício",
     "one_time": "Único"
+  },
+  "analysis": {
+    "teaser_title": "AI Analysis",
+    "teaser_description": "AI can find duplicates, suggest cheaper alternatives, and save you up to 30% on subscriptions",
+    "teaser_duplicates": "Duplicate detection",
+    "teaser_alternatives": "Market price analysis",
+    "teaser_reports": "Weekly AI report",
+    "teaser_cta": "Try Pro for free",
+    "summary_title": "AI Analysis",
+    "potential_savings": "Potential savings",
+    "mo": "mo",
+    "last_updated": "Updated",
+    "today": "Today",
+    "days_ago": "{{count}} days ago",
+    "refresh": "Refresh",
+    "recommendations_title": "Recommendations",
+    "duplicates_title": "Duplicate Subscriptions",
+    "save": "Save",
+    "loading_title": "AI is analyzing your subscriptions...",
+    "stage_collect": "Collecting data",
+    "stage_normalize": "Normalizing services",
+    "stage_market": "Checking market prices",
+    "stage_ai": "AI analysis",
+    "stage_store": "Generating recommendations",
+    "loading_hint": "Usually takes 15-30 seconds",
+    "error_title": "Analysis failed",
+    "retry": "Try again"
   }
 }
