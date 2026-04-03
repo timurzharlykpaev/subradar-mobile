@@ -31,8 +31,8 @@
       "distribution": "store",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1",
-        "EXPO_PUBLIC_REVENUECAT_KEY_IOS": "test_KCkKkTcGjgMgysTZtGukFRBZBBh",
-        "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh"
+        "EXPO_PUBLIC_REVENUECAT_KEY_IOS": "appl_IDgkDELtmOrLlMVaOpCcPemoqyH",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "appl_IDgkDELtmOrLlMVaOpCcPemoqyH"
       },
       "ios": {
         "autoIncrement": true

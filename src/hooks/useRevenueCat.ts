@@ -67,19 +67,20 @@ export function useRevenueCat() {
   useEffect(() => {
     if (!configured || !isAvailable()) { setLoading(false); return; }
     let mounted = true;
+    let listenerAdded = false;
 
     const load = async () => {
       try {
         const [info, off] = await Promise.all([
-          Purchases.getCustomerInfo(),
-          Purchases.getOfferings(),
+          Purchases.getCustomerInfo().catch(() => null),
+          Purchases.getOfferings().catch(() => null),
         ]);
         if (mounted) {
-          setCustomerInfo(info);
-          setOfferings(off);
+          if (info) setCustomerInfo(info);
+          if (off) setOfferings(off);
         }
       } catch (e) {
-        if (__DEV__) console.warn('RevenueCat load failed:', e);
+        console.warn('RevenueCat load failed:', e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -88,13 +89,22 @@ export function useRevenueCat() {
     load();
 
     const listener = (info: any) => {
-      if (mounted) setCustomerInfo(info);
+      try {
+        if (mounted && info) setCustomerInfo(info);
+      } catch {}
     };
-    Purchases.addCustomerInfoUpdateListener(listener);
+    try {
+      Purchases.addCustomerInfoUpdateListener(listener);
+      listenerAdded = true;
+    } catch (e) {
+      console.warn('RevenueCat listener failed:', e);
+    }
 
     return () => {
       mounted = false;
-      Purchases.removeCustomerInfoUpdateListener(listener);
+      if (listenerAdded) {
+        try { Purchases.removeCustomerInfoUpdateListener(listener); } catch {}
+      }
     };
   }, []);
 

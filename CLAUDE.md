@@ -158,7 +158,7 @@ npm run version:major && git add -A && git commit -m "chore: bump 2.0.0" && npm 
 
 | Профиль | RC Key | API | Куда |
 |---------|--------|-----|------|
-| `testflight` | `test_...` (sandbox) | prod | TestFlight |
+| `testflight` | `appl_...` (prod RC) | prod | TestFlight |
 | `production` | `appl_...` (real IAP) | prod | App Store |
 | `preview` | `test_...` | dev | Internal (ad-hoc) |
 | `development` | `test_...` | dev | Dev client |
