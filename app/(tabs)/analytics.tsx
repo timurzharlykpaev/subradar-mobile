@@ -24,6 +24,12 @@ import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import ProFeatureModal from '../../src/components/ProFeatureModal';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
+import { useAnalysisFlow } from '../../src/hooks/useAnalysis';
+import AITeaser from '../../src/components/AITeaser';
+import AIAnalysisSummary from '../../src/components/AIAnalysisSummary';
+import AIRecommendationList from '../../src/components/AIRecommendationList';
+import AIDuplicateGroup from '../../src/components/AIDuplicateGroup';
+import AnalysisLoadingState from '../../src/components/AnalysisLoadingState';
 
 const CHART_HEIGHT = 200;
 
@@ -190,6 +196,43 @@ const PERIOD_SHORT: Record<string, string> = {
   LIFETIME: '\u221E',
   ONE_TIME: '1x',
 };
+
+// ─── AI Analysis Section ────────────────────────────────────────────────────
+function AIAnalysisSection({ isPro }: { isPro: boolean }) {
+  const { result, job, isPlanRequired, canRunManual, isRunning, autoTrigger, manualRun } = useAnalysisFlow();
+
+  React.useEffect(() => {
+    if (isPro) autoTrigger();
+  }, [isPro]);
+
+  if (!isPro || isPlanRequired) {
+    return <AITeaser />;
+  }
+
+  if (isRunning && job) {
+    return <AnalysisLoadingState status={job as any} />;
+  }
+
+  if (result) {
+    return (
+      <>
+        <AIAnalysisSummary
+          summary={result.summary}
+          totalMonthlySavings={result.totalMonthlySavings}
+          currency={result.currency}
+          createdAt={result.createdAt}
+          canRunManual={canRunManual}
+          isRunning={isRunning}
+          onRefresh={manualRun}
+        />
+        <AIRecommendationList recommendations={result.recommendations} currency={result.currency} />
+        <AIDuplicateGroup groups={result.duplicates} currency={result.currency} />
+      </>
+    );
+  }
+
+  return <AITeaser />;
+}
 
 export default function AnalyticsScreen() {
   const { t } = useTranslation();
@@ -845,6 +888,11 @@ export default function AnalyticsScreen() {
               <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
             )}
           </View>
+        </View>
+
+        {/* ── 8. AI Analysis ──────────────────────────────────── */}
+        <View style={styles.section}>
+          <AIAnalysisSection isPro={isPro} />
         </View>
 
         <View style={{ height: 40 }} />
