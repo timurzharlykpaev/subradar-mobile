@@ -27,6 +27,25 @@
         "autoIncrement": true
       }
     },
+    "testflight": {
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1",
+        "EXPO_PUBLIC_REVENUECAT_KEY_IOS": "test_KCkKkTcGjgMgysTZtGukFRBZBBh",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh"
+      },
+      "ios": {
+        "autoIncrement": true
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "autoIncrement": true
+      },
+      "node": "22.0.0",
+      "cache": {
+        "key": "subradar-npm-v1"
+      }
+    },
     "production": {
       "distribution": "store",
       "env": {
@@ -59,6 +78,15 @@
     }
   },
   "submit": {
+    "testflight": {
+      "ios": {
+        "ascApiKeyIssuerId": "8b7aa06e-9951-41f6-80f9-e877a63c4bf8",
+        "ascApiKeyId": "P4F4X7WXXW",
+        "ascApiKeyPath": "./AuthKey_P4F4X7WXXW.p8",
+        "appleTeamId": "KH4TZU35XL",
+        "ascAppId": "6760282723"
+      }
+    },
     "preview": {
       "ios": {
         "ascApiKeyIssuerId": "8b7aa06e-9951-41f6-80f9-e877a63c4bf8",
