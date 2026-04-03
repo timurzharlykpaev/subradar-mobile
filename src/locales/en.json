@@ -390,7 +390,10 @@
     "error_title": "Could not load analytics",
     "error_subtitle": "Check your connection and try again",
     "subs_in_category": "subs in",
-    "total_spend": "total"
+    "total_spend": "total",
+    "insight_overlap": "{{count}} categories with overlapping subscriptions",
+    "insight_biggest": "Biggest overlap: {{name}} — ${{savings}}/mo savings",
+    "insight_total": "Save ${{monthly}}/mo (${{yearly}}/yr) by consolidating"
   },
   "subscription": {
     "billing_day": "Billing Day",

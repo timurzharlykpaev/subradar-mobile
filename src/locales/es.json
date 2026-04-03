@@ -382,7 +382,10 @@
     "error_title": "No se pudo cargar el análisis",
     "error_subtitle": "Verifica tu conexión e intenta de nuevo",
     "subs_in_category": "subs en",
-    "total_spend": "total"
+    "total_spend": "total",
+    "insight_overlap": "{{count}} categorías con suscripciones superpuestas",
+    "insight_biggest": "Mayor superposición: {{name}} — ${{savings}}/mes de ahorro",
+    "insight_total": "Ahorra ${{monthly}}/mes (${{yearly}}/año) consolidando"
   },
   "subscription": {
     "billing_day": "Día de cobro",

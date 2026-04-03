@@ -686,12 +686,21 @@ export default function AnalyticsScreen() {
               {/* Insights */}
               {savings?.insights && savings.insights.length > 0 && (
                 <View style={{ marginTop: 12, gap: 6 }}>
-                  {savings.insights.map((insight: string, i: number) => (
-                    <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
-                      <Ionicons name="bulb-outline" size={14} color={colors.warning} style={{ marginTop: 2 }} />
-                      <Text style={{ fontSize: 13, color: colors.textSecondary, flex: 1, lineHeight: 18 }}>{insight}</Text>
-                    </View>
-                  ))}
+                  {savings.insights.map((ins: any, i: number) => {
+                    // Support both old string format and new structured format
+                    const text = typeof ins === 'string' ? ins
+                      : ins.type === 'overlap_count' ? t('analytics.insight_overlap', { count: ins.data?.count, defaultValue: '{{count}} categories with overlapping subscriptions' })
+                      : ins.type === 'biggest_overlap' ? t('analytics.insight_biggest', { name: ins.data?.name, savings: ins.data?.savings?.toFixed(2), defaultValue: 'Biggest overlap: {{name}} — ${{savings}}/mo' })
+                      : ins.type === 'total_savings' ? t('analytics.insight_total', { monthly: ins.data?.monthly?.toFixed(0), yearly: ins.data?.yearly?.toFixed(0), defaultValue: 'Save ${{monthly}}/mo (${{yearly}}/yr) by consolidating' })
+                      : '';
+                    if (!text) return null;
+                    return (
+                      <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+                        <Ionicons name="bulb-outline" size={14} color={colors.warning} style={{ marginTop: 2 }} />
+                        <Text style={{ fontSize: 13, color: colors.textSecondary, flex: 1, lineHeight: 18 }}>{text}</Text>
+                      </View>
+                    );
+                  })}
                 </View>
               )}
 

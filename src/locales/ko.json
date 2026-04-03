@@ -382,7 +382,10 @@
     "error_title": "분석을 로드할 수 없습니다",
     "error_subtitle": "연결을 확인하고 다시 시도하세요",
     "subs_in_category": "구독",
-    "total_spend": "총"
+    "total_spend": "총",
+    "insight_overlap": "{{count}}개 카테고리에서 중복 구독",
+    "insight_biggest": "가장 큰 중복: {{name}} — ${{savings}}/월 절약",
+    "insight_total": "${{monthly}}/월 (${{yearly}}/년) 절약 가능"
   },
   "subscription": {
     "billing_day": "결제일",

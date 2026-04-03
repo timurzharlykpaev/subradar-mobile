@@ -382,7 +382,10 @@
     "error_title": "无法加载分析",
     "error_subtitle": "请检查连接并重试",
     "subs_in_category": "个订阅在",
-    "total_spend": "总计"
+    "total_spend": "总计",
+    "insight_overlap": "{{count}}个类别存在重复订阅",
+    "insight_biggest": "最大重复: {{name}} — ${{savings}}/月可节省",
+    "insight_total": "合并可节省${{monthly}}/月 (${{yearly}}/年)"
   },
   "subscription": {
     "billing_day": "扣款日",

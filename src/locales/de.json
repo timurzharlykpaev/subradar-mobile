@@ -382,7 +382,10 @@
     "error_title": "Analyse konnte nicht geladen werden",
     "error_subtitle": "Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut",
     "subs_in_category": "Abos in",
-    "total_spend": "gesamt"
+    "total_spend": "gesamt",
+    "insight_overlap": "{{count}} Kategorien mit überlappenden Abos",
+    "insight_biggest": "Größte Überlappung: {{name}} — ${{savings}}/Mo Ersparnis",
+    "insight_total": "Sparen Sie ${{monthly}}/Mo (${{yearly}}/J) durch Konsolidierung"
   },
   "subscription": {
     "billing_day": "Abrechnungstag",

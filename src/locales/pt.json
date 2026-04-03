@@ -382,7 +382,10 @@
     "error_title": "Não foi possível carregar análises",
     "error_subtitle": "Verifique sua conexão e tente novamente",
     "subs_in_category": "assinaturas em",
-    "total_spend": "total"
+    "total_spend": "total",
+    "insight_overlap": "{{count}} categorias com assinaturas sobrepostas",
+    "insight_biggest": "Maior sobreposição: {{name}} — ${{savings}}/mês",
+    "insight_total": "Economize ${{monthly}}/mês (${{yearly}}/ano) consolidando"
   },
   "subscription": {
     "billing_day": "Dia de cobrança",

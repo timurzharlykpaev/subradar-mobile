@@ -382,7 +382,10 @@
     "error_title": "Impossible de charger les analyses",
     "error_subtitle": "Vérifiez votre connexion et réessayez",
     "subs_in_category": "abos dans",
-    "total_spend": "total"
+    "total_spend": "total",
+    "insight_overlap": "{{count}} catégories avec des abonnements en double",
+    "insight_biggest": "Plus grand chevauchement: {{name}} — ${{savings}}/mois",
+    "insight_total": "Économisez ${{monthly}}/mois (${{yearly}}/an) en consolidant"
   },
   "subscription": {
     "billing_day": "Jour de facturation",

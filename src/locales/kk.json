@@ -390,7 +390,10 @@
     "error_title": "Аналитиканы жүктеу мүмкін болмады",
     "error_subtitle": "Қосылымды тексеріп, қайталаңыз",
     "subs_in_category": "жазылым",
-    "total_spend": "барлығы"
+    "total_spend": "барлығы",
+    "insight_overlap": "{{count}} санатта қайталанатын жазылымдар",
+    "insight_biggest": "Ең үлкен қайталану: {{name}} — ${{savings}}/ай үнемдеу",
+    "insight_total": "${{monthly}}/ай (${{yearly}}/жыл) үнемдеңіз"
   },
   "subscription": {
     "billing_day": "Есептен шығару күні",

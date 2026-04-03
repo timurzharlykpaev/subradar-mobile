@@ -382,7 +382,10 @@
     "error_title": "分析を読み込めませんでした",
     "error_subtitle": "接続を確認して再試行してください",
     "subs_in_category": "件の",
-    "total_spend": "合計"
+    "total_spend": "合計",
+    "insight_overlap": "{{count}}カテゴリで重複する契約",
+    "insight_biggest": "最大の重複: {{name}} — ${{savings}}/月の節約",
+    "insight_total": "${{monthly}}/月 (${{yearly}}/年) 節約可能"
   },
   "subscription": {
     "billing_day": "請求日",

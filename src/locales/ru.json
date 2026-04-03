@@ -382,7 +382,10 @@
     "error_title": "Не удалось загрузить аналитику",
     "error_subtitle": "Проверьте подключение и попробуйте снова",
     "subs_in_category": "подписок в",
-    "total_spend": "всего"
+    "total_spend": "всего",
+    "insight_overlap": "{{count}} категорий с пересекающимися подписками",
+    "insight_biggest": "Больше всего пересечений: {{name}} — ${{savings}}/мес экономии",
+    "insight_total": "Экономьте ${{monthly}}/мес (${{yearly}}/год) объединив подписки"
   },
   "subscription": {
     "billing_day": "День списания",
