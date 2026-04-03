@@ -5,9 +5,19 @@ import { billingApi } from '../api/billing';
 export function useBillingStatus() {
   return useQuery({
     queryKey: ['billing', 'me'],
-    queryFn: () => billingApi.getMe().then((r) => r.data),
+    queryFn: async () => {
+      try {
+        const r = await billingApi.getMe();
+        if (__DEV__) console.log('[Billing] /billing/me response:', JSON.stringify(r.data).slice(0, 200));
+        return r.data;
+      } catch (e: any) {
+        if (__DEV__) console.error('[Billing] /billing/me error:', e?.response?.status, e?.response?.data);
+        throw e;
+      }
+    },
     staleTime: 5000,
     refetchOnMount: 'always',
+    retry: 1,
   });
 }
 
