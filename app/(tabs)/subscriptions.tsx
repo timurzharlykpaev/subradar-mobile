@@ -116,7 +116,7 @@ export default function SubscriptionsScreen() {
           return da - db;
       }
     });
-  }, [getFiltered, filter, searchQuery, selectedCategory, sortBy]);
+  }, [getFiltered, filter, searchQuery, selectedCategory, sortBy, subscriptions]);
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
@@ -269,7 +269,7 @@ export default function SubscriptionsScreen() {
         <FlatList
           testID="subscription-list"
           data={subs}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchSubs} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchSubs()} />}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}

@@ -78,7 +78,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
         <View style={styles.tagsRow}>
           <CategoryBadge categoryId={subscription.category} size="sm" />
           {subscription.paymentCardId && <CardBadge cardId={subscription.paymentCardId} />}
-          {subscription.tags?.map((tag) => (
+          {subscription.tags?.filter(Boolean).map((tag) => (
             <View key={tag} style={[styles.tagBadge, { backgroundColor: colors.surface2 }]}>
               <Text style={[styles.tagText, { color: colors.textSecondary }]}>#{tag}</Text>
             </View>
@@ -90,7 +90,9 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
         <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
           {subscription.currency} {Number(subscription.amount).toFixed(2)}
         </Text>
-        <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{subscription.billingPeriod?.toLowerCase()?.replace('monthly', 'mo')?.replace('yearly', 'yr')?.replace('weekly', 'wk')?.replace('quarterly', 'qtr')}</Text>
+        {subscription.billingPeriod && (
+          <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{subscription.billingPeriod.toLowerCase().replace('monthly', 'mo').replace('yearly', 'yr').replace('weekly', 'wk').replace('quarterly', 'qtr')}</Text>
+        )}
         {isTrial && trialDays !== null ? (
           <View style={[styles.trialBadge, {
             backgroundColor: trialExpired ? '#EF444420' : trialUrgent ? '#F59E0B20' : '#3B82F620',
