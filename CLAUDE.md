@@ -111,30 +111,61 @@ expo-image-picker → imageBase64/file
 
 ## Команды
 ```bash
-npx expo start          # Дев-сервер (QR-код для телефона)
-npx expo start --ios    # iOS симулятор
-npx expo start --android # Android эмулятор
-npx expo build          # EAS Build
-npx expo publish        # OTA обновление (Expo Updates)
+# Дев-сервер
+npm run start:dev           # Dev API + Metro
+npm run start:prod          # Prod API + Metro
+
+# Билды
+npm run build:testflight    # TestFlight (test RC key, prod API)
+npm run build:production    # App Store (prod RC key, prod API)
+npm run build:preview       # Internal distribution (ad-hoc)
+npm run build:android       # Android production
+
+# Тесты
+npm test                    # Jest unit tests
+npm run test:e2e            # Maestro E2E (все тесты)
 ```
+
+## EAS Build профили
+
+| Профиль | RC Key | API | Куда |
+|---------|--------|-----|------|
+| `testflight` | `test_...` (sandbox) | prod | TestFlight |
+| `production` | `appl_...` (real IAP) | prod | App Store |
+| `preview` | `test_...` | dev | Internal (ad-hoc) |
+| `development` | `test_...` | dev | Dev client |
+
+## RevenueCat
+
+- **Test key (sandbox):** `test_KCkKkTcGjgMgysTZtGukFRBZBBh`
+- **Prod key (App Store):** `appl_IDgkDELtmOrLlMVaOpCcPemoqyH`
+- **REST API ID:** `app19263dc738`
+- Entitlements: `pro`, `team`
+- Products: `io.subradar.mobile.pro.monthly`, `io.subradar.mobile.pro.yearly`, `io.subradar.mobile.team.monthly`, `io.subradar.mobile.team.yearly`
 
 ## Переменные окружения
 
 ```env
 EXPO_PUBLIC_API_URL=https://api.subradar.ai/api/v1
-EXPO_PUBLIC_GOOGLE_CLIENT_ID=<id>
-```
-
-Для dev:
-```env
-EXPO_PUBLIC_API_URL=http://46.101.197.19:3101/api/v1
+EXPO_PUBLIC_REVENUECAT_KEY=test_KCkKkTcGjgMgysTZtGukFRBZBBh      # dev/testflight
+EXPO_PUBLIC_REVENUECAT_KEY_IOS=appl_IDgkDELtmOrLlMVaOpCcPemoqyH  # production only
 ```
 
 ## Деплой
 
-- **iOS**: App Store Connect (EAS Build → eas build --platform ios)
-- **Android**: Google Play (EAS Build → eas build --platform android)
-- **OTA Updates**: Expo EAS Update для hotfix без публикации в стор
+```bash
+# TestFlight (для тестирования)
+npm run build:testflight
+
+# App Store (релиз)
+npm run build:production
+
+# Android
+npm run build:android
+
+# OTA Updates (hotfix без стора)
+eas update --branch production --message "fix: description"
+```
 
 ## Хуки — ответственности
 
