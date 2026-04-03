@@ -16,7 +16,10 @@
     "no_card": "Без карты",
     "no_data_period": "Нет данных за этот период",
     "popular": "Популярные",
-    "success": "Успешно"
+    "success": "Успешно",
+    "retry": "Повторить",
+    "mo": "мес",
+    "more": "ещё"
   },
   "tabs": {
     "home": "Главная",
@@ -377,7 +380,9 @@
     "active_count": "Активные",
     "subscriptions": "подписок",
     "error_title": "Не удалось загрузить аналитику",
-    "error_subtitle": "Проверьте подключение и попробуйте снова"
+    "error_subtitle": "Проверьте подключение и попробуйте снова",
+    "subs_in_category": "подписок в",
+    "total_spend": "всего"
   },
   "subscription": {
     "billing_day": "День списания",

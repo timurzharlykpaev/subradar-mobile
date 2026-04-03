@@ -16,7 +16,10 @@
     "no_card": "Sin tarjeta",
     "no_data_period": "Sin datos para este período",
     "popular": "Populares",
-    "success": "Éxito"
+    "success": "Éxito",
+    "retry": "Reintentar",
+    "mo": "mes",
+    "more": "más"
   },
   "tabs": {
     "home": "Inicio",
@@ -377,7 +380,9 @@
     "active_count": "Activas",
     "subscriptions": "suscripciones",
     "error_title": "No se pudo cargar el análisis",
-    "error_subtitle": "Verifica tu conexión e intenta de nuevo"
+    "error_subtitle": "Verifica tu conexión e intenta de nuevo",
+    "subs_in_category": "subs en",
+    "total_spend": "total"
   },
   "subscription": {
     "billing_day": "Día de cobro",

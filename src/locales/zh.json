@@ -16,7 +16,10 @@
     "no_card": "无卡",
     "no_data_period": "此期间无数据",
     "popular": "热门",
-    "success": "成功"
+    "success": "成功",
+    "retry": "重试",
+    "mo": "月",
+    "more": "更多"
   },
   "tabs": {
     "home": "首页",
@@ -377,7 +380,9 @@
     "active_count": "活跃",
     "subscriptions": "订阅",
     "error_title": "无法加载分析",
-    "error_subtitle": "请检查连接并重试"
+    "error_subtitle": "请检查连接并重试",
+    "subs_in_category": "个订阅在",
+    "total_spend": "总计"
   },
   "subscription": {
     "billing_day": "扣款日",

@@ -16,7 +16,10 @@
     "no_card": "카드 없음",
     "no_data_period": "이 기간 데이터 없음",
     "popular": "인기",
-    "success": "성공"
+    "success": "성공",
+    "retry": "다시 시도",
+    "mo": "월",
+    "more": "더보기"
   },
   "tabs": {
     "home": "홈",
@@ -377,7 +380,9 @@
     "active_count": "활성",
     "subscriptions": "구독",
     "error_title": "분석을 로드할 수 없습니다",
-    "error_subtitle": "연결을 확인하고 다시 시도하세요"
+    "error_subtitle": "연결을 확인하고 다시 시도하세요",
+    "subs_in_category": "구독",
+    "total_spend": "총"
   },
   "subscription": {
     "billing_day": "결제일",

@@ -16,7 +16,10 @@
     "no_card": "No card",
     "no_data_period": "No data for this period",
     "popular": "Popular",
-    "success": "Success"
+    "success": "Success",
+    "retry": "Retry",
+    "mo": "mo",
+    "more": "more"
   },
   "tabs": {
     "home": "Home",
@@ -385,7 +388,9 @@
     "active_count": "Active",
     "subscriptions": "subscriptions",
     "error_title": "Could not load analytics",
-    "error_subtitle": "Check your connection and try again"
+    "error_subtitle": "Check your connection and try again",
+    "subs_in_category": "subs in",
+    "total_spend": "total"
   },
   "subscription": {
     "billing_day": "Billing Day",

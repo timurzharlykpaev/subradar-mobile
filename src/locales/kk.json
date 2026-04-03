@@ -16,7 +16,10 @@
     "no_card": "Картасыз",
     "no_data_period": "Бұл кезең бойынша деректер жоқ",
     "popular": "Танымал",
-    "success": "Сәтті"
+    "success": "Сәтті",
+    "retry": "Қайталау",
+    "mo": "ай",
+    "more": "тағы"
   },
   "tabs": {
     "home": "Басты",
@@ -385,7 +388,9 @@
     "active_count": "Белсенді",
     "subscriptions": "жазылым",
     "error_title": "Аналитиканы жүктеу мүмкін болмады",
-    "error_subtitle": "Қосылымды тексеріп, қайталаңыз"
+    "error_subtitle": "Қосылымды тексеріп, қайталаңыз",
+    "subs_in_category": "жазылым",
+    "total_spend": "барлығы"
   },
   "subscription": {
     "billing_day": "Есептен шығару күні",

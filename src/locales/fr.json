@@ -16,7 +16,10 @@
     "no_card": "Aucune carte",
     "no_data_period": "Pas de données pour cette période",
     "popular": "Populaires",
-    "success": "Succès"
+    "success": "Succès",
+    "retry": "Réessayer",
+    "mo": "mois",
+    "more": "plus"
   },
   "tabs": {
     "home": "Accueil",
@@ -377,7 +380,9 @@
     "active_count": "Actifs",
     "subscriptions": "abonnements",
     "error_title": "Impossible de charger les analyses",
-    "error_subtitle": "Vérifiez votre connexion et réessayez"
+    "error_subtitle": "Vérifiez votre connexion et réessayez",
+    "subs_in_category": "abos dans",
+    "total_spend": "total"
   },
   "subscription": {
     "billing_day": "Jour de facturation",

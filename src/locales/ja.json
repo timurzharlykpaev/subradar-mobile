@@ -16,7 +16,10 @@
     "no_card": "カードなし",
     "no_data_period": "この期間のデータなし",
     "popular": "人気",
-    "success": "成功"
+    "success": "成功",
+    "retry": "リトライ",
+    "mo": "月",
+    "more": "もっと"
   },
   "tabs": {
     "home": "ホーム",
@@ -377,7 +380,9 @@
     "active_count": "アクティブ",
     "subscriptions": "サブスクリプション",
     "error_title": "分析を読み込めませんでした",
-    "error_subtitle": "接続を確認して再試行してください"
+    "error_subtitle": "接続を確認して再試行してください",
+    "subs_in_category": "件の",
+    "total_spend": "合計"
   },
   "subscription": {
     "billing_day": "請求日",
