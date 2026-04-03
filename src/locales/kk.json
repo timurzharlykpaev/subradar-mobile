@@ -213,7 +213,15 @@
     "ai_limit_title": "AI сұраулар лимиті таусылды",
     "ai_limit_msg": "Осы айдағы тегін AI сұрауларыңыз таусылды. Pro-ға көшіңіз — 200 сұрау/ай.",
     "limit_reached_title": "Жазылымдар лимиті",
-    "limit_reached_msg": "Тегін жоспар {{max}} жазылымға дейін. Pro — шексіз."
+    "limit_reached_msg": "Тегін жоспар {{max}} жазылымға дейін. Pro — шексіз.",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "periods": {
     "WEEKLY": "Апта сайын",

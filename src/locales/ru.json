@@ -213,7 +213,15 @@
     "ai_limit_title": "Лимит AI-запросов исчерпан",
     "ai_limit_msg": "Вы использовали все бесплатные AI-запросы в этом месяце. Перейдите на Pro для 200 запросов/мес.",
     "limit_reached_title": "Лимит подписок",
-    "limit_reached_msg": "Бесплатный план — максимум {{max}} подписок. Перейдите на Pro для безлимита."
+    "limit_reached_msg": "Бесплатный план — максимум {{max}} подписок. Перейдите на Pro для безлимита.",
+    "smart_input_label": "Какая подписка?",
+    "smart_input_placeholder": "Netflix, Spotify 9.99$/мес...",
+    "tap_stop": "Нажмите чтобы остановить",
+    "search": "Найти",
+    "or_manual": "или введите вручную",
+    "searching": "Ищем...",
+    "bulk_partial_title": "Лимит достигнут",
+    "bulk_partial_upgrade": "Сохранено {{saved}} из {{total}}. Перейдите на Pro для безлимита."
   },
   "settings": {
     "title": "Настройки",

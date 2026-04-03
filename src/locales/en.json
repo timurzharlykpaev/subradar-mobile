@@ -213,7 +213,15 @@
     "ai_limit_title": "AI Request Limit Reached",
     "ai_limit_msg": "You've used all your free AI requests this month. Upgrade to Pro for 200 requests/month.",
     "limit_reached_title": "Subscription Limit",
-    "limit_reached_msg": "Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited."
+    "limit_reached_msg": "Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "periods": {
     "WEEKLY": "Weekly",

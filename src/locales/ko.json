@@ -213,7 +213,15 @@
     "ai_limit_title": "AI 요청 한도 도달",
     "ai_limit_msg": "이번 달 무료 AI 요청을 모두 사용했습니다. Pro로 업그레이드하여 월 200건.",
     "limit_reached_title": "구독 한도",
-    "limit_reached_msg": "무료 플랜은 최대 {{max}}개. Pro로 업그레이드하면 무제한."
+    "limit_reached_msg": "무료 플랜은 최대 {{max}}개. Pro로 업그레이드하면 무제한.",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "settings": {
     "title": "설정",

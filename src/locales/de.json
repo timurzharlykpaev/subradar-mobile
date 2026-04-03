@@ -213,7 +213,15 @@
     "ai_limit_title": "KI-Anfragelimit erreicht",
     "ai_limit_msg": "Sie haben alle kostenlosen KI-Anfragen diesen Monat aufgebraucht. Upgraden Sie auf Pro für 200 Anfragen/Monat.",
     "limit_reached_title": "Abonnement-Limit",
-    "limit_reached_msg": "Der kostenlose Plan erlaubt bis zu {{max}} Abonnements. Upgraden Sie auf Pro für unbegrenzt."
+    "limit_reached_msg": "Der kostenlose Plan erlaubt bis zu {{max}} Abonnements. Upgraden Sie auf Pro für unbegrenzt.",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "settings": {
     "title": "Einstellungen",

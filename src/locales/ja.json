@@ -213,7 +213,15 @@
     "ai_limit_title": "AIリクエスト制限に達しました",
     "ai_limit_msg": "今月の無料AIリクエストを使い切りました。Proにアップグレードして月200リクエスト。",
     "limit_reached_title": "サブスクリプション制限",
-    "limit_reached_msg": "無料プランは{{max}}件まで。Proにアップグレードで無制限。"
+    "limit_reached_msg": "無料プランは{{max}}件まで。Proにアップグレードで無制限。",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "settings": {
     "title": "設定",

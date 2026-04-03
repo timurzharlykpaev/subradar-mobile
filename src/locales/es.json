@@ -213,7 +213,15 @@
     "ai_limit_title": "Límite de solicitudes IA alcanzado",
     "ai_limit_msg": "Has usado todas tus solicitudes IA gratuitas este mes. Actualiza a Pro para 200 solicitudes/mes.",
     "limit_reached_title": "Límite de suscripciones",
-    "limit_reached_msg": "El plan gratuito permite hasta {{max}} suscripciones. Actualiza a Pro para ilimitadas."
+    "limit_reached_msg": "El plan gratuito permite hasta {{max}} suscripciones. Actualiza a Pro para ilimitadas.",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "settings": {
     "title": "Configuración",

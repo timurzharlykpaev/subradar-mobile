@@ -66,14 +66,14 @@ interface Props {
 // ── Quick chips (hardcoded, 0 AI credits, 0 network) ─────────────────────────
 
 const QUICK_CHIPS = [
-  { name: 'Netflix', Icon: MovieIcon, amount: 15.49, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/netflix.com', serviceUrl: 'https://netflix.com', cancelUrl: 'https://www.netflix.com/cancelplan', plans: [{ name: 'Standard with Ads', priceMonthly: 6.99, currency: 'USD' }, { name: 'Standard', priceMonthly: 15.49, currency: 'USD' }, { name: 'Premium', priceMonthly: 22.99, currency: 'USD' }] },
-  { name: 'Spotify', Icon: MusicIcon, amount: 9.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'MUSIC', iconUrl: 'https://icon.horse/icon/spotify.com', serviceUrl: 'https://spotify.com', cancelUrl: 'https://www.spotify.com/account/subscription/cancel', plans: [{ name: 'Individual', priceMonthly: 9.99, currency: 'USD' }, { name: 'Duo', priceMonthly: 14.99, currency: 'USD' }, { name: 'Family', priceMonthly: 16.99, currency: 'USD' }] },
-  { name: 'ChatGPT', Icon: AiServicesIcon, amount: 20, currency: 'USD', billingPeriod: 'MONTHLY', category: 'AI_SERVICES', iconUrl: 'https://icon.horse/icon/openai.com', serviceUrl: 'https://chat.openai.com', cancelUrl: 'https://help.openai.com/en/articles/7232013', plans: [{ name: 'Plus', priceMonthly: 20, currency: 'USD' }, { name: 'Pro', priceMonthly: 200, currency: 'USD' }] },
-  { name: 'iCloud+', Icon: InfrastructureIcon, amount: 0.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'INFRASTRUCTURE', iconUrl: 'https://icon.horse/icon/apple.com', serviceUrl: 'https://icloud.com', cancelUrl: 'https://support.apple.com/billing', plans: [{ name: '50 GB', priceMonthly: 0.99, currency: 'USD' }, { name: '200 GB', priceMonthly: 2.99, currency: 'USD' }, { name: '2 TB', priceMonthly: 9.99, currency: 'USD' }] },
-  { name: 'YouTube', Icon: PlayIcon, amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/youtube.com', serviceUrl: 'https://youtube.com', cancelUrl: 'https://youtube.com/paid_memberships', plans: [{ name: 'Individual', priceMonthly: 13.99, currency: 'USD' }, { name: 'Family', priceMonthly: 22.99, currency: 'USD' }] },
-  { name: 'Disney+', Icon: SparklesIcon, amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/disneyplus.com', serviceUrl: 'https://disneyplus.com', cancelUrl: 'https://www.disneyplus.com/account/subscription', plans: [{ name: 'Basic', priceMonthly: 7.99, currency: 'USD' }, { name: 'Premium', priceMonthly: 13.99, currency: 'USD' }] },
-  { name: 'Apple Music', Icon: MusicIcon, amount: 10.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'MUSIC', iconUrl: 'https://icon.horse/icon/music.apple.com', serviceUrl: 'https://music.apple.com', cancelUrl: 'https://support.apple.com/billing', plans: [{ name: 'Individual', priceMonthly: 10.99, currency: 'USD' }, { name: 'Family', priceMonthly: 16.99, currency: 'USD' }] },
-  { name: 'Amazon Prime', Icon: FolderIcon, amount: 14.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', iconUrl: 'https://icon.horse/icon/amazon.com', serviceUrl: 'https://amazon.com', cancelUrl: 'https://www.amazon.com/mc/cancel', plans: [{ name: 'Monthly', priceMonthly: 14.99, currency: 'USD' }, { name: 'Annual', priceMonthly: 11.58, currency: 'USD' }] },
+  { name: 'Netflix', color: '#E50914', iconUrl: 'https://logo.clearbit.com/netflix.com', amount: 15.49, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', serviceUrl: 'https://netflix.com', cancelUrl: 'https://www.netflix.com/cancelplan', plans: [{ name: 'Standard with Ads', priceMonthly: 6.99, currency: 'USD' }, { name: 'Standard', priceMonthly: 15.49, currency: 'USD' }, { name: 'Premium', priceMonthly: 22.99, currency: 'USD' }] },
+  { name: 'Spotify', color: '#1DB954', iconUrl: 'https://logo.clearbit.com/spotify.com', amount: 9.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'MUSIC', serviceUrl: 'https://spotify.com', cancelUrl: 'https://www.spotify.com/account/subscription/cancel', plans: [{ name: 'Individual', priceMonthly: 9.99, currency: 'USD' }, { name: 'Duo', priceMonthly: 14.99, currency: 'USD' }, { name: 'Family', priceMonthly: 16.99, currency: 'USD' }] },
+  { name: 'ChatGPT', color: '#10A37F', iconUrl: 'https://logo.clearbit.com/openai.com', amount: 20, currency: 'USD', billingPeriod: 'MONTHLY', category: 'AI_SERVICES', serviceUrl: 'https://chat.openai.com', cancelUrl: 'https://help.openai.com/en/articles/7232013', plans: [{ name: 'Plus', priceMonthly: 20, currency: 'USD' }, { name: 'Pro', priceMonthly: 200, currency: 'USD' }] },
+  { name: 'iCloud+', color: '#3693F3', iconUrl: 'https://logo.clearbit.com/icloud.com', amount: 0.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'INFRASTRUCTURE', serviceUrl: 'https://icloud.com', cancelUrl: 'https://support.apple.com/billing', plans: [{ name: '50 GB', priceMonthly: 0.99, currency: 'USD' }, { name: '200 GB', priceMonthly: 2.99, currency: 'USD' }, { name: '2 TB', priceMonthly: 9.99, currency: 'USD' }] },
+  { name: 'YouTube', color: '#FF0000', iconUrl: 'https://logo.clearbit.com/youtube.com', amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', serviceUrl: 'https://youtube.com', cancelUrl: 'https://youtube.com/paid_memberships', plans: [{ name: 'Individual', priceMonthly: 13.99, currency: 'USD' }, { name: 'Family', priceMonthly: 22.99, currency: 'USD' }] },
+  { name: 'Disney+', color: '#113CCF', iconUrl: 'https://logo.clearbit.com/disneyplus.com', amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', serviceUrl: 'https://disneyplus.com', cancelUrl: 'https://www.disneyplus.com/account/subscription', plans: [{ name: 'Basic', priceMonthly: 7.99, currency: 'USD' }, { name: 'Premium', priceMonthly: 13.99, currency: 'USD' }] },
+  { name: 'Apple Music', color: '#FC3C44', iconUrl: 'https://logo.clearbit.com/apple.com', amount: 10.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'MUSIC', serviceUrl: 'https://music.apple.com', cancelUrl: 'https://support.apple.com/billing', plans: [{ name: 'Individual', priceMonthly: 10.99, currency: 'USD' }, { name: 'Family', priceMonthly: 16.99, currency: 'USD' }] },
+  { name: 'Amazon Prime', color: '#FF9900', iconUrl: 'https://logo.clearbit.com/amazon.com', amount: 14.99, currency: 'USD', billingPeriod: 'MONTHLY', category: 'STREAMING', serviceUrl: 'https://amazon.com', cancelUrl: 'https://www.amazon.com/mc/cancel', plans: [{ name: 'Monthly', priceMonthly: 14.99, currency: 'USD' }, { name: 'Annual', priceMonthly: 11.58, currency: 'USD' }] },
 ] as const;
 
 // ── Flow state machine ──────────────────────────────────────────────────────
@@ -650,10 +650,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           {QUICK_CHIPS.map((chip) => (
             <TouchableOpacity
               key={chip.name}
-              style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
+              style={[styles.quickChip, { borderColor: chip.color + '40', backgroundColor: chip.color + '12' }]}
               onPress={() => handleQuickChip(chip)}
             >
-              <chip.Icon size={20} color={colors.text} />
+              <Image
+                source={{ uri: chip.iconUrl }}
+                style={styles.quickChipIcon}
+                defaultSource={undefined}
+              />
               <Text style={[styles.quickChipText, { color: colors.text }]}>{chip.name}</Text>
             </TouchableOpacity>
           ))}
@@ -1556,11 +1560,16 @@ const styles = StyleSheet.create({
   quickChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
+    gap: 8,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
+  },
+  quickChipIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
   },
   quickChipText: {
     fontSize: 13,

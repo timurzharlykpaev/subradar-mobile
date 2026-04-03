@@ -213,7 +213,15 @@
     "ai_limit_title": "AI请求限额已达",
     "ai_limit_msg": "您已用完本月免费AI请求。升级至Pro获得每月200次请求。",
     "limit_reached_title": "订阅限制",
-    "limit_reached_msg": "免费计划最多{{max}}个订阅。升级至Pro获得无限。"
+    "limit_reached_msg": "免费计划最多{{max}}个订阅。升级至Pro获得无限。",
+    "smart_input_label": "What subscription?",
+    "smart_input_placeholder": "Netflix, Spotify $9.99/mo...",
+    "tap_stop": "Tap mic to stop",
+    "search": "Search",
+    "or_manual": "or enter manually",
+    "searching": "Searching...",
+    "bulk_partial_title": "Limit Reached",
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
   },
   "settings": {
     "title": "设置",
