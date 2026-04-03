@@ -158,16 +158,26 @@ export default function PaywallScreen() {
 
     // Try native IAP first, fallback to web checkout
     const current = offerings?.current;
+    console.log('[Paywall] offerings.current:', current ? 'exists' : 'null', 'packages:', current?.availablePackages?.length ?? 0);
+    if (current?.availablePackages) {
+      current.availablePackages.forEach((p: any) => console.log('[Paywall] pkg:', p.identifier, p.product?.identifier));
+    }
     let pkg: any | undefined;
     if (current) {
       if (selected === 'pro') {
         pkg = (billingPeriod === 'yearly' ? current.annual : current.monthly) ?? undefined;
+        // Fallback: search by product identifier
+        if (!pkg) {
+          const targetId = billingPeriod === 'yearly' ? 'io.subradar.mobile.pro.yearly' : 'io.subradar.mobile.pro.monthly';
+          pkg = current.availablePackages?.find((p: any) => p.product?.identifier === targetId);
+        }
       } else {
-        pkg = current.availablePackages.find((p: any) =>
-          p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
+        pkg = current.availablePackages?.find((p: any) =>
+          p.product?.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
         );
       }
     }
+    console.log('[Paywall] selected:', selected, 'period:', billingPeriod, 'pkg found:', !!pkg);
 
     if (pkg) {
       // Native IAP purchase
