@@ -198,13 +198,21 @@ export default function PaywallScreen() {
         setPurchasing(false);
       }
     } else {
-      // Package not found in RevenueCat offerings
-      // This means yearly/team plan is not configured in RC dashboard
-      Alert.alert(
-        t('paywall.plan_unavailable', 'Plan unavailable'),
-        t('paywall.plan_unavailable_msg', 'This plan is not available in your region or device. Please try the monthly plan or contact support.'),
-        [{ text: 'OK' }]
-      );
+      // Package not found in RevenueCat offerings — fallback to web checkout
+      console.log('[Paywall] No RC package found, falling back to web checkout');
+      setPurchasing(true);
+      try {
+        const planId = selected === 'org' ? 'organization' : 'pro';
+        const result = await billingApi.checkout(planId);
+        if (result?.data?.url) {
+          const { Linking } = require('react-native');
+          Linking.openURL(result.data.url);
+        }
+      } catch (e: any) {
+        Alert.alert(t('common.error'), e?.response?.data?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
+      } finally {
+        setPurchasing(false);
+      }
     }
   };
 
