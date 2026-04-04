@@ -622,6 +622,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
+    letterSpacing: 0,
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.border,
