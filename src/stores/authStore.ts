@@ -3,12 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 import { User } from '../types';
 
-// SecureStore has a 2048-byte value limit per key.
-// To avoid hitting the limit with large JSON blobs, we store each sensitive
-// key individually and wrap everything in a single JSON envelope under one
-// SecureStore key for Zustand's persist middleware.
-const SECURE_KEY = 'auth-storage';
-
+// Requires native rebuild (EAS build). Does NOT work in Expo Go.
 const secureStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
@@ -21,8 +16,6 @@ const secureStorage = {
     try {
       await SecureStore.setItemAsync(name, value);
     } catch (e) {
-      // SecureStore setItemAsync can fail if value > 2 KB.
-      // Log in dev but don't crash — tokens are short enough to be safe.
       if (__DEV__) {
         console.warn('[authStore] SecureStore.setItemAsync failed:', e);
       }
