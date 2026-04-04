@@ -7,13 +7,15 @@ interface SettingsState {
   currency: string;
   country: string;
   language: string;
-  reminderDays: number[];
+  reminderDays: number;
   notificationsEnabled: boolean;
+  dateFormat: string;
   setCurrency: (currency: string) => void;
   setCountry: (country: string) => void;
   setLanguage: (language: string) => void;
-  setReminderDays: (days: number[]) => void;
+  setReminderDays: (days: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
+  setDateFormat: (format: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -22,8 +24,9 @@ export const useSettingsStore = create<SettingsState>()(
       currency: 'USD',
       country: 'US',
       language: 'en',
-      reminderDays: [1, 3, 7],
+      reminderDays: 3,
       notificationsEnabled: true,
+      dateFormat: 'DD/MM',
       setCurrency: (currency) => set({ currency }),
       setCountry: (country) => set({ country }),
       setLanguage: (language) => {
@@ -32,6 +35,7 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setReminderDays: (reminderDays) => set({ reminderDays }),
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
+      setDateFormat: (dateFormat) => set({ dateFormat }),
     }),
     {
       name: 'subradar-settings',
