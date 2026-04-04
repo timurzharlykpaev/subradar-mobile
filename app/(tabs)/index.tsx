@@ -31,6 +31,7 @@ import { TrialOfferModal } from '../../src/components/TrialOfferModal';
 import { useUIStore } from '../../src/stores/uiStore';
 import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
+import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -197,6 +198,8 @@ export default function DashboardScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        <TeamSavingsBadge />
 
         {/* ── Hero Card: Total Spend ────────────────────────────── */}
         <View testID="dashboard-hero-card" style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
