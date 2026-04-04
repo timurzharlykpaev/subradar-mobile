@@ -32,6 +32,7 @@ import { useUIStore } from '../../src/stores/uiStore';
 import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
+import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -40,6 +41,8 @@ export default function DashboardScreen() {
   const { currency } = useSettingsStore();
   const { colors, isDark } = useTheme();
   const { data: billing } = useBillingStatus();
+  const { data: analysisLatest } = useAnalysisLatest();
+  const aiResult = analysisLatest?.result;
   const queryClient = useQueryClient();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -201,6 +204,71 @@ export default function DashboardScreen() {
 
         <TeamSavingsBadge />
 
+        {/* ── AI Insights Widget ────────────────────────────────── */}
+        {aiResult && isPro && (
+          <TouchableOpacity
+            onPress={() => router.push('/(tabs)/analytics' as any)}
+            activeOpacity={0.7}
+            style={{
+              marginHorizontal: 20,
+              marginTop: 8,
+              padding: 16,
+              borderRadius: 14,
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <View style={{
+              width: 40, height: 40, borderRadius: 10,
+              backgroundColor: '#7c3aed' + '15',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Ionicons name="sparkles" size={20} color="#7c3aed" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }} numberOfLines={2}>
+                {aiResult.summary}
+              </Text>
+              {Number(aiResult.totalMonthlySavings) > 0 && (
+                <Text style={{ fontSize: 13, color: '#22c55e', fontWeight: '600', marginTop: 2 }}>
+                  {t('dashboard.save_potential', 'Potential savings')}: ${Number(aiResult.totalMonthlySavings).toFixed(0)}/{t('add_flow.mo', 'mo')}
+                </Text>
+              )}
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+        {!isPro && activeSubs.length >= 3 && (
+          <TouchableOpacity
+            onPress={() => router.push('/paywall' as any)}
+            activeOpacity={0.7}
+            style={{
+              marginHorizontal: 20,
+              marginTop: 8,
+              padding: 14,
+              borderRadius: 14,
+              backgroundColor: '#7c3aed' + '10',
+              borderWidth: 1,
+              borderColor: '#7c3aed' + '30',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <Ionicons name="sparkles" size={18} color="#7c3aed" />
+            <Text style={{ flex: 1, fontSize: 13, color: colors.textSecondary }}>
+              {t('dashboard.ai_teaser', 'AI can find savings in your subscriptions')}
+            </Text>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: '#7c3aed' }}>
+              {t('dashboard.try_pro', 'Try Pro')}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* ── Hero Card: Total Spend ────────────────────────────── */}
         <View testID="dashboard-hero-card" style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
           <View style={styles.heroDecor1} />
@@ -213,6 +281,9 @@ export default function DashboardScreen() {
                 <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={10} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
                 <Text style={[styles.deltaText, { color: delta > 0 ? '#FCA5A5' : '#86EFAC' }]}>
                   {Math.abs(delta).toFixed(0)}%
+                </Text>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
+                  {' '}{t('dashboard.vs_last_month', 'vs last month')}
                 </Text>
               </View>
             )}
@@ -263,7 +334,10 @@ export default function DashboardScreen() {
                     </View>
                     <Text style={[styles.upcomingName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.upcomingAmount, { color: colors.primary }]}>{sub.currency} {Number(sub.amount).toFixed(0)}</Text>
-                    <Text style={[styles.upcomingDays, { color: urgent ? colors.warning : colors.textSecondary }]}>
+                    <Text style={[styles.upcomingDays, {
+                      fontWeight: days <= 1 ? '700' : '400',
+                      color: days === 0 ? '#ef4444' : days === 1 ? '#f59e0b' : colors.textSecondary,
+                    }]}>
                       {days === 0 ? t('upcoming.today') : days === 1 ? t('upcoming.tomorrow') : t('upcoming.in_days', { count: days })}
                     </Text>
                   </TouchableOpacity>
@@ -402,6 +476,21 @@ export default function DashboardScreen() {
         {categoryData.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.by_category')}</Text>
+            {categoryData.length > 0 && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 8 }}>
+                  {t('dashboard.top_categories', 'Top Categories')}
+                </Text>
+                {categoryData.slice(0, 3).map((cat, i) => (
+                  <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 }}>
+                    <Text style={{ fontSize: 14, color: colors.textSecondary }}>{cat.category?.replace('_', ' ')}</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+                      {currency} {cat.amount?.toFixed(0)}/{t('add_flow.mo', 'mo')}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
             <View testID="dashboard-category-chart" style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <CategoryDonut categories={categoryData} />
             </View>
@@ -410,12 +499,26 @@ export default function DashboardScreen() {
 
         {/* ── Empty State ────────────────────────────────────── */}
         {subscriptions.length === 0 && (
-          <View style={styles.emptyState}>
-            <View style={[styles.emptyIcon, { backgroundColor: colors.primaryLight }]}>
-              <Ionicons name="add-circle" size={48} color={colors.primary} />
+          <View style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 32 }}>
+            <View style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Ionicons name="wallet-outline" size={36} color={colors.primary} />
             </View>
-            <Text style={[styles.emptyText, { color: colors.text }]}>{t('subscriptions.empty')}</Text>
-            <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>{t('subscriptions.empty_hint')}</Text>
+            <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 8, textAlign: 'center' }}>
+              {t('dashboard.empty_title', 'Track your subscriptions')}
+            </Text>
+            <Text style={{ fontSize: 15, color: colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 }}>
+              {t('dashboard.empty_desc', 'Add your first subscription to see spending insights, upcoming charges, and AI recommendations.')}
+            </Text>
+            <TouchableOpacity
+              style={{ backgroundColor: colors.primary, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 14 }}
+              onPress={() => {
+                try { useUIStore.getState().openAddSheet(); } catch { router.push('/(tabs)/subscriptions' as any); }
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
+                {t('dashboard.add_first', 'Add Subscription')}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -423,7 +526,7 @@ export default function DashboardScreen() {
         <View style={[styles.section, { paddingBottom: 20 }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.quick_actions')}</Text>
           <View testID="dashboard-quick-actions" style={styles.actionsRow}>
-            <QuickAction icon="add-circle-outline" label={t('dashboard.add_subscription')} onPress={() => router.push('/(tabs)/subscriptions')} color={colors.primary} />
+            <QuickAction icon="add-circle-outline" label={t('dashboard.add_subscription')} onPress={() => useUIStore.getState().openAddSheet()} color={colors.primary} />
             <QuickAction icon="document-text-outline" label={t('dashboard.generate_report')} onPress={() => router.push('/reports')} color={colors.success} />
             {!isPro && (
               <QuickAction icon="diamond-outline" label={t('dashboard.upgrade_pro')} onPress={() => router.push('/paywall')} color={colors.warning} />
