@@ -19,7 +19,8 @@
     "success": "Éxito",
     "retry": "Reintentar",
     "mo": "mes",
-    "more": "más"
+    "more": "más",
+    "offline": "No internet connection"
   },
   "tabs": {
     "home": "Inicio",

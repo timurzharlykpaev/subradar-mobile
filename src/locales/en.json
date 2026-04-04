@@ -19,7 +19,8 @@
     "success": "Success",
     "retry": "Retry",
     "mo": "mo",
-    "more": "more"
+    "more": "more",
+    "offline": "No internet connection"
   },
   "tabs": {
     "home": "Home",

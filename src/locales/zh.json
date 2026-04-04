@@ -19,7 +19,8 @@
     "success": "成功",
     "retry": "重试",
     "mo": "月",
-    "more": "更多"
+    "more": "更多",
+    "offline": "No internet connection"
   },
   "tabs": {
     "home": "首页",

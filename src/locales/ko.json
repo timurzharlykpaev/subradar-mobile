@@ -19,7 +19,8 @@
     "success": "성공",
     "retry": "다시 시도",
     "mo": "월",
-    "more": "더보기"
+    "more": "더보기",
+    "offline": "No internet connection"
   },
   "tabs": {
     "home": "홈",
