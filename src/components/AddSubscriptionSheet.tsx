@@ -1515,7 +1515,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         </GestureDetector>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 10 : 0}
           style={{ flex: 1 }}
         >
           <View style={styles.header}>
@@ -1525,7 +1526,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} keyboardShouldPersistTaps="always" keyboardDismissMode="on-drag">
+          <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="always" keyboardDismissMode="interactive">
             {flowState === 'idle' && renderIdle()}
             {flowState === 'loading' && renderLoading()}
             {flowState === 'transcription' && renderTranscription()}
