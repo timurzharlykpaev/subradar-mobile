@@ -18,6 +18,7 @@ import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 import { schedulePaymentReminders } from '../src/utils/localNotifications';
 import { ErrorBoundary } from '../src/utils/ErrorBoundary';
 import { installConsoleInterceptors } from '../src/utils/errorReporter';
+import { OfflineBanner } from '../src/components/OfflineBanner';
 
 // Install global console interceptors as early as possible
 installConsoleInterceptors();
@@ -220,6 +221,7 @@ export default function RootLayout() {
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
             <AdaptiveStatusBar />
+            <OfflineBanner />
             <LanguageLoader />
             <DataLoader />
             <PushSetup />
