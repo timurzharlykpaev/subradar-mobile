@@ -1188,7 +1188,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   >
                     <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
                     <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
-                      {cat.label}
+                      {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
                     </Text>
                   </TouchableOpacity>
                 ))}

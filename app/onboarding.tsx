@@ -418,14 +418,16 @@ export default function OnboardingScreen() {
   // Google OAuth via web browser redirect (works without native build)
   const googlePromptAsync = async () => {
     try {
-      const redirectUri = 'https://api.subradar.ai/api/v1/auth/google/callback';
+      // Use Expo AuthSession proxy so Google redirects back to the app, not backend
+      const { makeRedirectUri } = await import('expo-auth-session');
+      const redirectUri = makeRedirectUri({ preferLocalhost: false });
       const authUrl =
         `https://accounts.google.com/o/oauth2/v2/auth` +
         `?client_id=${GOOGLE_WEB_CLIENT_ID}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         `&response_type=token` +
         `&scope=openid%20email%20profile`;
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'subradar://');
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
       if (result.type === 'success' && result.url) {
         const match = result.url.match(/access_token=([^&]+)/);
         if (match) await handleGoogleToken(match[1]);
