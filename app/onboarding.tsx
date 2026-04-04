@@ -418,19 +418,40 @@ export default function OnboardingScreen() {
   // Google OAuth via web browser redirect (works without native build)
   const googlePromptAsync = async () => {
     try {
-      // Use Expo AuthSession proxy so Google redirects back to the app, not backend
-      const { makeRedirectUri } = await import('expo-auth-session');
-      const redirectUri = makeRedirectUri({ preferLocalhost: false });
+      const redirectUri = 'https://api.subradar.ai/api/v1/auth/google/callback';
       const authUrl =
         `https://accounts.google.com/o/oauth2/v2/auth` +
         `?client_id=${GOOGLE_WEB_CLIENT_ID}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        `&response_type=token` +
-        `&scope=openid%20email%20profile`;
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+        `&response_type=code` +
+        `&scope=openid%20email%20profile` +
+        `&state=mobile`;
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'subradar://');
       if (result.type === 'success' && result.url) {
-        const match = result.url.match(/access_token=([^&]+)/);
-        if (match) await handleGoogleToken(match[1]);
+        // Backend already authenticated — callback contains our JWT
+        const tokenMatch = result.url.match(/[?&#]token=([^&]+)/);
+        const refreshMatch = result.url.match(/[?&#]refreshToken=([^&]+)/);
+        if (tokenMatch?.[1]) {
+          const jwt = decodeURIComponent(tokenMatch[1]);
+          const refresh = refreshMatch?.[1] ? decodeURIComponent(refreshMatch[1]) : undefined;
+          // Fetch user profile with the JWT
+          setLoading(true);
+          try {
+            const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+            if (refresh) await AsyncStorage.setItem('refresh_token', refresh);
+            const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1'}/auth/me`, {
+              headers: { Authorization: `Bearer ${jwt}` },
+            });
+            const userData = await res.json();
+            if (userData?.id || userData?.email) {
+              finishAuth(userData, jwt);
+            }
+          } catch (err) {
+            Alert.alert(t('auth.google_signin_error'), String(err));
+          } finally {
+            setLoading(false);
+          }
+        }
       }
     } catch (e: any) {
       Alert.alert(t('auth.google_signin_error'), t('auth.google_setup_hint'));
