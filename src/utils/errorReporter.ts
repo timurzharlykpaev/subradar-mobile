@@ -1,8 +1,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import axios from 'axios';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
+import { API_URL } from '../api/client';
 
 const DEDUP_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const recentErrors = new Map<string, number>();

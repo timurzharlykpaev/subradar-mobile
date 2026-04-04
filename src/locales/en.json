@@ -253,7 +253,7 @@
     "profile": "Profile",
     "default_currency": "Default Currency",
     "push_notifications": "Push Notifications",
-    "remind_before": "Remind me before renewal",
+    "remind_before": "Remind Before Payment",
     "days_before": "{{count}}d before",
     "payment_cards": "Payment Cards",
     "add_payment_card": "+ Add Payment Card",
@@ -308,7 +308,6 @@
     "weekly_digest_desc": "AI analysis summary every Monday",
     "weekly_digest_pro": "Available in Pro",
     "push_desc": "Upcoming charges, reminders",
-    "remind_before": "Remind Before Payment",
     "remind_off": "Off",
     "reports_data": "Reports & Data",
     "export_csv": "Export Data (CSV)",
@@ -827,5 +826,10 @@
     "got_it": "Got it",
     "analyzing": "Analyzing...",
     "not_found_manual": "Not found? Enter manually"
+  },
+  "errors": {
+    "something_went_wrong": "Something went wrong",
+    "try_restart": "Try restarting the app",
+    "restart": "Restart"
   }
 }

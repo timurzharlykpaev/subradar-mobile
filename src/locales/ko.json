@@ -245,7 +245,7 @@
     "profile": "프로필",
     "default_currency": "기본 통화",
     "push_notifications": "푸시 알림",
-    "remind_before": "갱신 전 알림 받기",
+    "remind_before": "Remind Before Payment",
     "days_before": "{{count}}일 전",
     "payment_cards": "결제 카드",
     "add_payment_card": "+ 결제 카드 추가",
@@ -300,7 +300,6 @@
     "weekly_digest_desc": "AI analysis summary every Monday",
     "weekly_digest_pro": "Available in Pro",
     "push_desc": "Upcoming charges, reminders",
-    "remind_before": "Remind Before Payment",
     "remind_off": "Off",
     "reports_data": "Reports & Data",
     "export_csv": "Export Data (CSV)",
@@ -827,5 +826,10 @@
     "got_it": "Got it",
     "analyzing": "Analyzing...",
     "not_found_manual": "Not found? Enter manually"
+  },
+  "errors": {
+    "something_went_wrong": "Something went wrong",
+    "try_restart": "Try restarting the app",
+    "restart": "Restart"
   }
 }

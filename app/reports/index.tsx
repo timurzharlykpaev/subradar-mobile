@@ -11,8 +11,7 @@ import * as Sharing from 'expo-sharing';
 import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { useAuthStore } from '../../src/stores/authStore';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
+import { API_URL } from '../../src/api/client';
 
 export default function ReportsScreen() {
   const router = useRouter();

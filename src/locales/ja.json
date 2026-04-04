@@ -245,7 +245,7 @@
     "profile": "プロフィール",
     "default_currency": "デフォルト通貨",
     "push_notifications": "プッシュ通知",
-    "remind_before": "更新前にリマインド",
+    "remind_before": "Remind Before Payment",
     "days_before": "{{count}}日前",
     "payment_cards": "支払いカード",
     "add_payment_card": "+ カードを追加",
@@ -300,7 +300,6 @@
     "weekly_digest_desc": "AI analysis summary every Monday",
     "weekly_digest_pro": "Available in Pro",
     "push_desc": "Upcoming charges, reminders",
-    "remind_before": "Remind Before Payment",
     "remind_off": "Off",
     "reports_data": "Reports & Data",
     "export_csv": "Export Data (CSV)",
@@ -827,5 +826,10 @@
     "got_it": "Got it",
     "analyzing": "Analyzing...",
     "not_found_manual": "Not found? Enter manually"
+  },
+  "errors": {
+    "something_went_wrong": "Something went wrong",
+    "try_restart": "Try restarting the app",
+    "restart": "Restart"
   }
 }

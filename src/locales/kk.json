@@ -253,7 +253,7 @@
     "profile": "Профиль",
     "default_currency": "Әдепкі валюта",
     "push_notifications": "Push-хабарландырулар",
-    "remind_before": "Жаңартуға дейін еске салу",
+    "remind_before": "Remind Before Payment",
     "days_before": "{{count}} күн бұрын",
     "payment_cards": "Төлем карталары",
     "add_payment_card": "+ Карта қосу",
@@ -308,7 +308,6 @@
     "weekly_digest_desc": "AI analysis summary every Monday",
     "weekly_digest_pro": "Available in Pro",
     "push_desc": "Upcoming charges, reminders",
-    "remind_before": "Remind Before Payment",
     "remind_off": "Off",
     "reports_data": "Reports & Data",
     "export_csv": "Export Data (CSV)",
@@ -827,5 +826,10 @@
     "got_it": "Got it",
     "analyzing": "Analyzing...",
     "not_found_manual": "Not found? Enter manually"
+  },
+  "errors": {
+    "something_went_wrong": "Something went wrong",
+    "try_restart": "Try restarting the app",
+    "restart": "Restart"
   }
 }

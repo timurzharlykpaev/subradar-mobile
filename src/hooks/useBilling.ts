@@ -15,7 +15,7 @@ export function useBillingStatus() {
         throw e;
       }
     },
-    staleTime: 5000,
+    staleTime: 30_000,
     refetchOnMount: 'always',
     retry: 1,
   });

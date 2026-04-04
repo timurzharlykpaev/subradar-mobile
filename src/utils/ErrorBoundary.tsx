@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { reportError } from './errorReporter';
 import { WarningIcon } from '../components/icons';
+import i18n from '../i18n';
 
 interface Props {
   children: React.ReactNode;
@@ -32,12 +33,12 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <WarningIcon size={48} color="#F59E0B" />
-          <Text style={styles.title}>Что-то пошло не так</Text>
+          <Text style={styles.title}>{i18n.t('errors.something_went_wrong', 'Something went wrong')}</Text>
           <Text style={styles.subtitle}>
-            Произошла непредвиденная ошибка. Мы уже знаем о ней и работаем над исправлением.
+            {i18n.t('errors.try_restart', 'Try restarting the app')}
           </Text>
           <TouchableOpacity style={styles.button} onPress={this.handleRestart}>
-            <Text style={styles.buttonText}>Перезапустить</Text>
+            <Text style={styles.buttonText}>{i18n.t('errors.restart', 'Restart')}</Text>
           </TouchableOpacity>
         </View>
       );
