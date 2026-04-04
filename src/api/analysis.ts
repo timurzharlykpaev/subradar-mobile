@@ -10,8 +10,8 @@ export const analysisApi = {
     const { data } = await apiClient.get(`/analysis/status/${jobId}`);
     return data;
   },
-  run: async (): Promise<{ jobId?: string; status?: string; cached?: boolean; resultId?: string; error?: string; retryAfter?: number }> => {
-    const { data } = await apiClient.post('/analysis/run');
+  run: async (locale?: string): Promise<{ jobId?: string; status?: string; cached?: boolean; resultId?: string; error?: string; retryAfter?: number }> => {
+    const { data } = await apiClient.post('/analysis/run', locale ? { locale } : undefined);
     return data;
   },
   getUsage: async (): Promise<AnalysisUsageResponse> => {

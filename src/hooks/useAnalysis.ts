@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
 import { analysisApi } from '../api/analysis';
+import { useSettingsStore } from '../stores/settingsStore';
 import type { AnalysisStatusResponse } from '../types';
 
 const ANALYSIS_KEYS = {
@@ -34,8 +35,9 @@ export function useAnalysisStatus(jobId: string | null) {
 
 export function useRunAnalysis() {
   const queryClient = useQueryClient();
+  const language = useSettingsStore((s) => s.language);
   return useMutation({
-    mutationFn: analysisApi.run,
+    mutationFn: () => analysisApi.run(language),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.usage });
