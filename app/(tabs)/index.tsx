@@ -235,7 +235,7 @@ export default function DashboardScreen() {
               </Text>
               {Number(aiResult.totalMonthlySavings) > 0 && (
                 <Text style={{ fontSize: 13, color: '#22c55e', fontWeight: '600', marginTop: 2 }}>
-                  {t('dashboard.save_potential', 'Potential savings')}: ${Number(aiResult.totalMonthlySavings).toFixed(0)}/{t('add_flow.mo', 'mo')}
+                  {t('dashboard.save_potential', 'Potential savings')}: {currency}{Number(aiResult.totalMonthlySavings).toFixed(0)}/{t('add_flow.mo', 'mo')}
                 </Text>
               )}
             </View>
@@ -483,7 +483,7 @@ export default function DashboardScreen() {
                 </Text>
                 {categoryData.slice(0, 3).map((cat, i) => (
                   <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 }}>
-                    <Text style={{ fontSize: 14, color: colors.textSecondary }}>{cat.category?.replace('_', ' ')}</Text>
+                    <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t(`categories.${cat.category?.toLowerCase()}`, cat.category?.replace('_', ' '))}</Text>
                     <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
                       {currency} {cat.amount?.toFixed(0)}/{t('add_flow.mo', 'mo')}
                     </Text>
