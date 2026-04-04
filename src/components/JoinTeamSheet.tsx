@@ -19,7 +19,7 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleJoin = async () => {
-    if (code.length !== 6) return;
+    if (code.length < 6) return;
     setLoading(true);
     try {
       await workspaceApi.joinByCode(code.toUpperCase());
@@ -51,18 +51,18 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
       <TextInput
         style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
         value={code}
-        onChangeText={(val) => setCode(val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
-        placeholder="A7K2M9"
+        onChangeText={(val) => setCode(val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
+        placeholder="A7K2M9XP3N"
         placeholderTextColor={colors.textSecondary}
         autoCapitalize="characters"
-        maxLength={6}
+        maxLength={10}
         autoFocus
       />
 
       <TouchableOpacity
-        style={[styles.joinBtn, { backgroundColor: colors.primary, opacity: code.length === 6 ? 1 : 0.5 }]}
+        style={[styles.joinBtn, { backgroundColor: colors.primary, opacity: code.length >= 6 ? 1 : 0.5 }]}
         onPress={handleJoin}
-        disabled={code.length !== 6 || loading}
+        disabled={code.length < 6 || loading}
       >
         <Text style={styles.joinBtnText}>
           {loading ? t('common.loading', 'Loading...') : t('workspace.join', 'Join')}
