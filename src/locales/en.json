@@ -70,7 +70,15 @@
     "add_subscription": "Add Subscription",
     "generate_report": "Generate Report",
     "upgrade_pro": "Upgrade to Pro",
-    "active_subs": "active subs"
+    "active_subs": "active subs",
+    "ai_teaser": "AI can find savings in your subscriptions",
+    "try_pro": "Try Pro",
+    "save_potential": "Potential savings",
+    "vs_last_month": "vs last month",
+    "empty_title": "Track your subscriptions",
+    "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
+    "add_first": "Add Subscription",
+    "top_categories": "Top Categories"
   },
   "subscriptions": {
     "title": "Subscriptions",

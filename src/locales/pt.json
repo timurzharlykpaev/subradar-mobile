@@ -70,7 +70,15 @@
     "review": "Revisar",
     "subscriptions_label": "assinaturas",
     "upgrade_pro": "Atualizar para Pro",
-    "active_subs": "assin. ativas"
+    "active_subs": "assin. ativas",
+    "ai_teaser": "AI can find savings in your subscriptions",
+    "try_pro": "Try Pro",
+    "save_potential": "Potential savings",
+    "vs_last_month": "vs last month",
+    "empty_title": "Track your subscriptions",
+    "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
+    "add_first": "Add Subscription",
+    "top_categories": "Top Categories"
   },
   "subscriptions": {
     "title": "Assinaturas",

@@ -70,7 +70,15 @@
     "review": "Revisar",
     "subscriptions_label": "suscripciones",
     "upgrade_pro": "Actualizar a Pro",
-    "active_subs": "subs activas"
+    "active_subs": "subs activas",
+    "ai_teaser": "AI can find savings in your subscriptions",
+    "try_pro": "Try Pro",
+    "save_potential": "Potential savings",
+    "vs_last_month": "vs last month",
+    "empty_title": "Track your subscriptions",
+    "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
+    "add_first": "Add Subscription",
+    "top_categories": "Top Categories"
   },
   "subscriptions": {
     "title": "Suscripciones",
