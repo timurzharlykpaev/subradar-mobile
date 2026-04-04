@@ -20,7 +20,11 @@
     "retry": "Повторить",
     "mo": "мес",
     "more": "ещё",
-    "offline": "Нет подключения к интернету"
+    "offline": "Нет подключения к интернету",
+    "copy": "Копировать",
+    "done": "Готово",
+    "ok": "ОК",
+    "share": "Поделиться"
   },
   "tabs": {
     "home": "Главная",
@@ -230,7 +234,17 @@
     "or_manual": "или введите вручную",
     "searching": "Ищем...",
     "bulk_partial_title": "Лимит достигнут",
-    "bulk_partial_upgrade": "Сохранено {{saved}} из {{total}}. Перейдите на Pro для безлимита."
+    "bulk_partial_upgrade": "Сохранено {{saved}} из {{total}}. Перейдите на Pro для безлимита.",
+    "already_exists": "Уже существует",
+    "billing_day": "День оплаты",
+    "bulk_auto_detected": "Автоматически найденные подписки",
+    "bulk_limit": "Лимит подписок достигнут",
+    "cancel_url": "Ссылка для отмены",
+    "choose_plan": "Выберите тариф",
+    "enter_manually": "Ввести вручную",
+    "limit_partial_msg": "Сохранено {{saved}} из {{total}}. Обновитесь для безлимита.",
+    "limit_partial_title": "Лимит достигнут",
+    "service_url": "Ссылка на сервис"
   },
   "settings": {
     "title": "Настройки",
@@ -316,7 +330,13 @@
     "plan_free": "FREE",
     "plan_pro": "PRO",
     "plan_team": "TEAM",
-    "usage_summary": "{{subs}} подписок · {{ai}}/{{aiLimit}} AI"
+    "usage_summary": "{{subs}} подписок · {{ai}}/{{aiLimit}} AI",
+    "active": "Активно",
+    "ai_used": "AI использовано",
+    "date_format": "Формат даты",
+    "off": "Выкл",
+    "subradar_team": "Команда Subradar",
+    "subs_count": "подписок"
   },
   "auth": {
     "welcome": "С возвращением",
@@ -390,7 +410,8 @@
     "trial_title": "Первая подписка добавлена!",
     "trial_description": "Попробуй SubRadar Pro бесплатно — 7 дней. Деньги списываются только после триала.",
     "trial_start": "Начать триал →",
-    "trial_skip": "Продолжить бесплатно"
+    "trial_skip": "Продолжить бесплатно",
+    "trial_promo": "7 дней Pro бесплатно после регистрации"
   },
   "analytics": {
     "title": "Аналитика",
@@ -466,7 +487,8 @@
     "card_brand": "Бренд",
     "card_last4": "Последние 4 цифры",
     "card_nickname": "Название карты",
-    "save_card": "Сохранить карту"
+    "save_card": "Сохранить карту",
+    "cancel_success": "Подписка отменена"
   },
   "cards": {
     "title": "Карты",
@@ -678,7 +700,21 @@
     "feature_duplicates": "Найти дубликаты подписок",
     "feature_family": "Перейти на семейные/командные планы",
     "feature_report": "Еженедельный отчёт по расходам",
-    "run_analysis": "Запустить AI анализ"
+    "run_analysis": "Запустить AI анализ",
+    "ai_savings_potential": "AI потенциальная экономия",
+    "delete_btn": "Удалить",
+    "delete_confirm_msg": "Все участники будут удалены. Это нельзя отменить.",
+    "delete_confirm_title": "Удалить команду?",
+    "error_delete": "Не удалось удалить команду",
+    "error_leave": "Не удалось покинуть команду",
+    "feature_family_plans": "Перейти на семейные/командные планы",
+    "feature_find_duplicates": "Найти дубликаты подписок",
+    "feature_see_who_pays": "Видеть кто за что платит",
+    "feature_weekly_report": "Еженедельный отчёт по расходам",
+    "have_invite_code": "Есть код приглашения?",
+    "leave_btn": "Выйти",
+    "leave_confirm_msg": "Вы потеряете доступ к аналитике команды.",
+    "leave_confirm_title": "Покинуть команду?"
   },
   "paywall": {
     "choose_plan": "Выбери план",
@@ -713,7 +749,9 @@
     "upgrade_success_msg_plan": "Добро пожаловать в {{plan}}!",
     "upgrade_success_hint": "Все функции разблокированы и готовы к использованию.",
     "upgrade_success_cta": "Начать →",
-    "switch_to_yearly": "Перейти на годовой →"
+    "switch_to_yearly": "Перейти на годовой →",
+    "purchase_failed": "Ошибка покупки",
+    "title": "Обновление"
   },
   "pro_modal": {
     "title_default": "Pro функция",
@@ -797,7 +835,13 @@
     "stage_store": "Формирование рекомендаций",
     "loading_hint": "Обычно занимает 15-30 секунд",
     "error_title": "Ошибка анализа",
-    "retry": "Попробовать снова"
+    "retry": "Попробовать снова",
+    "analyzing": "Анализируем...",
+    "savings_mo": "экономия/мес",
+    "title": "AI Анализ",
+    "updated_days_ago": "{{count}} дн. назад",
+    "updated_today": "Сегодня",
+    "updated_yesterday": "Вчера"
   },
   "add_flow": {
     "title": "Добавить подписку",

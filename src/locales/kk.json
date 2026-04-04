@@ -20,7 +20,11 @@
     "retry": "Қайталау",
     "mo": "ай",
     "more": "тағы",
-    "offline": "No internet connection"
+    "offline": "No internet connection",
+    "copy": "Copy",
+    "done": "Done",
+    "ok": "OK",
+    "share": "Share"
   },
   "tabs": {
     "home": "Басты",
@@ -230,7 +234,17 @@
     "or_manual": "or enter manually",
     "searching": "Searching...",
     "bulk_partial_title": "Limit Reached",
-    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions."
+    "bulk_partial_upgrade": "Saved {{saved}} out of {{total}}. Upgrade to Pro for unlimited subscriptions.",
+    "already_exists": "Already exists",
+    "billing_day": "Billing day",
+    "bulk_auto_detected": "Auto-detected subscriptions",
+    "bulk_limit": "Subscription limit reached",
+    "cancel_url": "Cancel URL",
+    "choose_plan": "Choose plan",
+    "enter_manually": "Enter manually",
+    "limit_partial_msg": "Saved {{saved}} out of {{total}}. Upgrade for unlimited.",
+    "limit_partial_title": "Limit reached",
+    "service_url": "Service URL"
   },
   "periods": {
     "WEEKLY": "Апта сайын",
@@ -324,7 +338,13 @@
     "plan_free": "FREE",
     "plan_pro": "PRO",
     "plan_team": "TEAM",
-    "usage_summary": "{{subs}} subs · {{ai}}/{{aiLimit}} AI used"
+    "usage_summary": "{{subs}} subs · {{ai}}/{{aiLimit}} AI used",
+    "active": "Active",
+    "ai_used": "AI used",
+    "date_format": "Date format",
+    "off": "Off",
+    "subradar_team": "Subradar Team",
+    "subs_count": "subscriptions"
   },
   "auth": {
     "welcome": "Қайта оралуыңызбен",
@@ -398,7 +418,8 @@
     "notifications_title": "Төлемді жіберіп алмаңыз",
     "notifications_subtitle": "Жазылымдарыңыз жаңартылмас бұрын еске салу алыңыз",
     "enable_notifications": "Хабарландыруларды қосу",
-    "maybe_later": "Кейінірек"
+    "maybe_later": "Кейінірек",
+    "trial_promo": "Get 7 days free with Pro after signup"
   },
   "analytics": {
     "title": "Аналитика",
@@ -474,7 +495,8 @@
     "card_brand": "Бренд",
     "card_last4": "Соңғы 4 сан",
     "card_nickname": "Карта атауы",
-    "save_card": "Картаны сақтау"
+    "save_card": "Картаны сақтау",
+    "cancel_success": "Subscription cancelled"
   },
   "cards": {
     "title": "Карталар",
@@ -678,7 +700,21 @@
     "feature_duplicates": "Find duplicate subscriptions",
     "feature_family": "Switch to family/team plans",
     "feature_report": "Weekly team spending report",
-    "run_analysis": "Run AI Analysis"
+    "run_analysis": "Run AI Analysis",
+    "ai_savings_potential": "AI potential savings",
+    "delete_btn": "Delete",
+    "delete_confirm_msg": "All members will be removed. This cannot be undone.",
+    "delete_confirm_title": "Delete team?",
+    "error_delete": "Failed to delete team",
+    "error_leave": "Failed to leave team",
+    "feature_family_plans": "Switch to family/team plans",
+    "feature_find_duplicates": "Find duplicate subscriptions",
+    "feature_see_who_pays": "See who pays for what",
+    "feature_weekly_report": "Weekly team spending report",
+    "have_invite_code": "Have an invite code?",
+    "leave_btn": "Leave",
+    "leave_confirm_msg": "You'll lose access to team analytics.",
+    "leave_confirm_title": "Leave team?"
   },
   "paywall": {
     "choose_plan": "Жоспар таңдаңыз",
@@ -713,7 +749,9 @@
     "upgrade_success_msg_plan": "{{plan}} қош келдіңіз!",
     "upgrade_success_hint": "Барлық мүмкіндіктер бекітілді.",
     "upgrade_success_cta": "Бастау →",
-    "switch_to_yearly": "Жылдыққа өту →"
+    "switch_to_yearly": "Жылдыққа өту →",
+    "purchase_failed": "Purchase failed",
+    "title": "Upgrade"
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",
@@ -797,7 +835,13 @@
     "stage_store": "Generating recommendations",
     "loading_hint": "Usually takes 15-30 seconds",
     "error_title": "Analysis failed",
-    "retry": "Try again"
+    "retry": "Try again",
+    "analyzing": "Analyzing...",
+    "savings_mo": "savings/mo",
+    "title": "AI Analysis",
+    "updated_days_ago": "{{count}} days ago",
+    "updated_today": "Today",
+    "updated_yesterday": "Yesterday"
   },
   "add_flow": {
     "title": "Add Subscription",
