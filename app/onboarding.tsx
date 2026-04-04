@@ -461,8 +461,8 @@ export default function OnboardingScreen() {
     setCurrency(selectedCurrency);
     setUser(user, token);
     setOnboarded();
-    // Go to "add first subscription" step (step 6)
-    setStep(6);
+    // Go to notifications step (step 4)
+    setStep(4);
   };
 
   const handleGoogleToken = async (accessToken: string) => {
@@ -689,34 +689,7 @@ export default function OnboardingScreen() {
       </View>
     </View>,
 
-    // Step 2: Welcome
-    <View key="welcome" testID="step-welcome" style={styles.step}>
-      <Animated.View style={[styles.logoContainer, logoStyle]}>
-        <Image source={require('../assets/images/icon.png')} style={styles.logoImageLarge} />
-        <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
-        <View style={[styles.aiBadge, { backgroundColor: colors.primary }]}><Text style={styles.aiBadgeText}>AI</Text></View>
-      </Animated.View>
-      <Text style={[styles.headline, { color: colors.text }]}>{t('landing.hero_title')}</Text>
-      <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('landing.hero_sub')}</Text>
-    </View>,
-
-    // Step 3: Features
-    <View key="features" testID="step-features" style={styles.step}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('landing.features')}</Text>
-      {FEATURES.map((f) => (
-        <View key={f.key} style={[styles.featureRow, { backgroundColor: colors.surface }]}>
-          <View style={[styles.featureIcon, { backgroundColor: colors.primary + '18' }]}>
-            <f.icon />
-          </View>
-          <View style={styles.featureText}>
-            <Text style={[styles.featureTitle, { color: colors.text }]}>{t(`features.${f.key}_title`)}</Text>
-            <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>{t(`features.${f.key}_desc`)}</Text>
-          </View>
-        </View>
-      ))}
-    </View>,
-
-    // Step 4: Currency
+    // Step 2: Currency
     <View key="currency" testID="step-currency" style={styles.step}>
       <View style={{ alignItems: 'center', marginBottom: 8 }}>
         <Svg width={140} height={140} viewBox="0 0 140 140">
@@ -756,7 +729,7 @@ export default function OnboardingScreen() {
       </View>
     </View>,
 
-    // Step 5: Auth
+    // Step 3: Auth
     <View key="auth" testID="step-auth" style={[styles.step, { flex: 1, justifyContent: 'center', paddingBottom: 8 }]}>
       {/* Theme toggle top-right — use insets to stay below status bar */}
       <TouchableOpacity
@@ -905,7 +878,7 @@ export default function OnboardingScreen() {
       </Text>
     </View>,
 
-    // Step 6: Enable notifications
+    // Step 4: Enable notifications
     <View key="notifications" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
       <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: '#F59E0B20', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
         <Ionicons name="notifications" size={56} color="#F59E0B" />
@@ -934,7 +907,7 @@ export default function OnboardingScreen() {
       </TouchableOpacity>
     </View>,
 
-    // Step 7: Add first subscription
+    // Step 5: Add first subscription
     <View key="first_sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
       {/* Icon */}
       <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
@@ -956,8 +929,8 @@ export default function OnboardingScreen() {
           navigateToApp();
         }}
       >
-        <Ionicons name="create-outline" size={22} color="#FFF" />
-        <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_manually')}</Text>
+        <Ionicons name="sparkles-outline" size={22} color="#FFF" />
+        <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_with_ai')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -967,8 +940,8 @@ export default function OnboardingScreen() {
           navigateToApp();
         }}
       >
-        <Ionicons name="sparkles-outline" size={22} color={colors.primary} />
-        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_with_ai')}</Text>
+        <Ionicons name="create-outline" size={22} color={colors.primary} />
+        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_manually')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigateToApp()} style={{ paddingVertical: 12 }}>
@@ -993,18 +966,16 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {step > 0 && step !== 5 && step !== 6 && step !== 7 && (
+        {step > 0 && step !== 3 && step !== 4 && step !== 5 && (
           <View style={styles.footerBtns}>
             {step > 1 && (
               <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
                 <Text style={[styles.backBtnText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
               </TouchableOpacity>
             )}
-            {step < steps.length - 1 && step !== 5 && (
+            {step < steps.length - 1 && step !== 3 && (
               <TouchableOpacity testID="btn-next" style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
-                <Text style={styles.nextBtnText}>
-                  {step === 2 ? t('onboarding.get_started') : t('onboarding.next')}
-                </Text>
+                <Text style={styles.nextBtnText}>{t('onboarding.next')}</Text>
               </TouchableOpacity>
             )}
           </View>

@@ -372,7 +372,7 @@
     "showcase_team_title": "Командный план",
     "showcase_team_desc": "Управляй подписками вместе с командой",
     "notifications_title": "Не пропускай платежи",
-    "notifications_subtitle": "Получай напоминания до списания подписок, чтобы не было неожиданных трат",
+    "notifications_subtitle": "Уведомим за 3 дня до каждого продления — push и email, чтобы вы успели отменить или изменить.",
     "enable_notifications": "Включить уведомления",
     "maybe_later": "Позже",
     "first_sub_title": "Добавьте первую подписку",
