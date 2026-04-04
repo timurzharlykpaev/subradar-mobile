@@ -169,7 +169,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               style={[styles.chip, period === p && styles.chipActive, { borderColor: colors.border }]}
               onPress={() => setPeriod(p)}
             >
-              <Text style={[styles.chipText, period === p && styles.chipTextActive, { color: period === p ? '#fff' : colors.textSecondary }]}>{p}</Text>
+              <Text style={[styles.chipText, period === p && styles.chipTextActive, { color: period === p ? '#fff' : colors.textSecondary }]}>{t(`periods.${p}`, p)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -185,7 +185,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               style={[styles.chip, category === c && styles.chipActive, { borderColor: colors.border }]}
               onPress={() => setCategory(c)}
             >
-              <Text style={[styles.chipText, category === c && styles.chipTextActive, { color: category === c ? '#fff' : colors.textSecondary }]}>{c.replace('_', ' ')}</Text>
+              <Text style={[styles.chipText, category === c && styles.chipTextActive, { color: category === c ? '#fff' : colors.textSecondary }]}>{t(`categories.${c.toLowerCase()}`, c.replace('_', ' '))}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity
@@ -205,7 +205,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               style={[styles.chip, category === c && styles.chipActive, { borderColor: colors.border, marginBottom: 4 }]}
               onPress={() => { setCategory(c); setShowMore(false); }}
             >
-              <Text style={[styles.chipText, category === c && styles.chipTextActive, { color: category === c ? '#fff' : colors.textSecondary }]}>{c.replace('_', ' ')}</Text>
+              <Text style={[styles.chipText, category === c && styles.chipTextActive, { color: category === c ? '#fff' : colors.textSecondary }]}>{t(`categories.${c.toLowerCase()}`, c.replace('_', ' '))}</Text>
             </TouchableOpacity>
           ))}
         </View>
