@@ -226,11 +226,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   useEffect(() => {
     if (!visible) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (flowState !== 'idle') {
+        setFlowState('idle');
+        return true;
+      }
       handleClose();
       return true;
     });
     return () => sub.remove();
-  }, [visible, handleClose]);
+  }, [visible, handleClose, flowState]);
 
   const panGesture = Gesture.Pan()
     .activeOffsetY(10)
@@ -271,8 +275,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       router.push('/paywall');
       return;
     }
-    if (!form.name || !form.amount || parseFloat(form.amount) <= 0) {
-      Alert.alert(t('add.required'), t('add.fill_required'));
+    if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
     }
     setSaving(true);
@@ -745,6 +748,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 16 }}>
         {t('add.searching', 'Searching...')}
       </Text>
+      <TouchableOpacity
+        onPress={() => setFlowState('idle')}
+        style={{ marginTop: 16, paddingVertical: 12 }}
+      >
+        <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
+          {t('common.cancel', 'Cancel')}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -1366,7 +1377,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   key={c.value || 'auto'}
                   onPress={() => setF('color', c.value)}
                   style={{
-                    width: 32, height: 32, borderRadius: 16,
+                    width: 44, height: 44, borderRadius: 22,
                     backgroundColor: c.hex,
                     borderWidth: 2.5,
                     borderColor: form.color === c.value ? colors.text : 'transparent',
@@ -1471,9 +1482,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
       <TouchableOpacity
         testID="btn-save-sub"
-        style={[{ backgroundColor: colors.primary, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }, saving && { opacity: 0.6 }]}
+        style={[{ backgroundColor: (form.name.trim() !== '' && parseFloat(form.amount) > 0) ? colors.primary : colors.border, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }, (saving || !(form.name.trim() !== '' && parseFloat(form.amount) > 0)) && { opacity: 0.5 }]}
         onPress={handleSave}
-        disabled={saving}
+        disabled={saving || !(form.name.trim() !== '' && parseFloat(form.amount) > 0)}
       >
         {saving ? (
           <ActivityIndicator color="#FFF" />
@@ -1514,7 +1525,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+          <ScrollView style={styles.content} keyboardShouldPersistTaps="always" keyboardDismissMode="on-drag">
             {flowState === 'idle' && renderIdle()}
             {flowState === 'loading' && renderLoading()}
             {flowState === 'transcription' && renderTranscription()}
@@ -1586,9 +1597,9 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: '800' },
   closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1605,9 +1616,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderRadius: 20,
     borderWidth: 1,
+    minHeight: 44,
   },
   quickChipIcon: {
     width: 24,
