@@ -3,6 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 import { User } from '../types';
 
+const SECURE_KEY = 'auth-storage';
+
 // Requires native rebuild (EAS build). Does NOT work in Expo Go.
 const secureStorage = {
   getItem: async (name: string): Promise<string | null> => {
