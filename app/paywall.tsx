@@ -114,24 +114,30 @@ export default function PaywallScreen() {
   const isTrialing = billing?.status === 'trialing';
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
 
+  // Map plan + period to RevenueCat product identifier
+  const PRODUCT_IDS: Record<string, Record<string, string>> = {
+    pro:  { monthly: 'io.subradar.mobile.pro.monthly',  yearly: 'io.subradar.mobile.pro.yearly' },
+    org:  { monthly: 'io.subradar.mobile.team.monthly', yearly: 'io.subradar.mobile.team.yearly' },
+  };
+
+  const findPackage = (planId: string, period: string): any | undefined => {
+    const productId = PRODUCT_IDS[planId]?.[period];
+    if (!productId) return undefined;
+    return offerings?.current?.availablePackages?.find(
+      (p: any) => p.product?.identifier === productId,
+    );
+  };
+
   const getPrice = (planId: string): { price: string; period: string } => {
     if (planId === 'free') return { price: t('paywall.free_price', 'Free'), period: '' };
 
-    const current = offerings?.current;
-    if (current) {
-      if (planId === 'pro') {
-        const pkg = billingPeriod === 'yearly' ? current.annual : current.monthly;
-        if (pkg) return { price: pkg.product.priceString, period: `/${billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` };
-      }
-      if (planId === 'org') {
-        const pkg = current.availablePackages.find((p: any) =>
-          p.product.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
-        );
-        if (pkg) return { price: pkg.product.priceString, period: `/${billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` };
-      }
+    const pkg = findPackage(planId, billingPeriod);
+    if (pkg) {
+      const periodLabel = billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo');
+      return { price: pkg.product.priceString, period: `/${periodLabel}` };
     }
 
-    // Fallback
+    // Fallback prices when RC packages not loaded yet
     if (planId === 'pro') {
       return billingPeriod === 'yearly'
         ? { price: '$24.99', period: `/${t('paywall.year', 'yr')}` }
@@ -165,28 +171,9 @@ export default function PaywallScreen() {
     // Allow purchase even on current plan so user can switch monthly→yearly
     // RC will handle upgrade properly (PRODUCT_CHANGE event)
 
-    // Try native IAP first, fallback to web checkout
-    const current = offerings?.current;
-    console.log('[Paywall] offerings.current:', current ? 'exists' : 'null', 'packages:', current?.availablePackages?.length ?? 0);
-    if (current?.availablePackages) {
-      current.availablePackages.forEach((p: any) => console.log('[Paywall] pkg:', p.identifier, p.product?.identifier));
-    }
-    let pkg: any | undefined;
-    if (current) {
-      if (selected === 'pro') {
-        pkg = (billingPeriod === 'yearly' ? current.annual : current.monthly) ?? undefined;
-        // Fallback: search by product identifier
-        if (!pkg) {
-          const targetId = billingPeriod === 'yearly' ? 'io.subradar.mobile.pro.yearly' : 'io.subradar.mobile.pro.monthly';
-          pkg = current.availablePackages?.find((p: any) => p.product?.identifier === targetId);
-        }
-      } else {
-        pkg = current.availablePackages?.find((p: any) =>
-          p.product?.identifier === (billingPeriod === 'yearly' ? 'io.subradar.mobile.team.yearly' : 'io.subradar.mobile.team.monthly')
-        );
-      }
-    }
-    console.log('[Paywall] selected:', selected, 'period:', billingPeriod, 'pkg found:', !!pkg);
+    // Find RC package by product identifier
+    const pkg = findPackage(selected, billingPeriod);
+    console.log('[Paywall] selected:', selected, 'period:', billingPeriod, 'pkg found:', !!pkg, 'available:', offerings?.current?.availablePackages?.length ?? 0);
 
     if (!pkg) {
       // No RevenueCat package available — cannot proceed
