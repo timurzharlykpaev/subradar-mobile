@@ -751,6 +751,7 @@
     "upgrade_success_cta": "Начать →",
     "switch_to_yearly": "Перейти на годовой →",
     "purchase_failed": "Ошибка покупки",
+    "products_unavailable": "Продукты сейчас недоступны. Пожалуйста, попробуйте позже.",
     "title": "Обновление"
   },
   "pro_modal": {

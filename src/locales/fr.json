@@ -751,6 +751,7 @@
     "upgrade_success_cta": "Commencer →",
     "switch_to_yearly": "Passer à l'annuel →",
     "purchase_failed": "Purchase failed",
+    "products_unavailable": "Les produits ne sont pas disponibles pour le moment. Veuillez réessayer plus tard.",
     "title": "Upgrade"
   },
   "ai": {

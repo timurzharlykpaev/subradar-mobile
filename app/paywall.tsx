@@ -72,12 +72,21 @@ export default function PaywallScreen() {
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
   const startTrialMutation = useStartTrial();
   const queryClient = useQueryClient();
-  const { offerings, purchasePackage, restorePurchases } = useRevenueCat();
+  const { offerings, purchasePackage, restorePurchases, loading: rcLoading, loadOfferings } = useRevenueCat();
 
   // Force-refresh billing when paywall opens to get latest plan status
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['billing'] });
   }, []);
+
+  // Retry loading offerings if they're null after initial load
+  useEffect(() => {
+    if (!rcLoading && !offerings) {
+      console.log('[Paywall] Offerings null after load, retrying...');
+      const timer = setTimeout(() => loadOfferings(), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [rcLoading, offerings]);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -179,50 +188,42 @@ export default function PaywallScreen() {
     }
     console.log('[Paywall] selected:', selected, 'period:', billingPeriod, 'pkg found:', !!pkg);
 
-    if (pkg) {
-      // Native IAP purchase
-      setPurchasing(true);
-      try {
-        const purchaseSuccess = await purchasePackage(pkg);
-        console.log('[Paywall] purchasePackage result:', purchaseSuccess);
-        if (!purchaseSuccess) {
-          // User cancelled or error already shown by hook
-          setPurchasing(false);
-          return;
-        }
-        // Show success immediately
-        const planLabel = selected === 'org' ? 'Team' : 'Pro';
-        setSuccessPlan(planLabel);
-        // Sync RC then refetch billing so button state updates before user dismisses success screen
-        try {
-          await billingApi.syncRevenueCat(pkg.product.identifier);
-          console.log('[Paywall] RC sync done');
-        } catch (e) {
-          console.warn('[Paywall] RC sync failed:', e);
-        }
-        await queryClient.refetchQueries({ queryKey: ['billing'] });
-      } catch (e: any) {
-        console.error('[Paywall] Purchase error:', e?.message);
-        Alert.alert(t('common.error'), e?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
-      } finally {
+    if (!pkg) {
+      // No RevenueCat package available — cannot proceed
+      console.warn('[Paywall] No RC package found for', selected, billingPeriod);
+      Alert.alert(
+        t('common.error'),
+        t('paywall.products_unavailable', 'Products are not available right now. Please try again later.'),
+      );
+      return;
+    }
+
+    // Native IAP purchase via RevenueCat
+    setPurchasing(true);
+    try {
+      const purchaseSuccess = await purchasePackage(pkg);
+      console.log('[Paywall] purchasePackage result:', purchaseSuccess);
+      if (!purchaseSuccess) {
+        // User cancelled or error already shown by hook
         setPurchasing(false);
+        return;
       }
-    } else {
-      // Package not found in RevenueCat offerings — fallback to web checkout
-      console.log('[Paywall] No RC package found, falling back to web checkout');
-      setPurchasing(true);
+      // Show success immediately
+      const planLabel = selected === 'org' ? 'Team' : 'Pro';
+      setSuccessPlan(planLabel);
+      // Sync RC then refetch billing so button state updates before user dismisses success screen
       try {
-        const planId = selected === 'org' ? 'organization' : 'pro';
-        const result = await billingApi.checkout(planId);
-        if (result?.data?.url) {
-          const { Linking } = require('react-native');
-          Linking.openURL(result.data.url);
-        }
-      } catch (e: any) {
-        Alert.alert(t('common.error'), e?.response?.data?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
-      } finally {
-        setPurchasing(false);
+        await billingApi.syncRevenueCat(pkg.product.identifier);
+        console.log('[Paywall] RC sync done');
+      } catch (e) {
+        console.warn('[Paywall] RC sync failed:', e);
       }
+      await queryClient.refetchQueries({ queryKey: ['billing'] });
+    } catch (e: any) {
+      console.error('[Paywall] Purchase error:', e?.message);
+      Alert.alert(t('common.error'), e?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
+    } finally {
+      setPurchasing(false);
     }
   };
 

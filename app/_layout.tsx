@@ -86,9 +86,9 @@ function DataLoader() {
     // Configure RevenueCat lazily (safe after native modules loaded)
     try { configureRevenueCat(); } catch {}
 
-    // Identify user in RevenueCat
+    // Identify user in RevenueCat (awaited so offerings load after login)
     const userId = useAuthStore.getState().user?.id;
-    if (userId) loginRevenueCat(userId);
+    if (userId) loginRevenueCat(userId).catch(() => {});
 
     // Load cards
     import('../src/api/cards').then(({ cardsApi }) => {

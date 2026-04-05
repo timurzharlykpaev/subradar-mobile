@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Alert, Platform } from 'react-native';
 
 let Purchases: any = null;
 let PURCHASES_ERROR_CODE: any = {};
@@ -21,7 +21,6 @@ try {
 // RevenueCat public API keys are designed to be in client code (not a secret).
 // Production key set via EXPO_PUBLIC_REVENUECAT_KEY in eas.json (production profile).
 // Dev/TestFlight use test key (set via eas.json preview profiles or .env.local).
-import { Platform } from 'react-native';
 const RC_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS || process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
 const RC_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_KEY_ANDROID || process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
 const API_KEY = Platform.OS === 'ios' ? RC_KEY_IOS : RC_KEY_ANDROID;
@@ -30,12 +29,21 @@ let configured = false;
 
 const isAvailable = () => Purchases != null;
 
+// Promise that resolves when RC is configured — useRevenueCat can await it
+let resolveConfigured: () => void;
+const configuredPromise = new Promise<void>((resolve) => {
+  resolveConfigured = resolve;
+});
+
 export function configureRevenueCat() {
   if (configured || !isAvailable()) return;
   try {
     if (__DEV__ && LOG_LEVEL?.DEBUG) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+    console.log('[RevenueCat] Configuring with key:', API_KEY?.slice(0, 8) + '...', 'platform:', Platform.OS);
     Purchases.configure({ apiKey: API_KEY, appUserID: null });
     configured = true;
+    resolveConfigured();
+    console.log('[RevenueCat] Configured successfully');
   } catch (e) {
     if (__DEV__) console.warn('RevenueCat configure failed:', e);
   }
@@ -63,50 +71,78 @@ export function useRevenueCat() {
   const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [offerings, setOfferings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
-    if (!configured || !isAvailable()) { setLoading(false); return; }
-    let mounted = true;
-    let listenerAdded = false;
-
-    const load = async () => {
-      try {
-        const [info, off] = await Promise.all([
-          Purchases.getCustomerInfo().catch(() => null),
-          Purchases.getOfferings().catch(() => null),
-        ]);
-        if (mounted) {
-          if (info) setCustomerInfo(info);
-          if (off) setOfferings(off);
-        }
-      } catch (e) {
-        console.warn('RevenueCat load failed:', e);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    load();
-
-    const listener = (info: any) => {
-      try {
-        if (mounted && info) setCustomerInfo(info);
-      } catch {}
-    };
-    try {
-      Purchases.addCustomerInfoUpdateListener(listener);
-      listenerAdded = true;
-    } catch (e) {
-      console.warn('RevenueCat listener failed:', e);
+  const loadOfferings = useCallback(async () => {
+    if (!isAvailable()) {
+      console.warn('[RevenueCat] Native module not available');
+      setLoading(false);
+      return;
     }
 
-    return () => {
-      mounted = false;
-      if (listenerAdded) {
-        try { Purchases.removeCustomerInfoUpdateListener(listener); } catch {}
+    // Wait for configureRevenueCat() to be called (max 5s)
+    if (!configured) {
+      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 5000));
+      await Promise.race([configuredPromise, timeout]);
+    }
+
+    if (!configured) {
+      console.warn('[RevenueCat] Not configured after 5s wait');
+      if (mountedRef.current) setLoading(false);
+      return;
+    }
+
+    try {
+      const [info, off] = await Promise.all([
+        Purchases.getCustomerInfo().catch((e: any) => { console.warn('[RevenueCat] getCustomerInfo error:', e?.message); return null; }),
+        Purchases.getOfferings().catch((e: any) => { console.warn('[RevenueCat] getOfferings error:', e?.message); return null; }),
+      ]);
+      if (mountedRef.current) {
+        if (info) setCustomerInfo(info);
+        if (off) {
+          setOfferings(off);
+          console.log('[RevenueCat] Offerings loaded:', off?.current?.availablePackages?.length ?? 0, 'packages');
+        } else {
+          console.warn('[RevenueCat] Offerings are null — check RevenueCat dashboard products/offerings config');
+        }
       }
-    };
+    } catch (e) {
+      console.warn('RevenueCat load failed:', e);
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    let listenerAdded = false;
+
+    loadOfferings();
+
+    // Add listener only if configured
+    if (configured && isAvailable()) {
+      const listener = (info: any) => {
+        try {
+          if (mountedRef.current && info) setCustomerInfo(info);
+        } catch {}
+      };
+      try {
+        Purchases.addCustomerInfoUpdateListener(listener);
+        listenerAdded = true;
+      } catch (e) {
+        console.warn('RevenueCat listener failed:', e);
+      }
+
+      return () => {
+        mountedRef.current = false;
+        if (listenerAdded) {
+          try { Purchases.removeCustomerInfoUpdateListener(listener); } catch {}
+        }
+      };
+    }
+
+    return () => { mountedRef.current = false; };
+  }, [loadOfferings]);
 
   // Check entitlements case-insensitively (RC dashboard may use Pro/pro/PRO)
   const activeEntitlements = customerInfo?.entitlements?.active ?? {};
@@ -165,5 +201,5 @@ export function useRevenueCat() {
     }
   }, []);
 
-  return { customerInfo, offerings, isPro, isTeam, purchasePackage, restorePurchases, loading };
+  return { customerInfo, offerings, isPro, isTeam, purchasePackage, restorePurchases, loading, loadOfferings };
 }

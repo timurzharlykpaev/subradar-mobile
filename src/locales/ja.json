@@ -751,6 +751,7 @@
     "upgrade_success_cta": "始める →",
     "switch_to_yearly": "年払いに切り替える →",
     "purchase_failed": "Purchase failed",
+    "products_unavailable": "現在、製品はご利用いただけません。後でもう一度お試しください。",
     "title": "Upgrade"
   },
   "ai": {

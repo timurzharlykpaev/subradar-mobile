@@ -751,6 +751,7 @@
     "upgrade_success_cta": "Start exploring →",
     "switch_to_yearly": "Switch to Yearly →",
     "purchase_failed": "Purchase failed",
+    "products_unavailable": "Products are not available right now. Please try again later.",
     "title": "Upgrade"
   },
   "pro_modal": {

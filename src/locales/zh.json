@@ -751,6 +751,7 @@
     "upgrade_success_cta": "开始探索 →",
     "switch_to_yearly": "切换到年付 →",
     "purchase_failed": "Purchase failed",
+    "products_unavailable": "产品暂时无法使用，请稍后再试。",
     "title": "Upgrade"
   },
   "ai": {
