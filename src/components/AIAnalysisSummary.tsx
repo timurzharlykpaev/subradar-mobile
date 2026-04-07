@@ -69,7 +69,7 @@ export default function AIAnalysisSummary({
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={[styles.updatedLabel, { color: colors.textMuted }]}>{updatedLabel}</Text>
-        {canRunManual && (
+        {canRunManual ? (
           <TouchableOpacity
             onPress={onRefresh}
             disabled={isRunning}
@@ -85,6 +85,10 @@ export default function AIAnalysisSummary({
               {t('analysis.refresh', 'Refresh')}
             </Text>
           </TouchableOpacity>
+        ) : (
+          <Text style={[styles.updatedLabel, { color: colors.textMuted }]}>
+            {t('analysis.cooldown_hint', 'Updates daily')}
+          </Text>
         )}
       </View>
     </View>
