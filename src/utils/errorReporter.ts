@@ -58,6 +58,10 @@ export function installConsoleInterceptors(): void {
     /RevenueCat/,            // RC SDK warnings are informational, not errors
     /appUserID passed to logIn is the same/,
     /Using a Test Store API key/,
+    /SecureStore/,           // SecureStore fails in Expo Go, works in dev builds
+    /getRegistrationInfoAsync/,  // Push notifications fail in Expo Go
+    /setValueWithKeyAsync/,
+    /Calling the '.*Async' function has failed/,  // Native module not available in Expo Go
   ];
 
   const originalWarn = console.warn.bind(console);
