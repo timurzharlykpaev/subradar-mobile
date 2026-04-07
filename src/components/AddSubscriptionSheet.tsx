@@ -592,11 +592,26 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         setBulkItems(validSubs);
         setFlowState('bulk-confirm');
       }
-    } catch {
-      Alert.alert(t('common.error'), t('add.service_not_found'));
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || '';
+      const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+      if (isLimitError) {
+        Alert.alert(
+          t('add.ai_limit_title', 'AI request limit reached'),
+          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
+          [
+            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+            { text: t('common.cancel', 'Close'), style: 'cancel' },
+          ]
+        );
+      } else {
+        console.error('[Screenshot] Parse error:', status, msg || err?.message);
+        Alert.alert(t('common.error'), msg || t('add.screenshot_parse_error', 'Could not parse the screenshot. Try a clearer image.'));
+      }
       setFlowState('idle');
     }
-  }, [t]);
+  }, [t, router]);
 
   // ── Edit from confirm → manual ──────────────────────────────────────────
   const handleEditFromConfirm = useCallback((data: any) => {
@@ -743,17 +758,28 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   );
 
   // ── Render: loading ─────────────────────────────────────────────────────
+  const loadingHint = addedViaSource === 'AI_SCREENSHOT'
+    ? t('add.analyzing_screenshot', 'Analyzing screenshot...')
+    : addedViaSource === 'AI_TEXT'
+    ? t('add.transcribing_voice', 'Transcribing voice...')
+    : t('add.searching', 'Searching...');
+
   const renderLoading = () => (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 16 }}>
-        {t('add.searching', 'Searching...')}
+      <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+      <Text style={{ color: colors.text, fontSize: 17, fontWeight: '700', marginBottom: 6 }}>
+        {loadingHint}
+      </Text>
+      <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', paddingHorizontal: 40 }}>
+        {t('add.loading_hint', 'AI is processing your request. This usually takes a few seconds.')}
       </Text>
       <TouchableOpacity
         onPress={() => setFlowState('idle')}
-        style={{ marginTop: 16, paddingVertical: 12 }}
+        style={{ marginTop: 24, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, backgroundColor: colors.surface2 }}
       >
-        <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
+        <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
           {t('common.cancel', 'Cancel')}
         </Text>
       </TouchableOpacity>
@@ -916,10 +942,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
       <TouchableOpacity
         onPress={() => setFlowState('idle')}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 8 }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, paddingVertical: 8, paddingHorizontal: 4 }}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
-        <Ionicons name="arrow-back" size={18} color={colors.textSecondary} />
-        <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.back', 'Back')}</Text>
+        <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
+        <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
       </TouchableOpacity>
       <AIWizard
         onSave={async (sub) => {
@@ -1034,7 +1061,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 12 }}
       >
         <Ionicons name="arrow-back" size={18} color={colors.textSecondary} />
-        <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{t('common.back', 'Back')}</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
       </TouchableOpacity>
 
       {/* Essential fields */}
@@ -1599,9 +1626,9 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: '800' },
   closeBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
