@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "Сенімдісіз бе?",
+    "what_you_lose": "Сіз қол жеткізуді жоғалтасыз:",
+    "lose_unlimited_subs": "Шексіз жазылымдар",
+    "lose_ai_200": "Айына 200 AI сұрау",
+    "lose_analytics": "Кеңейтілген аналитика және болжамдар",
+    "lose_reports": "PDF есептер",
+    "special_offer": "Арнайы ұсыныс",
+    "offer_50_off": "3 айға 50% жеңілдік",
+    "cancel_anyway": "Бәрібір болдырмау",
+    "pro_ends_in_days": "Pro {{count}} күнде аяқталады",
+    "pro_ends_tomorrow": "Pro ертең аяқталады",
+    "pro_ends_today": "Pro бүгін аяқталады",
+    "pro_expired": "Pro мерзімі аяқталды",
+    "pro_expires_on": "{{date}} аяқталады",
+    "reactivate": "Қайта белсендіру",
+    "you_saved": "Pro арқылы ~${{amount}} үнемдедіңіз",
+    "you_tracked": "{{count}} жазылым бақыланды",
+    "you_analyzed": "{{count}} AI талдау жасалды",
+    "value_with_pro": "Сіздің Pro құндылығыңыз",
+    "winback_title": "Шексіз жазылымдарды сағындыңыз ба?",
+    "winback_subtitle": "Pro алыңыз және барлық мүмкіндіктерді ашыңыз",
+    "winback_cta": "Қазір жаңарту",
+    "upgrade_to_see": "Толық аналитиканы көру үшін жаңартыңыз",
+    "blur_upgrade_cta": "Pro арқылы ашу"
   }
 }

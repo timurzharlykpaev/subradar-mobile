@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "정말 취소하시겠습니까?",
+    "what_you_lose": "다음 접근 권한을 잃게 됩니다:",
+    "lose_unlimited_subs": "무제한 구독",
+    "lose_ai_200": "월 200회 AI 요청",
+    "lose_analytics": "고급 분석 및 예측",
+    "lose_reports": "PDF 보고서",
+    "special_offer": "특별 제안",
+    "offer_50_off": "3개월 50% 할인",
+    "cancel_anyway": "그래도 취소",
+    "pro_ends_in_days": "Pro가 {{count}}일 후 종료됩니다",
+    "pro_ends_tomorrow": "Pro가 내일 종료됩니다",
+    "pro_ends_today": "Pro가 오늘 종료됩니다",
+    "pro_expired": "Pro가 만료되었습니다",
+    "pro_expires_on": "{{date}}에 만료",
+    "reactivate": "재활성화",
+    "you_saved": "Pro로 약 ${{amount}} 절약했습니다",
+    "you_tracked": "{{count}}개 구독 추적됨",
+    "you_analyzed": "{{count}}건 AI 분석 완료",
+    "value_with_pro": "나의 Pro 가치",
+    "winback_title": "무제한 구독이 그리우신가요?",
+    "winback_subtitle": "Pro를 구매하고 모든 기능을 잠금 해제하세요",
+    "winback_cta": "지금 업그레이드",
+    "upgrade_to_see": "전체 분석을 보려면 업그레이드",
+    "blur_upgrade_cta": "Pro로 잠금 해제"
   }
 }

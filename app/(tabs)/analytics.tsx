@@ -30,6 +30,7 @@ import AIAnalysisSummary from '../../src/components/AIAnalysisSummary';
 import AIRecommendationList from '../../src/components/AIRecommendationList';
 import AIDuplicateGroup from '../../src/components/AIDuplicateGroup';
 import AnalysisLoadingState from '../../src/components/AnalysisLoadingState';
+import BlurredProSection from '../../src/components/BlurredProSection';
 
 const CHART_HEIGHT = 200;
 
@@ -657,7 +658,7 @@ export default function AnalyticsScreen() {
               </View>
             )}
           </View>
-          {isPro ? (
+          <BlurredProSection isPro={isPro} onUpgrade={() => setProModal({ visible: true, feature: 'forecast' })}>
             <View testID="analytics-forecast-row" style={styles.forecastRow}>
               <ForecastCard
                 icon="calendar"
@@ -682,24 +683,7 @@ export default function AnalyticsScreen() {
                 color={colors.warning}
               />
             </View>
-          ) : (
-            <TouchableOpacity
-              testID="btn-unlock-forecast"
-              style={[styles.lockedContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => setProModal({ visible: true, feature: 'forecast' })}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.lockIconCircle, { backgroundColor: isDark ? 'rgba(124,92,255,0.12)' : 'rgba(108,71,255,0.08)' }]}>
-                <Ionicons name="trending-up" size={24} color={colors.primary} />
-              </View>
-              <Text style={[styles.lockedTitle, { color: colors.text }]}>{t('analytics.forecast')}</Text>
-              <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_forecast')}</Text>
-              <View style={[styles.lockedCta, { backgroundColor: colors.primary + '15' }]}>
-                <Text style={[styles.lockedCtaText, { color: colors.primary }]}>{t('pro_modal.unlock', 'Unlock')}</Text>
-                <Ionicons name="arrow-forward" size={14} color={colors.primary} />
-              </View>
-            </TouchableOpacity>
-          )}
+          </BlurredProSection>
         </View>
 
         {/* ── 5. Savings Analysis (Pro-gated) ────────────────────── */}
@@ -715,7 +699,7 @@ export default function AnalyticsScreen() {
               </View>
             )}
           </View>
-          {isPro ? (
+          <BlurredProSection isPro={isPro} onUpgrade={() => setProModal({ visible: true, feature: 'savings' })}>
             <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={[styles.savingsHighlight, { backgroundColor: isDark ? 'rgba(52,211,153,0.10)' : 'rgba(5,150,105,0.06)', borderColor: isDark ? 'rgba(52,211,153,0.25)' : 'rgba(5,150,105,0.15)' }]}>
                 <View style={[styles.savingsIconCircle, { backgroundColor: colors.success + '18' }]}>
@@ -730,7 +714,6 @@ export default function AnalyticsScreen() {
               {savings?.insights && savings.insights.length > 0 && (
                 <View style={{ marginTop: 12, gap: 6 }}>
                   {savings.insights.map((ins: any, i: number) => {
-                    // Support both old string format and new structured format
                     const text = typeof ins === 'string' ? ins
                       : ins.type === 'overlap_count' ? t('analytics.insight_overlap', { count: ins.data?.count, defaultValue: '{{count}} categories with overlapping subscriptions' })
                       : ins.type === 'biggest_overlap' ? t('analytics.insight_biggest', { name: ins.data?.name, savings: ins.data?.savings?.toFixed(2), defaultValue: 'Biggest overlap: {{name}} — ${{savings}}/mo' })
@@ -773,24 +756,7 @@ export default function AnalyticsScreen() {
                 <Text style={[styles.noDuplicates, { color: colors.textSecondary }]}>{t('analytics.no_duplicates')}</Text>
               )}
             </View>
-          ) : (
-            <TouchableOpacity
-              testID="btn-unlock-savings"
-              style={[styles.lockedContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => setProModal({ visible: true, feature: 'savings' })}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.lockIconCircle, { backgroundColor: isDark ? 'rgba(52,211,153,0.12)' : 'rgba(5,150,105,0.08)' }]}>
-                <Ionicons name="cash-outline" size={24} color={colors.success} />
-              </View>
-              <Text style={[styles.lockedTitle, { color: colors.text }]}>{t('analytics.savings')}</Text>
-              <Text style={[styles.lockedText, { color: colors.textMuted }]}>{t('analytics.upgrade_savings')}</Text>
-              <View style={[styles.lockedCta, { backgroundColor: colors.success + '15' }]}>
-                <Text style={[styles.lockedCtaText, { color: colors.success }]}>{t('pro_modal.unlock', 'Unlock')}</Text>
-                <Ionicons name="arrow-forward" size={14} color={colors.success} />
-              </View>
-            </TouchableOpacity>
-          )}
+          </BlurredProSection>
         </View>
 
         <ProFeatureModal

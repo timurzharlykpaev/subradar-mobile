@@ -878,5 +878,31 @@
     "something_went_wrong": "Что-то пошло не так",
     "try_restart": "Попробуйте перезапустить приложение",
     "restart": "Перезапустить"
+  },
+  "retention": {
+    "cancel_intercept_title": "Вы уверены?",
+    "what_you_lose": "Вы потеряете доступ к:",
+    "lose_unlimited_subs": "Безлимитные подписки",
+    "lose_ai_200": "200 AI-запросов в месяц",
+    "lose_analytics": "Расширенная аналитика и прогнозы",
+    "lose_reports": "PDF-отчёты",
+    "special_offer": "Специальное предложение",
+    "offer_50_off": "Скидка 50% на 3 месяца",
+    "cancel_anyway": "Всё равно отменить",
+    "pro_ends_in_days": "Pro заканчивается через {{count}} дн.",
+    "pro_ends_tomorrow": "Pro заканчивается завтра",
+    "pro_ends_today": "Pro заканчивается сегодня",
+    "pro_expired": "Pro истёк",
+    "pro_expires_on": "Истекает {{date}}",
+    "reactivate": "Восстановить",
+    "you_saved": "Вы сэкономили ~${{amount}} с Pro",
+    "you_tracked": "{{count}} подписок отслежено",
+    "you_analyzed": "{{count}} AI-анализов проведено",
+    "value_with_pro": "Ваша ценность с Pro",
+    "winback_title": "Скучаете по безлимиту?",
+    "winback_subtitle": "Верните Pro и разблокируйте все функции",
+    "winback_cta": "Обновить сейчас",
+    "upgrade_to_see": "Обновите для полной аналитики",
+    "blur_upgrade_cta": "Разблокировать с Pro"
   }
 }

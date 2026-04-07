@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "确定要取消吗？",
+    "what_you_lose": "您将失去以下权限：",
+    "lose_unlimited_subs": "无限订阅",
+    "lose_ai_200": "每月200次AI请求",
+    "lose_analytics": "高级分析和预测",
+    "lose_reports": "PDF报告",
+    "special_offer": "特别优惠",
+    "offer_50_off": "3个月5折优惠",
+    "cancel_anyway": "仍然取消",
+    "pro_ends_in_days": "Pro将在{{count}}天后到期",
+    "pro_ends_tomorrow": "Pro明天到期",
+    "pro_ends_today": "Pro今天到期",
+    "pro_expired": "Pro已过期",
+    "pro_expires_on": "{{date}}到期",
+    "reactivate": "重新激活",
+    "you_saved": "您通过Pro节省了约${{amount}}",
+    "you_tracked": "已跟踪{{count}}个订阅",
+    "you_analyzed": "已完成{{count}}次AI分析",
+    "value_with_pro": "您的Pro价值",
+    "winback_title": "想念无限订阅吗？",
+    "winback_subtitle": "获取Pro，解锁所有功能",
+    "winback_cta": "立即升级",
+    "upgrade_to_see": "升级查看完整分析",
+    "blur_upgrade_cta": "使用Pro解锁"
   }
 }

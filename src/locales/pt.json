@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "Tem certeza?",
+    "what_you_lose": "Você perderá acesso a:",
+    "lose_unlimited_subs": "Assinaturas ilimitadas",
+    "lose_ai_200": "200 solicitações de IA por mês",
+    "lose_analytics": "Análises avançadas e previsões",
+    "lose_reports": "Relatórios PDF",
+    "special_offer": "Oferta especial",
+    "offer_50_off": "50% de desconto por 3 meses",
+    "cancel_anyway": "Cancelar mesmo assim",
+    "pro_ends_in_days": "Pro termina em {{count}} dias",
+    "pro_ends_tomorrow": "Pro termina amanhã",
+    "pro_ends_today": "Pro termina hoje",
+    "pro_expired": "Pro expirou",
+    "pro_expires_on": "Expira em {{date}}",
+    "reactivate": "Reativar",
+    "you_saved": "Você economizou ~${{amount}} com o Pro",
+    "you_tracked": "{{count}} assinaturas rastreadas",
+    "you_analyzed": "{{count}} análises de IA concluídas",
+    "value_with_pro": "Seu valor com Pro",
+    "winback_title": "Sente falta das assinaturas ilimitadas?",
+    "winback_subtitle": "Obtenha o Pro e desbloqueie todos os recursos",
+    "winback_cta": "Atualizar agora",
+    "upgrade_to_see": "Atualize para ver análises completas",
+    "blur_upgrade_cta": "Desbloquear com Pro"
   }
 }

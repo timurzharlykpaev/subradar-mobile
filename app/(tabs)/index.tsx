@@ -33,6 +33,8 @@ import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
+import ExpirationBanner from '../../src/components/ExpirationBanner';
+import WinBackBanner from '../../src/components/WinBackBanner';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -203,6 +205,16 @@ export default function DashboardScreen() {
         </View>
 
         <TeamSavingsBadge />
+
+        {/* ── Expiration Banner ────────────────────────────────── */}
+        {billing?.cancelAtPeriodEnd && billing?.currentPeriodEnd && (
+          <ExpirationBanner currentPeriodEnd={billing.currentPeriodEnd} variant="full" />
+        )}
+
+        {/* ── Win-Back Banner (for downgraded free users) ──────── */}
+        {!isPro && (
+          <WinBackBanner downgradedAt={(billing as any)?.downgradedAt ?? null} />
+        )}
 
         {/* ── AI Insights Widget ────────────────────────────────── */}
         {aiResult && isPro && (

@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "Are you sure?",
+    "what_you_lose": "You'll lose access to:",
+    "lose_unlimited_subs": "Unlimited subscriptions",
+    "lose_ai_200": "200 AI requests per month",
+    "lose_analytics": "Advanced analytics & forecasts",
+    "lose_reports": "PDF reports",
+    "special_offer": "Special offer",
+    "offer_50_off": "50% off for 3 months",
+    "cancel_anyway": "Cancel anyway",
+    "pro_ends_in_days": "Pro ends in {{count}} days",
+    "pro_ends_tomorrow": "Pro ends tomorrow",
+    "pro_ends_today": "Pro ends today",
+    "pro_expired": "Pro has expired",
+    "pro_expires_on": "Expires {{date}}",
+    "reactivate": "Reactivate",
+    "you_saved": "You saved ~${{amount}} with Pro insights",
+    "you_tracked": "{{count}} subscriptions tracked",
+    "you_analyzed": "{{count}} AI analyses completed",
+    "value_with_pro": "Your Pro value",
+    "winback_title": "Miss unlimited subscriptions?",
+    "winback_subtitle": "Get Pro and unlock all features",
+    "winback_cta": "Upgrade now",
+    "upgrade_to_see": "Upgrade to see full analytics",
+    "blur_upgrade_cta": "Unlock with Pro"
   }
 }

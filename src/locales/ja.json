@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "本当にキャンセルしますか？",
+    "what_you_lose": "以下へのアクセスを失います：",
+    "lose_unlimited_subs": "無制限のサブスクリプション",
+    "lose_ai_200": "月200回のAIリクエスト",
+    "lose_analytics": "高度な分析と予測",
+    "lose_reports": "PDFレポート",
+    "special_offer": "特別オファー",
+    "offer_50_off": "3ヶ月間50%オフ",
+    "cancel_anyway": "それでもキャンセル",
+    "pro_ends_in_days": "Proはあと{{count}}日で終了",
+    "pro_ends_tomorrow": "Proは明日終了",
+    "pro_ends_today": "Proは本日終了",
+    "pro_expired": "Proが期限切れです",
+    "pro_expires_on": "{{date}}に期限切れ",
+    "reactivate": "再有効化",
+    "you_saved": "Proで約${{amount}}節約しました",
+    "you_tracked": "{{count}}件のサブスクリプションを追跡",
+    "you_analyzed": "{{count}}件のAI分析を完了",
+    "value_with_pro": "あなたのPro価値",
+    "winback_title": "無制限サブスクが恋しいですか？",
+    "winback_subtitle": "Proを取得してすべての機能を解放",
+    "winback_cta": "今すぐアップグレード",
+    "upgrade_to_see": "完全な分析を見るにはアップグレード",
+    "blur_upgrade_cta": "Proで解放"
   }
 }

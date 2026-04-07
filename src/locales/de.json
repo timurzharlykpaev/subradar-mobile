@@ -878,5 +878,31 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "retention": {
+    "cancel_intercept_title": "Bist du sicher?",
+    "what_you_lose": "Du verlierst Zugang zu:",
+    "lose_unlimited_subs": "Unbegrenzte Abonnements",
+    "lose_ai_200": "200 KI-Anfragen pro Monat",
+    "lose_analytics": "Erweiterte Analysen & Prognosen",
+    "lose_reports": "PDF-Berichte",
+    "special_offer": "Sonderangebot",
+    "offer_50_off": "50% Rabatt für 3 Monate",
+    "cancel_anyway": "Trotzdem kündigen",
+    "pro_ends_in_days": "Pro endet in {{count}} Tagen",
+    "pro_ends_tomorrow": "Pro endet morgen",
+    "pro_ends_today": "Pro endet heute",
+    "pro_expired": "Pro ist abgelaufen",
+    "pro_expires_on": "Läuft ab am {{date}}",
+    "reactivate": "Reaktivieren",
+    "you_saved": "Du hast ~${{amount}} mit Pro gespart",
+    "you_tracked": "{{count}} Abonnements verfolgt",
+    "you_analyzed": "{{count}} KI-Analysen abgeschlossen",
+    "value_with_pro": "Dein Pro-Wert",
+    "winback_title": "Vermisst du unbegrenzte Abonnements?",
+    "winback_subtitle": "Hol dir Pro und schalte alle Funktionen frei",
+    "winback_cta": "Jetzt upgraden",
+    "upgrade_to_see": "Upgrade für vollständige Analysen",
+    "blur_upgrade_cta": "Mit Pro freischalten"
   }
 }

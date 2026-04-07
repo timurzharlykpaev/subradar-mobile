@@ -34,6 +34,8 @@ import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { notificationsApi } from '../../src/api/notifications';
 import { billingApi } from '../../src/api/billing';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
+import ExpirationBanner from '../../src/components/ExpirationBanner';
+import CancellationInterceptModal from '../../src/components/CancellationInterceptModal';
 
 const DATE_FORMATS = ['DD/MM', 'MM/DD', 'YYYY-MM-DD'];
 
@@ -54,6 +56,7 @@ export default function SettingsScreen() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const version = Constants.expoConfig?.version || '1.0.0';
 
@@ -290,10 +293,14 @@ export default function SettingsScreen() {
             undefined,
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
             async () => {
-              try {
-                await RevenueCatUI.presentCustomerCenter();
-              } catch {
-                Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
+              if (isPro) {
+                setShowCancelModal(true);
+              } else {
+                try {
+                  await RevenueCatUI.presentCustomerCenter();
+                } catch {
+                  Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
+                }
               }
             },
             true,
@@ -334,6 +341,11 @@ export default function SettingsScreen() {
             false,
           )}
         </View>
+
+        {/* Expiration Banner */}
+        {billing?.cancelAtPeriodEnd && billing?.currentPeriodEnd && (
+          <ExpirationBanner currentPeriodEnd={billing.currentPeriodEnd} variant="full" />
+        )}
 
         {/* ═══ 3. Preferences ═══ */}
         <SectionHeader icon="settings-outline" title={t('settings.preferences')} />
@@ -612,6 +624,19 @@ export default function SettingsScreen() {
         {/* Version */}
         <Text style={{ textAlign: 'center', fontSize: 11, color: colors.textMuted, paddingVertical: 28, letterSpacing: 0.3 }}>v{version} · Subradar</Text>
       </ScrollView>
+
+      <CancellationInterceptModal
+        visible={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirmCancel={async () => {
+          setShowCancelModal(false);
+          try {
+            await RevenueCatUI.presentCustomerCenter();
+          } catch {
+            Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
+          }
+        }}
+      />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
