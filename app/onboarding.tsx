@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Svg, { Path, Circle, Rect, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Text as SvgText } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import {
   View,
@@ -345,18 +345,12 @@ function AuthHero() {
 function ShowcaseAIIcon() {
   return (
     <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Defs>
-        <LinearGradient id="aiGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor="#A78BFA" />
-          <Stop offset="1" stopColor="#7C3AED" />
-        </LinearGradient>
-      </Defs>
-      <Rect width="48" height="48" rx="14" fill="url(#aiGrad)" />
+      <Rect width="48" height="48" rx="14" fill="#7C3AED" />
       {/* Sparkle stars */}
       <Path d="M16 14l1.5 3 3 1.5-3 1.5L16 23l-1.5-3-3-1.5 3-1.5z" fill="white" opacity="0.9"/>
       <Path d="M30 10l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" fill="white" opacity="0.6"/>
-      {/* Brain / AI circuit */}
-      <Circle cx="24" cy="26" r="9" fill="white" opacity="0.2"/>
+      {/* AI circuit */}
+      <Circle cx="24" cy="26" r="9" fill="white" opacity="0.15"/>
       <Circle cx="24" cy="26" r="6" stroke="white" strokeWidth="1.8" fill="none" opacity="0.9"/>
       <Circle cx="24" cy="26" r="2.5" fill="white"/>
       <Path d="M24 20v-2M24 34v-2M18 26h-2M32 26h-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
@@ -368,13 +362,7 @@ function ShowcaseAIIcon() {
 function ShowcaseBellIcon() {
   return (
     <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Defs>
-        <LinearGradient id="bellGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor="#FCD34D" />
-          <Stop offset="1" stopColor="#F59E0B" />
-        </LinearGradient>
-      </Defs>
-      <Rect width="48" height="48" rx="14" fill="url(#bellGrad)" />
+      <Rect width="48" height="48" rx="14" fill="#F59E0B" />
       {/* Bell body */}
       <Path d="M24 12a8 8 0 00-8 8v5l-2.5 2.5V29h21v-1.5L32 25v-5a8 8 0 00-8-8z" fill="white" opacity="0.95"/>
       {/* Clapper */}
@@ -392,13 +380,7 @@ function ShowcaseBellIcon() {
 function ShowcaseChartIcon() {
   return (
     <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Defs>
-        <LinearGradient id="chartGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor="#6EE7B7" />
-          <Stop offset="1" stopColor="#10B981" />
-        </LinearGradient>
-      </Defs>
-      <Rect width="48" height="48" rx="14" fill="url(#chartGrad)" />
+      <Rect width="48" height="48" rx="14" fill="#10B981" />
       {/* Bars */}
       <Rect x="11" y="27" width="6" height="10" rx="2" fill="white" opacity="0.5"/>
       <Rect x="21" y="20" width="6" height="17" rx="2" fill="white" opacity="0.75"/>
@@ -414,13 +396,7 @@ function ShowcaseChartIcon() {
 function ShowcaseTeamIcon() {
   return (
     <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Defs>
-        <LinearGradient id="teamGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor="#93C5FD" />
-          <Stop offset="1" stopColor="#3B82F6" />
-        </LinearGradient>
-      </Defs>
-      <Rect width="48" height="48" rx="14" fill="url(#teamGrad)" />
+      <Rect width="48" height="48" rx="14" fill="#3B82F6" />
       {/* Center person */}
       <Circle cx="24" cy="18" r="5" fill="white" opacity="0.95"/>
       <Path d="M15 35c0-4.97 4.03-9 9-9s9 4.03 9 9" fill="white" opacity="0.3"/>
