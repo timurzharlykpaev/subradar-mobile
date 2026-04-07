@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Svg, { Path, Circle, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import {
   View,
@@ -344,54 +344,93 @@ function AuthHero() {
 // ─── Showcase card icons ────────────────────────────────────────────────────
 function ShowcaseAIIcon() {
   return (
-    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
-      <Rect width="36" height="36" rx="10" fill="#EDE9FF" />
-      <Path d="M18 8C14.13 8 11 11.13 11 15v2l-2 2v1h18v-1l-2-2v-2c0-3.87-3.13-7-7-7z" fill="#8B5CF6" opacity="0.9"/>
-      <Circle cx="18" cy="26" r="2" fill="#8B5CF6" />
-      <Path d="M23 12.5c1.38.9 2.3 2.46 2.3 4.25" stroke="#8B5CF6" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-      <Circle cx="14" cy="15" r="1.5" fill="white" />
-      <Circle cx="18" cy="13.5" r="1.5" fill="white" />
-      <Circle cx="22" cy="15" r="1.5" fill="white" />
-      <Path d="M14 15l4-1.5 4 1.5" stroke="white" strokeWidth="1" opacity="0.6"/>
+    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
+      <Defs>
+        <LinearGradient id="aiGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <Stop offset="0" stopColor="#A78BFA" />
+          <Stop offset="1" stopColor="#7C3AED" />
+        </LinearGradient>
+      </Defs>
+      <Rect width="48" height="48" rx="14" fill="url(#aiGrad)" />
+      {/* Sparkle stars */}
+      <Path d="M16 14l1.5 3 3 1.5-3 1.5L16 23l-1.5-3-3-1.5 3-1.5z" fill="white" opacity="0.9"/>
+      <Path d="M30 10l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" fill="white" opacity="0.6"/>
+      {/* Brain / AI circuit */}
+      <Circle cx="24" cy="26" r="9" fill="white" opacity="0.2"/>
+      <Circle cx="24" cy="26" r="6" stroke="white" strokeWidth="1.8" fill="none" opacity="0.9"/>
+      <Circle cx="24" cy="26" r="2.5" fill="white"/>
+      <Path d="M24 20v-2M24 34v-2M18 26h-2M32 26h-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
+      <Path d="M20.2 22.2l-1.4-1.4M29.2 31.2l-1.4-1.4M27.8 22.2l1.4-1.4M18.8 31.2l1.4-1.4" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
     </Svg>
   );
 }
 
 function ShowcaseBellIcon() {
   return (
-    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
-      <Rect width="36" height="36" rx="10" fill="#FEF3C7" />
-      <Path d="M18 8a7 7 0 00-7 7v4l-2 2v1h18v-1l-2-2v-4a7 7 0 00-7-7z" fill="#F59E0B" opacity="0.85"/>
-      <Path d="M15.5 22c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-      <Circle cx="24" cy="11" r="4" fill="#EF4444" />
-      <Path d="M22.5 11h3M24 9.5v3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
+      <Defs>
+        <LinearGradient id="bellGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <Stop offset="0" stopColor="#FCD34D" />
+          <Stop offset="1" stopColor="#F59E0B" />
+        </LinearGradient>
+      </Defs>
+      <Rect width="48" height="48" rx="14" fill="url(#bellGrad)" />
+      {/* Bell body */}
+      <Path d="M24 12a8 8 0 00-8 8v5l-2.5 2.5V29h21v-1.5L32 25v-5a8 8 0 00-8-8z" fill="white" opacity="0.95"/>
+      {/* Clapper */}
+      <Path d="M21 29.5c0 1.66 1.34 3 3 3s3-1.34 3-3" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      {/* Ring line */}
+      <Path d="M24 10v2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      {/* Alert badge */}
+      <Circle cx="32" cy="15" r="5" fill="#EF4444" />
+      <Path d="M32 12v4" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      <Circle cx="32" cy="18.5" r="1" fill="white"/>
     </Svg>
   );
 }
 
 function ShowcaseChartIcon() {
   return (
-    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
-      <Rect width="36" height="36" rx="10" fill="#ECFDF5" />
-      <Rect x="9" y="19" width="5" height="9" rx="2" fill="#10B981" opacity="0.5"/>
-      <Rect x="15.5" y="14" width="5" height="14" rx="2" fill="#10B981" opacity="0.75"/>
-      <Rect x="22" y="9" width="5" height="19" rx="2" fill="#10B981"/>
-      <Path d="M9 26h18" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
-      <Path d="M10 19l6-7 6 4 5-6" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.9"/>
-      <Circle cx="22" cy="12" r="2" fill="white" />
+    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
+      <Defs>
+        <LinearGradient id="chartGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <Stop offset="0" stopColor="#6EE7B7" />
+          <Stop offset="1" stopColor="#10B981" />
+        </LinearGradient>
+      </Defs>
+      <Rect width="48" height="48" rx="14" fill="url(#chartGrad)" />
+      {/* Bars */}
+      <Rect x="11" y="27" width="6" height="10" rx="2" fill="white" opacity="0.5"/>
+      <Rect x="21" y="20" width="6" height="17" rx="2" fill="white" opacity="0.75"/>
+      <Rect x="31" y="13" width="6" height="24" rx="2" fill="white" opacity="0.95"/>
+      {/* Trend line */}
+      <Path d="M13 27l10-8 6 4 8-10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Arrow tip */}
+      <Path d="M35 11l2 2M37 13l-2 2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
     </Svg>
   );
 }
 
 function ShowcaseTeamIcon() {
   return (
-    <Svg width={36} height={36} viewBox="0 0 36 36" fill="none">
-      <Rect width="36" height="36" rx="10" fill="#EFF6FF" />
-      <Circle cx="14" cy="14" r="4" fill="#3B82F6" opacity="0.7"/>
-      <Circle cx="22" cy="14" r="4" fill="#3B82F6" opacity="0.9"/>
-      <Path d="M6 26c0-3.31 3.58-6 8-6" stroke="#3B82F6" strokeWidth="1.8" strokeLinecap="round" opacity="0.6"/>
-      <Path d="M30 26c0-3.31-3.58-6-8-6" stroke="#3B82F6" strokeWidth="1.8" strokeLinecap="round" opacity="0.8"/>
-      <Path d="M18 21c-2.76 0-5 1.57-5 3.5h10c0-1.93-2.24-3.5-5-3.5z" fill="#3B82F6" opacity="0.5"/>
+    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
+      <Defs>
+        <LinearGradient id="teamGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <Stop offset="0" stopColor="#93C5FD" />
+          <Stop offset="1" stopColor="#3B82F6" />
+        </LinearGradient>
+      </Defs>
+      <Rect width="48" height="48" rx="14" fill="url(#teamGrad)" />
+      {/* Center person */}
+      <Circle cx="24" cy="18" r="5" fill="white" opacity="0.95"/>
+      <Path d="M15 35c0-4.97 4.03-9 9-9s9 4.03 9 9" fill="white" opacity="0.3"/>
+      <Path d="M17 33c0-3.87 3.13-7 7-7s7 3.13 7 7" fill="white" opacity="0.6"/>
+      {/* Left person */}
+      <Circle cx="12" cy="21" r="3.5" fill="white" opacity="0.6"/>
+      <Path d="M6 33c0-3.31 2.69-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+      {/* Right person */}
+      <Circle cx="36" cy="21" r="3.5" fill="white" opacity="0.6"/>
+      <Path d="M42 33c0-3.31-2.69-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
     </Svg>
   );
 }
@@ -418,7 +457,8 @@ export default function OnboardingScreen() {
   // Google OAuth via web browser redirect (works without native build)
   const googlePromptAsync = async () => {
     try {
-      const redirectUri = 'https://api.subradar.ai/api/v1/auth/google/callback';
+      const apiBase = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
+      const redirectUri = `${apiBase}/auth/google/callback`;
       const authUrl =
         `https://accounts.google.com/o/oauth2/v2/auth` +
         `?client_id=${GOOGLE_WEB_CLIENT_ID}` +
@@ -434,6 +474,7 @@ export default function OnboardingScreen() {
         // Backend already authenticated — callback contains our JWT
         const tokenMatch = result.url.match(/[?&#]token=([^&]+)/);
         const refreshMatch = result.url.match(/[?&#]refreshToken=([^&]+)/);
+        console.log('[GoogleAuth] token found:', !!tokenMatch?.[1], 'refresh found:', !!refreshMatch?.[1]);
         if (tokenMatch?.[1]) {
           const jwt = decodeURIComponent(tokenMatch[1]);
           const refresh = refreshMatch?.[1] ? decodeURIComponent(refreshMatch[1]) : undefined;
@@ -442,14 +483,23 @@ export default function OnboardingScreen() {
           try {
             const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
             if (refresh) await AsyncStorage.setItem('refresh_token', refresh);
-            const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1'}/auth/me`, {
+            const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
+            console.log('[GoogleAuth] Fetching /auth/me from:', apiUrl);
+            const res = await fetch(`${apiUrl}/auth/me`, {
               headers: { Authorization: `Bearer ${jwt}` },
             });
+            console.log('[GoogleAuth] /auth/me status:', res.status);
             const userData = await res.json();
+            console.log('[GoogleAuth] userData:', JSON.stringify(userData).slice(0, 200));
             if (userData?.id || userData?.email) {
+              console.log('[GoogleAuth] Calling finishAuth');
               finishAuth(userData, jwt);
+            } else {
+              console.warn('[GoogleAuth] No id/email in response, skipping finishAuth');
+              Alert.alert(t('auth.google_signin_error'), 'Invalid user data received');
             }
           } catch (err) {
+            console.error('[GoogleAuth] Error:', err);
             Alert.alert(t('auth.google_signin_error'), String(err));
           } finally {
             setLoading(false);
@@ -1084,11 +1134,11 @@ const styles = StyleSheet.create({
   nextBtn: { flex: 2, paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
   nextBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
   showcaseTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center', lineHeight: 26, letterSpacing: -0.3, marginBottom: 4 },
-  showcaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  showcaseCard: { width: '47%', backgroundColor: 'rgba(139,92,246,0.15)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.3)', padding: 14, gap: 6 },
+  showcaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
+  showcaseCard: { width: '46%', borderRadius: 20, borderWidth: 1, padding: 18, gap: 10, alignItems: 'center' },
   showcaseEmoji: { fontSize: 28 },
-  showcaseCardTitle: { fontSize: 13, fontWeight: '800' },
-  showcaseCardDesc: { fontSize: 11, lineHeight: 15 },
+  showcaseCardTitle: { fontSize: 14, fontWeight: '800', textAlign: 'center' },
+  showcaseCardDesc: { fontSize: 11, lineHeight: 15, textAlign: 'center' },
   showcaseBtn: { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
   showcaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
   emailOtpBtn: { borderWidth: 1 },
