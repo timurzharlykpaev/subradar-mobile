@@ -825,6 +825,7 @@
     "today": "Сегодня",
     "days_ago": "{{count}} дн. назад",
     "refresh": "Обновить",
+    "cooldown_hint": "Обновляется раз в день",
     "recommendations_title": "Рекомендации",
     "duplicates_title": "Дубликаты подписок",
     "save": "Экономия",

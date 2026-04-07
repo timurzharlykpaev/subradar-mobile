@@ -825,6 +825,7 @@
     "today": "Today",
     "days_ago": "{{count}} days ago",
     "refresh": "Refresh",
+    "cooldown_hint": "Wird täglich aktualisiert",
     "recommendations_title": "Recommendations",
     "duplicates_title": "Duplicate Subscriptions",
     "save": "Save",
