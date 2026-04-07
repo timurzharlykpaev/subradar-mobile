@@ -87,14 +87,18 @@ export function useAnalysisFlow() {
   const manualRun = useCallback(async () => {
     try {
       const res = await runAnalysis.mutateAsync();
-      console.log('[Analysis] manualRun result:', JSON.stringify(res));
-      if (res.jobId) setActiveJobId(res.jobId);
+      if (res.jobId) {
+        setActiveJobId(res.jobId);
+      } else {
+        // cached or instant result — just refresh the data
+        queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
+      }
       return res;
     } catch (e: any) {
       console.error('[Analysis] manualRun error:', e?.response?.status, e?.response?.data || e?.message);
       throw e;
     }
-  }, [runAnalysis]);
+  }, [runAnalysis, queryClient]);
 
   return {
     result: latest?.result || null,
