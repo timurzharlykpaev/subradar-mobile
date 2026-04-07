@@ -322,8 +322,8 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
 
   // Filters
-  filtersScroll: { maxHeight: 44 },
-  filters: { paddingHorizontal: 20, gap: 8, paddingBottom: 6 },
+  filtersScroll: { flexGrow: 0 },
+  filters: { paddingHorizontal: 20, gap: 8, paddingVertical: 6 },
   filterChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   filterText: { fontSize: 13, fontWeight: '600' },
 
