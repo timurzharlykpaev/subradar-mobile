@@ -322,13 +322,13 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
 
   // Filters
-  filtersScroll: { flexGrow: 0 },
-  filters: { paddingHorizontal: 20, gap: 8, paddingVertical: 6 },
-  filterChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+  filtersScroll: { minHeight: 48, flexShrink: 0 },
+  filters: { paddingHorizontal: 20, gap: 8, alignItems: 'center' },
+  filterChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, height: 36, borderRadius: 20, borderWidth: 1 },
   filterText: { fontSize: 13, fontWeight: '600' },
 
   // Sort
-  sortScroll: { maxHeight: 36 },
+  sortScroll: { minHeight: 32, flexShrink: 0 },
   sortChip: { paddingHorizontal: 12, paddingVertical: 4, marginBottom: 4 },
   sortText: { fontSize: 12, fontWeight: '700' },
 

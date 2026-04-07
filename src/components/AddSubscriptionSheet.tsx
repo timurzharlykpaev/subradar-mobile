@@ -546,10 +546,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Camera/Screenshot handler ───────────────────────────────────────────
   const handleCamera = useCallback(async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    const source = await new Promise<'camera' | 'library' | null>((resolve) => {
+      Alert.alert(
+        t('add.photo_source', 'Select source'),
+        '',
+        [
+          { text: t('add.take_photo', 'Take Photo'), onPress: () => resolve('camera') },
+          { text: t('add.from_gallery', 'From Gallery'), onPress: () => resolve('library') },
+          { text: t('common.cancel', 'Cancel'), style: 'cancel', onPress: () => resolve(null) },
+        ]
+      );
     });
+    if (!source) return;
+
+    const result = source === 'camera'
+      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
     if (result.canceled) return;
 
     const uri = result.assets[0].uri;
@@ -564,7 +577,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         type: 'image/jpeg',
         name: 'screenshot.jpg',
       } as any);
+      console.log('[Screenshot] Sending to API, uri:', uri?.slice(0, 80));
       const res = await aiApi.parseScreenshot(formData);
+      console.log('[Screenshot] API response:', JSON.stringify(res.data).slice(0, 300));
       const data = res.data;
       const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
       const validSubs = subs.filter((s: any) => s && s.name);
@@ -593,6 +608,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         setFlowState('bulk-confirm');
       }
     } catch (err: any) {
+      console.error('[Screenshot] Full error:', JSON.stringify({ status: err?.response?.status, data: err?.response?.data, message: err?.message }));
       const status = err?.response?.status;
       const msg = err?.response?.data?.message || '';
       const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
@@ -606,7 +622,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           ]
         );
       } else {
-        console.error('[Screenshot] Parse error:', status, msg || err?.message);
         Alert.alert(t('common.error'), msg || t('add.screenshot_parse_error', 'Could not parse the screenshot. Try a clearer image.'));
       }
       setFlowState('idle');
