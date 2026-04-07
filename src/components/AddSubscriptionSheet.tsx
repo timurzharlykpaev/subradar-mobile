@@ -546,24 +546,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Camera/Screenshot handler ───────────────────────────────────────────
   const handleCamera = useCallback(async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    const source = await new Promise<'camera' | 'library' | null>((resolve) => {
-      Alert.alert(
-        t('add.photo_source', 'Select source'),
-        '',
-        [
-          { text: t('add.take_photo', 'Take Photo'), onPress: () => resolve('camera') },
-          { text: t('add.from_gallery', 'From Gallery'), onPress: () => resolve('library') },
-          { text: t('common.cancel', 'Cancel'), style: 'cancel', onPress: () => resolve(null) },
-        ]
-      );
+    console.log('[Screenshot] Opening image picker...');
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
     });
-    if (!source) return;
-
-    const result = source === 'camera'
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
-    if (result.canceled) return;
+    if (result.canceled) {
+      console.log('[Screenshot] User cancelled picker');
+      return;
+    }
 
     const uri = result.assets[0].uri;
     setScreenshotUri(uri);
