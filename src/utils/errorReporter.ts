@@ -55,6 +55,9 @@ export function installConsoleInterceptors(): void {
     /^Warning: React.forwardRef/,
     /^Warning: Unknown prop/,
     /deprecated/i,           // deprecation warnings are ok
+    /RevenueCat/,            // RC SDK warnings are informational, not errors
+    /appUserID passed to logIn is the same/,
+    /Using a Test Store API key/,
   ];
 
   const originalWarn = console.warn.bind(console);
