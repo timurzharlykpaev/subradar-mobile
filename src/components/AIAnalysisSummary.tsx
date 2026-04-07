@@ -38,7 +38,7 @@ export default function AIAnalysisSummary({
       ? t('analysis.updated_today', 'Updated today')
       : days === 1
       ? t('analysis.updated_yesterday', 'Updated yesterday')
-      : t('analysis.updated_days_ago', 'Updated {{n}} days ago', { n: days });
+      : t('analysis.updated_days_ago', 'Updated {{count}} days ago', { count: days });
 
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>

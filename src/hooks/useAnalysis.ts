@@ -85,9 +85,15 @@ export function useAnalysisFlow() {
   }, [latest, runAnalysis]);
 
   const manualRun = useCallback(async () => {
-    const res = await runAnalysis.mutateAsync();
-    if (res.jobId) setActiveJobId(res.jobId);
-    return res;
+    try {
+      const res = await runAnalysis.mutateAsync();
+      console.log('[Analysis] manualRun result:', JSON.stringify(res));
+      if (res.jobId) setActiveJobId(res.jobId);
+      return res;
+    } catch (e: any) {
+      console.error('[Analysis] manualRun error:', e?.response?.status, e?.response?.data || e?.message);
+      throw e;
+    }
   }, [runAnalysis]);
 
   return {
