@@ -40,10 +40,10 @@ WebBrowser.maybeCompleteAuthSession();
 
 // Web client ID
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
-  '140914936328-chm3nq215c14dlj25i9pghhsuc3pif9i.apps.googleusercontent.com';
-// iOS client ID (bundle: io.subradar.mobile)
+  '1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com';
+// iOS client ID (bundle: com.goalin.subradar)
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
-  '140914936328-hftqahkh20bdie089g2mfdcnuuker4cm.apps.googleusercontent.com';
+  '1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com';
 
 // ─── Feature SVG Icons ───────────────────────────────────────────────────────
 function IconVoice() {
@@ -426,7 +426,10 @@ export default function OnboardingScreen() {
         `&response_type=code` +
         `&scope=openid%20email%20profile` +
         `&state=mobile`;
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'subradar://');
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, 'subradar://', {
+        preferEphemeralSession: true,
+      });
+      console.log('[GoogleAuth] WebBrowser result:', JSON.stringify(result));
       if (result.type === 'success' && result.url) {
         // Backend already authenticated — callback contains our JWT
         const tokenMatch = result.url.match(/[?&#]token=([^&]+)/);
@@ -883,7 +886,7 @@ export default function OnboardingScreen() {
         </View>
       )}
 
-      <Text style={styles.terms}>
+      <Text style={[styles.terms, { color: colors.textSecondary }]}>
         {t('onboarding.terms_prefix')}{' '}
         <Text
           style={[styles.terms, { color: colors.primary, textDecorationLine: 'underline' }]}
