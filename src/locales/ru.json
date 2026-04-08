@@ -212,6 +212,7 @@
     "bulk_parse": "Распознать →",
     "bulk_parsing": "AI распознаёт подписки...",
     "bulk_review": "Выбери подписки",
+    "bulk_review_title": "Найденные подписки",
     "bulk_review_sub": "Найдено: {{count}}",
     "bulk_select_all": "Выбрать все",
     "bulk_deselect_all": "Снять все",

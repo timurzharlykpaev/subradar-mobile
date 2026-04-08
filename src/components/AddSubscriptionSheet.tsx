@@ -166,7 +166,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [addedViaSource, setAddedViaSource] = useState<'MANUAL' | 'AI_TEXT' | 'AI_SCREENSHOT'>('MANUAL');
 
   // ── Unified flow state ──────────────────────────────────────────────────
-  const [flowState, setFlowState] = useState<FlowState>('idle');
+  const [flowState, _setFlowState] = useState<FlowState>('idle');
+  const flowStateRef = React.useRef<FlowState>('idle');
+  const setFlowState = (state: FlowState) => {
+    console.log('[AddSheet] flowState:', flowStateRef.current, '→', state);
+    flowStateRef.current = state;
+    _setFlowState(state);
+  };
   const [smartInput, setSmartInput] = useState('');
   const [transcribedText, setTranscribedText] = useState('');
   const [confirmData, setConfirmData] = useState<ConfirmCardData | null>(null);
@@ -595,6 +601,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         });
         setFlowState('confirm');
       } else {
+        console.log('[Screenshot] Multiple subs found:', validSubs.length, 'setting bulk-confirm');
         setBulkItems(validSubs);
         setFlowState('bulk-confirm');
       }
@@ -817,133 +824,268 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     );
   };
 
-  // ── Render: bulk confirm (reuse AIWizard bulk UI via passing to wizard) ─
+  // ── Render: bulk confirm (screenshot parsed multiple subscriptions) ─
+  const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (bulkItems.length > 0) setBulkChecked(bulkItems.map(() => true));
+  }, [bulkItems]);
+
+  const handleBulkSaveAll = async () => {
+    const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
+    const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
+    const selected = bulkItems.filter((_, i) => bulkChecked[i]);
+    if (selected.length === 0) return;
+
+    setBulkSaving(true);
+    let saved = 0;
+    const failed: string[] = [];
+    for (const sub of selected) {
+      try {
+        const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
+        const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+        const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+        const res = await subscriptionsApi.create({
+          name: sub.name || 'Subscription',
+          category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
+          amount: sub.amount || 0,
+          currency: sub.currency || currency || 'USD',
+          billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
+          billingDay: 1,
+          status: 'ACTIVE',
+          serviceUrl: sub.serviceUrl || undefined,
+          cancelUrl: sub.cancelUrl || undefined,
+          iconUrl: iconUrl || undefined,
+          startDate: new Date().toISOString().split('T')[0],
+          addedVia: addedViaSource,
+        });
+        addSubscription(res.data);
+        saved++;
+      } catch (err: any) {
+        const code = err?.response?.data?.error?.code;
+        if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
+          failed.push(...selected.slice(selected.indexOf(sub)).map(s => s.name || '?'));
+          break;
+        }
+        failed.push(sub.name || '?');
+      }
+    }
+    subscriptionsApi.getAll().then((r) => {
+      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+    }).catch(() => {});
+    setBulkSaving(false);
+
+    if (saved > 0) {
+      setSuccessName(`${saved} ${t('add.bulk_saved', 'subscriptions')}`);
+      setShowSuccess(true);
+    }
+    if (failed.length > 0) {
+      setTimeout(() => {
+        Alert.alert(
+          t('add.bulk_partial_title', 'Some failed'),
+          t('add.bulk_partial_msg', { names: failed.join(', '), defaultValue: 'Could not add: {{names}}' }),
+        );
+      }, saved > 0 ? 2500 : 100);
+    }
+  };
+
   const renderBulkConfirm = () => (
-    <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
-      <AIWizard
-        onSave={async (sub) => {
-          const iconUrl = sub.iconUrl || (sub.serviceUrl
-            ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
-            : sub.name
-              ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
-              : undefined);
+    <View style={{ flex: 1 }}>
+      <TouchableOpacity
+        onPress={() => setFlowState('idle')}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, paddingVertical: 8, paddingHorizontal: 4 }}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      >
+        <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
+        <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
+      </TouchableOpacity>
 
-          const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
-          const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
-          const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+        <Ionicons name="sparkles" size={22} color={colors.primary} />
+        <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>
+          {t('add.bulk_review_title', 'Found subscriptions')}
+        </Text>
+      </View>
+      <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 16 }}>
+        {t('add.bulk_review_sub', { count: bulkItems.length, defaultValue: 'Found: {{count}}' })}
+      </Text>
 
-          const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
-          const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-          const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        {bulkItems.map((sub, idx) => {
+          // Known service → real domain mapping
+          const DOMAIN_MAP: Record<string, string> = {
+            'chatgpt': 'openai.com', 'chatgpt plus': 'openai.com', 'openai': 'openai.com',
+            'youtube': 'youtube.com', 'youtube premium': 'youtube.com', 'youtube music': 'music.youtube.com',
+            'netflix': 'netflix.com', 'netflix premium': 'netflix.com', 'netflix standard': 'netflix.com',
+            'spotify': 'spotify.com', 'spotify premium': 'spotify.com',
+            'playstation plus': 'playstation.com', 'playstation': 'playstation.com', 'ps plus': 'playstation.com',
+            'xbox game pass': 'xbox.com', 'xbox': 'xbox.com',
+            'apple tv+': 'tv.apple.com', 'apple tv': 'tv.apple.com',
+            'apple music': 'music.apple.com', 'apple arcade': 'apple.com',
+            'icloud': 'icloud.com', 'icloud+': 'icloud.com', 'icloud plus': 'icloud.com',
+            'disney+': 'disneyplus.com', 'disney plus': 'disneyplus.com',
+            'hbo max': 'hbomax.com', 'hbo': 'hbomax.com',
+            'amazon prime': 'amazon.com', 'prime video': 'amazon.com',
+            'github': 'github.com', 'github copilot': 'github.com',
+            'figma': 'figma.com', 'notion': 'notion.so', 'slack': 'slack.com',
+            'adobe': 'adobe.com', 'adobe creative cloud': 'adobe.com',
+            'midjourney': 'midjourney.com', 'claude': 'claude.ai',
+            'nordvpn': 'nordvpn.com', '1password': '1password.com',
+            'strava': 'strava.com', 'duolingo': 'duolingo.com',
+          };
+          const nameLower = (sub.name || '').toLowerCase().trim();
+          const domain = sub.serviceUrl
+            ? (() => { try { return new URL(sub.serviceUrl).hostname.replace(/^www\./, ''); } catch { return ''; } })()
+            : DOMAIN_MAP[nameLower] || '';
+          const iconUrl = sub.iconUrl || (domain ? `https://icon.horse/icon/${domain}` : null);
 
-          const res = await subscriptionsApi.create({
-            name: sub.name || 'Subscription',
-            category: safeCategory,
-            amount: sub.amount || 0,
-            currency: sub.currency || currency || 'USD',
-            billingPeriod: safeBillingPeriod,
-            billingDay: 1,
-            status: 'ACTIVE',
-            serviceUrl: sub.serviceUrl || undefined,
-            cancelUrl: sub.cancelUrl || undefined,
-            iconUrl: iconUrl || undefined,
-            startDate: new Date().toISOString().split('T')[0],
-            addedVia: 'AI_TEXT',
-          });
-          addSubscription(res.data);
-          if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
-          setSuccessName(sub.name || '');
-          setShowSuccess(true);
-          subscriptionsApi.getAll().then((r) => {
-            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-          }).catch(() => {});
+          // Translate category
+          const categoryKey = `categories.${(sub.category || 'OTHER').toLowerCase()}`;
+          const categoryLabel = t(categoryKey, (sub.category || 'OTHER').replace(/_/g, ' '));
+
+          // Translate billing period
+          const periodMap: Record<string, string> = {
+            'MONTHLY': t('subscription.monthly', 'monthly'),
+            'YEARLY': t('subscription.yearly', 'yearly'),
+            'WEEKLY': t('subscription.weekly', 'weekly'),
+            'QUARTERLY': t('subscription.quarterly', 'quarterly'),
+            'LIFETIME': t('subscription.lifetime', 'lifetime'),
+            'ONE_TIME': t('subscription.one_time', 'one-time'),
+          };
+          const periodLabel = periodMap[(sub.billingPeriod || 'MONTHLY').toUpperCase()] || sub.billingPeriod;
+
+          return (
+            <View key={idx} style={{
+              flexDirection: 'row', alignItems: 'center', gap: 12,
+              padding: 16, marginBottom: 10, borderRadius: 16,
+              backgroundColor: colors.card, borderWidth: 1.5,
+              borderColor: bulkChecked[idx] ? colors.primary : colors.border,
+              opacity: bulkChecked[idx] ? 1 : 0.4,
+            }}>
+              {/* Checkbox */}
+              <TouchableOpacity
+                onPress={() => setBulkChecked(prev => { const n = [...prev]; n[idx] = !n[idx]; return n; })}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={bulkChecked[idx] ? 'checkbox' : 'square-outline'}
+                  size={26}
+                  color={bulkChecked[idx] ? colors.primary : colors.textMuted}
+                />
+              </TouchableOpacity>
+
+              {/* Icon */}
+              {iconUrl ? (
+                <Image
+                  source={{ uri: iconUrl }}
+                  style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.surface2 }}
+                />
+              ) : (
+                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="cube-outline" size={22} color={colors.primary} />
+                </View>
+              )}
+
+              {/* Info — tap to edit */}
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => setBulkEditIdx(bulkEditIdx === idx ? null : idx)} activeOpacity={0.7}>
+                {bulkEditIdx === idx ? (
+                  <View style={{ gap: 8 }}>
+                    <TextInput
+                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.primary, paddingBottom: 4, paddingTop: 2 }}
+                      value={sub.name}
+                      onChangeText={(v) => setBulkItems(prev => { const n = [...prev]; n[idx] = { ...n[idx], name: v }; return n; })}
+                      placeholder={t('add.name_placeholder', 'Name')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                      <TextInput
+                        style={{ flex: 1, fontSize: 15, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 4 }}
+                        value={String(sub.amount || '')}
+                        onChangeText={(v) => setBulkItems(prev => { const n = [...prev]; n[idx] = { ...n[idx], amount: parseFloat(v) || 0 }; return n; })}
+                        keyboardType="decimal-pad"
+                        placeholder="0.00"
+                        placeholderTextColor={colors.textMuted}
+                      />
+                      <TextInput
+                        style={{ width: 55, fontSize: 15, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 4, textAlign: 'center' }}
+                        value={sub.currency || 'USD'}
+                        onChangeText={(v) => setBulkItems(prev => { const n = [...prev]; n[idx] = { ...n[idx], currency: v.toUpperCase() }; return n; })}
+                        placeholder="USD"
+                        placeholderTextColor={colors.textMuted}
+                        maxLength={3}
+                      />
+                    </View>
+                    <TouchableOpacity onPress={() => setBulkEditIdx(null)} style={{ alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 12, backgroundColor: colors.primary + '15', borderRadius: 8 }}>
+                      <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>{t('common.done', 'Done')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, flex: 1 }} numberOfLines={1}>{sub.name}</Text>
+                    </View>
+                    <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 3 }}>
+                      {categoryLabel} · {periodLabel}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              {/* Price + Actions */}
+              {bulkEditIdx !== idx && (
+                <View style={{ alignItems: 'flex-end', gap: 8 }}>
+                  <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
+                    {sub.currency || 'USD'} {(sub.amount || 0).toFixed(2)}
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <TouchableOpacity
+                      onPress={() => setBulkEditIdx(idx)}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons name="create-outline" size={22} color={colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setBulkItems(prev => prev.filter((_, i) => i !== idx));
+                        setBulkChecked(prev => prev.filter((_, i) => i !== idx));
+                      }}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons name="trash-outline" size={22} color={colors.error || '#EF4444'} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+
+      {/* Save button */}
+      <TouchableOpacity
+        onPress={handleBulkSaveAll}
+        disabled={bulkSaving || bulkChecked.every(c => !c)}
+        style={{
+          backgroundColor: bulkChecked.some(c => c) ? colors.primary : colors.surface2,
+          borderRadius: 16, padding: 18, alignItems: 'center', marginTop: 14,
+          shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
         }}
-        onSaveBulk={async (subs) => {
-          const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
-          const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
-          let saved = 0;
-          const failed: string[] = [];
-          for (const sub of subs) {
-            try {
-              const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
-              const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-              const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
-              const res = await subscriptionsApi.create({
-                name: sub.name || 'Subscription',
-                category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
-                amount: sub.amount || 0,
-                currency: sub.currency || currency || 'USD',
-                billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
-                billingDay: 1,
-                status: 'ACTIVE',
-                serviceUrl: sub.serviceUrl || undefined,
-                cancelUrl: sub.cancelUrl || undefined,
-                iconUrl: iconUrl || undefined,
-                paymentCardId: sub.paymentCardId || undefined,
-                startDate: new Date().toISOString().split('T')[0],
-                addedVia: 'AI_TEXT',
-              });
-              addSubscription(res.data);
-              if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
-              saved++;
-            } catch (err: any) {
-              const code = err?.response?.data?.error?.code;
-              if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
-                failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
-                break;
-              }
-              failed.push(sub.name || '?');
-            }
-          }
-          subscriptionsApi.getAll().then((r) => {
-            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-          }).catch(() => {});
-          if (failed.length > 0 && saved > 0) {
-            setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
-            setShowSuccess(true);
-            setTimeout(() => {
-              Alert.alert(
-                t('add.bulk_partial_title', 'Limit reached'),
-                t('add.bulk_partial_upgrade', {
-                  saved,
-                  total: saved + failed.length,
-                  names: failed.join(', '),
-                  defaultValue: 'Added {{saved}} of {{total}}. Could not add: {{names}}. Upgrade to Pro for unlimited subscriptions.',
-                }),
-                [
-                  { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { handleClose(); router.push('/paywall'); } },
-                  { text: t('common.ok', 'OK'), style: 'cancel' },
-                ]
-              );
-            }, 2500);
-          } else if (failed.length > 0 && saved === 0) {
-            handleClose();
-            router.push('/paywall');
-          } else {
-            setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
-            setShowSuccess(true);
-          }
-        }}
-        onEdit={(sub) => {
-          setForm((f) => ({
-            ...f,
-            name: sub.name ?? f.name,
-            amount: sub.amount != null ? String(sub.amount) : f.amount,
-            currency: sub.currency ?? f.currency,
-            billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
-            category: sub.category?.toUpperCase() ?? f.category,
-            serviceUrl: sub.serviceUrl ?? f.serviceUrl,
-            cancelUrl: sub.cancelUrl ?? f.cancelUrl,
-            iconUrl: sub.iconUrl ?? f.iconUrl,
-          }));
-          setManualExpanded(true);
-          setFlowState('manual');
-        }}
-      />
+      >
+        {bulkSaving ? (
+          <ActivityIndicator color="#FFF" />
+        ) : (
+          <Text style={{ color: '#FFF', fontSize: 17, fontWeight: '800' }}>
+            {t('add.bulk_save', { count: bulkChecked.filter(Boolean).length, defaultValue: 'Add {{count}}' })}
+          </Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
 
-  // ── Render: wizard fallback ─────────────────────────────────────────────
+  // ── Render: wizard ─────────────────────────────────────────────────────
   const renderWizard = () => (
     <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
       <TouchableOpacity

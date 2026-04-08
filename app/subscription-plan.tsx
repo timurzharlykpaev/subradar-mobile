@@ -33,6 +33,13 @@ export default function SubscriptionPlanScreen() {
   const startTrialMutation = useStartTrial();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
+  // Sync billing period from API response
+  useEffect(() => {
+    if (billing?.billingPeriod === 'yearly' || billing?.billingPeriod === 'monthly') {
+      setBillingPeriod(billing.billingPeriod);
+    }
+  }, [billing?.billingPeriod]);
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
@@ -121,7 +128,7 @@ export default function SubscriptionPlanScreen() {
                 <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
                   <Text style={styles.currentBadgeText}>
                     {t('subscription_plan.current_plan')}
-                    {planKey !== 'free' ? ` · ${t('paywall.month', 'mo')}` : ''}
+                    {planKey !== 'free' ? ` · ${billing?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` : ''}
                   </Text>
                 </View>
               )}
@@ -200,10 +207,10 @@ export default function SubscriptionPlanScreen() {
                 <Text style={styles.heroName}>{display.name}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.heroPrice}>{PRICES[plan]?.[billingPeriod] ?? '$0'}</Text>
+                <Text style={styles.heroPrice}>{PRICES[plan]?.[billing?.billingPeriod || 'monthly'] ?? '$0'}</Text>
                 {plan !== 'free' && (
                   <Text style={styles.heroPeriod}>
-                    /{billingPeriod === 'monthly' ? t('paywall.month', 'mo') : t('paywall.year', 'yr')}
+                    /{billing?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}
                   </Text>
                 )}
               </View>

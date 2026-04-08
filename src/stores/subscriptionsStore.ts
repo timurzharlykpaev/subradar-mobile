@@ -52,8 +52,10 @@ export const useSubscriptionsStore = create<SubscriptionsState>()(
           );
         }
         if (filter === 'all') return result;
-        if (filter === 'category' && selectedCategory) {
-          return result.filter((s) => s.category === selectedCategory);
+        if (filter === 'category') {
+          return selectedCategory
+            ? result.filter((s) => s.category === selectedCategory)
+            : result;
         }
         return result.filter((s) => s.status.toLowerCase() === filter);
       },
