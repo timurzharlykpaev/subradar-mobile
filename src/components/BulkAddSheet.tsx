@@ -116,12 +116,14 @@ const vStyles = StyleSheet.create({
 
 // ── SubCard ──────────────────────────────────────────────────────────────────
 
-function SubCard({ sub, checked, onToggle, colors }: { sub: BulkSub; checked: boolean; onToggle: () => void; colors: any }) {
+function SubCard({ sub, checked, onToggle, onEdit, colors }: { sub: BulkSub; checked: boolean; onToggle: () => void; onEdit: () => void; colors: any }) {
   const { t } = useTranslation();
-  const periodMap: Record<string, string> = { MONTHLY: 'мес', YEARLY: 'год', WEEKLY: 'нед', QUARTERLY: 'квар' };
-  const [editing, setEditing] = React.useState(false);
-  const [editName, setEditName] = React.useState(sub.name);
-  const [editAmount, setEditAmount] = React.useState(String(sub.amount));
+  const periodLabels: Record<string, string> = {
+    MONTHLY: t('add.monthly', 'monthly'),
+    YEARLY: t('add.yearly', 'yearly'),
+    WEEKLY: t('add.weekly', 'weekly'),
+    QUARTERLY: t('add.quarterly', 'quarterly'),
+  };
 
   return (
     <View style={[cStyles.card, {
@@ -129,76 +131,32 @@ function SubCard({ sub, checked, onToggle, colors }: { sub: BulkSub; checked: bo
       borderColor: checked ? colors.primary : colors.border,
     }]}>
       <TouchableOpacity onPress={onToggle} style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} activeOpacity={0.75}>
-        {/* Icon */}
         {sub.iconUrl ? (
           <Image source={{ uri: sub.iconUrl }} style={cStyles.icon} />
         ) : (
           <View style={[cStyles.iconFallback, { backgroundColor: colors.primary + '22' }]}>
-            <Text style={[cStyles.iconLetter, { color: colors.primary }]}>
-              {(sub.name || '?')[0].toUpperCase()}
-            </Text>
+            <Text style={[cStyles.iconLetter, { color: colors.primary }]}>{(sub.name || '?')[0].toUpperCase()}</Text>
           </View>
         )}
-
-        {/* Info */}
         <View style={{ flex: 1, marginLeft: 12 }}>
-          {editing ? (
-            <View style={{ gap: 6 }}>
-              <TextInput
-                style={{ fontSize: 15, fontWeight: '700', color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: 2 }}
-                value={editName}
-                onChangeText={setEditName}
-                autoFocus
-              />
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <TextInput
-                  style={{ fontSize: 14, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: 2, width: 80 }}
-                  value={editAmount}
-                  onChangeText={setEditAmount}
-                  keyboardType="numeric"
-                />
-                <Text style={{ fontSize: 13, color: colors.textMuted }}>{sub.currency}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  sub.name = editName.trim() || sub.name;
-                  sub.amount = parseFloat(editAmount) || sub.amount;
-                  setEditing(false);
-                }}
-                style={{ alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, backgroundColor: colors.primary, marginTop: 2 }}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <Text style={[cStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-              <Text style={[cStyles.meta, { color: colors.textMuted }]}>
-                {sub.currency} {sub.amount.toFixed(2)} / {periodMap[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
-              </Text>
-              {sub.isDuplicate && (
-                <Text style={{ fontSize: 10, color: '#FBBF24', marginTop: 2 }}>
-                  {t('add.already_exists', '⚠ Уже добавлена')}
-                </Text>
-              )}
-            </>
+          <Text style={[cStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+          <Text style={[cStyles.meta, { color: colors.textMuted }]}>
+            {sub.currency} {sub.amount.toFixed(2)} / {periodLabels[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
+            {sub.category ? ` · ${sub.category}` : ''}
+          </Text>
+          {sub.isDuplicate && (
+            <Text style={{ fontSize: 10, color: '#FBBF24', marginTop: 2 }}>{t('add.already_exists', 'Already added')}</Text>
           )}
         </View>
       </TouchableOpacity>
-
-      {/* Edit + Check */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        {!editing && (
-          <TouchableOpacity onPress={() => setEditing(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name="create-outline" size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={onToggle}>
-          <View style={[cStyles.checkbox, { borderColor: checked ? colors.primary : colors.border, backgroundColor: checked ? colors.primary : 'transparent' }]}>
-            {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
-          </View>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={onEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ padding: 6 }}>
+        <Ionicons name="create-outline" size={18} color={colors.textSecondary} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onToggle}>
+        <View style={[cStyles.checkbox, { borderColor: checked ? colors.primary : colors.border, backgroundColor: checked ? colors.primary : 'transparent' }]}>
+          {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -238,6 +196,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const [parsedSubs, setParsedSubs] = useState<BulkSub[]>([]);
   const [checked, setChecked] = useState<boolean[]>([]);
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const panResponder = useRef(
@@ -442,6 +401,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const bg = isDark ? '#12122A' : '#F5F5F7';
 
   return (
+    <>
     <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
       <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.backdrop} />
@@ -616,6 +576,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
                       next[i] = !next[i];
                       return next;
                     })}
+                    onEdit={() => setEditingIndex(i)}
                     colors={colors}
                   />
                 ))}
@@ -642,6 +603,113 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
         </KeyboardAvoidingView>
       </Animated.View>
     </Modal>
+
+    {/* ── Edit Subscription Modal ─────────────────────────────────────────── */}
+    {editingIndex !== null && parsedSubs[editingIndex] && (() => {
+      const sub = parsedSubs[editingIndex];
+      const PERIODS: Array<BulkSub['billingPeriod']> = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'];
+      const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DESIGN', 'EDUCATION', 'FINANCE', 'INFRASTRUCTURE', 'SECURITY', 'HEALTH', 'SPORT', 'DEVELOPER', 'NEWS', 'BUSINESS', 'OTHER'];
+      return (
+        <Modal visible transparent animationType="slide" onRequestClose={() => setEditingIndex(null)}>
+          <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12, gap: 12 }}>
+              <TouchableOpacity onPress={() => setEditingIndex(null)}>
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, flex: 1 }}>{t('common.edit', 'Edit')}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setParsedSubs([...parsedSubs]);
+                  setEditingIndex(null);
+                }}
+                style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.primary }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+              {/* Name */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.service_name', 'Name')}</Text>
+                <TextInput
+                  style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                  value={sub.name}
+                  onChangeText={(v) => { sub.name = v; setParsedSubs([...parsedSubs]); }}
+                />
+              </View>
+              {/* Amount + Currency */}
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flex: 1, gap: 6 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
+                  <TextInput
+                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                    value={String(sub.amount)}
+                    onChangeText={(v) => { sub.amount = parseFloat(v) || 0; setParsedSubs([...parsedSubs]); }}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={{ width: 80, gap: 6 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.currency', 'Currency')}</Text>
+                  <TextInput
+                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, textAlign: 'center' }}
+                    value={sub.currency}
+                    onChangeText={(v) => { sub.currency = v.toUpperCase(); setParsedSubs([...parsedSubs]); }}
+                    maxLength={3}
+                  />
+                </View>
+              </View>
+              {/* Billing Period */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_period', 'Billing Period')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {PERIODS.map((p) => (
+                    <TouchableOpacity
+                      key={p}
+                      style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: sub.billingPeriod === p ? colors.primary : colors.border, backgroundColor: sub.billingPeriod === p ? colors.primary + '12' : colors.card }}
+                      onPress={() => { sub.billingPeriod = p; setParsedSubs([...parsedSubs]); }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: sub.billingPeriod === p ? colors.primary : colors.textSecondary }}>
+                        {t(`add.${p.toLowerCase()}`, p.toLowerCase())}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+              {/* Category */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.category', 'Category')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {CATEGORIES.map((c) => (
+                    <TouchableOpacity
+                      key={c}
+                      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: (sub.category || 'OTHER') === c ? colors.primary : colors.border, backgroundColor: (sub.category || 'OTHER') === c ? colors.primary + '12' : colors.card }}
+                      onPress={() => { sub.category = c; setParsedSubs([...parsedSubs]); }}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: (sub.category || 'OTHER') === c ? colors.primary : colors.textSecondary }}>{c}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+              {/* Delete */}
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
+                onPress={() => {
+                  const next = parsedSubs.filter((_, j) => j !== editingIndex);
+                  const nextChecked = checked.filter((_, j) => j !== editingIndex);
+                  setParsedSubs(next);
+                  setChecked(nextChecked);
+                  setEditingIndex(null);
+                }}
+              >
+                <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#EF4444' }}>{t('common.delete', 'Delete')}</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </Modal>
+      );
+    })()}
+    </>
   );
 }
 
