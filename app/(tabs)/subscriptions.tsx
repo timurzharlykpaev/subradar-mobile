@@ -312,34 +312,34 @@ const styles = StyleSheet.create({
   upgradeBtnText: { fontSize: 12, fontWeight: '800', color: '#FFF' },
 
   // Summary
-  summaryStrip: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 12 },
+  summaryStrip: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 16 },
   summaryCard: { flex: 1, borderRadius: 14, padding: 10, alignItems: 'center', borderWidth: 1 },
   summaryValue: { fontSize: 18, fontWeight: '900' },
   summaryLabel: { fontSize: 10, fontWeight: '600', marginTop: 2 },
 
   // Search
-  searchContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, gap: 8, borderWidth: 1, marginBottom: 8 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, gap: 8, borderWidth: 1, marginBottom: 10 },
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
 
   // Filters
-  filtersScroll: { flexShrink: 0, marginBottom: 4 },
-  filters: { paddingHorizontal: 20, gap: 8, paddingVertical: 4, alignItems: 'center' },
+  filtersScroll: { flexShrink: 0, marginBottom: 2 },
+  filters: { paddingHorizontal: 20, gap: 8, alignItems: 'center' },
   filterChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1 },
   filterText: { fontSize: 13, fontWeight: '600' },
 
   // Sort
-  sortScroll: { flexShrink: 0, marginBottom: 4 },
-  sortChip: { paddingHorizontal: 12, paddingVertical: 4, marginBottom: 4 },
+  sortScroll: { flexShrink: 0, marginBottom: 6 },
+  sortChip: { paddingHorizontal: 12, paddingVertical: 6 },
   sortText: { fontSize: 12, fontWeight: '700' },
 
   // Category
   catChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
 
   // List
-  list: { padding: 20, paddingTop: 4, paddingBottom: 100 },
+  list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
 
   // Empty
-  empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
+  empty: { alignItems: 'center', paddingTop: 48, gap: 10 },
   emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   emptyText: { fontSize: 18, fontWeight: '700' },
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
