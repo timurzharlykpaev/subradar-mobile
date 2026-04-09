@@ -271,7 +271,7 @@ export default function SubscriptionsScreen() {
           data={subs}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchSubs()} />}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, subs.length === 0 && { flex: 1 }]}
           showsVerticalScrollIndicator={false}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
 
   // Empty
-  empty: { alignItems: 'center', paddingTop: 48, gap: 10 },
+  empty: { alignItems: 'center', justifyContent: 'center', flex: 1, gap: 10 },
   emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   emptyText: { fontSize: 18, fontWeight: '700' },
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
