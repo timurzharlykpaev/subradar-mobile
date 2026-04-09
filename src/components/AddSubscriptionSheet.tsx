@@ -1789,7 +1789,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       onPress={() => updateSub({ billingPeriod: p })}
                     >
                       <Text style={{ fontSize: 13, fontWeight: '600', color: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary : colors.textSecondary }}>
-                        {t(`add.${p.toLowerCase()}`, p.toLowerCase())}
+                        {String(t(`add.${p.toLowerCase()}`, p.toLowerCase()))}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -1805,7 +1805,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.border, backgroundColor: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary + '12' : colors.card }}
                       onPress={() => updateSub({ category: c })}
                     >
-                      <Text style={{ fontSize: 11, fontWeight: '600', color: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.textSecondary }}>{t(`categories.${c.toLowerCase()}`, c)}</Text>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.textSecondary }}>{String(t(`categories.${c.toLowerCase()}`, c))}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
