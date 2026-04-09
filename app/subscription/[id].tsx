@@ -244,22 +244,28 @@ export default function SubscriptionDetailScreen() {
           </DetailRow>
 
           {/* Reminder status */}
-          <DetailRow label={t("add.reminder", "Reminder")}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons
-                name={(subscription as any).reminderEnabled ? 'notifications' : 'notifications-off-outline'}
-                size={16}
-                color={(subscription as any).reminderEnabled ? colors.primary : colors.textMuted}
-              />
-              <Text style={[styles.detailValue, { color: (subscription as any).reminderEnabled ? colors.text : colors.textMuted }]}>
-                {(subscription as any).reminderEnabled
-                  ? ((subscription as any).reminderDaysBefore ?? [3]).map((d: number) =>
-                      d === 1 ? t('add.reminder_1d', '1 day') : d === 3 ? t('add.reminder_3d', '3 days') : d === 7 ? t('add.reminder_7d', '7 days') : `${d}d`
-                    ).join(', ') + ' ' + t('subscription.before_payment', 'before payment')
-                  : t('add.reminder_off', 'Off')}
-              </Text>
-            </View>
-          </DetailRow>
+          {(() => {
+            const days: number[] = (subscription as any).reminderDaysBefore ?? [];
+            const enabled = (subscription as any).reminderEnabled !== false && days.length > 0;
+            return (
+              <DetailRow label={t('add.reminder', 'Reminder')}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons
+                    name={enabled ? 'notifications' : 'notifications-off-outline'}
+                    size={16}
+                    color={enabled ? colors.primary : colors.textMuted}
+                  />
+                  <Text style={[styles.detailValue, { color: enabled ? colors.text : colors.textMuted }]}>
+                    {enabled
+                      ? days.map((d: number) =>
+                          d === 1 ? t('add.reminder_1d', '1 day') : d === 3 ? t('add.reminder_3d', '3 days') : d === 7 ? t('add.reminder_7d', '7 days') : `${d}d`
+                        ).join(', ') + ' ' + t('subscription.before_payment', 'before payment')
+                      : t('add.reminder_off', 'Off')}
+                  </Text>
+                </View>
+              </DetailRow>
+            );
+          })()}
 
           {card && (
             <DetailRow label={t("add.card")}>

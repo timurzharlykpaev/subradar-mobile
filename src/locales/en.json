@@ -504,6 +504,8 @@
     "remove_confirm": "Remove {{name}}?",
     "day": "Day {{day}}",
     "edit_title": "Edit Subscription",
+    "before_payment": "before payment",
+    "receipt_upload_failed": "Failed to upload receipt",
     "invalid_billing_day": "Billing day must be between 1 and 31",
     "fill_card_fields": "Fill in card nickname and last 4 digits",
     "invalid_last4": "Last 4 digits must be exactly 4 numbers",

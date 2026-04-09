@@ -530,7 +530,7 @@ export default function SettingsScreen() {
               value={emailNotifications}
               onValueChange={(val) => {
                 setEmailNotifications(val);
-                notificationsApi.updateSettings({ enabled: notificationsEnabled, daysBefore: reminderDays || 3 }).catch(() => {});
+                notificationsApi.updateSettings({ emailNotifications: val }).catch(() => {});
               }}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor="#FFFFFF"
@@ -550,6 +550,7 @@ export default function SettingsScreen() {
                 value={weeklyDigest}
                 onValueChange={(val) => {
                   setWeeklyDigest(val);
+                  notificationsApi.updateSettings({ weeklyDigestEnabled: val }).catch(() => {});
                 }}
                 trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor="#FFFFFF"
