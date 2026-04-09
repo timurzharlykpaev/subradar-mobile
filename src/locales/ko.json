@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "가족과 공유하시겠어요?",
+    "team_upsell_desc": "팀 플랜: 비용을 나누고 중복 구독을 발견하세요"
   },
   "subscriptions": {
     "title": "구독",
@@ -276,6 +278,8 @@
     "sub_usage": "구독: {{used}}/{{limit}}",
     "start_trial": "7일 무료 체험 시작",
     "upgrade": "업그레이드 — $2.99/월",
+    "switch_to_yearly": "연간으로 전환 — $8.88 절약",
+    "yearly_desc": "$27/년 vs 월간 $35.88/년",
     "export_data": "데이터 내보내기",
     "data_exported": "데이터 내보내기 완료 (데모)",
     "version": "SubRadar AI v1.0.0",
@@ -411,7 +415,13 @@
     "notifications_subtitle": "구독 갱신 전에 알림을 받으세요",
     "enable_notifications": "알림 활성화",
     "maybe_later": "나중에",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "보통 사람이 낭비하는 금액",
+    "hook_subtitle": "잊어버린 구독에.\n당신은 몇 개나 있나요?",
+    "hook_tap_yours": "결제 중인 것을 탭하세요",
+    "hook_monthly_total": "이미 월 ${{amount}}입니다",
+    "hook_annual": "= ${{amount}}/년",
+    "hook_cta_selected": "나머지 찾기 →"
   },
   "analytics": {
     "title": "분석",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "연간으로 전환 →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "현재 제품을 사용할 수 없습니다. 나중에 다시 시도해 주세요.",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "잊어버린 구독에 돈을 잃지 마세요",
+    "testimonial": "\"잊고 있던 구독 4개를 찾았어요. 첫 달에 $180 절약했습니다.\"",
+    "testimonial_author": "— Alex M., 인증된 사용자"
   },
   "ai": {
     "or_type": "또는 입력",

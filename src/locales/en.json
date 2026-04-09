@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "Share with family?",
+    "team_upsell_desc": "Team plan: split costs & spot duplicate subs"
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -284,6 +286,8 @@
     "sub_usage": "Subscriptions: {{used}}/{{limit}}",
     "start_trial": "Start 7-day Free Trial",
     "upgrade": "Upgrade — $2.99/mo",
+    "switch_to_yearly": "Switch to Yearly — Save $8.88",
+    "yearly_desc": "$27/year vs $35.88/year monthly",
     "export_data": "Export Data",
     "data_exported": "Data exported (demo)",
     "version": "SubRadar AI v1.0.0",
@@ -419,7 +423,13 @@
     "trial_description": "Try SubRadar Pro free for 7 days. You will only be charged after the trial ends.",
     "trial_start": "Start trial →",
     "trial_skip": "Continue for free",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "The average person wastes",
+    "hook_subtitle": "on subscriptions they forgot about.\nHow many do YOU have?",
+    "hook_tap_yours": "Tap the ones you pay for",
+    "hook_monthly_total": "That's ${{amount}}/month already",
+    "hook_annual": "= ${{amount}}/year",
+    "hook_cta_selected": "Find the rest →"
   },
   "analytics": {
     "title": "Analytics",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "Switch to Yearly →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "Products are not available right now. Please try again later.",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "Stop Losing Money on Forgotten Subscriptions",
+    "testimonial": "\"Found 4 forgotten subscriptions. Saved $180 in month 1.\"",
+    "testimonial_author": "— Alex M., verified user"
   },
   "pro_modal": {
     "title_default": "Pro Feature",

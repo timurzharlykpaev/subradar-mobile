@@ -412,14 +412,14 @@ function ShowcaseTeamIcon() {
   );
 }
 
-// ─── Quick-add services for Step 0 ──────────────────────────────────────────
+// ─── Quick-add services for Step 0 (use icon.horse for real logos) ───────────
 const QUICK_ADD_SERVICES = [
-  { name: 'Netflix',    amount: 15.99, color: '#E50914', iconBg: '#E50914', Icon: NetflixIcon  },
-  { name: 'Spotify',   amount: 9.99,  color: '#1DB954', iconBg: '#1DB954', Icon: SpotifyIcon  },
-  { name: 'iCloud',    amount: 2.99,  color: '#0071E3', iconBg: '#0071E3', Icon: ICloudIcon   },
-  { name: 'YouTube',   amount: 13.99, color: '#FF0000', iconBg: '#FF0000', Icon: YoutubeIcon  },
-  { name: 'ChatGPT',   amount: 20.00, color: '#10A37F', iconBg: '#10A37F', Icon: OpenAIIcon   },
-  { name: 'Other',     amount: 0,     color: '#8B5CF6', iconBg: '#8B5CF6', Icon: null         },
+  { name: 'Netflix',    amount: 15.99, color: '#E50914', iconUrl: 'https://icon.horse/icon/netflix.com'     },
+  { name: 'Spotify',   amount: 9.99,  color: '#1DB954', iconUrl: 'https://icon.horse/icon/spotify.com'    },
+  { name: 'iCloud+',   amount: 2.99,  color: '#0071E3', iconUrl: 'https://icon.horse/icon/icloud.com'    },
+  { name: 'YouTube',   amount: 13.99, color: '#FF0000', iconUrl: 'https://icon.horse/icon/youtube.com'   },
+  { name: 'ChatGPT',   amount: 20.00, color: '#10A37F', iconUrl: 'https://icon.horse/icon/openai.com'    },
+  { name: 'Other',     amount: 0,     color: '#8B5CF6', iconUrl: ''                                       },
 ] as const;
 
 export default function OnboardingScreen() {
@@ -736,7 +736,7 @@ export default function OnboardingScreen() {
             ${counterDisplay}
           </Text>
           <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textSecondary, paddingBottom: 12 }}>
-            /yr
+            /{t('paywall.year', 'yr')}
           </Text>
         </View>
         <Text style={{ fontSize: 15, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', lineHeight: 22 }}>
@@ -775,10 +775,11 @@ export default function OnboardingScreen() {
                 backgroundColor: isSelected ? svc.color + '18' : (isDark ? '#1C1C2E' : '#FFFFFF'),
               }}
             >
-              {svc.Icon ? (
-                <View style={{ width: 22, height: 22, borderRadius: 6, backgroundColor: svc.iconBg, alignItems: 'center', justifyContent: 'center' }}>
-                  <svc.Icon />
-                </View>
+              {svc.iconUrl ? (
+                <Image
+                  source={{ uri: svc.iconUrl }}
+                  style={{ width: 22, height: 22, borderRadius: 6 }}
+                />
               ) : (
                 <Ionicons name="add-circle-outline" size={22} color={svc.color} />
               )}

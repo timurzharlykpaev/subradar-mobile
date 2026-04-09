@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "与家人共享？",
+    "team_upsell_desc": "家庭计划：分摊费用，发现重复订阅"
   },
   "subscriptions": {
     "title": "订阅",
@@ -276,6 +278,8 @@
     "sub_usage": "订阅：{{used}}/{{limit}}",
     "start_trial": "开始7天免费试用",
     "upgrade": "升级 — $2.99/月",
+    "switch_to_yearly": "切换到年付 — 节省 $8.88",
+    "yearly_desc": "$27/年 vs 月付 $35.88/年",
     "export_data": "导出数据",
     "data_exported": "数据已导出（演示）",
     "version": "SubRadar AI v1.0.0",
@@ -411,7 +415,13 @@
     "notifications_subtitle": "在订阅续费前收到提醒",
     "enable_notifications": "开启通知",
     "maybe_later": "以后再说",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "普通人平均浪费",
+    "hook_subtitle": "在已遗忘的订阅上。\n你有多少个？",
+    "hook_tap_yours": "点击你正在付费的订阅",
+    "hook_monthly_total": "每月已花费 ${{amount}}",
+    "hook_annual": "= ${{amount}}/年",
+    "hook_cta_selected": "找出剩下的 →"
   },
   "analytics": {
     "title": "分析",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "切换到年付 →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "产品暂时无法使用，请稍后再试。",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "别再为遗忘的订阅浪费钱了",
+    "testimonial": "\"发现了4个被遗忘的订阅，第一个月就省了$180。\"",
+    "testimonial_author": "— Alex M., 已验证用户"
   },
   "ai": {
     "or_type": "或输入",

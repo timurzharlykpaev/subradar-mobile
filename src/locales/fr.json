@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "Partager en famille ?",
+    "team_upsell_desc": "Plan famille : partagez les coûts et repérez les abonnements en double"
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -276,6 +278,8 @@
     "sub_usage": "Abonnements : {{used}}/{{limit}}",
     "start_trial": "Démarrer l'essai gratuit de 7 jours",
     "upgrade": "Passer à Pro — 2,99 $/mois",
+    "switch_to_yearly": "Passer à l'annuel — Économisez $8,88",
+    "yearly_desc": "$27/an vs $35,88/an en mensuel",
     "export_data": "Exporter les données",
     "data_exported": "Données exportées (démo)",
     "version": "SubRadar AI v1.0.0",
@@ -411,7 +415,13 @@
     "notifications_subtitle": "Recevez des rappels avant le renouvellement de vos abonnements",
     "enable_notifications": "Activer les notifications",
     "maybe_later": "Peut-être plus tard",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "En moyenne, une personne gaspille",
+    "hook_subtitle": "en abonnements oubliés.\nCombien en avez-VOUS ?",
+    "hook_tap_yours": "Appuyez sur ceux que vous payez",
+    "hook_monthly_total": "C'est déjà ${{amount}}/mois",
+    "hook_annual": "= ${{amount}}/an",
+    "hook_cta_selected": "Trouvez le reste →"
   },
   "analytics": {
     "title": "Analytique",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "Passer à l'annuel →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "Les produits ne sont pas disponibles pour le moment. Veuillez réessayer plus tard.",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "Arrêtez de perdre de l'argent sur des abonnements oubliés",
+    "testimonial": "\"J'ai trouvé 4 abonnements oubliés. Économisé $180 le premier mois.\"",
+    "testimonial_author": "— Alex M., utilisateur vérifié"
   },
   "ai": {
     "or_type": "ou tapez",

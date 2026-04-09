@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "Mit der Familie teilen?",
+    "team_upsell_desc": "Familientarif: Kosten teilen & doppelte Abos erkennen"
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -276,6 +278,8 @@
     "sub_usage": "Abonnements: {{used}}/{{limit}}",
     "start_trial": "7-Tage-Testversion starten",
     "upgrade": "Upgrade — 2,99 $/Monat",
+    "switch_to_yearly": "Zu Jährlich wechseln — $8,88 sparen",
+    "yearly_desc": "$27/Jahr vs $35,88/Jahr monatlich",
     "export_data": "Daten exportieren",
     "data_exported": "Daten exportiert (Demo)",
     "version": "SubRadar AI v1.0.0",
@@ -411,7 +415,13 @@
     "notifications_subtitle": "Erhalten Sie Erinnerungen, bevor Ihre Abonnements verlängert werden",
     "enable_notifications": "Benachrichtigungen aktivieren",
     "maybe_later": "Vielleicht später",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "Der Durchschnittsmensch verschwendet",
+    "hook_subtitle": "für vergessene Abonnements.\nWie viele hast DU?",
+    "hook_tap_yours": "Tippe auf die, die du bezahlst",
+    "hook_monthly_total": "Das sind schon ${{amount}}/Monat",
+    "hook_annual": "= ${{amount}}/Jahr",
+    "hook_cta_selected": "Finde den Rest →"
   },
   "analytics": {
     "title": "Analytik",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "Zu Jährlich wechseln →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "Produkte sind gerade nicht verfügbar. Bitte versuche es später noch einmal.",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "Hör auf, Geld für vergessene Abonnements zu verlieren",
+    "testimonial": "\"4 vergessene Abos gefunden. $180 im ersten Monat gespart.\"",
+    "testimonial_author": "— Alex M., verifizierter Nutzer"
   },
   "ai": {
     "or_type": "oder eingeben",

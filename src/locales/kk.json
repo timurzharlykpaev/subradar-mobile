@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "Отбасымен бөлісу?",
+    "team_upsell_desc": "Топтық жоспар: шығынды бөлісіп, қайталанатын жазылымдарды табыңыз"
   },
   "subscriptions": {
     "title": "Жазылымдар",
@@ -284,6 +286,8 @@
     "sub_usage": "Жазылымдар: {{used}}/{{limit}}",
     "start_trial": "7 күндік тегін сынақты бастау",
     "upgrade": "Жаңарту — $2.99/ай",
+    "switch_to_yearly": "Жылдыққа ауысу — $8.88 үнемдеңіз",
+    "yearly_desc": "$27/жыл vs айлық $35.88/жыл",
     "export_data": "Деректерді экспорттау",
     "data_exported": "Деректер экспортталды (демо)",
     "version": "SubRadar AI v1.0.0",
@@ -419,7 +423,13 @@
     "notifications_subtitle": "Жазылымдарыңыз жаңартылмас бұрын еске салу алыңыз",
     "enable_notifications": "Хабарландыруларды қосу",
     "maybe_later": "Кейінірек",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "Орташа адам жоғалтады",
+    "hook_subtitle": "ұмытылған жазылымдарға.\nСенде ҚАНША бар?",
+    "hook_tap_yours": "Төлейтіндеріңді бас",
+    "hook_monthly_total": "Бұл айына ${{amount}}",
+    "hook_annual": "= ${{amount}}/жыл",
+    "hook_cta_selected": "Қалғанын тап →"
   },
   "analytics": {
     "title": "Аналитика",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "Жылдыққа өту →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "Өнімдер қазір қол жетімді емес. Кейінірек қайталап көріңіз.",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "Ұмытылған жазылымдарға ақша жоғалтуды тоқтатыңыз",
+    "testimonial": "\"4 ұмытылған жазылымды таптым. Бірінші айда $180 үнемдедім.\"",
+    "testimonial_author": "— Alex M., расталған пайдаланушы"
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",

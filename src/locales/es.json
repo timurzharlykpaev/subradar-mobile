@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "¿Compartir en familia?",
+    "team_upsell_desc": "Plan familiar: divide costos y detecta suscripciones duplicadas"
   },
   "subscriptions": {
     "title": "Suscripciones",
@@ -276,6 +278,8 @@
     "sub_usage": "Suscripciones: {{used}}/{{limit}}",
     "start_trial": "Iniciar prueba gratuita de 7 días",
     "upgrade": "Mejorar — $2.99/mes",
+    "switch_to_yearly": "Cambiar a Anual — Ahorra $8.88",
+    "yearly_desc": "$27/año vs $35.88/año mensual",
     "export_data": "Exportar datos",
     "data_exported": "Datos exportados (demo)",
     "version": "SubRadar AI v1.0.0",
@@ -411,7 +415,13 @@
     "notifications_subtitle": "Recibe recordatorios antes de que se renueven tus suscripciones",
     "enable_notifications": "Activar notificaciones",
     "maybe_later": "Quizás después",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "Una persona promedio desperdicia",
+    "hook_subtitle": "en suscripciones que olvidó.\n¿Cuántas tienes TÚ?",
+    "hook_tap_yours": "Toca las que pagas",
+    "hook_monthly_total": "Eso ya es ${{amount}}/mes",
+    "hook_annual": "= ${{amount}}/año",
+    "hook_cta_selected": "Encuentra el resto →"
   },
   "analytics": {
     "title": "Analítica",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "Cambiar a anual →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "Los productos no están disponibles en este momento. Por favor, inténtalo más tarde.",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "Deja de perder dinero en suscripciones olvidadas",
+    "testimonial": "\"Encontré 4 suscripciones olvidadas. Ahorré $180 en el primer mes.\"",
+    "testimonial_author": "— Alex M., usuario verificado"
   },
   "ai": {
     "or_type": "o escribe",

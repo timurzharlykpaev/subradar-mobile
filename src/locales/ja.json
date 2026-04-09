@@ -83,7 +83,9 @@
     "empty_title": "Track your subscriptions",
     "empty_desc": "Add your first subscription to see spending insights, upcoming charges, and AI recommendations.",
     "add_first": "Add Subscription",
-    "top_categories": "Top Categories"
+    "top_categories": "Top Categories",
+    "team_upsell_title": "家族と共有しますか？",
+    "team_upsell_desc": "チームプラン：費用を分割し、重複するサブスクを検出"
   },
   "subscriptions": {
     "title": "サブスクリプション",
@@ -276,6 +278,8 @@
     "sub_usage": "サブスクリプション：{{used}}/{{limit}}",
     "start_trial": "7日間の無料トライアルを開始",
     "upgrade": "アップグレード — $2.99/月",
+    "switch_to_yearly": "年払いに切替 — $8.88お得",
+    "yearly_desc": "$27/年 vs 月払い$35.88/年",
     "export_data": "データをエクスポート",
     "data_exported": "データをエクスポートしました（デモ）",
     "version": "SubRadar AI v1.0.0",
@@ -411,7 +415,13 @@
     "notifications_subtitle": "サブスクリプション更新前にリマインダーを受け取ります",
     "enable_notifications": "通知を有効にする",
     "maybe_later": "後で",
-    "trial_promo": "Get 7 days free with Pro after signup"
+    "trial_promo": "Get 7 days free with Pro after signup",
+    "hook_eyebrow": "平均的な人が無駄にしている金額",
+    "hook_subtitle": "忘れたサブスクリプションに。\nあなたはいくつありますか？",
+    "hook_tap_yours": "支払っているものをタップ",
+    "hook_monthly_total": "すでに月${{amount}}です",
+    "hook_annual": "= ${{amount}}/年",
+    "hook_cta_selected": "残りを見つける →"
   },
   "analytics": {
     "title": "分析",
@@ -752,7 +762,10 @@
     "switch_to_yearly": "年払いに切り替える →",
     "purchase_failed": "Purchase failed",
     "products_unavailable": "現在、製品はご利用いただけません。後でもう一度お試しください。",
-    "title": "Upgrade"
+    "title": "Upgrade",
+    "fear_title": "忘れたサブスクでお金を失うのを止めましょう",
+    "testimonial": "\"忘れていた4つのサブスクを発見。初月で$180節約しました。\"",
+    "testimonial_author": "— Alex M., 認証済みユーザー"
   },
   "ai": {
     "or_type": "または入力",
