@@ -107,6 +107,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     paymentCardId: '',
     notes: '',
     tags: '' as string,
+    reminderDaysBefore: [3] as number[],
   });
 
   const [showAddCard, setShowAddCard] = useState(false);
@@ -125,6 +126,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         paymentCardId: subscription.paymentCardId ?? '',
         notes: subscription.notes ?? '',
         tags: (subscription.tags ?? []).join(', '),
+        reminderDaysBefore: (subscription as any).reminderDaysBefore ?? [3],
       });
       setShowAddCard(false);
     }
@@ -156,6 +158,8 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         notes: form.notes.trim() || undefined,
         paymentCardId: form.paymentCardId || undefined,
         tags: tags.length > 0 ? tags : undefined,
+        reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
+        reminderEnabled: form.reminderDaysBefore.length > 0,
       };
       await subscriptionsApi.update(subscription.id, payload);
       updateSubscription(subscription.id, payload);
@@ -437,6 +441,30 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                     multiline
                     numberOfLines={3}
                   />
+                </View>
+
+                {/* Reminder */}
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={fieldLabel}>{t('add.reminder', 'Reminder')}</Text>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    {[
+                      { label: t('add.reminder_off', 'Off'), value: [] as number[] },
+                      { label: '1d', value: [1] },
+                      { label: '3d', value: [3] },
+                      { label: '7d', value: [7] },
+                    ].map((opt) => {
+                      const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
+                      return (
+                        <TouchableOpacity
+                          key={opt.label}
+                          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: isSelected ? colors.primary : colors.background, borderWidth: 1, borderColor: isSelected ? colors.primary : colors.border }}
+                          onPress={() => setForm((f) => ({ ...f, reminderDaysBefore: opt.value }))}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>{opt.label}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
                 </View>
 
                 {/* Actions */}
