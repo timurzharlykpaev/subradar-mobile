@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { analytics } from '../services/analytics';
 import {
   View,
   Text,
@@ -277,6 +278,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleSave = useCallback(async () => {
     if (saving) return;
     if (subsLimitReached) {
+      analytics.paywallViewed('feature_gate');
       onClose();
       router.push('/paywall');
       return;
@@ -325,6 +327,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         addedVia: addedViaSource,
       });
       addSubscription(res.data);
+      const allSubs = useSubscriptionsStore.getState().subscriptions;
+      analytics.subscriptionAdded(
+        (form.category || 'OTHER').toLowerCase(),
+        parseFloat(form.amount),
+        form.currency,
+        (form.billingPeriod || 'MONTHLY').toLowerCase(),
+        allSubs.length === 0,
+        'manual',
+      );
       setSuccessName(form.name);
       setShowSuccess(true);
       subscriptionsApi.getAll().then((r) => {
@@ -351,6 +362,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // ── Save from InlineConfirmCard ─────────────────────────────────────────
   const handleConfirmSave = useCallback(async (data: any) => {
     if (subsLimitReached) {
+      analytics.paywallViewed('feature_gate');
       onClose();
       router.push('/paywall');
       return;
@@ -387,6 +399,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     });
     addSubscription(res.data);
     if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+    const allSubs = useSubscriptionsStore.getState().subscriptions;
+    analytics.subscriptionAdded(
+      (data.category || 'OTHER').toLowerCase(),
+      data.amount || 0,
+      data.currency || currency || 'USD',
+      (data.billingPeriod || 'MONTHLY').toLowerCase(),
+      allSubs.length === 0,
+      addedViaSource === 'AI_SCREENSHOT' ? 'screenshot' : addedViaSource === 'AI_TEXT' ? 'ai_lookup' : 'manual',
+    );
     setSuccessName(data.name || '');
     setShowSuccess(true);
     subscriptionsApi.getAll().then((r) => {

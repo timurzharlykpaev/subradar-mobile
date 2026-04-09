@@ -20,6 +20,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
 import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
+import { analytics } from '../src/services/analytics';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -66,9 +67,11 @@ export default function PaywallScreen() {
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const [selected, setSelected] = useState('pro');
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
   const [purchasing, setPurchasing] = useState(false);
   const [successPlan, setSuccessPlan] = useState<string | null>(null);
+  const [showClose, setShowClose] = useState(false);
+  const openedAt = useRef(Date.now());
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
   const startTrialMutation = useStartTrial();
   const queryClient = useQueryClient();
@@ -77,6 +80,10 @@ export default function PaywallScreen() {
   // Force-refresh billing when paywall opens to get latest plan status
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['billing'] });
+    analytics.paywallViewed('direct');
+    // Delay close button — reduces impulsive dismissals
+    const timer = setTimeout(() => setShowClose(true), 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Retry loading offerings if they're null after initial load
@@ -153,9 +160,11 @@ export default function PaywallScreen() {
 
     // Trial flow
     if (selected === 'pro' && canTrial) {
+      analytics.track('trial_cta_tapped');
       try {
         await startTrialMutation.mutateAsync();
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
+        analytics.trialStarted('pro');
         setSuccessPlan('Trial');
       } catch (e: any) {
         Alert.alert(t('common.error'), e?.response?.data?.message || '');
@@ -186,17 +195,19 @@ export default function PaywallScreen() {
     }
 
     // Native IAP purchase via RevenueCat
+    analytics.track('purchase_initiated', { plan: selected, period: billingPeriod, price: pkg.product.price });
     setPurchasing(true);
     try {
       const purchaseSuccess = await purchasePackage(pkg);
       console.log('[Paywall] purchasePackage result:', purchaseSuccess);
       if (!purchaseSuccess) {
-        // User cancelled or error already shown by hook
+        analytics.track('purchase_cancelled', { plan: selected, period: billingPeriod });
         setPurchasing(false);
         return;
       }
       // Show success immediately
       const planLabel = selected === 'org' ? 'Team' : 'Pro';
+      analytics.purchaseCompleted(selected, billingPeriod, pkg.product.price);
       setSuccessPlan(planLabel);
       // Sync RC then refetch billing so button state updates before user dismisses success screen
       try {
@@ -208,6 +219,7 @@ export default function PaywallScreen() {
       await queryClient.refetchQueries({ queryKey: ['billing'] });
     } catch (e: any) {
       console.error('[Paywall] Purchase error:', e?.message);
+      analytics.purchaseFailed(selected, e?.message ?? 'unknown');
       Alert.alert(t('common.error'), e?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
     } finally {
       setPurchasing(false);
@@ -245,22 +257,51 @@ export default function PaywallScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
 
-        {/* Close button */}
-        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-          <View style={[styles.closeBtnCircle, { backgroundColor: colors.surface2 }]}>
-            <Ionicons name="close" size={20} color={colors.textSecondary} />
-          </View>
-        </TouchableOpacity>
+        {/* Close button — delayed 3s to reduce impulsive dismissals */}
+        {showClose && (
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => {
+              const secs = Math.round((Date.now() - openedAt.current) / 1000);
+              analytics.paywallDismissed(secs, selected, billingPeriod);
+              router.back();
+            }}
+          >
+            <View style={[styles.closeBtnCircle, { backgroundColor: colors.surface2, opacity: 0.6 }]}>
+              <Ionicons name="close" size={18} color={colors.textSecondary} />
+            </View>
+          </TouchableOpacity>
+        )}
+        {!showClose && <View style={styles.closeBtn} />}
 
         {/* Header */}
         <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={[styles.headerIcon, { backgroundColor: colors.primary + '15' }]}>
-            <Ionicons name="diamond" size={28} color={colors.primary} />
+          <View style={[styles.headerIcon, { backgroundColor: '#EF444415' }]}>
+            <Text style={{ fontSize: 28 }}>💸</Text>
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>{t('paywall.choose_plan')}</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {canTrial ? t('paywall.subtitle_trial') : t('paywall.subtitle_no_trial')}
+          <Text style={[styles.title, { color: colors.text }]}>
+            {t('paywall.fear_title', 'Stop Losing Money on Forgotten Subscriptions')}
           </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {canTrial
+              ? t('paywall.subtitle_trial', 'The average person wastes $624/year. Start your 7-day free trial.')
+              : t('paywall.subtitle_no_trial', 'Track everything for less than $1/week.')}
+          </Text>
+        </Animated.View>
+
+        {/* Social proof */}
+        <Animated.View style={[styles.socialProofRow, { opacity: fadeAnim }]}>
+          <View style={[styles.socialProofCard, { backgroundColor: isDark ? '#1C1C2E' : '#F8F9FF', borderColor: isDark ? '#2A2A3E' : '#E5E7EB' }]}>
+            <View style={styles.starsRow}>
+              {[1,2,3,4,5].map(i => <Ionicons key={i} name="star" size={12} color="#F59E0B" />)}
+            </View>
+            <Text style={[styles.socialProofText, { color: colors.text }]}>
+              {t('paywall.testimonial', '"Found 4 forgotten subscriptions. Saved $180 in month 1."')}
+            </Text>
+            <Text style={[styles.socialProofAuthor, { color: colors.textMuted }]}>
+              {t('paywall.testimonial_author', '— Alex M., verified user')}
+            </Text>
+          </View>
         </Animated.View>
 
         {/* Trial status badge */}
@@ -286,9 +327,12 @@ export default function PaywallScreen() {
               styles.periodBtn,
               billingPeriod === 'monthly'
                 ? { backgroundColor: colors.primary, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 }
-                : { opacity: 0.6 },
+                : { opacity: 0.5 },
             ]}
-            onPress={() => setBillingPeriod('monthly')}
+            onPress={() => {
+              setBillingPeriod('monthly');
+              analytics.track('paywall_period_toggled', { to: 'monthly' });
+            }}
           >
             <Text style={[styles.periodText, { color: billingPeriod === 'monthly' ? '#FFF' : colors.textSecondary, fontWeight: billingPeriod === 'monthly' ? '700' : '500' }]}>
               {t('subscription_plan.billing_monthly')}
@@ -298,16 +342,19 @@ export default function PaywallScreen() {
             style={[
               styles.periodBtn,
               billingPeriod === 'yearly'
-                ? { backgroundColor: colors.primary, shadowColor: colors.primary, shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 }
-                : { opacity: 0.6 },
+                ? { backgroundColor: '#10B981', shadowColor: '#10B981', shadowOpacity: 0.4, shadowRadius: 8, elevation: 4 }
+                : { opacity: 0.7, borderWidth: 1.5, borderColor: '#10B981', borderRadius: 10 },
             ]}
-            onPress={() => setBillingPeriod('yearly')}
+            onPress={() => {
+              setBillingPeriod('yearly');
+              analytics.track('paywall_period_toggled', { to: 'yearly' });
+            }}
           >
-            <Text style={[styles.periodText, { color: billingPeriod === 'yearly' ? '#FFF' : colors.textSecondary, fontWeight: billingPeriod === 'yearly' ? '700' : '500' }]}>
+            <Text style={[styles.periodText, { color: billingPeriod === 'yearly' ? '#FFF' : '#10B981', fontWeight: '800' }]}>
               {t('subscription_plan.billing_yearly')}
             </Text>
-            <View style={[styles.saveBadge, billingPeriod === 'yearly' && { backgroundColor: '#10B981' }]}>
-              <Text style={styles.saveBadgeText}>-30%</Text>
+            <View style={[styles.saveBadge, { backgroundColor: billingPeriod === 'yearly' ? 'rgba(255,255,255,0.25)' : '#10B981' }]}>
+              <Text style={styles.saveBadgeText}>BEST VALUE</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -336,7 +383,10 @@ export default function PaywallScreen() {
                   isSelected && { shadowColor: plan.color, shadowOpacity: 0.3, shadowRadius: 20, elevation: 8 },
                   !isSelected && { opacity: 0.75 },
                 ]}
-                onPress={() => setSelected(plan.id)}
+                onPress={() => {
+                  setSelected(plan.id);
+                  analytics.track('paywall_plan_selected', { plan: plan.id, period: billingPeriod });
+                }}
                 activeOpacity={0.85}
               >
                 {/* Plan header row */}
@@ -445,9 +495,18 @@ export default function PaywallScreen() {
           );
         })()}
 
-        {/* Secondary action */}
-        <TouchableOpacity style={styles.laterBtn} onPress={() => router.back()}>
-          <Text style={[styles.laterText, { color: colors.textMuted }]}>{t('paywall.maybe_later')}</Text>
+        {/* Secondary action — small and unemphasised */}
+        <TouchableOpacity
+          style={styles.laterBtn}
+          onPress={() => {
+            const secs = Math.round((Date.now() - openedAt.current) / 1000);
+            analytics.paywallDismissed(secs, selected, billingPeriod);
+            router.back();
+          }}
+        >
+          <Text style={[styles.laterText, { color: colors.textMuted, fontSize: 13 }]}>
+            {t('paywall.maybe_later')}
+          </Text>
         </TouchableOpacity>
 
         {/* Disclaimer */}
@@ -516,6 +575,12 @@ const styles = StyleSheet.create({
 
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginBottom: 16, padding: 10, borderRadius: 12, borderWidth: 1 },
   statusText: { fontSize: 13, fontWeight: '700' },
+
+  socialProofRow: { paddingHorizontal: 20, marginBottom: 12 },
+  socialProofCard: { borderRadius: 14, padding: 14, borderWidth: 1, gap: 4 },
+  starsRow: { flexDirection: 'row', gap: 2, marginBottom: 4 },
+  socialProofText: { fontSize: 13, fontWeight: '500', fontStyle: 'italic', lineHeight: 18 },
+  socialProofAuthor: { fontSize: 11, marginTop: 2 },
 
   periodToggle: { flexDirection: 'row', marginHorizontal: 20, marginBottom: 16, borderRadius: 14, padding: 4, gap: 4 },
   periodBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 10, gap: 6 },

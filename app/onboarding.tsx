@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Svg, { Path, Circle, Rect, Text as SvgText } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
+import { analytics } from '../src/services/analytics';
 import {
   View,
   Text,
@@ -411,10 +412,22 @@ function ShowcaseTeamIcon() {
   );
 }
 
+// ─── Quick-add services for Step 0 ──────────────────────────────────────────
+const QUICK_ADD_SERVICES = [
+  { name: 'Netflix',    amount: 15.99, color: '#E50914', iconBg: '#E50914', Icon: NetflixIcon  },
+  { name: 'Spotify',   amount: 9.99,  color: '#1DB954', iconBg: '#1DB954', Icon: SpotifyIcon  },
+  { name: 'iCloud',    amount: 2.99,  color: '#0071E3', iconBg: '#0071E3', Icon: ICloudIcon   },
+  { name: 'YouTube',   amount: 13.99, color: '#FF0000', iconBg: '#FF0000', Icon: YoutubeIcon  },
+  { name: 'ChatGPT',   amount: 20.00, color: '#10A37F', iconBg: '#10A37F', Icon: OpenAIIcon   },
+  { name: 'Other',     amount: 0,     color: '#8B5CF6', iconBg: '#8B5CF6', Icon: null         },
+] as const;
+
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [quickAddSelected, setQuickAddSelected] = useState<Set<string>>(new Set());
+  const counterAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
   const [otpMode, setOtpMode] = useState(false);
@@ -505,14 +518,38 @@ export default function OnboardingScreen() {
   const logoStyle = { transform: [{ scale: logoScale }], opacity: logoOpacity };
 
   const navigateToApp = () => {
+    analytics.track('onboarding_completed');
     setOnboarded();
     router.replace('/(tabs)');
   };
+
+  // Counter animation for money hook (0 → 624)
+  const counterDisplayValue = useRef(0);
+  const [counterDisplay, setCounterDisplay] = useState(0);
+  useEffect(() => {
+    if (step !== 0) return;
+    analytics.track('onboarding_money_hook_viewed');
+    Animated.timing(counterAnim, {
+      toValue: 624,
+      duration: 2200,
+      useNativeDriver: false,
+    }).start();
+    const listener = counterAnim.addListener(({ value }) => {
+      const rounded = Math.round(value);
+      if (rounded !== counterDisplayValue.current) {
+        counterDisplayValue.current = rounded;
+        setCounterDisplay(rounded);
+      }
+    });
+    return () => counterAnim.removeListener(listener);
+  }, [step]);
 
   const finishAuth = (user: any, token: string) => {
     setCurrency(selectedCurrency);
     setUser(user, token);
     setOnboarded();
+    analytics.identify(user.id, { plan: user.plan, currency: selectedCurrency });
+    analytics.track('auth_completed', { method: 'unknown', is_new_user: !user.createdAt || (Date.now() - new Date(user.createdAt).getTime() < 60_000) });
     // Go to notifications step (step 4)
     setStep(4);
   };
@@ -680,35 +717,114 @@ export default function OnboardingScreen() {
   ];
 
   const steps = [
-    // Step 0: Feature Showcase
+    // Step 0: Money Loss Hook + Quick-Add
     <Animated.View
-      key="showcase"
+      key="money_hook"
       style={[styles.step, { opacity: showcaseOpacity, transform: [{ translateY: showcaseTranslateY }] }]}
     >
-      <View style={styles.logoContainer}>
-        <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
-        <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
-        <View style={[styles.aiBadge, { backgroundColor: colors.primary }]}><Text style={styles.aiBadgeText}>AI</Text></View>
+      {/* Header */}
+      <View style={{ alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#EF444415', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 32 }}>💸</Text>
+        </View>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#EF4444', letterSpacing: 1, textTransform: 'uppercase' }}>
+          {t('onboarding.hook_eyebrow', 'The average person wastes')}
+        </Text>
+        {/* Animated counter */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+          <Text style={{ fontSize: 64, fontWeight: '900', color: colors.text, letterSpacing: -2 }}>
+            ${counterDisplay}
+          </Text>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textSecondary, paddingBottom: 12 }}>
+            /yr
+          </Text>
+        </View>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', lineHeight: 22 }}>
+          {t('onboarding.hook_subtitle', 'on subscriptions they forgot about.\nHow many do YOU have?')}
+        </Text>
       </View>
-      <Text style={[styles.showcaseTitle, { color: colors.text }]}>{t('onboarding.showcase_title')}</Text>
-      <View style={styles.showcaseGrid}>
-        {SHOWCASE_FEATURES.map((f) => (
-          <Animated.View
-            key={f.title}
-            style={[styles.showcaseCard, {
-              transform: [{ scale: f.scale }],
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-            }]}
-          >
-            <f.Icon />
-            <Text style={[styles.showcaseCardTitle, { color: colors.text }]}>{f.title}</Text>
-            <Text style={[styles.showcaseCardDesc, { color: colors.textSecondary }]}>{f.desc}</Text>
-          </Animated.View>
-        ))}
+
+      {/* Quick-add cards */}
+      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textMuted, textAlign: 'center', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        {t('onboarding.hook_tap_yours', 'Tap the ones you pay for')}
+      </Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 2 }}>
+        {QUICK_ADD_SERVICES.map((svc) => {
+          const isSelected = quickAddSelected.has(svc.name);
+          return (
+            <TouchableOpacity
+              key={svc.name}
+              onPress={() => {
+                analytics.track('onboarding_quick_add_tapped', { service: svc.name, selected: !isSelected });
+                setQuickAddSelected((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(svc.name)) next.delete(svc.name);
+                  else next.add(svc.name);
+                  return next;
+                });
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                borderRadius: 24,
+                borderWidth: 2,
+                borderColor: isSelected ? svc.color : (isDark ? '#2A2A3E' : '#E5E7EB'),
+                backgroundColor: isSelected ? svc.color + '18' : (isDark ? '#1C1C2E' : '#FFFFFF'),
+              }}
+            >
+              {svc.Icon ? (
+                <View style={{ width: 22, height: 22, borderRadius: 6, backgroundColor: svc.iconBg, alignItems: 'center', justifyContent: 'center' }}>
+                  <svc.Icon />
+                </View>
+              ) : (
+                <Ionicons name="add-circle-outline" size={22} color={svc.color} />
+              )}
+              <Text style={{ fontSize: 13, fontWeight: '700', color: isSelected ? svc.color : colors.text }}>
+                {svc.name}
+              </Text>
+              {isSelected && svc.amount > 0 && (
+                <Text style={{ fontSize: 11, fontWeight: '600', color: svc.color }}>
+                  ${svc.amount}
+                </Text>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
-      <TouchableOpacity testID="btn-get-started" style={[styles.showcaseBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(1)}>
-        <Text style={styles.showcaseBtnText}>{t('onboarding.showcase_start')}</Text>
+
+      {/* Running total */}
+      {quickAddSelected.size > 0 && (() => {
+        const total = QUICK_ADD_SERVICES
+          .filter(s => quickAddSelected.has(s.name) && s.amount > 0)
+          .reduce((sum, s) => sum + s.amount, 0);
+        return total > 0 ? (
+          <View style={{ backgroundColor: '#EF444415', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center', marginTop: 2 }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: '#EF4444' }}>
+              {t('onboarding.hook_monthly_total', 'That\'s ${{amount}}/month already', { amount: total.toFixed(2) })}
+            </Text>
+            <Text style={{ fontSize: 11, color: '#EF4444', opacity: 0.8, marginTop: 2 }}>
+              {t('onboarding.hook_annual', '= ${{amount}}/year', { amount: (total * 12).toFixed(0) })}
+            </Text>
+          </View>
+        ) : null;
+      })()}
+
+      <TouchableOpacity
+        testID="btn-get-started"
+        style={[styles.showcaseBtn, { backgroundColor: colors.primary, marginTop: 4 }]}
+        onPress={() => {
+          analytics.track('onboarding_step_completed', { step: 0, step_name: 'money_hook', quick_added: quickAddSelected.size });
+          setStep(1);
+        }}
+      >
+        <Text style={styles.showcaseBtnText}>
+          {quickAddSelected.size > 0
+            ? t('onboarding.hook_cta_selected', 'Find the rest →')
+            : t('onboarding.showcase_start')}
+        </Text>
       </TouchableOpacity>
     </Animated.View>,
 
@@ -946,7 +1062,8 @@ export default function OnboardingScreen() {
       <TouchableOpacity
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: '#F59E0B', flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
         onPress={async () => {
-          await Notifications.requestPermissionsAsync();
+          const { status } = await Notifications.requestPermissionsAsync();
+          analytics.notificationPermission(status === 'granted');
           setStep(step + 1);
         }}
       >
@@ -954,7 +1071,7 @@ export default function OnboardingScreen() {
         <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.enable_notifications', 'Enable notifications')}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => setStep(step + 1)} style={{ paddingVertical: 12 }}>
+      <TouchableOpacity onPress={() => { analytics.notificationPermission(false); setStep(step + 1); }} style={{ paddingVertical: 12 }}>
         <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.maybe_later', 'Maybe later')}</Text>
       </TouchableOpacity>
     </View>,

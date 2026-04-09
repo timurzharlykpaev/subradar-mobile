@@ -28,6 +28,7 @@ import { useAnalysisFlow } from '../../src/hooks/useAnalysis';
 import AITeaser from '../../src/components/AITeaser';
 import AIAnalysisSummary from '../../src/components/AIAnalysisSummary';
 import AIRecommendationList from '../../src/components/AIRecommendationList';
+import { analytics } from '../../src/services/analytics';
 import AIDuplicateGroup from '../../src/components/AIDuplicateGroup';
 import AnalysisLoadingState from '../../src/components/AnalysisLoadingState';
 import BlurredProSection from '../../src/components/BlurredProSection';
@@ -254,6 +255,8 @@ export default function AnalyticsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+
+  useEffect(() => { analytics.track('analytics_viewed'); }, []);
 
   const fetchAll = useCallback(async () => {
     let errors = 0;

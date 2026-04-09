@@ -36,6 +36,7 @@ import { billingApi } from '../../src/api/billing';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import ExpirationBanner from '../../src/components/ExpirationBanner';
 import CancellationInterceptModal from '../../src/components/CancellationInterceptModal';
+import { analytics } from '../../src/services/analytics';
 
 const DATE_FORMATS = ['DD/MM', 'MM/DD', 'YYYY-MM-DD'];
 
@@ -81,6 +82,11 @@ export default function SettingsScreen() {
   const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
 
+  // Show annual upgrade nudge for monthly Pro/Team subscribers (not yearly, not trialing)
+  const isMonthlyPro = isPro && !isTrialing && billing?.billingInterval !== 'year';
+  const [annualNudgeDismissed, setAnnualNudgeDismissed] = useState(false);
+  const showAnnualNudge = isMonthlyPro && !isTeam && !annualNudgeDismissed;
+
   const handleStartTrial = async () => {
     try {
       await startTrialMutation.mutateAsync();
@@ -92,6 +98,7 @@ export default function SettingsScreen() {
   };
 
   const handleUpgrade = () => {
+    analytics.paywallViewed('settings');
     router.push('/paywall' as any);
   };
 
@@ -262,6 +269,37 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
             () => router.push('/subscription-plan' as any),
             true,
+          )}
+          {/* Annual upgrade nudge — for monthly Pro subscribers */}
+          {showAnnualNudge && (
+            <>
+              <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: 16, marginRight: 16 }} />
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
+                onPress={() => {
+                  analytics.paywallViewed('settings');
+                  router.push('/paywall' as any);
+                }}
+              >
+                <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#10B981', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="trending-up-outline" size={18} color="#FFF" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#10B981' }}>
+                    {t('settings.switch_to_yearly', 'Switch to Yearly — Save $8.88')}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 1 }}>
+                    {t('settings.yearly_desc', '$27/year vs $35.88/year monthly')}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  onPress={() => setAnnualNudgeDismissed(true)}
+                >
+                  <Ionicons name="close" size={18} color={colors.textMuted} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </>
           )}
           {/* Upgrade / Start Trial (only for free users) */}
           {!isPro && (

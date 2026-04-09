@@ -22,6 +22,8 @@ import { OfflineBanner } from '../src/components/OfflineBanner';
 
 // Install global console interceptors as early as possible
 installConsoleInterceptors();
+import { analytics } from '../src/services/analytics';
+analytics.init();
 import { configureRevenueCat, loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
 
 Notifications.setNotificationHandler({
@@ -86,9 +88,13 @@ function DataLoader() {
     // Configure RevenueCat lazily (safe after native modules loaded)
     try { configureRevenueCat(); } catch {}
 
-    // Identify user in RevenueCat (awaited so offerings load after login)
+    // Identify user in RevenueCat and analytics
     const userId = useAuthStore.getState().user?.id;
-    if (userId) loginRevenueCat(userId).catch(() => {});
+    if (userId) {
+      loginRevenueCat(userId).catch(() => {});
+      const user = useAuthStore.getState().user;
+      analytics.identify(userId, { plan: (user as any)?.plan });
+    }
 
     // Load cards
     import('../src/api/cards').then(({ cardsApi }) => {

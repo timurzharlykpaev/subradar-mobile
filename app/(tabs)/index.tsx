@@ -35,6 +35,7 @@ import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 import ExpirationBanner from '../../src/components/ExpirationBanner';
 import WinBackBanner from '../../src/components/WinBackBanner';
+import { analytics } from '../../src/services/analytics';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -256,7 +257,10 @@ export default function DashboardScreen() {
         )}
         {!isPro && activeSubs.length >= 3 && (
           <TouchableOpacity
-            onPress={() => router.push('/paywall' as any)}
+            onPress={() => {
+              analytics.paywallViewed('feature_gate');
+              router.push('/paywall' as any);
+            }}
             activeOpacity={0.7}
             style={{
               marginHorizontal: 20,
@@ -278,6 +282,40 @@ export default function DashboardScreen() {
             <Text style={{ fontSize: 12, fontWeight: '700', color: '#7c3aed' }}>
               {t('dashboard.try_pro', 'Try Pro')}
             </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ── Team Upsell Banner — shown to Pro users with 5+ active subs ── */}
+        {isPro && !isTeam && activeSubs.length >= 5 && (
+          <TouchableOpacity
+            onPress={() => {
+              analytics.paywallViewed('upsell');
+              router.push('/paywall' as any);
+            }}
+            activeOpacity={0.7}
+            style={{
+              marginHorizontal: 20,
+              marginTop: 8,
+              padding: 14,
+              borderRadius: 14,
+              backgroundColor: '#3B82F6' + '10',
+              borderWidth: 1,
+              borderColor: '#3B82F6' + '30',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <Ionicons name="people" size={18} color="#3B82F6" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
+                {t('dashboard.team_upsell_title', 'Share with family?')}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 1 }}>
+                {t('dashboard.team_upsell_desc', 'Team plan: split costs & spot duplicate subs')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color="#3B82F6" />
           </TouchableOpacity>
         )}
 
