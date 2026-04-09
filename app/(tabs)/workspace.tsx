@@ -17,6 +17,7 @@ import { InviteCodeSheet } from '../../src/components/InviteCodeSheet';
 import { JoinTeamSheet } from '../../src/components/JoinTeamSheet';
 import { TeamOverlaps } from '../../src/components/TeamOverlaps';
 import { TeamSpendChart } from '../../src/components/TeamSpendChart';
+import { MemberDetailSheet } from '../../src/components/MemberDetailSheet';
 import { useWorkspaceAnalysisLatest } from '../../src/hooks/useWorkspaceAnalysis';
 
 export default function WorkspaceScreen() {
@@ -31,6 +32,7 @@ export default function WorkspaceScreen() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showJoinTeam, setShowJoinTeam] = useState(false);
 
   // Force billing refresh when workspace tab opens to get latest plan status
@@ -602,21 +604,7 @@ export default function WorkspaceScreen() {
                 <TouchableOpacity
                   key={m.id}
                   activeOpacity={0.6}
-                  onPress={() => {
-                    const spend = memberSpend ? `$${(memberSpend.monthlySpend ?? memberSpend.totalMonthly ?? 0).toFixed(0)}/${t('paywall.month', 'mo')}` : null;
-                    const subsCount = memberSpend?.subscriptionCount ?? memberSpend?.count;
-                    const details = [
-                      spend ? `${t('workspace.spend', 'Spending')}: ${spend}` : null,
-                      subsCount != null ? `${t('subscriptions.title', 'Subscriptions')}: ${subsCount}` : null,
-                      `${t('workspace.role', 'Role')}: ${m.role}`,
-                    ].filter(Boolean).join('\n');
-
-                    const buttons: any[] = [{ text: t('common.close', 'Close'), style: 'cancel' }];
-                    if (canManage && m.role !== 'OWNER') {
-                      buttons.push({ text: t('workspace.remove_btn', 'Remove'), style: 'destructive', onPress: () => removeMutation.mutate(m.id) });
-                    }
-                    Alert.alert(memberName, details, buttons);
-                  }}
+                  onPress={() => setSelectedMember(m)}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -767,6 +755,17 @@ export default function WorkspaceScreen() {
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Member Detail Modal */}
+      <MemberDetailSheet
+        visible={!!selectedMember}
+        member={selectedMember}
+        analytics={selectedMember ? analytics?.members?.find((am: any) => am.userId === selectedMember.userId || am.name === (selectedMember.user?.name || selectedMember.email)) : null}
+        currency={billing?.currency || 'USD'}
+        canManage={canManage}
+        onRemove={() => selectedMember && removeMutation.mutate(selectedMember.id)}
+        onClose={() => setSelectedMember(null)}
+      />
     </SafeAreaView>
   );
 }
