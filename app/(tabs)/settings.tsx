@@ -152,11 +152,15 @@ export default function SettingsScreen() {
     try {
       const { authApi } = await import('../../src/api/auth');
       await authApi.deleteAccount();
-    } catch (e) {
-      console.warn('Delete account failed:', e);
+      logout();
+      router.replace('/onboarding' as any);
+    } catch (e: any) {
+      console.error('Delete account failed:', e);
+      Alert.alert(
+        t('common.error'),
+        t('settings.delete_failed', 'Failed to delete account. Please try again or contact support.'),
+      );
     }
-    logout();
-    router.replace('/onboarding' as any);
   };
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
