@@ -601,17 +601,21 @@ export default function WorkspaceScreen() {
                 return (
                 <TouchableOpacity
                   key={m.id}
-                  activeOpacity={canManage ? 0.6 : 1}
+                  activeOpacity={0.6}
                   onPress={() => {
-                    if (!canManage || isOwnerMember) return;
-                    Alert.alert(
-                      memberName,
-                      memberSpend ? `${t('workspace.spend', 'Spending')}: $${(memberSpend.monthlySpend ?? memberSpend.totalMonthly ?? 0).toFixed(0)}/${t('paywall.month', 'mo')}` : '',
-                      [
-                        { text: t('common.cancel'), style: 'cancel' },
-                        ...(m.role !== 'OWNER' ? [{ text: t('workspace.remove_btn', 'Remove'), style: 'destructive' as const, onPress: () => removeMutation.mutate(m.id) }] : []),
-                      ],
-                    );
+                    const spend = memberSpend ? `$${(memberSpend.monthlySpend ?? memberSpend.totalMonthly ?? 0).toFixed(0)}/${t('paywall.month', 'mo')}` : null;
+                    const subsCount = memberSpend?.subscriptionCount ?? memberSpend?.count;
+                    const details = [
+                      spend ? `${t('workspace.spend', 'Spending')}: ${spend}` : null,
+                      subsCount != null ? `${t('subscriptions.title', 'Subscriptions')}: ${subsCount}` : null,
+                      `${t('workspace.role', 'Role')}: ${m.role}`,
+                    ].filter(Boolean).join('\n');
+
+                    const buttons: any[] = [{ text: t('common.close', 'Close'), style: 'cancel' }];
+                    if (canManage && m.role !== 'OWNER') {
+                      buttons.push({ text: t('workspace.remove_btn', 'Remove'), style: 'destructive', onPress: () => removeMutation.mutate(m.id) });
+                    }
+                    Alert.alert(memberName, details, buttons);
                   }}
                   style={{
                     flexDirection: 'row',
