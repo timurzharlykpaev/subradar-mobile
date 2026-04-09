@@ -4,231 +4,257 @@ import {
   ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
-import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { useAuthStore } from '../../src/stores/authStore';
+import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
+import { useSettingsStore } from '../../src/stores/settingsStore';
 import { API_URL } from '../../src/api/client';
+import { exportSubscriptionsCsv } from '../../src/services/csvExport';
+import { analytics } from '../../src/services/analytics';
+
+type ExportFormat = 'pdf' | 'csv';
 
 export default function ReportsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { token } = useAuthStore();
+  const { currency } = useSettingsStore();
+  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
   const REPORT_TYPES = [
-    { key: 'summary',  label: t('reports.summary') },
-    { key: 'detailed', label: t('reports.detailed') },
-    { key: 'tax',      label: t('reports.tax') },
+    { key: 'summary',  icon: 'bar-chart-outline' as const,      label: t('reports.summary', 'Summary'),  desc: t('reports.summary_desc', 'Overview of your spending by category and status') },
+    { key: 'detailed', icon: 'list-outline' as const,            label: t('reports.detailed', 'Detailed'), desc: t('reports.detailed_desc', 'Full list of all subscriptions with details') },
+    { key: 'tax',      icon: 'receipt-outline' as const,         label: t('reports.tax', 'Tax'),           desc: t('reports.tax_desc', 'Business vs personal expenses breakdown') },
+  ];
+
+  const PERIODS = [
+    { key: 'month' as const,   label: t('reports.this_month', 'This month') },
+    { key: 'quarter' as const, label: t('reports.this_quarter', 'This quarter') },
+    { key: 'year' as const,    label: t('reports.this_year', 'This year') },
   ];
 
   const [reportType, setReportType] = useState('summary');
   const [dateRange, setDateRange] = useState<'month' | 'quarter' | 'year'>('month');
+  const [format, setFormat] = useState<ExportFormat>('pdf');
   const [generating, setGenerating] = useState(false);
+  const [progress, setProgress] = useState('');
 
   const getPeriodDates = () => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     const year = now.getFullYear();
     const month = now.getMonth();
-    const capToday = (d: string) => (d > today ? today : d);
+    const cap = (d: string) => (d > today ? today : d);
     if (dateRange === 'month') {
-      return {
-        from: new Date(year, month, 1).toISOString().split('T')[0],
-        to:   capToday(new Date(year, month + 1, 0).toISOString().split('T')[0]),
-      };
+      return { from: new Date(year, month, 1).toISOString().split('T')[0], to: cap(new Date(year, month + 1, 0).toISOString().split('T')[0]) };
     }
     if (dateRange === 'quarter') {
       const q = Math.floor(month / 3);
-      return {
-        from: new Date(year, q * 3, 1).toISOString().split('T')[0],
-        to:   capToday(new Date(year, q * 3 + 3, 0).toISOString().split('T')[0]),
-      };
+      return { from: new Date(year, q * 3, 1).toISOString().split('T')[0], to: cap(new Date(year, q * 3 + 3, 0).toISOString().split('T')[0]) };
     }
-    return {
-      from: `${year}-01-01`,
-      to:   capToday(`${year}-12-31`),
-    };
+    return { from: `${year}-01-01`, to: cap(`${year}-12-31`) };
   };
 
-  const handleGenerate = async () => {
+  // ── CSV export (local, instant) ──────────────────────────────
+  const handleCsvExport = async () => {
     setGenerating(true);
+    setProgress(t('reports.exporting_csv', 'Exporting CSV...'));
+    try {
+      await exportSubscriptionsCsv(subscriptions);
+      analytics.track('report_generated', { type: reportType, format: 'csv', period: dateRange });
+    } catch (err: any) {
+      Alert.alert(t('common.error'), err?.message || t('reports.error_generic', 'Export failed'));
+    } finally {
+      setGenerating(false);
+      setProgress('');
+    }
+  };
+
+  // ── PDF export (server-side, async with polling) ─────────────
+  const handlePdfExport = async () => {
+    setGenerating(true);
+    setProgress(t('reports.generating_pdf', 'Generating PDF...'));
     try {
       const { from, to } = getPeriodDates();
 
-      // 1. Создаём отчёт на сервере
+      // 1. Create report on server
       const res = await fetch(`${API_URL}/reports/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ type: reportType.toUpperCase(), from, to }),
       });
-
       if (!res.ok) {
-        const httpErr: any = new Error(`Server error: ${res.status}`);
-        httpErr.status = res.status;
-        throw httpErr;
+        const body = await res.json().catch(() => ({}));
+        throw Object.assign(new Error(body?.message || `Server error: ${res.status}`), { status: res.status });
       }
       const report = await res.json();
-
-      // 2. Скачиваем PDF
       const reportId = report?.data?.id || report?.id;
       if (!reportId) throw new Error('No report ID returned');
 
+      // 2. Poll for READY status (max 30s)
+      setProgress(t('reports.processing', 'Processing report...'));
+      let ready = false;
+      for (let i = 0; i < 15; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const statusRes = await fetch(`${API_URL}/reports/${reportId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!statusRes.ok) continue;
+        const statusData = await statusRes.json();
+        const st = statusData?.status || statusData?.data?.status;
+        if (st === 'READY') { ready = true; break; }
+        if (st === 'FAILED') throw new Error(statusData?.error || 'Report generation failed');
+      }
+      if (!ready) throw new Error('Report generation timed out');
+
+      // 3. Download PDF
+      setProgress(t('reports.downloading', 'Downloading PDF...'));
       const filename = `subradar-${reportType}-${from}.pdf`;
       const localPath = `${FileSystem.documentDirectory ?? ''}${filename}`;
-
-      const download = await FileSystem.downloadAsync(
+      const dl = await FileSystem.downloadAsync(
         `${API_URL}/reports/${reportId}/download`,
         localPath,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
+      if (dl.status !== 200) throw Object.assign(new Error(`Download failed: ${dl.status}`), { status: dl.status });
 
-      if (download.status !== 200) {
-        const dlErr: any = new Error(`Download failed: ${download.status}`);
-        dlErr.status = download.status;
-        throw dlErr;
+      // 4. Share
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(localPath, { mimeType: 'application/pdf', dialogTitle: t('reports.share_title', 'Save or Share Report'), UTI: 'com.adobe.pdf' });
       }
-
-      // 3. Открываем шаринг
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(localPath, {
-          mimeType: 'application/pdf',
-          dialogTitle: 'Save or Share Report',
-          UTI: 'com.adobe.pdf',
-        });
-      } else {
-        Alert.alert(t('common.success', 'Report saved'), `Saved to: ${localPath}`);
-      }
+      analytics.track('report_generated', { type: reportType, format: 'pdf', period: dateRange });
     } catch (err: any) {
       console.error('Report error:', err);
-
-      let errorMessage: string;
-      const status = err?.status ?? err?.response?.status;
-      const msgLower = (err?.message ?? '').toLowerCase();
-
-      if (status === 401 || msgLower.includes('401')) {
-        errorMessage = t('reports.error_401', 'Session expired, please log in again');
-      } else if (status === 404 || msgLower.includes('404')) {
-        errorMessage = t('reports.error_404', 'Report not found');
-      } else if (
-        msgLower.includes('network') ||
-        msgLower.includes('failed to fetch') ||
-        msgLower.includes('networkrequest') ||
-        msgLower.includes('network request failed')
-      ) {
-        errorMessage = t('reports.error_network', 'Network error, check your connection');
-      } else {
-        errorMessage = err?.response?.data?.message || err?.message || t('reports.error_generic', 'Could not generate report');
-      }
-
-      Alert.alert(
-        t('common.error', 'Error'),
-        errorMessage,
-        [
-          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
-          { text: t('reports.retry', 'Retry'), onPress: () => handleGenerate() },
-        ]
-      );
+      const status = err?.status;
+      let msg: string;
+      if (status === 401) msg = t('reports.error_401', 'Session expired, please log in again');
+      else if (status === 403) msg = t('reports.error_403', 'Free plan: 1 report/month. Upgrade to Pro for unlimited.');
+      else if (status === 404) msg = t('reports.error_404', 'Report not found');
+      else msg = err?.message || t('reports.error_generic', 'Could not generate report');
+      Alert.alert(t('common.error'), msg, [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('reports.retry', 'Retry'), onPress: () => handlePdfExport() },
+      ]);
     } finally {
       setGenerating(false);
+      setProgress('');
     }
   };
 
-  const getDesc = () => {
-    if (reportType === 'summary')  return t('reports.summary_desc');
-    if (reportType === 'detailed') return t('reports.detailed_desc');
-    return t('reports.tax_desc');
-  };
-
-  const getPeriodLabel = () => {
-    if (dateRange === 'month')   return t('reports.period_month');
-    if (dateRange === 'quarter') return t('reports.period_quarter');
-    return t('reports.period_year');
-  };
-
-  const reportTypeLabel = REPORT_TYPES.find(r => r.key === reportType)?.label ?? reportType;
+  const handleGenerate = () => (format === 'csv' ? handleCsvExport() : handlePdfExport());
+  const selectedType = REPORT_TYPES.find((r) => r.key === reportType)!;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={[styles.backBtnText, { color: colors.primary }]}>←</Text>
+        <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface2 }]} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{t('reports.title')}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('reports.title', 'Reports')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* Type */}
-        <View style={styles.section}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>{t('reports.report_type')}</Text>
-          <View style={styles.chips}>
-            {REPORT_TYPES.map((type) => (
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Report Type */}
+        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('reports.report_type', 'Report Type')}</Text>
+        <View style={styles.typeCards}>
+          {REPORT_TYPES.map((type) => {
+            const active = reportType === type.key;
+            return (
               <TouchableOpacity
                 key={type.key}
-                style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                  reportType === type.key && styles.chipActive]}
+                style={[styles.typeCard, { backgroundColor: active ? colors.primary + '12' : colors.card, borderColor: active ? colors.primary : colors.border }]}
                 onPress={() => setReportType(type.key)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, { color: colors.textSecondary },
-                  reportType === type.key && styles.chipTextActive]}>
-                  {type.label}
-                </Text>
+                <View style={[styles.typeIconCircle, { backgroundColor: active ? colors.primary : colors.surface2 }]}>
+                  <Ionicons name={type.icon} size={20} color={active ? '#FFF' : colors.textSecondary} />
+                </View>
+                <Text style={[styles.typeLabel, { color: active ? colors.primary : colors.text }]}>{type.label}</Text>
+                <Text style={[styles.typeDesc, { color: colors.textMuted }]} numberOfLines={2}>{type.desc}</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })}
         </View>
 
         {/* Period */}
-        <View style={styles.section}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>{t('reports.date_range')}</Text>
-          <View style={styles.chips}>
-            {(['month', 'quarter', 'year'] as const).map((range) => (
+        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('reports.date_range', 'Period')}</Text>
+        <View style={styles.chips}>
+          {PERIODS.map((p) => {
+            const active = dateRange === p.key;
+            return (
               <TouchableOpacity
-                key={range}
-                style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                  dateRange === range && styles.chipActive]}
-                onPress={() => setDateRange(range)}
+                key={p.key}
+                style={[styles.chip, { backgroundColor: active ? colors.primary : colors.surface2, borderColor: active ? colors.primary : colors.border }]}
+                onPress={() => setDateRange(p.key)}
               >
-                <Text style={[styles.chipText, { color: colors.textSecondary },
-                  dateRange === range && styles.chipTextActive]}>
-                  {range === 'month' ? t('reports.this_month') :
-                   range === 'quarter' ? t('reports.this_quarter') : t('reports.this_year')}
-                </Text>
+                <Text style={[styles.chipText, { color: active ? '#FFF' : colors.textSecondary }]}>{p.label}</Text>
               </TouchableOpacity>
-            ))}
+            );
+          })}
+        </View>
+
+        {/* Format */}
+        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('reports.format', 'Format')}</Text>
+        <View style={styles.chips}>
+          <TouchableOpacity
+            style={[styles.formatChip, { backgroundColor: format === 'pdf' ? colors.primary : colors.surface2, borderColor: format === 'pdf' ? colors.primary : colors.border }]}
+            onPress={() => setFormat('pdf')}
+          >
+            <Ionicons name="document-text-outline" size={16} color={format === 'pdf' ? '#FFF' : colors.textSecondary} />
+            <Text style={[styles.chipText, { color: format === 'pdf' ? '#FFF' : colors.textSecondary }]}>PDF</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.formatChip, { backgroundColor: format === 'csv' ? colors.primary : colors.surface2, borderColor: format === 'csv' ? colors.primary : colors.border }]}
+            onPress={() => setFormat('csv')}
+          >
+            <Ionicons name="grid-outline" size={16} color={format === 'csv' ? '#FFF' : colors.textSecondary} />
+            <Text style={[styles.chipText, { color: format === 'csv' ? '#FFF' : colors.textSecondary }]}>CSV</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Preview Card */}
+        <View style={[styles.preview, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={[styles.previewIcon, { backgroundColor: colors.primary + '15' }]}>
+              <Ionicons name={selectedType.icon} size={24} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.previewTitle, { color: colors.text }]}>
+                {selectedType.label} {t('reports.report_suffix', 'Report')}
+              </Text>
+              <Text style={[styles.previewMeta, { color: colors.textMuted }]}>
+                {PERIODS.find((p) => p.key === dateRange)?.label} · {format.toUpperCase()}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Preview */}
-        <View style={[styles.preview, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.previewTitle, { color: colors.text }]}>
-            {reportTypeLabel} {t('reports.report_suffix')}
-          </Text>
-          <Text style={[styles.previewDesc, { color: colors.textSecondary }]}>{getDesc()}</Text>
-          <Text style={[styles.previewRange, { color: colors.primary }]}>
-            {t('reports.period_label', { period: getPeriodLabel() })}
-          </Text>
-        </View>
-
-        {/* Generate button */}
+        {/* Generate Button */}
         <TouchableOpacity
-          style={[styles.generateBtn, { backgroundColor: colors.primary }, generating && styles.generateBtnDisabled]}
+          style={[styles.generateBtn, { backgroundColor: colors.primary }, generating && { opacity: 0.6 }]}
           onPress={handleGenerate}
           disabled={generating}
+          activeOpacity={0.8}
         >
           {generating ? (
-            <ActivityIndicator color="#FFF" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <ActivityIndicator color="#FFF" size="small" />
+              <Text style={styles.generateBtnText}>{progress}</Text>
+            </View>
           ) : (
-            <Text style={styles.generateBtnText}>
-              {t('reports.generate')}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name={format === 'pdf' ? 'document-text' : 'download-outline'} size={18} color="#FFF" />
+              <Text style={styles.generateBtnText}>
+                {format === 'csv' ? t('reports.export_csv', 'Export CSV') : t('reports.generate', 'Generate Report')}
+              </Text>
+            </View>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -237,23 +263,33 @@ export default function ReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 12 },
-  backBtn: { padding: 4 },
-  backBtnText: { fontSize: 24, color: COLORS.primary },
-  title: { fontSize: 24, fontWeight: '900', color: COLORS.text },
-  section: { paddingHorizontal: 20, marginBottom: 20, gap: 10 },
-  label: { fontSize: 14, fontWeight: '700', color: COLORS.textSecondary },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  backBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
+
+  sectionLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, paddingHorizontal: 20, marginTop: 20, marginBottom: 10 },
+
+  // Type cards
+  typeCards: { flexDirection: 'row', gap: 10, paddingHorizontal: 20 },
+  typeCard: { flex: 1, borderRadius: 16, padding: 14, borderWidth: 1.5, gap: 8 },
+  typeIconCircle: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  typeLabel: { fontSize: 14, fontWeight: '800' },
+  typeDesc: { fontSize: 11, lineHeight: 15 },
+
+  // Chips
+  chips: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, flexWrap: 'wrap' },
   chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1 },
-  chipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  chipText: { fontSize: 14, fontWeight: '600' },
-  chipTextActive: { color: '#FFF' },
-  preview: { marginHorizontal: 20, borderRadius: 16, padding: 18, gap: 8, marginBottom: 24, borderWidth: 1 },
-  previewTitle: { fontSize: 18, fontWeight: '800' },
-  previewDesc: { fontSize: 14, lineHeight: 20 },
-  previewRange: { fontSize: 13, fontWeight: '600' },
-  generateBtn: { marginHorizontal: 20, borderRadius: 16, paddingVertical: 18, alignItems: 'center' },
-  generateBtnDisabled: { opacity: 0.6 },
+  chipText: { fontSize: 13, fontWeight: '600' },
+  formatChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1 },
+
+  // Preview
+  preview: { marginHorizontal: 20, marginTop: 20, borderRadius: 16, padding: 16, borderWidth: 1 },
+  previewIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  previewTitle: { fontSize: 17, fontWeight: '800' },
+  previewMeta: { fontSize: 13, marginTop: 2 },
+
+  // Generate
+  generateBtn: { marginHorizontal: 20, marginTop: 20, borderRadius: 16, paddingVertical: 18, alignItems: 'center', shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   generateBtnText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
 });
