@@ -271,7 +271,7 @@ export default function SubscriptionsScreen() {
           data={subs}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchSubs()} />}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={[styles.list, subs.length === 0 && { flex: 1 }]}
+          contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
@@ -322,13 +322,13 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
 
   // Filters
-  filtersScroll: { flexShrink: 0, marginBottom: 2 },
+  filtersScroll: { flexShrink: 0, flexGrow: 0, marginBottom: 2 },
   filters: { paddingHorizontal: 20, gap: 8, alignItems: 'center' },
   filterChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1 },
   filterText: { fontSize: 13, fontWeight: '600' },
 
   // Sort
-  sortScroll: { flexShrink: 0, marginBottom: 6 },
+  sortScroll: { flexShrink: 0, flexGrow: 0, marginBottom: 6 },
   sortChip: { paddingHorizontal: 12, paddingVertical: 6 },
   sortText: { fontSize: 12, fontWeight: '700' },
 
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
 
   // Empty
-  empty: { alignItems: 'center', justifyContent: 'center', flex: 1, gap: 10 },
+  empty: { alignItems: 'center', paddingTop: 40, gap: 10 },
   emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   emptyText: { fontSize: 18, fontWeight: '700' },
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
