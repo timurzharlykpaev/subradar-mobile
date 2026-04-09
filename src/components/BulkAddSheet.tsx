@@ -119,44 +119,87 @@ const vStyles = StyleSheet.create({
 function SubCard({ sub, checked, onToggle, colors }: { sub: BulkSub; checked: boolean; onToggle: () => void; colors: any }) {
   const { t } = useTranslation();
   const periodMap: Record<string, string> = { MONTHLY: 'мес', YEARLY: 'год', WEEKLY: 'нед', QUARTERLY: 'квар' };
+  const [editing, setEditing] = React.useState(false);
+  const [editName, setEditName] = React.useState(sub.name);
+  const [editAmount, setEditAmount] = React.useState(String(sub.amount));
+
   return (
-    <TouchableOpacity
-      onPress={onToggle}
-      style={[cStyles.card, {
-        backgroundColor: checked ? colors.primary + '12' : colors.surface2,
-        borderColor: checked ? colors.primary : colors.border,
-      }]}
-      activeOpacity={0.75}
-    >
-      {/* Icon */}
-      {sub.iconUrl ? (
-        <Image source={{ uri: sub.iconUrl }} style={cStyles.icon} />
-      ) : (
-        <View style={[cStyles.iconFallback, { backgroundColor: colors.primary + '22' }]}>
-          <Text style={[cStyles.iconLetter, { color: colors.primary }]}>
-            {(sub.name || '?')[0].toUpperCase()}
-          </Text>
-        </View>
-      )}
-
-      {/* Info */}
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <Text style={[cStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-        <Text style={[cStyles.meta, { color: colors.textMuted }]}>
-          {sub.currency} {sub.amount.toFixed(2)} / {periodMap[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
-        </Text>
-        {sub.isDuplicate && (
-          <Text style={{ fontSize: 10, color: '#FBBF24', marginTop: 2 }}>
-            {t('add.already_exists', '⚠ Уже добавлена')}
-          </Text>
+    <View style={[cStyles.card, {
+      backgroundColor: checked ? colors.primary + '12' : colors.surface2,
+      borderColor: checked ? colors.primary : colors.border,
+    }]}>
+      <TouchableOpacity onPress={onToggle} style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} activeOpacity={0.75}>
+        {/* Icon */}
+        {sub.iconUrl ? (
+          <Image source={{ uri: sub.iconUrl }} style={cStyles.icon} />
+        ) : (
+          <View style={[cStyles.iconFallback, { backgroundColor: colors.primary + '22' }]}>
+            <Text style={[cStyles.iconLetter, { color: colors.primary }]}>
+              {(sub.name || '?')[0].toUpperCase()}
+            </Text>
+          </View>
         )}
-      </View>
 
-      {/* Checkbox */}
-      <View style={[cStyles.checkbox, { borderColor: checked ? colors.primary : colors.border, backgroundColor: checked ? colors.primary : 'transparent' }]}>
-        {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
+        {/* Info */}
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          {editing ? (
+            <View style={{ gap: 6 }}>
+              <TextInput
+                style={{ fontSize: 15, fontWeight: '700', color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: 2 }}
+                value={editName}
+                onChangeText={setEditName}
+                autoFocus
+              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <TextInput
+                  style={{ fontSize: 14, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: 2, width: 80 }}
+                  value={editAmount}
+                  onChangeText={setEditAmount}
+                  keyboardType="numeric"
+                />
+                <Text style={{ fontSize: 13, color: colors.textMuted }}>{sub.currency}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  sub.name = editName.trim() || sub.name;
+                  sub.amount = parseFloat(editAmount) || sub.amount;
+                  setEditing(false);
+                }}
+                style={{ alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, backgroundColor: colors.primary, marginTop: 2 }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <Text style={[cStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+              <Text style={[cStyles.meta, { color: colors.textMuted }]}>
+                {sub.currency} {sub.amount.toFixed(2)} / {periodMap[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
+              </Text>
+              {sub.isDuplicate && (
+                <Text style={{ fontSize: 10, color: '#FBBF24', marginTop: 2 }}>
+                  {t('add.already_exists', '⚠ Уже добавлена')}
+                </Text>
+              )}
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+
+      {/* Edit + Check */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        {!editing && (
+          <TouchableOpacity onPress={() => setEditing(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="create-outline" size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity onPress={onToggle}>
+          <View style={[cStyles.checkbox, { borderColor: checked ? colors.primary : colors.border, backgroundColor: checked ? colors.primary : 'transparent' }]}>
+            {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
+          </View>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -360,7 +403,10 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     let saved = 0;
     for (const sub of selected) {
       try {
-        await subscriptionsApi.create({
+        const iconUrl = sub.iconUrl || (sub.name
+          ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`
+          : undefined);
+        const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',
           category: normalizeCategory(sub.category),
           amount: sub.amount || 0,
@@ -370,10 +416,12 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
           status: 'ACTIVE',
           serviceUrl: sub.serviceUrl || undefined,
           cancelUrl: sub.cancelUrl || undefined,
-          iconUrl: sub.iconUrl || undefined,
+          iconUrl: iconUrl,
           startDate: new Date().toISOString().split('T')[0],
           addedVia: 'AI_TEXT',
         });
+        // Pre-cache icon for immediate display in list
+        if (res.data?.iconUrl) Image.prefetch(res.data.iconUrl).catch(() => {});
         saved++;
       } catch {
         // continue with others

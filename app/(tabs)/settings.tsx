@@ -83,7 +83,7 @@ export default function SettingsScreen() {
   const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
 
   // Show annual upgrade nudge for monthly Pro/Team subscribers (not yearly, not trialing)
-  const isMonthlyPro = isPro && !isTrialing && billing?.billingInterval !== 'year';
+  const isMonthlyPro = isPro && !isTrialing && billing?.billingPeriod !== 'yearly' && billing?.billingPeriod !== 'year';
   const [annualNudgeDismissed, setAnnualNudgeDismissed] = useState(false);
   const showAnnualNudge = isMonthlyPro && !isTeam && !annualNudgeDismissed;
 

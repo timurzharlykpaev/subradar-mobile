@@ -361,13 +361,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Save from InlineConfirmCard ─────────────────────────────────────────
   const handleConfirmSave = useCallback(async (data: any) => {
+    if (saving) return;
     if (subsLimitReached) {
       analytics.paywallViewed('feature_gate');
       onClose();
       router.push('/paywall');
       return;
     }
+    setSaving(true);
 
+    try {
     const iconUrl = data.iconUrl || (data.serviceUrl
       ? `https://icon.horse/icon/${(() => { try { return new URL(data.serviceUrl).hostname; } catch { return ''; } })()}`
       : data.name
@@ -413,7 +416,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     subscriptionsApi.getAll().then((r) => {
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
-  }, [subsLimitReached, onClose, router, currency, addSubscription, addedViaSource]);
+    } catch (err: any) {
+      Alert.alert(t('common.error'), err?.response?.data?.message || err?.message || t('add.save_failed'));
+    } finally {
+      setSaving(false);
+    }
+  }, [saving, subsLimitReached, onClose, router, currency, addSubscription, addedViaSource]);
 
   // ── Convert CatalogEntry to ConfirmCardData ─────────────────────────────
   const catalogToConfirmData = (entry: CatalogEntry): ConfirmCardData => ({
