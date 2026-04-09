@@ -765,7 +765,10 @@
     "title": "Upgrade",
     "fear_title": "Stop Losing Money on Forgotten Subscriptions",
     "testimonial": "\"Found 4 forgotten subscriptions. Saved $180 in month 1.\"",
-    "testimonial_author": "— Alex M., verified user"
+    "testimonial_author": "— Alex M., verified user",
+    "auto_renew_notice": "Subscription auto-renews. Cancel anytime in Settings > Subscriptions.",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy"
   },
   "pro_modal": {
     "title_default": "Pro Feature",

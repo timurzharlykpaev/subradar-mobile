@@ -455,8 +455,9 @@ export default function OnboardingScreen() {
         `&response_type=code` +
         `&scope=openid%20email%20profile` +
         `&state=mobile`;
+      const isIPad = Platform.OS === 'ios' && (Platform as any).isPad;
       const result = await WebBrowser.openAuthSessionAsync(authUrl, 'subradar://', {
-        preferEphemeralSession: true,
+        ...(isIPad ? {} : { preferEphemeralSession: true }),
       });
       console.log('[GoogleAuth] WebBrowser result:', JSON.stringify(result));
       if (result.type === 'success' && result.url) {
@@ -474,9 +475,13 @@ export default function OnboardingScreen() {
             if (refresh) await AsyncStorage.setItem('refresh_token', refresh);
             const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
             console.log('[GoogleAuth] Fetching /auth/me from:', apiUrl);
+            const controller2 = new AbortController();
+            const fetchTimeout = setTimeout(() => controller2.abort(), 15000);
             const res = await fetch(`${apiUrl}/auth/me`, {
               headers: { Authorization: `Bearer ${jwt}` },
+              signal: controller2.signal,
             });
+            clearTimeout(fetchTimeout);
             console.log('[GoogleAuth] /auth/me status:', res.status);
             const userData = await res.json();
             console.log('[GoogleAuth] userData:', JSON.stringify(userData).slice(0, 200));
@@ -545,11 +550,19 @@ export default function OnboardingScreen() {
   }, [step]);
 
   const finishAuth = (user: any, token: string) => {
+    if (!user || (!user.id && !user.email)) {
+      console.error('[Auth] Invalid user object:', user);
+      Alert.alert(t('auth.error_title'), t('auth.invalid_user', 'Invalid account data received. Please try again.'));
+      setLoading(false);
+      return;
+    }
     setCurrency(selectedCurrency);
     setUser(user, token);
     setOnboarded();
-    analytics.identify(user.id, { plan: user.plan, currency: selectedCurrency });
-    analytics.track('auth_completed', { method: 'unknown', is_new_user: !user.createdAt || (Date.now() - new Date(user.createdAt).getTime() < 60_000) });
+    try {
+      analytics.identify(user.id, { plan: (user as any).plan, currency: selectedCurrency });
+      analytics.track('auth_completed', { method: 'unknown', is_new_user: !user.createdAt || (Date.now() - new Date(user.createdAt).getTime() < 60_000) });
+    } catch {}
     // Go to notifications step (step 4)
     setStep(4);
   };
@@ -581,7 +594,12 @@ export default function OnboardingScreen() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      const res = await authApi.loginWithApple(credential.identityToken!);
+      if (!credential.identityToken) {
+        Alert.alert(t('auth.error_title'), t('auth.apple_no_token', 'No identity token received from Apple. Please try again.'));
+        setLoading(false);
+        return;
+      }
+      const res = await authApi.loginWithApple(credential.identityToken);
       const { user, accessToken: jwt, refreshToken } = res.data;
       if (refreshToken) {
         const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
@@ -613,12 +631,17 @@ export default function OnboardingScreen() {
     }
     setLoading(true);
     try {
+      console.log('[OTP] Sending to:', email);
       await authApi.sendOtp(email);
       setOtpSent(true);
       setOtpTimer(60);
       setOtpCode('');
     } catch (e: any) {
-      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.failed_send_code'));
+      console.error('[OTP] Send error:', e?.response?.status, e?.response?.data, e?.message);
+      Alert.alert(
+        t('auth.error_title'),
+        e?.response?.data?.message || e?.message || t('auth.failed_send_code'),
+      );
     } finally {
       setLoading(false);
     }

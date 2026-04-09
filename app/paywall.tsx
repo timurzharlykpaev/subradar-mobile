@@ -6,6 +6,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -509,10 +510,27 @@ export default function PaywallScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Disclaimer */}
+        {/* Subscription info + Disclaimer (Apple requirement 3.1.2) */}
         <Text style={[styles.disclaimer, { color: colors.textMuted }]}>
           {canTrial ? t('paywall.free_trial_disclaimer') : t('paywall.paid_disclaimer')}
+          {'\n'}
+          {t('paywall.auto_renew_notice', 'Subscription auto-renews. Cancel anytime in Settings > Subscriptions.')}
         </Text>
+
+        {/* Terms & Privacy links (Apple requirement 3.1.2c) */}
+        <View style={styles.legalRow}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://subradar.ai/legal/terms')}>
+            <Text style={[styles.legalLink, { color: colors.primary }]}>
+              {t('paywall.terms', 'Terms of Use')}
+            </Text>
+          </TouchableOpacity>
+          <Text style={{ color: colors.textMuted, fontSize: 12 }}> · </Text>
+          <TouchableOpacity onPress={() => Linking.openURL('https://subradar.ai/legal/privacy')}>
+            <Text style={[styles.legalLink, { color: colors.primary }]}>
+              {t('paywall.privacy', 'Privacy Policy')}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Restore Purchases */}
         <TouchableOpacity
@@ -623,4 +641,6 @@ const styles = StyleSheet.create({
   laterBtn: { alignItems: 'center', paddingVertical: 14 },
   laterText: { fontSize: 15, fontWeight: '600' },
   disclaimer: { textAlign: 'center', fontSize: 11, paddingHorizontal: 32, lineHeight: 16 },
+  legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 8, paddingBottom: 4 },
+  legalLink: { fontSize: 12, textDecorationLine: 'underline' },
 });
