@@ -6,29 +6,42 @@ import { useTranslation } from 'react-i18next';
 export function OfflineBanner() {
   const { t } = useTranslation();
   const [isOffline, setIsOffline] = useState(false);
+  const retryRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     const checkConnection = async () => {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3000);
-        await fetch('https://api.subradar.ai/api/v1/health', {
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch('https://api.subradar.ai/api/v1/health', {
           method: 'HEAD',
           signal: controller.signal,
         });
         clearTimeout(timeout);
+        // Any HTTP response (even 5xx) means network is reachable
         setIsOffline(false);
       } catch {
         setIsOffline(true);
+        // Retry after 5 seconds when offline
+        retryRef.current = setTimeout(checkConnection, 5000);
       }
     };
 
     checkConnection();
+    // Re-check when app comes back to foreground
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') checkConnection();
     });
-    return () => sub.remove();
-  }, []);
+    // Also re-check periodically while banner is shown
+    const interval = setInterval(() => {
+      if (isOffline) checkConnection();
+    }, 10000);
+    return () => {
+      sub.remove();
+      clearInterval(interval);
+      if (retryRef.current) clearTimeout(retryRef.current);
+    };
+  }, [isOffline]);
 
   if (!isOffline) return null;
 
