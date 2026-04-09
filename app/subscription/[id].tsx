@@ -14,7 +14,9 @@ import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { ActivityIndicator } from 'react-native';
 import { subscriptionsApi } from '../../src/api/subscriptions';
+import { receiptsApi } from '../../src/api/receipts';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
@@ -31,9 +33,21 @@ export default function SubscriptionDetailScreen() {
   const getCard = usePaymentCardsStore((s) => s.getCard);
 
   const { colors, isDark } = useTheme();
-  const [receipts, setReceipts] = useState<string[]>([]);
+  const [receipts, setReceipts] = useState<{ id: string; fileUrl: string; filename: string }[]>([]);
+  const [receiptsLoading, setReceiptsLoading] = useState(false);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const [iconError, setIconError] = useState(false);
+
+  // Load receipts from backend
+  React.useEffect(() => {
+    if (!id) return;
+    setReceiptsLoading(true);
+    receiptsApi.list(id)
+      .then((res) => setReceipts(res.data || []))
+      .catch(() => {})
+      .finally(() => setReceiptsLoading(false));
+  }, [id]);
 
   if (!subscription) {
     return (
@@ -98,8 +112,22 @@ export default function SubscriptionDetailScreen() {
       mediaTypes: ['images'],
       quality: 0.8,
     });
-    if (!result.canceled) {
-      setReceipts((prev) => [...prev, result.assets[0].uri]);
+    if (result.canceled || !result.assets?.[0]) return;
+    const asset = result.assets[0];
+    setUploadingReceipt(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', {
+        uri: asset.uri,
+        name: asset.fileName || `receipt-${Date.now()}.jpg`,
+        type: asset.mimeType || 'image/jpeg',
+      } as any);
+      const res = await receiptsApi.upload(id!, formData);
+      if (res.data) setReceipts((prev) => [...prev, res.data]);
+    } catch (err: any) {
+      Alert.alert(t('common.error'), err?.response?.data?.message || t('subscription.receipt_upload_failed', 'Failed to upload receipt'));
+    } finally {
+      setUploadingReceipt(false);
     }
   };
 
@@ -237,12 +265,15 @@ export default function SubscriptionDetailScreen() {
               <Text style={[styles.uploadBtnText, { color: colors.primary }]}>{t('subscription.upload')}</Text>
             </TouchableOpacity>
           </View>
-          {receipts.length === 0 ? (
+          {uploadingReceipt && <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />}
+          {receiptsLoading ? (
+            <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
+          ) : receipts.length === 0 && !uploadingReceipt ? (
             <Text style={[styles.noReceipts, { color: colors.textMuted }]}>{t('subscription.no_receipts')}</Text>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {receipts.map((uri, i) => (
-                <Image key={i} source={{ uri }} style={styles.receiptThumb} />
+              {receipts.map((r, i) => (
+                <Image key={r.id || i} source={{ uri: r.fileUrl }} style={styles.receiptThumb} />
               ))}
             </ScrollView>
           )}

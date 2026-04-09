@@ -198,7 +198,9 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
                       )}
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }} numberOfLines={1}>{sub.name}</Text>
-                        <Text style={{ fontSize: 11, color: colors.textMuted }}>{sub.category} · {sub.billingPeriod}</Text>
+                        <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                          {String(t(`categories.${(sub.category || 'OTHER').toLowerCase()}`, sub.category))} · {String(t(`add.${(sub.billingPeriod || 'MONTHLY').toLowerCase()}`, sub.billingPeriod))}
+                        </Text>
                       </View>
                       <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
                         {sub.currency} {monthly.toFixed(2)}
