@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Alert, KeyboardAvoidingView, Platform, Keyboard,
+  TouchableWithoutFeedback, InputAccessoryView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
@@ -11,6 +15,8 @@ interface Props {
   onClose: () => void;
 }
 
+const INPUT_ACCESSORY_ID = 'join-team-keyboard';
+
 export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -18,8 +24,11 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const canJoin = code.length >= 6 && !loading;
+
   const handleJoin = async () => {
-    if (code.length < 6) return;
+    if (!canJoin) return;
+    Keyboard.dismiss();
     setLoading(true);
     try {
       await workspaceApi.joinByCode(code.toUpperCase());
@@ -34,41 +43,70 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={styles.header}>
-        <Ionicons name="people-outline" size={20} color={colors.primary} />
-        <Text style={[styles.title, { color: colors.text }]}>
-          {t('workspace.join_team', 'Join Team')}
-        </Text>
-        <TouchableOpacity onPress={onClose}>
-          <Ionicons name="close" size={22} color={colors.textSecondary} />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={[styles.label, { color: colors.textSecondary }]}>
-        {t('workspace.enter_code', 'Enter invite code')}
-      </Text>
-      <TextInput
-        style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-        value={code}
-        onChangeText={(val) => setCode(val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
-        placeholder="A7K2M9XP3N"
-        placeholderTextColor={colors.textSecondary}
-        autoCapitalize="characters"
-        maxLength={10}
-        autoFocus
-      />
-
-      <TouchableOpacity
-        style={[styles.joinBtn, { backgroundColor: colors.primary, opacity: code.length >= 6 ? 1 : 0.5 }]}
-        onPress={handleJoin}
-        disabled={code.length < 6 || loading}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
       >
-        <Text style={styles.joinBtnText}>
-          {loading ? t('common.loading', 'Loading...') : t('workspace.join', 'Join')}
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.header}>
+            <Ionicons name="people-outline" size={20} color={colors.primary} />
+            <Text style={[styles.title, { color: colors.text }]}>
+              {t('workspace.join_team', 'Join Team')}
+            </Text>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+              <Ionicons name="close" size={22} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            {t('workspace.enter_code', 'Enter invite code')}
+          </Text>
+          <TextInput
+            style={[styles.input, { color: colors.text, borderColor: canJoin ? colors.primary : colors.border, backgroundColor: colors.background }]}
+            value={code}
+            onChangeText={(val) => setCode(val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
+            placeholder="A7K2M9XP3N"
+            placeholderTextColor={colors.textMuted}
+            autoCapitalize="characters"
+            maxLength={10}
+            autoFocus
+            returnKeyType="join"
+            onSubmitEditing={handleJoin}
+            inputAccessoryViewID={Platform.OS === 'ios' ? INPUT_ACCESSORY_ID : undefined}
+          />
+
+          <TouchableOpacity
+            style={[styles.joinBtn, { backgroundColor: colors.primary, opacity: canJoin ? 1 : 0.4 }]}
+            onPress={handleJoin}
+            disabled={!canJoin}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="log-in-outline" size={18} color="#FFF" />
+            <Text style={styles.joinBtnText}>
+              {loading ? t('common.loading', 'Loading...') : t('workspace.join', 'Join')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* iOS keyboard toolbar with Done button */}
+        {Platform.OS === 'ios' && (
+          <InputAccessoryView nativeID={INPUT_ACCESSORY_ID}>
+            <View style={[styles.keyboardBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+              <View style={{ flex: 1 }} />
+              <TouchableOpacity
+                onPress={() => { Keyboard.dismiss(); if (canJoin) handleJoin(); }}
+                style={[styles.doneBtn, { backgroundColor: canJoin ? colors.primary : colors.surface2 }]}
+              >
+                <Text style={[styles.doneBtnText, { color: canJoin ? '#FFF' : colors.textMuted }]}>
+                  {canJoin ? t('workspace.join', 'Join') : t('common.done', 'Done')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </InputAccessoryView>
+        )}
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -77,7 +115,10 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   title: { fontSize: 17, fontWeight: '700', flex: 1, marginLeft: 8 },
   label: { fontSize: 14, marginBottom: 8 },
-  input: { borderRadius: 12, borderWidth: 1, padding: 16, fontSize: 24, fontWeight: '800', textAlign: 'center', letterSpacing: 8 },
-  joinBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginTop: 16 },
-  joinBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  input: { borderRadius: 12, borderWidth: 1.5, padding: 16, fontSize: 22, fontWeight: '800', textAlign: 'center', letterSpacing: 6 },
+  joinBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, borderRadius: 14, marginTop: 16 },
+  joinBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  keyboardBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  doneBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+  doneBtnText: { fontSize: 15, fontWeight: '700' },
 });

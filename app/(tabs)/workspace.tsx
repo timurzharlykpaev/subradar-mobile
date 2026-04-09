@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
+  View, Text, ScrollView, TouchableOpacity, TextInput, Image,
   Alert, ActivityIndicator, RefreshControl,
   KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard,
 } from 'react-native';
@@ -522,6 +522,32 @@ export default function WorkspaceScreen() {
           </View>
         )}
 
+        {/* ── Owner Actions: Report + Refresh ── */}
+        {isOwner && (
+          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 16 }}>
+            <TouchableOpacity
+              style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 14, backgroundColor: colors.primary, shadowColor: colors.primary, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 }}
+              onPress={() => router.push('/reports' as any)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="document-text-outline" size={18} color="#FFF" />
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>
+                {t('workspace.team_report', 'Team Report')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 14, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border }}
+              onPress={() => {
+                queryClient.invalidateQueries({ queryKey: ['workspace-analysis'] });
+                queryClient.invalidateQueries({ queryKey: ['workspace'] });
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="refresh-outline" size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* ── Subscription Overlaps ── */}
         {overlaps.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
@@ -564,9 +590,29 @@ export default function WorkspaceScreen() {
               borderColor: colors.border,
               overflow: 'hidden',
             }}>
-              {members.map((m: any, idx: number) => (
-                <View
+              {members.map((m: any, idx: number) => {
+                const memberName = m.user?.name || m.user?.email?.split('@')[0] || m.email?.split('@')[0] || t('workspace.members_one');
+                const avatarUrl = m.user?.avatarUrl;
+                const memberSpend = analytics?.members?.find((am: any) => am.userId === m.userId || am.name === memberName);
+                const isOwnerMember = m.role === 'OWNER';
+                const roleColor = isOwnerMember ? colors.primary : m.role === 'ADMIN' ? '#F59E0B' : colors.textSecondary;
+                const roleBg = isOwnerMember ? colors.primary + '18' : m.role === 'ADMIN' ? '#F59E0B18' : (isDark ? '#ffffff0D' : '#0000000A');
+
+                return (
+                <TouchableOpacity
                   key={m.id}
+                  activeOpacity={canManage ? 0.6 : 1}
+                  onPress={() => {
+                    if (!canManage || isOwnerMember) return;
+                    Alert.alert(
+                      memberName,
+                      memberSpend ? `${t('workspace.spend', 'Spending')}: $${(memberSpend.monthlySpend ?? memberSpend.totalMonthly ?? 0).toFixed(0)}/${t('paywall.month', 'mo')}` : '',
+                      [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        ...(m.role !== 'OWNER' ? [{ text: t('workspace.remove_btn', 'Remove'), style: 'destructive' as const, onPress: () => removeMutation.mutate(m.id) }] : []),
+                      ],
+                    );
+                  }}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -577,67 +623,53 @@ export default function WorkspaceScreen() {
                     borderBottomColor: colors.border,
                   }}
                 >
-                  <View style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: m.role === 'OWNER'
-                      ? colors.primary + '18'
-                      : (isDark ? '#ffffff10' : '#00000008'),
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    <Text style={{
-                      fontSize: 17,
-                      fontWeight: '800',
-                      color: m.role === 'OWNER' ? colors.primary : colors.textSecondary,
+                  {/* Avatar */}
+                  {avatarUrl ? (
+                    <Image
+                      source={{ uri: avatarUrl }}
+                      style={{ width: 42, height: 42, borderRadius: 21 }}
+                    />
+                  ) : (
+                    <View style={{
+                      width: 42, height: 42, borderRadius: 21,
+                      backgroundColor: isOwnerMember ? colors.primary + '18' : (isDark ? '#ffffff10' : '#00000008'),
+                      alignItems: 'center', justifyContent: 'center',
                     }}>
-                      {(m.user?.name ?? m.email ?? '?')[0].toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                      {m.user?.name ?? m.email ?? t('workspace.members_one')}
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                      <View style={{
-                        paddingHorizontal: 8,
-                        paddingVertical: 3,
-                        borderRadius: 6,
-                        backgroundColor: m.role === 'OWNER'
-                          ? colors.primary + '18'
-                          : (isDark ? '#ffffff0D' : '#0000000A'),
+                      <Text style={{
+                        fontSize: 17, fontWeight: '800',
+                        color: isOwnerMember ? colors.primary : colors.textSecondary,
                       }}>
-                        <Text style={{
-                          fontSize: 10,
-                          fontWeight: '800',
-                          color: m.role === 'OWNER' ? colors.primary : colors.textSecondary,
-                          letterSpacing: 0.5,
-                        }}>
+                        {memberName[0].toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Info */}
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }} numberOfLines={1}>
+                      {memberName}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+                      <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: roleBg }}>
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: roleColor, letterSpacing: 0.5 }}>
                           {m.role}
                         </Text>
                       </View>
-                      <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}>
-                        <View style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: 3,
-                          backgroundColor: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted,
-                        }} />
-                        <Text style={{
-                          fontSize: 11,
-                          fontWeight: '600',
-                          color: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted,
-                        }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted }} />
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted }}>
                           {m.status}
                         </Text>
                       </View>
+                      {memberSpend && (
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
+                          ${(memberSpend.monthlySpend ?? memberSpend.totalMonthly ?? 0).toFixed(0)}/{t('paywall.month', 'mo')}
+                        </Text>
+                      )}
                     </View>
                   </View>
+
+                  {/* Actions */}
                   {m.role !== 'OWNER' && canManage && (
                     <TouchableOpacity
                       testID={`btn-remove-member-${m.id}`}
@@ -645,17 +677,17 @@ export default function WorkspaceScreen() {
                         { text: t('common.cancel'), style: 'cancel' },
                         { text: t('workspace.remove_btn'), style: 'destructive', onPress: () => removeMutation.mutate(m.id) },
                       ])}
-                      style={{
-                        padding: 10,
-                        borderRadius: 12,
-                        backgroundColor: '#EF444412',
-                      }}
+                      style={{ padding: 10, borderRadius: 12, backgroundColor: '#EF444412' }}
                     >
                       <Ionicons name="trash-outline" size={16} color="#EF4444" />
                     </TouchableOpacity>
                   )}
-                </View>
-              ))}
+                  {!canManage && m.role !== 'OWNER' && (
+                    <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                  )}
+                </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </View>
