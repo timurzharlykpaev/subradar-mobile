@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../src/theme';
@@ -87,7 +88,7 @@ export default function ReportsScreen() {
       const res = await fetch(`${API_URL}/reports/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ type: reportType.toUpperCase(), from, to }),
+        body: JSON.stringify({ type: reportType.toUpperCase(), from, to, locale: i18n.language || 'en' }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
