@@ -37,12 +37,12 @@ interface Props {
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const PERIOD_LABELS: Record<string, string> = {
-  WEEKLY: 'billing.weekly',
-  MONTHLY: 'billing.monthly',
-  QUARTERLY: 'billing.quarterly',
-  YEARLY: 'billing.yearly',
-  LIFETIME: 'billing.lifetime',
-  ONE_TIME: 'billing.one_time',
+  WEEKLY: 'add.weekly',
+  MONTHLY: 'add.monthly',
+  QUARTERLY: 'add.quarterly',
+  YEARLY: 'add.yearly',
+  LIFETIME: 'add.lifetime',
+  ONE_TIME: 'add.one_time',
 };
 
 export function EditSubscriptionSheet({ visible, onClose, subscription }: Props) {
