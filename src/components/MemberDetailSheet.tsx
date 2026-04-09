@@ -88,11 +88,12 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
     }),
   ).current;
 
-  // Fetch member subscriptions via workspace endpoint
+  // Fetch member subscriptions via workspace endpoint (always try, backend enforces permissions)
   useEffect(() => {
-    if (!visible || !member?.userId || !workspaceId) { setSubs([]); return; }
+    if (!visible || !member?.userId) { setSubs([]); return; }
+    const wsId = workspaceId || 'me';
     setLoading(true);
-    apiClient.get(`/workspace/${workspaceId}/members/${member.userId}/subscriptions`)
+    apiClient.get(`/workspace/${wsId}/members/${member.userId}/subscriptions`)
       .then((res) => setSubs(Array.isArray(res.data) ? res.data : []))
       .catch((err) => {
         console.warn('[MemberDetail] Failed to load subs:', err?.response?.status);

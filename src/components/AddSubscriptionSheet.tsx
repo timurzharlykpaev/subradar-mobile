@@ -14,6 +14,7 @@ import {
   BackHandler,
   Dimensions,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ActivityIndicator,
   Switch,
@@ -1017,76 +1018,37 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 </View>
               )}
 
-              {/* Info — tap to edit */}
-              <TouchableOpacity style={{ flex: 1 }} onPress={() => setBulkEditIdx(bulkEditIdx === idx ? null : idx)} activeOpacity={0.7}>
-                {bulkEditIdx === idx ? (
-                  <View style={{ gap: 8 }}>
-                    <TextInput
-                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.primary, paddingBottom: 4, paddingTop: 2 }}
-                      value={sub.name}
-                      onChangeText={(v) => setBulkItems(prev => { const n = [...prev]; n[idx] = { ...n[idx], name: v }; return n; })}
-                      placeholder={t('add.name_placeholder', 'Name')}
-                      placeholderTextColor={colors.textMuted}
-                    />
-                    <View style={{ flexDirection: 'row', gap: 10 }}>
-                      <TextInput
-                        style={{ flex: 1, fontSize: 15, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 4 }}
-                        value={String(sub.amount || '')}
-                        onChangeText={(v) => setBulkItems(prev => { const n = [...prev]; n[idx] = { ...n[idx], amount: parseFloat(v) || 0 }; return n; })}
-                        keyboardType="decimal-pad"
-                        placeholder="0.00"
-                        placeholderTextColor={colors.textMuted}
-                      />
-                      <TextInput
-                        style={{ width: 55, fontSize: 15, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 4, textAlign: 'center' }}
-                        value={sub.currency || 'USD'}
-                        onChangeText={(v) => setBulkItems(prev => { const n = [...prev]; n[idx] = { ...n[idx], currency: v.toUpperCase() }; return n; })}
-                        placeholder="USD"
-                        placeholderTextColor={colors.textMuted}
-                        maxLength={3}
-                      />
-                    </View>
-                    <TouchableOpacity onPress={() => setBulkEditIdx(null)} style={{ alignSelf: 'flex-end', paddingVertical: 6, paddingHorizontal: 12, backgroundColor: colors.primary + '15', borderRadius: 8 }}>
-                      <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>{t('common.done', 'Done')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, flex: 1 }} numberOfLines={1}>{sub.name}</Text>
-                    </View>
-                    <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 3 }}>
-                      {categoryLabel} · {periodLabel}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
+              {/* Info */}
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }} numberOfLines={1}>{sub.name}</Text>
+                <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 3 }}>
+                  {categoryLabel} · {periodLabel}
+                </Text>
+              </View>
 
               {/* Price + Actions */}
-              {bulkEditIdx !== idx && (
-                <View style={{ alignItems: 'flex-end', gap: 8 }}>
-                  <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
-                    {sub.currency || 'USD'} {(sub.amount || 0).toFixed(2)}
-                  </Text>
-                  <View style={{ flexDirection: 'row', gap: 12 }}>
-                    <TouchableOpacity
-                      onPress={() => setBulkEditIdx(idx)}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                      <Ionicons name="create-outline" size={22} color={colors.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setBulkItems(prev => prev.filter((_, i) => i !== idx));
-                        setBulkChecked(prev => prev.filter((_, i) => i !== idx));
-                      }}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                      <Ionicons name="trash-outline" size={22} color={colors.error || '#EF4444'} />
-                    </TouchableOpacity>
-                  </View>
+              <View style={{ alignItems: 'flex-end', gap: 8 }}>
+                <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
+                  {sub.currency || 'USD'} {(sub.amount || 0).toFixed(2)}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <TouchableOpacity
+                    onPress={() => setBulkEditIdx(idx)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons name="create-outline" size={22} color={colors.primary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setBulkItems(prev => prev.filter((_, i) => i !== idx));
+                      setBulkChecked(prev => prev.filter((_, i) => i !== idx));
+                    }}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons name="trash-outline" size={22} color={colors.error || '#EF4444'} />
+                  </TouchableOpacity>
                 </View>
-              )}
+              </View>
             </View>
           );
         })}
@@ -1763,6 +1725,108 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         setShowSuccess(true);
       }}
     />
+
+    {/* ── Full-screen edit modal for bulk items ─────────────────────────── */}
+    {bulkEditIdx !== null && bulkItems[bulkEditIdx] && (() => {
+      const sub = bulkItems[bulkEditIdx];
+      const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const;
+      const ALL_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DESIGN', 'EDUCATION', 'FINANCE', 'INFRASTRUCTURE', 'SECURITY', 'HEALTH', 'SPORT', 'DEVELOPER', 'NEWS', 'BUSINESS', 'OTHER'];
+      const updateSub = (patch: Partial<typeof sub>) => setBulkItems(prev => { const n = [...prev]; n[bulkEditIdx] = { ...n[bulkEditIdx], ...patch }; return n; });
+      return (
+        <Modal visible transparent animationType="slide" onRequestClose={() => setBulkEditIdx(null)}>
+          <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12, gap: 12 }}>
+              <TouchableOpacity onPress={() => setBulkEditIdx(null)}>
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, flex: 1 }}>{t('common.edit', 'Edit')}</Text>
+              <TouchableOpacity
+                onPress={() => setBulkEditIdx(null)}
+                style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.primary }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+              {/* Name */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.service_name', 'Name')}</Text>
+                <TextInput
+                  style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                  value={sub.name}
+                  onChangeText={(v) => updateSub({ name: v })}
+                />
+              </View>
+              {/* Amount + Currency */}
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flex: 1, gap: 6 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
+                  <TextInput
+                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                    value={String(sub.amount || '')}
+                    onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <View style={{ width: 80, gap: 6 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.currency', 'Currency')}</Text>
+                  <TextInput
+                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, textAlign: 'center' }}
+                    value={sub.currency || 'USD'}
+                    onChangeText={(v) => updateSub({ currency: v.toUpperCase() })}
+                    maxLength={3}
+                  />
+                </View>
+              </View>
+              {/* Billing Period */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_period', 'Billing Period')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {PERIODS.map((p) => (
+                    <TouchableOpacity
+                      key={p}
+                      style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary : colors.border, backgroundColor: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary + '12' : colors.card }}
+                      onPress={() => updateSub({ billingPeriod: p })}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary : colors.textSecondary }}>
+                        {t(`add.${p.toLowerCase()}`, p.toLowerCase())}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+              {/* Category */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.category', 'Category')}</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {ALL_CATEGORIES.map((c) => (
+                    <TouchableOpacity
+                      key={c}
+                      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.border, backgroundColor: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary + '12' : colors.card }}
+                      onPress={() => updateSub({ category: c })}
+                    >
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.textSecondary }}>{c}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+              {/* Delete */}
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
+                onPress={() => {
+                  setBulkItems(prev => prev.filter((_, j) => j !== bulkEditIdx));
+                  setBulkChecked(prev => prev.filter((_, j) => j !== bulkEditIdx));
+                  setBulkEditIdx(null);
+                }}
+              >
+                <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#EF4444' }}>{t('common.delete', 'Delete')}</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </Modal>
+      );
+    })()}
     </>
   );
 }
