@@ -230,20 +230,6 @@ export default function SubscriptionsScreen() {
           })}
         </ScrollView>
 
-        {/* ── Sort row ───────────────────────────────────────── */}
-        <ScrollView testID="sort-chips" horizontal showsHorizontalScrollIndicator={false} style={styles.sortScroll} contentContainerStyle={styles.filters}>
-          {SORTS.map((s) => (
-            <TouchableOpacity
-              testID={`sort-chip-${s.value}`}
-              key={s.value}
-              onPress={() => setSortBy(s.value)}
-              style={[styles.sortChip, sortBy === s.value && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-            >
-              <Text style={[styles.sortText, { color: sortBy === s.value ? colors.primary : colors.textMuted }]}>{s.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
         {/* ── Category sub-filter ────────────────────────────── */}
         {filter === 'category' && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll} contentContainerStyle={styles.filters}>
@@ -264,6 +250,20 @@ export default function SubscriptionsScreen() {
             ))}
           </ScrollView>
         )}
+
+        {/* ── Sort row ───────────────────────────────────────── */}
+        <ScrollView testID="sort-chips" horizontal showsHorizontalScrollIndicator={false} style={styles.sortScroll} contentContainerStyle={styles.filters}>
+          {SORTS.map((s) => (
+            <TouchableOpacity
+              testID={`sort-chip-${s.value}`}
+              key={s.value}
+              onPress={() => setSortBy(s.value)}
+              style={[styles.sortChip, sortBy === s.value && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+            >
+              <Text style={[styles.sortText, { color: sortBy === s.value ? colors.primary : colors.textMuted }]}>{s.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         {/* ── List ───────────────────────────────────────────── */}
         <FlatList
