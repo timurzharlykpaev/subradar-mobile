@@ -24,6 +24,7 @@ interface MemberData {
 interface Props {
   visible: boolean;
   member: MemberData | null;
+  workspaceId?: string;
   analytics?: { monthlySpend?: number; totalMonthly?: number; subscriptionCount?: number; count?: number } | null;
   currency?: string;
   canManage?: boolean;
@@ -31,7 +32,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function MemberDetailSheet({ visible, member, analytics, currency = 'USD', canManage, onRemove, onClose }: Props) {
+export function MemberDetailSheet({ visible, member, workspaceId, analytics, currency = 'USD', canManage, onRemove, onClose }: Props) {
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
@@ -87,15 +88,18 @@ export function MemberDetailSheet({ visible, member, analytics, currency = 'USD'
     }),
   ).current;
 
-  // Fetch member subscriptions
+  // Fetch member subscriptions via workspace endpoint
   useEffect(() => {
-    if (!visible || !member?.userId) { setSubs([]); return; }
+    if (!visible || !member?.userId || !workspaceId) { setSubs([]); return; }
     setLoading(true);
-    apiClient.get(`/subscriptions`, { params: { userId: member.userId } })
-      .then((res) => setSubs(res.data || []))
-      .catch(() => setSubs([]))
+    apiClient.get(`/workspace/${workspaceId}/members/${member.userId}/subscriptions`)
+      .then((res) => setSubs(Array.isArray(res.data) ? res.data : []))
+      .catch((err) => {
+        console.warn('[MemberDetail] Failed to load subs:', err?.response?.status);
+        setSubs([]);
+      })
       .finally(() => setLoading(false));
-  }, [visible, member?.userId]);
+  }, [visible, member?.userId, workspaceId]);
 
   if (!member) return null;
 

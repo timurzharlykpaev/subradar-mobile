@@ -760,6 +760,7 @@ export default function WorkspaceScreen() {
       <MemberDetailSheet
         visible={!!selectedMember}
         member={selectedMember}
+        workspaceId={workspace?.id}
         analytics={selectedMember ? analytics?.members?.find((am: any) => am.userId === selectedMember.userId || am.name === (selectedMember.user?.name || selectedMember.email)) : null}
         currency={billing?.currency || 'USD'}
         canManage={canManage}
