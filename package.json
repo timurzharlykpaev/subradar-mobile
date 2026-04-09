@@ -17,8 +17,8 @@
     "version:patch": "npm version patch --no-git-tag-version && node -e \"const f='app.json';const a=JSON.parse(require('fs').readFileSync(f));a.expo.version=require('./package.json').version;require('fs').writeFileSync(f,JSON.stringify(a,null,2)+'\\n')\"",
     "version:minor": "npm version minor --no-git-tag-version && node -e \"const f='app.json';const a=JSON.parse(require('fs').readFileSync(f));a.expo.version=require('./package.json').version;require('fs').writeFileSync(f,JSON.stringify(a,null,2)+'\\n')\"",
     "version:major": "npm version major --no-git-tag-version && node -e \"const f='app.json';const a=JSON.parse(require('fs').readFileSync(f));a.expo.version=require('./package.json').version;require('fs').writeFileSync(f,JSON.stringify(a,null,2)+'\\n')\"",
-    "build:testflight": "eas build --platform ios --profile testflight --auto-submit",
-    "build:production": "eas build --platform ios --profile production --auto-submit",
+    "build:testflight": "git checkout main && git pull origin main && eas build --platform ios --profile testflight --auto-submit",
+    "build:production": "git checkout main && git pull origin main && eas build --platform ios --profile production --auto-submit",
     "build:preview": "eas build --platform ios --profile preview",
     "build:android": "eas build --platform android --profile production"
   },
