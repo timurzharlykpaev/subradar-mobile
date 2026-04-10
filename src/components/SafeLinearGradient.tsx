@@ -1,10 +1,20 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, UIManager, Platform } from 'react-native';
 
-let LG: any = View;
-try {
-  LG = require('expo-linear-gradient').LinearGradient;
-} catch {}
+// Check if the native LinearGradient view manager is actually registered
+// (JS module loads fine in Expo Go but native view crashes on render)
+const nativeAvailable = (() => {
+  try {
+    const config = UIManager.getViewManagerConfig?.('ExpoLinearGradient')
+      ?? (UIManager as any).ExpoLinearGradient;
+    return !!config;
+  } catch { return false; }
+})();
+
+let LG: any = null;
+if (nativeAvailable) {
+  try { LG = require('expo-linear-gradient').LinearGradient; } catch {}
+}
 
 interface Props {
   colors: string[];
@@ -21,8 +31,7 @@ interface Props {
  * Prevents crash in Expo Go where native module is unavailable.
  */
 export function SafeLinearGradient({ colors, start, end, style, children, ...rest }: Props) {
-  if (LG === View || !LG) {
-    // Fallback: use first gradient color as solid bg
+  if (!LG) {
     const fallbackStyle = Array.isArray(style)
       ? [...style, { backgroundColor: colors[0] }]
       : [style, { backgroundColor: colors[0] }];
