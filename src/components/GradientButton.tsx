@@ -7,7 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { SafeLinearGradient as LinearGradient } from './SafeLinearGradient';
 import { fonts } from '../theme';
 
 interface Props {
@@ -42,7 +42,7 @@ export function GradientButton({
         colors={colors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={[styles.button, style]}
+        style={[styles.button, style ?? {}]}
       >
         {loading ? (
           <ActivityIndicator color="#FFF" />
