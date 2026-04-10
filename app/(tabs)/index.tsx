@@ -118,9 +118,12 @@ export default function DashboardScreen() {
 
   // Show TrialOfferModal when first subscription is added and no active plan
   useEffect(() => {
-    if (prevSubsCount.current === 0 && subscriptions.length >= 1) {
+    if (loading) return;
+    // Trigger when subs go from 0 to ≥1 (prevSubsCount starts as null, treat as 0)
+    const prev = prevSubsCount.current ?? 0;
+    if (prev === 0 && subscriptions.length >= 1) {
       const hasActivePlan = billing?.plan === 'pro' || billing?.plan === 'organization';
-      if (!hasActivePlan) {
+      if (!hasActivePlan && billing?.trialUsed === false) {
         AsyncStorage.getItem('trial_offered').then((val) => {
           if (!val) {
             setShowTrialOffer(true);
@@ -130,7 +133,7 @@ export default function DashboardScreen() {
       }
     }
     prevSubsCount.current = subscriptions.length;
-  }, [subscriptions.length, billing?.plan]);
+  }, [loading, subscriptions.length, billing?.plan, billing?.trialUsed]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');

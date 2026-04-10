@@ -185,6 +185,8 @@
     "tags_placeholder": "输入并按逗号...",
     "parse_failed": "无法解析。请重试。",
     "save_failed": "保存订阅失败",
+    "limit_title": "订阅数量已达上限",
+    "limit_msg": "免费计划最多允许 {{max}} 个订阅。升级到 Pro 可享受无限订阅。",
     "hold_to_record": "按住说话",
     "tap_to_record": "Tap to record",
     "ai_q_name": "哪个订阅？",

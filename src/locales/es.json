@@ -185,6 +185,8 @@
     "tags_placeholder": "Escribe y presiona coma...",
     "parse_failed": "No se pudo analizar. Intenta de nuevo.",
     "save_failed": "No se pudo guardar la suscripción",
+    "limit_title": "Límite de suscripciones alcanzado",
+    "limit_msg": "El plan gratuito permite hasta {{max}} suscripciones. Actualiza a Pro para ilimitadas.",
     "hold_to_record": "Mantener para hablar",
     "tap_to_record": "Tap to record",
     "ai_q_name": "¿Qué suscripción?",

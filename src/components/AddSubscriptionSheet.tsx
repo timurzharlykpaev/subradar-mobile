@@ -279,9 +279,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleSave = useCallback(async () => {
     if (saving) return;
     if (subsLimitReached) {
-      analytics.paywallViewed('feature_gate');
-      onClose();
-      router.push('/paywall');
+      Alert.alert(
+        t('add.limit_title', 'Subscription limit reached'),
+        t('add.limit_msg', 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.', { max: maxSubscriptions }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { analytics.paywallViewed('feature_gate'); onClose(); router.push('/paywall'); } },
+        ],
+      );
       return;
     }
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
@@ -364,9 +369,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleConfirmSave = useCallback(async (data: any) => {
     if (saving) return;
     if (subsLimitReached) {
-      analytics.paywallViewed('feature_gate');
-      onClose();
-      router.push('/paywall');
+      Alert.alert(
+        t('add.limit_title', 'Subscription limit reached'),
+        t('add.limit_msg', 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.', { max: maxSubscriptions }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { analytics.paywallViewed('feature_gate'); onClose(); router.push('/paywall'); } },
+        ],
+      );
       return;
     }
     setSaving(true);

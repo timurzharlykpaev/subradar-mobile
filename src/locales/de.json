@@ -185,6 +185,8 @@
     "tags_placeholder": "Eingeben und Komma drucken...",
     "parse_failed": "Konnte nicht analysiert werden. Versuche es erneut.",
     "save_failed": "Abonnement konnte nicht gespeichert werden",
+    "limit_title": "Abo-Limit erreicht",
+    "limit_msg": "Der kostenlose Plan erlaubt bis zu {{max}} Abonnements. Upgrade auf Pro für unbegrenzte.",
     "hold_to_record": "Gedrückt halten zum Sprechen",
     "tap_to_record": "Tap to record",
     "ai_q_name": "Welches Abo?",

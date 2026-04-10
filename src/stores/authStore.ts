@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
 
 const SECURE_KEY = 'auth-storage';
@@ -58,8 +59,11 @@ export const useAuthStore = create<AuthState>()(
       setTokens: (token, refreshToken) => set({ token, refreshToken }),
       updateUser: (data) =>
         set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
-      logout: () =>
-        set({ user: null, token: null, refreshToken: null, isAuthenticated: false, isOnboarded: false }),
+      logout: () => {
+        // Clear per-user flags so new account gets fresh experience
+        AsyncStorage.multiRemove(['trial_offered', 'welcome_shown']).catch(() => {});
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false, isOnboarded: false });
+      },
       setOnboarded: () => set({ isOnboarded: true }),
     }),
     {

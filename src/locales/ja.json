@@ -185,6 +185,8 @@
     "tags_placeholder": "入力してカンマを押す...",
     "parse_failed": "解析できませんでした。もう一度お試しください。",
     "save_failed": "サブスクリプションの保存に失敗しました",
+    "limit_title": "サブスクリプションの上限に達しました",
+    "limit_msg": "無料プランでは最大{{max}}件のサブスクリプションが可能です。Proにアップグレードして無制限に。",
     "hold_to_record": "長押しで話す",
     "tap_to_record": "Tap to record",
     "ai_q_name": "どのサブスク？",
