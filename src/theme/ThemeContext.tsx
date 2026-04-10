@@ -5,9 +5,18 @@ import { DarkTheme, LightTheme, ThemeColors } from './colors';
 
 type ThemeMode = 'dark' | 'light';
 
+export const fonts = {
+  regular: 'Inter-Regular',
+  medium: 'Inter-Medium',
+  semiBold: 'Inter-SemiBold',
+  bold: 'Inter-Bold',
+  extraBold: 'Inter-ExtraBold',
+} as const;
+
 interface ThemeContextValue {
   mode: ThemeMode;
   colors: ThemeColors;
+  fonts: typeof fonts;
   isDark: boolean;
   toggleTheme: () => void;
   setTheme: (mode: ThemeMode) => void;
@@ -16,6 +25,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue>({
   mode: 'dark',
   colors: DarkTheme,
+  fonts,
   isDark: true,
   toggleTheme: () => {},
   setTheme: () => {},
@@ -50,6 +60,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeContext.Provider value={{
       mode,
       colors: mode === 'dark' ? DarkTheme : LightTheme,
+      fonts,
       isDark: mode === 'dark',
       toggleTheme,
       setTheme,

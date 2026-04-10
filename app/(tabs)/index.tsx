@@ -13,6 +13,7 @@ import {
   AppState,
   type AppStateStatus,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -25,7 +26,7 @@ import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORIES } from '../../src/constants';
-import { useTheme } from '../../src/theme';
+import { useTheme, fonts } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import { WelcomeSheet } from '../../src/components/WelcomeSheet';
 import { TrialOfferModal } from '../../src/components/TrialOfferModal';
@@ -324,7 +325,13 @@ export default function DashboardScreen() {
         )}
 
         {/* ── Hero Card: Total Spend ────────────────────────────── */}
-        <View testID="dashboard-hero-card" style={[styles.heroCard, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
+        <LinearGradient
+          testID="dashboard-hero-card"
+          colors={['#6C47FF', '#4A2FB0']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={[styles.heroCard, { shadowColor: '#6C47FF', shadowOpacity: 0.3, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 12 }]}
+        >
           <View style={styles.heroDecor1} />
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
@@ -353,7 +360,7 @@ export default function DashboardScreen() {
               <Text style={styles.heroMetaText}>{currency} {(totalMonthly * 12).toFixed(0)}/{t('paywall.year', 'yr')}</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* ── Quick Stats ────────────────────────────────────── */}
         <View testID="dashboard-stats-row" style={styles.statsRow}>

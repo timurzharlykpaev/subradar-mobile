@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../src/theme';
+import { useTheme, fonts } from '../src/theme';
 import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
 
   header: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 20, gap: 8 },
   headerIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  title: { fontSize: 28, fontWeight: '900', textAlign: 'center', letterSpacing: -0.5 },
+  title: { fontSize: 28, fontWeight: '900', textAlign: 'center', letterSpacing: -0.5, fontFamily: 'Inter-ExtraBold' },
   subtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
 
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginBottom: 16, padding: 10, borderRadius: 12, borderWidth: 1 },
@@ -629,17 +629,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     borderRadius: 16,
-    paddingVertical: 18,
+    paddingVertical: 22,
     alignItems: 'center',
     shadowOpacity: 0.35,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
     elevation: 10,
   },
-  ctaBtnText: { fontSize: 17, fontWeight: '800', color: '#FFF', letterSpacing: 0.2 },
+  ctaBtnText: { fontSize: 17, fontWeight: '800', color: '#FFF', letterSpacing: 0.2, fontFamily: 'Inter-Bold' },
 
   laterBtn: { alignItems: 'center', paddingVertical: 14 },
-  laterText: { fontSize: 15, fontWeight: '600' },
+  laterText: { fontSize: 13, fontWeight: '600', opacity: 0.5 },
   disclaimer: { textAlign: 'center', fontSize: 11, paddingHorizontal: 32, lineHeight: 16 },
   legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 8, paddingBottom: 4 },
   legalLink: { fontSize: 12, textDecorationLine: 'underline' },

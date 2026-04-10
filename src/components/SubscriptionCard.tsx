@@ -13,7 +13,7 @@ import { Subscription } from '../types';
 import { STATUS_COLORS } from '../constants';
 import { CategoryBadge } from './CategoryBadge';
 import { CardBadge } from './CardBadge';
-import { useTheme } from '../theme';
+import { useTheme, fonts } from '../theme';
 import { GiftIcon } from './icons';
 
 interface Props {
@@ -130,10 +130,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   left: {},
   logo: { width: 44, height: 44, borderRadius: 12 },
@@ -149,11 +149,11 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 2, flexShrink: 0, maxWidth: 110 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   tagsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  name: { fontSize: 15, fontWeight: '700', flex: 1, flexShrink: 1 },
+  name: { fontSize: 15, fontWeight: '700', flex: 1, flexShrink: 1, fontFamily: fonts.semiBold },
   plan: { fontSize: 12 },
   statusBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexShrink: 0 },
   statusText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
-  amount: { fontSize: 15, fontWeight: '800' },
+  amount: { fontSize: 15, fontWeight: '800', fontFamily: fonts.bold },
   period: { fontSize: 11 },
   nextDate: { fontSize: 11, fontWeight: '600' },
   trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },

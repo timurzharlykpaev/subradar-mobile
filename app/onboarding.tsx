@@ -32,7 +32,7 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
-import { useTheme } from '../src/theme';
+import { useTheme, fonts } from '../src/theme';
 import { SunIcon, MoonIcon, MailIcon } from '../src/components/icons';
 import * as Notifications from 'expo-notifications';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -755,7 +755,7 @@ export default function OnboardingScreen() {
         </Text>
         {/* Animated counter */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
-          <Text style={{ fontSize: 64, fontWeight: '900', color: colors.text, letterSpacing: -2 }}>
+          <Text style={{ fontSize: 64, fontWeight: '900', color: colors.text, letterSpacing: -1, fontFamily: 'Inter-ExtraBold' }}>
             ${counterDisplay}
           </Text>
           <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textSecondary, paddingBottom: 12 }}>
@@ -796,6 +796,7 @@ export default function OnboardingScreen() {
                 borderWidth: 2,
                 borderColor: isSelected ? svc.color : (isDark ? '#2A2A3E' : '#E5E7EB'),
                 backgroundColor: isSelected ? svc.color + '18' : (isDark ? '#1C1C2E' : '#FFFFFF'),
+                ...(isSelected ? { shadowColor: svc.color, shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 3 } : {}),
               }}
             >
               {svc.iconUrl ? (
@@ -970,12 +971,6 @@ export default function OnboardingScreen() {
             <Text style={[styles.socialText, { color: colors.text }]}>{t('auth.continue_email')}</Text>
           </TouchableOpacity>
 
-          {/* Trial promo badge */}
-          <View style={{ backgroundColor: colors.primary + '15', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16, marginTop: 16, alignItems: 'center' }}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primary, textAlign: 'center' }}>
-              {'\u2728'} {t('onboarding.trial_promo', 'Get 7 days free with Pro after signup')}
-            </Text>
-          </View>
         </>
       ) : otpSent ? (
         <View style={styles.otpContainer}>

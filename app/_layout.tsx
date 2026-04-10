@@ -3,6 +3,7 @@ import { BackHandler, Platform, View, Text, Image, Animated } from 'react-native
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
@@ -22,6 +23,12 @@ import { OfflineBanner } from '../src/components/OfflineBanner';
 
 // Install global console interceptors as early as possible
 installConsoleInterceptors();
+
+// Set Inter as global default font for all Text components
+// @ts-ignore — RN defaultProps pattern
+Text.defaultProps = Text.defaultProps || {};
+// @ts-ignore
+Text.defaultProps.style = { fontFamily: 'Inter-Medium' };
 import { analytics } from '../src/services/analytics';
 analytics.init();
 import { configureRevenueCat, loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
@@ -203,6 +210,13 @@ function SplashScreen() {
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
+  const [fontsLoaded] = useFonts({
+    'Inter-Regular': require('../assets/fonts/Inter_400Regular.ttf'),
+    'Inter-Medium': require('../assets/fonts/Inter_500Medium.ttf'),
+    'Inter-SemiBold': require('../assets/fonts/Inter_600SemiBold.ttf'),
+    'Inter-Bold': require('../assets/fonts/Inter_700Bold.ttf'),
+    'Inter-ExtraBold': require('../assets/fonts/Inter_800ExtraBold.ttf'),
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 1800);
@@ -221,7 +235,7 @@ export default function RootLayout() {
     return () => backHandler.remove();
   }, []);
 
-  if (showSplash) return <SplashScreen />;
+  if (showSplash || !fontsLoaded) return <SplashScreen />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
