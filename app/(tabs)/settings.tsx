@@ -359,9 +359,9 @@ export default function SettingsScreen() {
                 setShowCancelModal(true);
               } else {
                 try {
-                  await RevenueCatUI.presentCustomerCenter();
+                  await RevenueCatUI?.presentCustomerCenter();
                 } catch {
-                  Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
+                  // RC UI not available — no-op for free users
                 }
                 await syncAfterCustomerCenter();
               }
@@ -694,12 +694,39 @@ export default function SettingsScreen() {
         onClose={() => setShowCancelModal(false)}
         onConfirmCancel={async () => {
           setShowCancelModal(false);
-          try {
-            await RevenueCatUI.presentCustomerCenter();
-          } catch {
-            Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
+          if (isTrialing) {
+            // Trial users: cancel directly via backend (no RC subscription exists)
+            try {
+              await billingApi.cancel();
+              await queryClient.invalidateQueries({ queryKey: ['billing'] });
+              Alert.alert(
+                t('subscription_plan.cancelled_title', 'Subscription Cancelled'),
+                t('subscription_plan.cancelled_msg', 'Your trial has been cancelled.'),
+              );
+            } catch (e: any) {
+              Alert.alert(t('common.error'), e?.response?.data?.message || t('common.something_went_wrong'));
+            }
+          } else {
+            // RC subscribers: open Apple subscription management
+            try {
+              await RevenueCatUI.presentCustomerCenter();
+            } catch {
+              // RC UI not available — cancel directly via backend
+              try {
+                await billingApi.cancel();
+                await queryClient.invalidateQueries({ queryKey: ['billing'] });
+                Alert.alert(
+                  t('subscription_plan.cancelled_title', 'Subscription Cancelled'),
+                  t('subscription_plan.cancelled_msg', 'Your subscription has been cancelled.'),
+                );
+                return;
+              } catch (e2: any) {
+                Alert.alert(t('common.error'), e2?.response?.data?.message || t('common.something_went_wrong'));
+                return;
+              }
+            }
+            await syncAfterCustomerCenter();
           }
-          await syncAfterCustomerCenter();
         }}
       />
       </KeyboardAvoidingView>
