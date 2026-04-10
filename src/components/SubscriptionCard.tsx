@@ -91,7 +91,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
           {subscription.currency} {Number(subscription.amount).toFixed(2)}
         </Text>
         {subscription.billingPeriod && (
-          <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{subscription.billingPeriod.toLowerCase().replace('monthly', 'mo').replace('yearly', 'yr').replace('weekly', 'wk').replace('quarterly', 'qtr')}</Text>
+          <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{t(`period_short.${subscription.billingPeriod}`, subscription.billingPeriod)}</Text>
         )}
         {isTrial && trialDays !== null ? (
           <View style={[styles.trialBadge, {

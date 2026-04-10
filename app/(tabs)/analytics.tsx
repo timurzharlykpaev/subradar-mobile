@@ -190,14 +190,7 @@ function CategoryDonutChart({ categories, total }: {
   );
 }
 
-const PERIOD_SHORT: Record<string, string> = {
-  WEEKLY: 'wk',
-  MONTHLY: 'mo',
-  QUARTERLY: 'qt',
-  YEARLY: 'yr',
-  LIFETIME: '\u221E',
-  ONE_TIME: '1x',
-};
+// Period short labels are now in i18n: t('period_short.MONTHLY') etc.
 
 // ─── AI Analysis Section ────────────────────────────────────────────────────
 function AIAnalysisSection({ isPro }: { isPro: boolean }) {
@@ -745,7 +738,7 @@ export default function AnalyticsScreen() {
                         </View>
                       </View>
                       <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                        {d.count ?? 2} {t('analytics.subs_in_category', 'subs in')} {(d.category ?? '').toLowerCase()} · ${formatNum(d.totalMonthly ?? 0, 2)}/{t('common.mo', 'mo')} {t('analytics.total_spend', 'total')}
+                        {d.count ?? 2} {t('analytics.subs_in_category', 'subs in')} {t(`categories.${(d.category ?? '').toLowerCase()}`, d.category)} · ${formatNum(d.totalMonthly ?? 0, 2)}/{t('period_short.MONTHLY', 'mo')} {t('analytics.total_spend', 'total')}
                       </Text>
                     </View>
                   ))}
@@ -806,7 +799,7 @@ export default function AnalyticsScreen() {
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={[styles.top5Amount, { color: colors.text }]}>${formatNum(monthlyAmt, 2)}</Text>
-                      <Text style={{ fontSize: 10, color: colors.textMuted }}>/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}</Text>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>/{t(`period_short.${sub.billingPeriod}`, 'mo')}</Text>
                     </View>
                     <View style={[styles.top5ProgressBg, { backgroundColor: colors.border }]}>
                       <View style={[styles.top5ProgressFill, { width: `${Math.min(pct, 100)}%`, backgroundColor: catInfo?.color || colors.primary }]} />
@@ -849,7 +842,7 @@ export default function AnalyticsScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
-                  {sub.currency} {formatNum(sub.amount, 2)}/{PERIOD_SHORT[sub.billingPeriod] || 'mo'}
+                  {sub.currency} {formatNum(sub.amount, 2)}/{t(`period_short.${sub.billingPeriod}`, 'mo')}
                 </Text>
               </View>
             ))}

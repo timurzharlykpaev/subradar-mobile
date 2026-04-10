@@ -829,6 +829,14 @@
     "lifetime": "永久",
     "one_time": "一回"
   },
+  "period_short": {
+    "WEEKLY": "週",
+    "MONTHLY": "月",
+    "QUARTERLY": "四",
+    "YEARLY": "年",
+    "LIFETIME": "∞",
+    "ONE_TIME": "1x"
+  },
   "analysis": {
     "teaser_title": "AI Analysis",
     "teaser_description": "AI can find duplicates, suggest cheaper alternatives, and save you up to 30% on subscriptions",

@@ -823,6 +823,14 @@
     "lifetime": "Навсегда",
     "one_time": "Разовый"
   },
+  "period_short": {
+    "WEEKLY": "нед",
+    "MONTHLY": "мес",
+    "QUARTERLY": "кв",
+    "YEARLY": "год",
+    "LIFETIME": "∞",
+    "ONE_TIME": "1x"
+  },
   "categories": {
     "streaming": "Стриминг",
     "ai_services": "AI-сервисы",

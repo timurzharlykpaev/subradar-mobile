@@ -822,6 +822,14 @@
     "lifetime": "Lifetime",
     "one_time": "One-time"
   },
+  "period_short": {
+    "WEEKLY": "wk",
+    "MONTHLY": "mo",
+    "QUARTERLY": "qtr",
+    "YEARLY": "yr",
+    "LIFETIME": "∞",
+    "ONE_TIME": "1x"
+  },
   "categories": {
     "streaming": "Streaming",
     "ai_services": "AI Services",

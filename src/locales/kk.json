@@ -829,6 +829,14 @@
     "lifetime": "Мәңгілік",
     "one_time": "Бір реттік"
   },
+  "period_short": {
+    "WEEKLY": "апта",
+    "MONTHLY": "ай",
+    "QUARTERLY": "тқс",
+    "YEARLY": "жыл",
+    "LIFETIME": "∞",
+    "ONE_TIME": "1x"
+  },
   "analysis": {
     "teaser_title": "AI Analysis",
     "teaser_description": "AI can find duplicates, suggest cheaper alternatives, and save you up to 30% on subscriptions",

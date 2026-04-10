@@ -477,12 +477,12 @@ export default function DashboardScreen() {
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {sub.currentPlan || cat?.label || sub.category}
+                      {sub.currentPlan || cat?.label || t(`categories.${sub.category?.toLowerCase()}`, sub.category)}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
                     <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
-                    <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{sub.billingPeriod?.toLowerCase()?.replace('monthly', t('paywall.month', 'mo'))?.replace('yearly', t('paywall.year', 'yr'))}</Text>
+                    <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{t(`period_short.${sub.billingPeriod}`, sub.billingPeriod)}</Text>
                   </View>
                 </TouchableOpacity>
               );

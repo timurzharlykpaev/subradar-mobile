@@ -829,6 +829,14 @@
     "lifetime": "평생",
     "one_time": "일회성"
   },
+  "period_short": {
+    "WEEKLY": "주",
+    "MONTHLY": "월",
+    "QUARTERLY": "분",
+    "YEARLY": "년",
+    "LIFETIME": "∞",
+    "ONE_TIME": "1x"
+  },
   "analysis": {
     "teaser_title": "AI Analysis",
     "teaser_description": "AI can find duplicates, suggest cheaper alternatives, and save you up to 30% on subscriptions",

@@ -199,7 +199,7 @@ export default function SubscriptionDetailScreen() {
 
           <Text style={[styles.amount, { color: colors.primary }]}>
             {subscription.currency} {Number(subscription.amount).toFixed(2)}
-            <Text style={[styles.period, { color: colors.textSecondary }]}> / {subscription.billingPeriod}</Text>
+            <Text style={[styles.period, { color: colors.textSecondary }]}> / {t(`billing.${subscription.billingPeriod?.toLowerCase()}`, subscription.billingPeriod)}</Text>
           </Text>
         </View>
 
