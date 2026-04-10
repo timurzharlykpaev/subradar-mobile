@@ -337,30 +337,17 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       return;
     }
 
-    // Check free plan limit
-    if (!isPro && maxSubscriptions !== Infinity) {
-      const remaining = maxSubscriptions - activeCount;
-      if (selected.length > remaining) {
-        Alert.alert(
-          t('paywall.title', 'Лимит'),
-          t('add.bulk_limit', {
-            defaultValue: 'Бесплатный план: до {{max}} подписок. У вас {{current}}, выбрано {{selected}}. Перейдите на Pro.',
-            max: maxSubscriptions,
-            current: activeCount,
-            selected: selected.length,
-          }),
-          [
-            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-            { text: t('common.cancel', 'Закрыть'), style: 'cancel' },
-          ]
-        );
-        return;
-      }
-    }
+    // Determine how many we can add
+    const remaining = isPro || maxSubscriptions === Infinity
+      ? selected.length
+      : Math.max(0, maxSubscriptions - activeCount);
+
+    const toAdd = selected.slice(0, remaining);
+    const overflow = selected.slice(remaining);
 
     setSaving(true);
     let saved = 0;
-    for (const sub of selected) {
+    for (const sub of toAdd) {
       try {
         const iconUrl = sub.iconUrl || (sub.name
           ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`
@@ -379,7 +366,6 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
           startDate: new Date().toISOString().split('T')[0],
           addedVia: 'AI_TEXT',
         });
-        // Pre-cache icon for immediate display in list
         if (res.data?.iconUrl) Image.prefetch(res.data.iconUrl).catch(() => {});
         saved++;
       } catch {
@@ -392,8 +378,38 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       setSubscriptions(r.data || []);
     } catch {}
     setSaving(false);
-    onDone(saved);
-    handleClose();
+
+    if (overflow.length > 0) {
+      // Some subscriptions couldn't be added — show what was lost
+      const overflowNames = overflow.map((s) => s.name || 'Subscription').join(', ');
+      Alert.alert(
+        t('add.bulk_partial_title', 'Added {{saved}} of {{total}}', { saved, total: selected.length }),
+        t('add.bulk_partial_msg', 'These couldn\'t be added (Free limit {{max}}):\n\n{{names}}\n\nUpgrade to Pro to add them all.', {
+          max: maxSubscriptions,
+          names: overflowNames,
+        }),
+        [
+          {
+            text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'),
+            onPress: () => {
+              handleClose();
+              router.push('/paywall' as any);
+            },
+          },
+          {
+            text: t('common.ok', 'OK'),
+            style: 'cancel',
+            onPress: () => {
+              onDone(saved);
+              handleClose();
+            },
+          },
+        ],
+      );
+    } else {
+      onDone(saved);
+      handleClose();
+    }
   };
 
   // ── Render ───────────────────────────────────────────────────────────────
