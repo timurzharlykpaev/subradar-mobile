@@ -107,7 +107,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     paymentCardId: '',
     notes: '',
     tags: '' as string,
-    reminderDaysBefore: [3] as number[],
+    reminderDaysBefore: [] as number[],
   });
 
   const [showAddCard, setShowAddCard] = useState(false);
@@ -126,7 +126,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         paymentCardId: subscription.paymentCardId ?? '',
         notes: subscription.notes ?? '',
         tags: (subscription.tags ?? []).join(', '),
-        reminderDaysBefore: (subscription as any).reminderDaysBefore ?? [3],
+        reminderDaysBefore: (subscription as any).reminderDaysBefore ?? [],
       });
       setShowAddCard(false);
     }

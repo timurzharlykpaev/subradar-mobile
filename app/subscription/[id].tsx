@@ -4,20 +4,17 @@ import i18n from 'i18next';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   Linking,
   Alert,
 } from 'react-native';
-import { Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { ActivityIndicator } from 'react-native';
 import { subscriptionsApi } from '../../src/api/subscriptions';
-import { receiptsApi } from '../../src/api/receipts';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
@@ -34,21 +31,9 @@ export default function SubscriptionDetailScreen() {
   const getCard = usePaymentCardsStore((s) => s.getCard);
 
   const { colors, isDark } = useTheme();
-  const [receipts, setReceipts] = useState<{ id: string; fileUrl: string; filename: string }[]>([]);
-  const [receiptsLoading, setReceiptsLoading] = useState(false);
-  const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const [iconError, setIconError] = useState(false);
 
-  // Load receipts from backend
-  React.useEffect(() => {
-    if (!id) return;
-    setReceiptsLoading(true);
-    receiptsApi.list(id)
-      .then((res) => setReceipts(res.data || []))
-      .catch(() => {})
-      .finally(() => setReceiptsLoading(false));
-  }, [id]);
 
   if (!subscription) {
     return (
@@ -108,29 +93,6 @@ export default function SubscriptionDetailScreen() {
     );
   };
 
-  const handleUploadReceipt = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets?.[0]) return;
-    const asset = result.assets[0];
-    setUploadingReceipt(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', {
-        uri: asset.uri,
-        name: asset.fileName || `receipt-${Date.now()}.jpg`,
-        type: asset.mimeType || 'image/jpeg',
-      } as any);
-      const res = await receiptsApi.upload(id!, formData);
-      if (res.data) setReceipts((prev) => [...prev, res.data]);
-    } catch (err: any) {
-      Alert.alert(t('common.error'), err?.response?.data?.message || t('subscription.receipt_upload_failed', 'Failed to upload receipt'));
-    } finally {
-      setUploadingReceipt(false);
-    }
-  };
 
   const handleDelete = () => {
     Alert.alert(t('common.delete'), t('subscription.remove_confirm', { name: subscription.name }), [
@@ -279,28 +241,6 @@ export default function SubscriptionDetailScreen() {
             <DetailRow label={t("add.notes")}>
               <Text style={[styles.detailValue, { color: colors.text }]}>{subscription.notes}</Text>
             </DetailRow>
-          )}
-        </View>
-
-        {/* Receipts */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
-          <View style={styles.cardHeader}>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>{t('subscription.receipts')}</Text>
-            <TouchableOpacity style={[styles.uploadBtn, { backgroundColor: colors.primaryLight }]} onPress={handleUploadReceipt}>
-              <Text style={[styles.uploadBtnText, { color: colors.primary }]}>{t('subscription.upload')}</Text>
-            </TouchableOpacity>
-          </View>
-          {uploadingReceipt && <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />}
-          {receiptsLoading ? (
-            <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
-          ) : receipts.length === 0 && !uploadingReceipt ? (
-            <Text style={[styles.noReceipts, { color: colors.textMuted }]}>{t('subscription.no_receipts')}</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {receipts.map((r, i) => (
-                <Image key={r.id || i} source={{ uri: r.fileUrl }} style={styles.receiptThumb} />
-              ))}
-            </ScrollView>
           )}
         </View>
 
