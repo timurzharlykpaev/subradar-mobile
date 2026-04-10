@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme, fonts } from '../src/theme';
-import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
+import { useBillingStatus } from '../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
@@ -74,9 +74,8 @@ export default function PaywallScreen() {
   const [showClose, setShowClose] = useState(false);
   const openedAt = useRef(Date.now());
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
-  const startTrialMutation = useStartTrial();
   const queryClient = useQueryClient();
-  const { offerings, purchasePackage, restorePurchases, loading: rcLoading, loadOfferings } = useRevenueCat();
+  const { offerings, purchasePackage, restorePurchases, hasTrialOffer, loading: rcLoading, loadOfferings } = useRevenueCat();
 
   // Force-refresh billing when paywall opens to get latest plan status
   useEffect(() => {
@@ -120,7 +119,8 @@ export default function PaywallScreen() {
 
   const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
   const isTrialing = billing?.status === 'trialing';
-  const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
+  // Trial eligibility comes from RevenueCat (Apple manages trial per Apple ID)
+  const canTrial = hasTrialOffer && !isPro && !isTrialing;
 
   // Map plan + period to RevenueCat product identifier
   const PRODUCT_IDS: Record<string, Record<string, string>> = {
@@ -159,19 +159,9 @@ export default function PaywallScreen() {
   const handleAction = async () => {
     if (selected === 'free') { router.back(); return; }
 
-    // Trial flow
-    if (selected === 'pro' && canTrial) {
-      analytics.track('trial_cta_tapped');
-      try {
-        await startTrialMutation.mutateAsync();
-        await queryClient.invalidateQueries({ queryKey: ['billing'] });
-        analytics.trialStarted('pro');
-        setSuccessPlan('Trial');
-      } catch (e: any) {
-        Alert.alert(t('common.error'), e?.response?.data?.message || '');
-      }
-      return;
-    }
+    // Trial flow — now goes through Apple IAP (RC purchasePackage shows trial confirmation)
+    // Apple will show "7 days free, then $X.XX/month" confirmation sheet
+    // No separate backend trial — Apple manages the entire subscription lifecycle
 
     // Already on this exact plan — do nothing (but allow period switch for upgrades)
     // Note: RC handles the actual upgrade/crossgrade logic
@@ -227,11 +217,11 @@ export default function PaywallScreen() {
     }
   };
 
-  const isLoading = startTrialMutation.isPending || billingLoading || purchasing;
+  const isLoading = billingLoading || purchasing;
 
   const getButtonLabel = () => {
     if (selected === 'free') return t('paywall.continue_free');
-    if (canTrial && selected === 'pro') return `${t('subscription_plan.start_trial')} →`;
+    if (canTrial && selected === 'pro') return `${t('paywall.start_free_trial', '7 days free — Start Trial')} →`;
     const planMatches =
       (selected === 'pro' && billing?.plan === 'pro') ||
       (selected === 'org' && billing?.plan === 'organization');

@@ -158,6 +158,12 @@ export function useRevenueCat() {
 
   const isTeam = activeKeys.some((k: string) => /^team$/i.test(k));
 
+  // Check if any package has a free trial introductory offer
+  const trialEligiblePackages = (offerings?.current?.availablePackages ?? []).filter(
+    (pkg: any) => pkg?.product?.introPrice?.price === 0 || pkg?.product?.introPrice?.periodUnit != null
+  );
+  const hasTrialOffer = trialEligiblePackages.length > 0;
+
   const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {
     if (!isAvailable()) return false;
     try {
@@ -205,5 +211,5 @@ export function useRevenueCat() {
     }
   }, []);
 
-  return { customerInfo, offerings, isPro, isTeam, purchasePackage, restorePurchases, loading, loadOfferings };
+  return { customerInfo, offerings, isPro, isTeam, hasTrialOffer, purchasePackage, restorePurchases, loading, loadOfferings };
 }

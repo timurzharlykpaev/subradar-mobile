@@ -25,7 +25,7 @@ import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { CURRENCIES, LANGUAGES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
+import { useBillingStatus } from '../../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 let RevenueCatUI: any = null;
@@ -51,7 +51,6 @@ export default function SettingsScreen() {
 
   const { data: billing } = useBillingStatus();
 
-  const startTrialMutation = useStartTrial();
   const { restorePurchases } = useRevenueCat();
 
   const queryClient = useQueryClient();
@@ -100,22 +99,12 @@ export default function SettingsScreen() {
   const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
   const isTeam = billing?.plan === 'organization' && !isCancelled;
   const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
-  const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
+  const canTrial = !isPro && !isTrialing;
 
   // Show annual upgrade nudge for monthly Pro/Team subscribers (not yearly, not trialing)
   const isMonthlyPro = isPro && !isTrialing && billing?.billingPeriod !== 'yearly' && billing?.billingPeriod !== 'year';
   const [annualNudgeDismissed, setAnnualNudgeDismissed] = useState(false);
   const showAnnualNudge = isMonthlyPro && !isTeam && !annualNudgeDismissed;
-
-  const handleStartTrial = async () => {
-    try {
-      await startTrialMutation.mutateAsync();
-      Alert.alert(t('settings.trial_started'), t('settings.trial_started_desc'));
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : t('settings.failed_trial');
-      Alert.alert(t('common.error'), msg);
-    }
-  };
 
   const handleUpgrade = () => {
     analytics.paywallViewed('settings');
@@ -330,14 +319,10 @@ export default function SettingsScreen() {
             <>
               <TouchableOpacity
                 style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
-                onPress={canTrial ? handleStartTrial : handleUpgrade}
-                disabled={startTrialMutation.isPending}
+                onPress={handleUpgrade}
               >
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                  {startTrialMutation.isPending
-                    ? <ActivityIndicator color="#FFF" size="small" />
-                    : <Ionicons name="sparkles-outline" size={18} color="#FFF" />
-                  }
+                  <Ionicons name="sparkles-outline" size={18} color="#FFF" />
                 </View>
                 <Text style={{ flex: 1, fontSize: 15, fontWeight: '700', color: colors.primary }}>
                   {canTrial ? t('settings.start_trial') : t('settings.upgrade')}

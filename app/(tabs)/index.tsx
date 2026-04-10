@@ -23,7 +23,7 @@ import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
-import { useBillingStatus, useStartTrial } from '../../src/hooks/useBilling';
+import { useBillingStatus } from '../../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme, fonts } from '../../src/theme';
@@ -56,7 +56,7 @@ export default function DashboardScreen() {
   const [showWelcome, setShowWelcome] = React.useState(false);
   const [showTrialOffer, setShowTrialOffer] = React.useState(false);
   const prevSubsCount = useRef<number | null>(null);
-  const startTrial = useStartTrial();
+
 
   const fetchSubscriptions = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -124,7 +124,7 @@ export default function DashboardScreen() {
     const prev = prevSubsCount.current ?? 0;
     if (prev === 0 && subscriptions.length >= 1) {
       const hasActivePlan = billing?.plan === 'pro' || billing?.plan === 'organization';
-      if (!hasActivePlan && billing?.trialUsed === false) {
+      if (!hasActivePlan) {
         AsyncStorage.getItem('trial_offered').then((val) => {
           if (!val) {
             setShowTrialOffer(true);
@@ -134,7 +134,7 @@ export default function DashboardScreen() {
       }
     }
     prevSubsCount.current = subscriptions.length;
-  }, [loading, subscriptions.length, billing?.plan, billing?.trialUsed]);
+  }, [loading, subscriptions.length, billing?.plan]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
@@ -612,21 +612,11 @@ export default function DashboardScreen() {
 
       <TrialOfferModal
         visible={showTrialOffer}
-        isPending={startTrial.isPending}
-        onStartTrial={async () => {
-          try {
-            await startTrial.mutateAsync();
-            await queryClient.invalidateQueries({ queryKey: ['billing', 'me'] });
-            analytics.trialStarted('pro');
-            setShowTrialOffer(false);
-            Alert.alert(
-              t('subscription_plan.trial_started', 'Trial Started!'),
-              t('subscription_plan.trial_started_msg', 'Enjoy 7 days of Pro features.'),
-            );
-          } catch (e: any) {
-            const msg = e?.response?.data?.message || t('common.something_went_wrong', 'Something went wrong');
-            Alert.alert(t('common.error'), msg);
-          }
+        isPending={false}
+        onStartTrial={() => {
+          setShowTrialOffer(false);
+          analytics.track('trial_cta_tapped', { source: 'modal' });
+          router.push('/paywall' as any);
         }}
         onSkip={() => setShowTrialOffer(false)}
       />

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { useBillingStatus, useStartTrial } from '../src/hooks/useBilling';
+import { useBillingStatus } from '../src/hooks/useBilling';
 import { billingApi } from '../src/api/billing';
 import { useTheme } from '../src/theme';
 
@@ -30,7 +30,6 @@ export default function SubscriptionPlanScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: billing, isLoading } = useBillingStatus();
-  const startTrialMutation = useStartTrial();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   // Sync billing period from API response
@@ -69,14 +68,8 @@ export default function SubscriptionPlanScreen() {
     );
   };
 
-  const handleStartTrial = async () => {
-    try {
-      await startTrialMutation.mutateAsync();
-      await queryClient.invalidateQueries({ queryKey: ['billing'] });
-      Alert.alert(t('subscription_plan.trial_activated'), t('subscription_plan.trial_activated_msg'));
-    } catch (e: any) {
-      Alert.alert(t('common.error'), e?.response?.data?.message || '');
-    }
+  const handleStartTrial = () => {
+    router.push('/paywall' as any);
   };
 
   const rawPlan = billing?.plan ?? 'free';
@@ -85,7 +78,7 @@ export default function SubscriptionPlanScreen() {
   const isPro = (plan === 'pro' || plan === 'organization') && !isCancelled;
   const isTeam = plan === 'organization' && !isCancelled;
   const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
-  const canTrial = billing && !billing.trialUsed && !isPro && !isTrialing;
+  const canTrial = !isPro && !isTrialing;
   const display = PLAN_DISPLAY[plan] ?? PLAN_DISPLAY.free;
   const features: string[] = t(`subscription_plan.feat_${plan === 'organization' ? 'org' : plan}`, { returnObjects: true }) as string[] ?? [];
 
@@ -316,14 +309,9 @@ export default function SubscriptionPlanScreen() {
               <TouchableOpacity
                 style={[styles.actionPrimary, { backgroundColor: '#8B5CF6' }]}
                 onPress={handleStartTrial}
-                disabled={startTrialMutation.isPending}
               >
-                {startTrialMutation.isPending ? <ActivityIndicator color="#FFF" /> : (
-                  <>
-                    <Ionicons name="star" size={18} color="#FFF" />
-                    <Text style={styles.actionPrimaryText}>{t('subscription_plan.start_trial')}</Text>
-                  </>
-                )}
+                <Ionicons name="star" size={18} color="#FFF" />
+                <Text style={styles.actionPrimaryText}>{t('subscription_plan.upgrade_pro')}</Text>
               </TouchableOpacity>
             )}
 
