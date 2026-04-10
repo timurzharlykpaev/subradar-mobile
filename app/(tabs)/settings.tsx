@@ -263,7 +263,7 @@ export default function SettingsScreen() {
               </View>
               {billing && (
                 <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 3 }}>
-                  {billing.subscriptionCount} {t('settings.subs_count', 'subs')} · {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} {t('settings.ai_used', 'AI used')}
+                  {billing.subscriptionCount} {t('settings.subs_count', 'subs')} · {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} AI
                 </Text>
               )}
             </View>
