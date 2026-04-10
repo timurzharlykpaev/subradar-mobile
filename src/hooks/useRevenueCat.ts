@@ -11,8 +11,9 @@ try {
   // Verify the native module is actually available (not just JS wrapper)
   if (mod && typeof mod.configure === 'function') {
     Purchases = mod;
-    PURCHASES_ERROR_CODE = rc.PURCHASES_ERROR_CODE || {};
-    LOG_LEVEL = rc.LOG_LEVEL || {};
+    // PURCHASES_ERROR_CODE may be on the named export or on the default export
+    PURCHASES_ERROR_CODE = rc.PURCHASES_ERROR_CODE ?? mod.PURCHASES_ERROR_CODE ?? {};
+    LOG_LEVEL = rc.LOG_LEVEL ?? mod.LOG_LEVEL ?? {};
   }
 } catch {
   // Native module not linked (Expo Go, simulator without dev build)
@@ -115,33 +116,35 @@ export function useRevenueCat() {
 
   useEffect(() => {
     mountedRef.current = true;
-    let listenerAdded = false;
+    let removeListener: (() => void) | null = null;
 
-    loadOfferings();
+    const setup = async () => {
+      await loadOfferings();
 
-    // Add listener only if configured
-    if (configured && isAvailable()) {
-      const listener = (info: any) => {
+      // Add listener after loadOfferings (guaranteed configured at this point)
+      if (configured && isAvailable() && mountedRef.current) {
+        const listener = (info: any) => {
+          try {
+            if (mountedRef.current && info) setCustomerInfo(info);
+          } catch {}
+        };
         try {
-          if (mountedRef.current && info) setCustomerInfo(info);
-        } catch {}
-      };
-      try {
-        Purchases.addCustomerInfoUpdateListener(listener);
-        listenerAdded = true;
-      } catch (e) {
-        console.warn('RevenueCat listener failed:', e);
-      }
-
-      return () => {
-        mountedRef.current = false;
-        if (listenerAdded) {
-          try { Purchases.removeCustomerInfoUpdateListener(listener); } catch {}
+          Purchases.addCustomerInfoUpdateListener(listener);
+          removeListener = () => {
+            try { Purchases.removeCustomerInfoUpdateListener(listener); } catch {}
+          };
+        } catch (e) {
+          console.warn('RevenueCat listener failed:', e);
         }
-      };
-    }
+      }
+    };
 
-    return () => { mountedRef.current = false; };
+    setup();
+
+    return () => {
+      mountedRef.current = false;
+      if (removeListener) removeListener();
+    };
   }, [loadOfferings]);
 
   // Check entitlements case-insensitively (RC dashboard may use Pro/pro/PRO)
@@ -153,7 +156,7 @@ export function useRevenueCat() {
     console.log('[RevenueCat] Active entitlements:', activeKeys, 'isPro:', isPro);
   }
 
-  const isTeam = !!customerInfo?.entitlements?.active?.['team'];
+  const isTeam = activeKeys.some((k: string) => /^team$/i.test(k));
 
   const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {
     if (!isAvailable()) return false;
@@ -193,7 +196,8 @@ export function useRevenueCat() {
     try {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
-      const success = !!(info.entitlements.active['pro'] || info.entitlements.active['team']);
+      const restoredKeys = Object.keys(info?.entitlements?.active ?? {});
+      const success = restoredKeys.some((k: string) => /^(pro|team)$/i.test(k));
       return { success, customerInfo: info };
     } catch (error: any) {
       Alert.alert('Restore Error', error?.message || 'Unknown error');

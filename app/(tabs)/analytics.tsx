@@ -241,7 +241,7 @@ export default function AnalyticsScreen() {
   const router = useRouter();
   const { subscriptions } = useSubscriptionsStore();
   const { data: billingStatus } = useBillingStatus();
-  const isCancelled = billingStatus?.status === 'cancelled' || (billingStatus?.status === 'trialing' && billingStatus?.cancelAtPeriodEnd);
+  const isCancelled = billingStatus?.status === 'cancelled' || billingStatus?.cancelAtPeriodEnd === true;
   const isPro = (billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization') && !isCancelled;
   const { colors, isDark } = useTheme();
 

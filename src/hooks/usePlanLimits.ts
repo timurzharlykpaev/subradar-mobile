@@ -19,7 +19,7 @@ export function usePlanLimits() {
   const { isPro: rcIsPro } = useRevenueCat();
 
   const rawPlan = billing?.plan ?? 'free';
-  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
   const plan = isCancelled ? 'free' : rawPlan;
   // Trust RevenueCat as source of truth for Pro status (handles sandbox/test purchases)
   const isPro = rcIsPro || ((plan === 'pro' || plan === 'organization') && !isCancelled);

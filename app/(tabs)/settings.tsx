@@ -30,6 +30,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
+let Purchases: any = null;
+try { const rc = require('react-native-purchases'); Purchases = rc.default || rc; } catch {}
 import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { notificationsApi } from '../../src/api/notifications';
 import { billingApi } from '../../src/api/billing';
@@ -61,6 +63,24 @@ export default function SettingsScreen() {
 
   const version = Constants.expoConfig?.version || '1.0.0';
 
+  // After RevenueCat Customer Center closes, check if subscription was cancelled
+  // and sync with backend + refresh billing data
+  const syncAfterCustomerCenter = useCallback(async () => {
+    try {
+      if (Purchases && typeof Purchases.getCustomerInfo === 'function') {
+        const info = await Purchases.getCustomerInfo();
+        const activeKeys = Object.keys(info?.entitlements?.active ?? {});
+        const hasProEntitlement = activeKeys.some((k: string) => /^(pro|team)$/i.test(k));
+        // If user no longer has Pro entitlement, sync cancellation to backend
+        if (!hasProEntitlement && billing?.plan && billing.plan !== 'free') {
+          await billingApi.cancel().catch(() => {});
+        }
+      }
+    } catch {}
+    // Always refetch billing data to pick up any changes
+    await queryClient.invalidateQueries({ queryKey: ['billing'] });
+  }, [billing?.plan, queryClient]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ['billing'] });
@@ -76,7 +96,7 @@ export default function SettingsScreen() {
     }).catch(() => {});
   }, []);
 
-  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
   const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
   const isTeam = billing?.plan === 'organization' && !isCancelled;
   const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
@@ -343,6 +363,7 @@ export default function SettingsScreen() {
                 } catch {
                   Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
                 }
+                await syncAfterCustomerCenter();
               }
             },
             true,
@@ -678,6 +699,7 @@ export default function SettingsScreen() {
           } catch {
             Alert.alert(t('settings.manage_sub_web', 'Visit the web app to manage your subscription.'));
           }
+          await syncAfterCustomerCenter();
         }}
       />
       </KeyboardAvoidingView>

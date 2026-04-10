@@ -83,7 +83,11 @@ function DataLoader() {
   const { reminderDays, notificationsEnabled } = useSettingsStore();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      // Clean up RevenueCat identity when user signs out
+      logoutRevenueCat().catch(() => {});
+      return;
+    }
 
     // Configure RevenueCat lazily (safe after native modules loaded)
     try { configureRevenueCat(); } catch {}

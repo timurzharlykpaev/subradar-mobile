@@ -80,7 +80,7 @@ export default function SubscriptionPlanScreen() {
   };
 
   const rawPlan = billing?.plan ?? 'free';
-  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
   const plan = isCancelled ? 'free' : rawPlan;
   const isPro = (plan === 'pro' || plan === 'organization') && !isCancelled;
   const isTeam = plan === 'organization' && !isCancelled;

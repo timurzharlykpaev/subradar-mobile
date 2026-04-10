@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
+  Alert,
   View,
   Text,
   StyleSheet,
@@ -169,7 +170,7 @@ export default function DashboardScreen() {
     }, {} as Record<string, number>)
   ).filter(([, count]) => count > 1);
 
-  const isCancelled = billing?.status === 'cancelled' || (billing?.status === 'trialing' && billing?.cancelAtPeriodEnd);
+  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
   const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
   const isTeam = billing?.plan === 'organization' && !isCancelled;
   const planLabel = isTeam ? 'TEAM' : isPro ? 'PRO' : 'FREE';
@@ -602,10 +603,20 @@ export default function DashboardScreen() {
       <TrialOfferModal
         visible={showTrialOffer}
         isPending={startTrial.isPending}
-        onStartTrial={() => {
-          startTrial.mutate(undefined, {
-            onSuccess: () => setShowTrialOffer(false),
-          });
+        onStartTrial={async () => {
+          try {
+            await startTrial.mutateAsync();
+            await queryClient.invalidateQueries({ queryKey: ['billing', 'me'] });
+            analytics.trialStarted('pro');
+            setShowTrialOffer(false);
+            Alert.alert(
+              t('subscription_plan.trial_started', 'Trial Started!'),
+              t('subscription_plan.trial_started_msg', 'Enjoy 7 days of Pro features.'),
+            );
+          } catch (e: any) {
+            const msg = e?.response?.data?.message || t('common.something_went_wrong', 'Something went wrong');
+            Alert.alert(t('common.error'), msg);
+          }
         }}
         onSkip={() => setShowTrialOffer(false)}
       />
