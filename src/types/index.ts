@@ -123,6 +123,8 @@ export interface BillingStatus {
   graceUntil?: string | null;
   graceDaysLeft?: number | null;
   workspaceExpiringAt?: string | null;
+  hasBillingIssue?: boolean;
+  billingIssueAt?: string | null;
   currentPeriodEnd?: string | null;
   cancelAtPeriodEnd?: boolean;
   trialUsed: boolean;

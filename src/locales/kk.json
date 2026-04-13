@@ -892,7 +892,10 @@
     "analytics_locked_hint": "Жасырынсыз: {{amount}}/ай",
     "member_status_own_pro": "Өз Pro-сы бар",
     "member_status_team": "Команда мүшесі",
-    "member_status_grace": "Жеңілдік мерзімі аяқталуда"
+    "member_status_grace": "Жеңілдік мерзімі аяқталуда",
+    "billing_issue_title": "Төлем өтпеді",
+    "billing_issue_desc": "Pro-ны сақтау үшін төлем әдісін жаңартыңыз",
+    "billing_issue_cta": "Жаңарту"
   },
   "period_short": {
     "WEEKLY": "апта",

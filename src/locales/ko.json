@@ -892,7 +892,10 @@
     "analytics_locked_hint": "숨김 제외: {{amount}}/월",
     "member_status_own_pro": "자체 Pro 보유",
     "member_status_team": "팀 멤버",
-    "member_status_grace": "유예기간 곧 종료"
+    "member_status_grace": "유예기간 곧 종료",
+    "billing_issue_title": "결제 실패",
+    "billing_issue_desc": "Pro를 유지하려면 결제 수단을 업데이트하세요",
+    "billing_issue_cta": "업데이트"
   },
   "period_short": {
     "WEEKLY": "주",

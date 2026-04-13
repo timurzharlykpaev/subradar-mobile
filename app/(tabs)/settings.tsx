@@ -41,6 +41,7 @@ import CancellationInterceptModal from '../../src/components/CancellationInterce
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
+import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
 
 const DATE_FORMATS = ['DD/MM', 'MM/DD', 'YYYY-MM-DD'];
 
@@ -247,6 +248,7 @@ export default function SettingsScreen() {
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
 
+        {access.shouldShowBillingIssue && <BillingIssueBanner />}
         {access.shouldShowDoublePay && <DoublePayBanner />}
 
         {/* ═══ 1. Profile Card ═══ */}

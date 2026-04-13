@@ -892,7 +892,10 @@
     "analytics_locked_hint": "非表示除く：{{amount}}/月",
     "member_status_own_pro": "自分のProあり",
     "member_status_team": "チームメンバー",
-    "member_status_grace": "猶予期間まもなく終了"
+    "member_status_grace": "猶予期間まもなく終了",
+    "billing_issue_title": "支払いに失敗",
+    "billing_issue_desc": "Proを維持するために支払い方法を更新",
+    "billing_issue_cta": "更新"
   },
   "period_short": {
     "WEEKLY": "週",

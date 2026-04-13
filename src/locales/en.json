@@ -885,7 +885,10 @@
     "analytics_locked_hint": "Without hidden: {{amount}}/mo",
     "member_status_own_pro": "Has own Pro",
     "member_status_team": "Team member",
-    "member_status_grace": "Grace ending soon"
+    "member_status_grace": "Grace ending soon",
+    "billing_issue_title": "Payment failed",
+    "billing_issue_desc": "Update your payment method to keep Pro access",
+    "billing_issue_cta": "Update"
   },
   "period_short": {
     "WEEKLY": "wk",

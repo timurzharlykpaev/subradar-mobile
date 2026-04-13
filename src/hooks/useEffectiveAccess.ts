@@ -16,6 +16,7 @@ export interface EffectiveAccess {
   shouldShowDoublePay: boolean;
   shouldShowGraceBanner: boolean;
   shouldShowOwnerExpiredAlert: boolean;
+  shouldShowBillingIssue: boolean;
   isInDegradedMode: boolean;
   visibleSubsCount: number;
   hiddenSubsCount: number;
@@ -62,6 +63,7 @@ export function useEffectiveAccess(): EffectiveAccess {
     shouldShowDoublePay: hasOwnPro && isTeamMember && !isTeamOwner,
     shouldShowGraceBanner: graceDaysLeft !== null && graceDaysLeft > 0,
     shouldShowOwnerExpiredAlert: isTeamOwner && workspaceExpiringDays !== null && workspaceExpiringDays > 0,
+    shouldShowBillingIssue: !!billing?.hasBillingIssue,
     isInDegradedMode,
     visibleSubsCount,
     hiddenSubsCount,

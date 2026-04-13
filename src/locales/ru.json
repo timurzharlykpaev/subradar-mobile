@@ -886,7 +886,10 @@
     "analytics_locked_hint": "Без скрытых: {{amount}}/мес",
     "member_status_own_pro": "Свой Pro",
     "member_status_team": "Участник команды",
-    "member_status_grace": "Льготный период истекает"
+    "member_status_grace": "Льготный период истекает",
+    "billing_issue_title": "Платёж не прошёл",
+    "billing_issue_desc": "Обнови способ оплаты чтобы сохранить Pro",
+    "billing_issue_cta": "Обновить"
   },
   "period_short": {
     "WEEKLY": "нед",

@@ -41,6 +41,7 @@ import WinBackBanner from '../../src/components/WinBackBanner';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
+import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
 import { GraceBanner } from '../../src/components/GraceBanner';
 
 export default function DashboardScreen() {
@@ -246,6 +247,7 @@ export default function DashboardScreen() {
 
         <TeamSavingsBadge />
 
+        {access.shouldShowBillingIssue && <BillingIssueBanner />}
         {access.shouldShowDoublePay && <DoublePayBanner />}
         {access.shouldShowGraceBanner && access.graceReason && (
           <GraceBanner daysLeft={access.graceDaysLeft!} reason={access.graceReason} />

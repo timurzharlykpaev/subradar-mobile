@@ -892,7 +892,10 @@
     "analytics_locked_hint": "Ohne verborgene: {{amount}}/Mo",
     "member_status_own_pro": "Hat eigenes Pro",
     "member_status_team": "Teammitglied",
-    "member_status_grace": "Kulanzzeit endet bald"
+    "member_status_grace": "Kulanzzeit endet bald",
+    "billing_issue_title": "Zahlung fehlgeschlagen",
+    "billing_issue_desc": "Aktualisiere deine Zahlungsmethode, um Pro zu behalten",
+    "billing_issue_cta": "Aktualisieren"
   },
   "period_short": {
     "WEEKLY": "Wo",

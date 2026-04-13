@@ -892,7 +892,10 @@
     "analytics_locked_hint": "不含隐藏：{{amount}}/月",
     "member_status_own_pro": "拥有自己的Pro",
     "member_status_team": "团队成员",
-    "member_status_grace": "宽限期即将结束"
+    "member_status_grace": "宽限期即将结束",
+    "billing_issue_title": "付款失败",
+    "billing_issue_desc": "更新付款方式以保留 Pro",
+    "billing_issue_cta": "更新"
   },
   "period_short": {
     "WEEKLY": "周",

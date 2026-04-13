@@ -892,7 +892,10 @@
     "analytics_locked_hint": "Sem ocultas: {{amount}}/mês",
     "member_status_own_pro": "Tem Pro próprio",
     "member_status_team": "Membro da equipe",
-    "member_status_grace": "Período de carência acabando"
+    "member_status_grace": "Período de carência acabando",
+    "billing_issue_title": "Pagamento falhou",
+    "billing_issue_desc": "Atualize seu método de pagamento para manter Pro",
+    "billing_issue_cta": "Atualizar"
   },
   "period_short": {
     "WEEKLY": "sem",

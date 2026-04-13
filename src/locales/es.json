@@ -892,7 +892,10 @@
     "analytics_locked_hint": "Sin ocultas: {{amount}}/mes",
     "member_status_own_pro": "Tiene su propio Pro",
     "member_status_team": "Miembro del equipo",
-    "member_status_grace": "Período de gracia por terminar"
+    "member_status_grace": "Período de gracia por terminar",
+    "billing_issue_title": "Pago fallido",
+    "billing_issue_desc": "Actualiza tu método de pago para mantener Pro",
+    "billing_issue_cta": "Actualizar"
   },
   "period_short": {
     "WEEKLY": "sem",

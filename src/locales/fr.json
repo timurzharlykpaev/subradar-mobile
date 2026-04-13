@@ -892,7 +892,10 @@
     "analytics_locked_hint": "Sans masqués : {{amount}}/mois",
     "member_status_own_pro": "A son propre Pro",
     "member_status_team": "Membre d'équipe",
-    "member_status_grace": "Période de grâce bientôt terminée"
+    "member_status_grace": "Période de grâce bientôt terminée",
+    "billing_issue_title": "Échec du paiement",
+    "billing_issue_desc": "Mets à jour ton moyen de paiement pour garder Pro",
+    "billing_issue_cta": "Mettre à jour"
   },
   "period_short": {
     "WEEKLY": "sem",
