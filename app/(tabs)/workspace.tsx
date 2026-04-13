@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput, Image,
-  Alert, ActivityIndicator, RefreshControl,
+  Alert, ActivityIndicator, RefreshControl, StyleSheet,
   KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +22,8 @@ import { useWorkspaceAnalysisLatest } from '../../src/hooks/useWorkspaceAnalysis
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
+import { GraceBanner } from '../../src/components/GraceBanner';
 
 export default function WorkspaceScreen() {
   const { colors, isDark } = useTheme();
@@ -32,6 +34,7 @@ export default function WorkspaceScreen() {
   const isTeam = billing?.plan === 'organization';
   const isPro = billing?.plan === 'pro' || isTeam;
   const currentUser = useAuthStore((s) => s.user);
+  const access = useEffectiveAccess();
 
   const [showCreate, setShowCreate] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState(false);
@@ -348,6 +351,23 @@ export default function WorkspaceScreen() {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
         keyboardShouldPersistTaps="handled"
       >
+        {access.shouldShowOwnerExpiredAlert && (
+          <View style={[styles.expiredAlert, { backgroundColor: '#EF444415', borderColor: '#EF444440' }]}>
+            <Ionicons name="warning" size={20} color="#EF4444" />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.expiredText, { color: colors.text }]}>
+                {t('team_logic.expired_owner_alert', { days: access.workspaceExpiringDays })}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/paywall' as any)}>
+              <Text style={[styles.expiredCta, { color: '#EF4444' }]}>{t('team_logic.expired_owner_cta')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {access.shouldShowGraceBanner && access.graceReason === 'team_expired' && (
+          <GraceBanner daysLeft={access.graceDaysLeft!} reason="team_expired" />
+        )}
+
         {/* ── Header ── */}
         <View style={{
           flexDirection: 'row',
@@ -662,6 +682,13 @@ export default function WorkspaceScreen() {
                         </Text>
                       )}
                     </View>
+                    <Text style={[styles.memberStatus, { color: colors.textMuted }]}>
+                      {(m.user as any)?.hasOwnPro
+                        ? t('team_logic.member_status_own_pro')
+                        : (m.user as any)?.gracePeriodEnd
+                        ? t('team_logic.member_status_grace')
+                        : t('team_logic.member_status_team')}
+                    </Text>
                   </View>
 
                   {/* Actions */}
@@ -773,3 +800,10 @@ export default function WorkspaceScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  expiredAlert: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 12, padding: 12, borderRadius: 12, borderWidth: 1 },
+  expiredText: { fontSize: 13, fontWeight: '600' },
+  expiredCta: { fontSize: 12, fontWeight: '700' },
+  memberStatus: { fontSize: 10, fontWeight: '600', marginTop: 2 },
+});

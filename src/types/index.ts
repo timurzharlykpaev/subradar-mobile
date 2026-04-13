@@ -116,10 +116,18 @@ export interface BillingPlan {
 export interface BillingStatus {
   plan: 'free' | 'pro' | 'organization';
   status: 'active' | 'cancelled' | 'trialing';
+  source?: 'own' | 'team' | 'grace_team' | 'grace_pro' | 'free';
+  isTeamOwner?: boolean;
+  isTeamMember?: boolean;
+  hasOwnPro?: boolean;
+  graceUntil?: string | null;
+  graceDaysLeft?: number | null;
+  workspaceExpiringAt?: string | null;
   currentPeriodEnd?: string | null;
   cancelAtPeriodEnd?: boolean;
   trialUsed: boolean;
   trialDaysLeft?: number | null;
+  billingPeriod?: string;
   subscriptionCount: number;
   subscriptionLimit: number | null;
   aiRequestsUsed: number;

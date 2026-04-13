@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -39,6 +39,8 @@ import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import ExpirationBanner from '../../src/components/ExpirationBanner';
 import CancellationInterceptModal from '../../src/components/CancellationInterceptModal';
 import { analytics } from '../../src/services/analytics';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
+import { DoublePayBanner } from '../../src/components/DoublePayBanner';
 
 const DATE_FORMATS = ['DD/MM', 'MM/DD', 'YYYY-MM-DD'];
 
@@ -50,6 +52,7 @@ export default function SettingsScreen() {
   const { isDark, toggleTheme, colors } = useTheme();
 
   const { data: billing } = useBillingStatus();
+  const access = useEffectiveAccess();
 
   const { restorePurchases } = useRevenueCat();
 
@@ -215,8 +218,19 @@ export default function SettingsScreen() {
   );
 
   // Plan badge text
-  const planBadgeText = isTeam ? 'TEAM' : isPro ? 'PRO' : 'FREE';
-  const planBadgeColor = isPro ? colors.primary : '#64748B';
+  const planBadgeData = useMemo(() => {
+    if (access.shouldShowGraceBanner) {
+      return { label: t('settings.plan_grace', 'GRACE'), color: '#F59E0B', sub: `${access.graceDaysLeft}d` };
+    }
+    if (access.isTeamOwner) return { label: t('settings.plan_team', 'TEAM'), color: '#06B6D4', sub: undefined };
+    if (access.hasOwnPro && access.isTeamMember) return { label: t('settings.plan_pro_team', 'PRO+TEAM'), color: '#06B6D4', sub: undefined };
+    if (access.isTeamMember) return { label: t('settings.plan_team_member', 'TEAM'), color: '#06B6D4', sub: undefined };
+    if (access.isPro) return { label: t('settings.plan_pro', 'PRO'), color: '#8B5CF6', sub: undefined };
+    if (access.isInDegradedMode) return { label: t('settings.plan_free', 'FREE'), color: '#6B7280', sub: t('team_logic.badge_was_pro', 'was Pro') };
+    return { label: t('settings.plan_free', 'FREE'), color: '#6B7280', sub: undefined };
+  }, [access, t]);
+  const planBadgeText = planBadgeData.label;
+  const planBadgeColor = planBadgeData.color;
   const statusText = isTrialing ? t('settings.pro_trial') : billing?.status === 'active' ? t('settings.active', 'Active') : '';
 
   return (
@@ -233,6 +247,8 @@ export default function SettingsScreen() {
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
 
+        {access.shouldShowDoublePay && <DoublePayBanner />}
+
         {/* ═══ 1. Profile Card ═══ */}
         <View style={[card, { padding: 16, marginTop: 12, overflow: 'hidden' }]}>
           <View style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary, opacity: 0.06 }} />
@@ -248,6 +264,7 @@ export default function SettingsScreen() {
                 <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: planBadgeColor + '20' }}>
                   <Text style={{ fontSize: 11, fontWeight: '800', color: planBadgeColor }}>{planBadgeText}</Text>
                 </View>
+                {planBadgeData.sub ? <Text style={{ fontSize: 10, color: colors.textMuted }}>{planBadgeData.sub}</Text> : null}
                 {statusText ? <Text style={{ fontSize: 12, color: colors.textSecondary }}>{statusText}</Text> : null}
               </View>
               {billing && (

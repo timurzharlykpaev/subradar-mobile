@@ -27,6 +27,8 @@ import { usePlanLimits } from '../../src/hooks/usePlanLimits';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { analytics } from '../../src/services/analytics';
 import { useUIStore } from '../../src/stores/uiStore';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
+import { LockedSubscriptionCard } from '../../src/components/LockedSubscriptionCard';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 
@@ -107,6 +109,7 @@ export default function SubscriptionsScreen() {
   const { data: billingStatus } = useBillingStatus();
   const isProBilling = billingStatus?.plan === 'pro';
   const isTeam = billingStatus?.plan === 'organization';
+  const access = useEffectiveAccess();
 
   const duplicateCategoriesArr = React.useMemo(() => {
     const counts = subscriptions.reduce((acc, s) => {
@@ -132,6 +135,14 @@ export default function SubscriptionsScreen() {
       }
     });
   }, [getFiltered, filter, searchQuery, selectedCategory, sortBy, subscriptions]);
+
+  const sortedByCreated = useMemo(() => {
+    return [...subscriptions].sort((a, b) =>
+      new Date((a as any).createdAt ?? 0).getTime() - new Date((b as any).createdAt ?? 0).getTime()
+    );
+  }, [subscriptions]);
+
+  const visibleSubs = access.isInDegradedMode ? sortedByCreated.slice(0, 3) : sortedByCreated;
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
@@ -280,6 +291,24 @@ export default function SubscriptionsScreen() {
           ))}
         </ScrollView>
 
+        {/* ── Locked subs banner ──────────────────────────────── */}
+        {access.isInDegradedMode && access.hiddenSubsCount > 0 && (
+          <TouchableOpacity
+            style={[styles.lockedBanner, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF640' }]}
+            onPress={() => {
+              analytics.track('locked_banner_tapped' as any);
+              router.push('/paywall' as any);
+            }}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="lock-closed" size={18} color="#8B5CF6" />
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: colors.text }}>
+              {t('team_logic.locked_subs_banner', { count: access.hiddenSubsCount })}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color="#8B5CF6" />
+          </TouchableOpacity>
+        )}
+
         {/* ── Duplicate category upsell banner ───────────────── */}
         {isProBilling && !isTeam && duplicateCategoriesArr.length >= 1 && (
           <TouchableOpacity
@@ -328,6 +357,15 @@ export default function SubscriptionsScreen() {
               </Text>
             </View>
           }
+          ListFooterComponent={
+            access.isInDegradedMode ? (
+              <View>
+                {Array.from({ length: access.hiddenSubsCount }).map((_, i) => (
+                  <LockedSubscriptionCard key={`locked-${i}`} hiddenCount={access.hiddenSubsCount} />
+                ))}
+              </View>
+            ) : null
+          }
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -370,6 +408,9 @@ const styles = StyleSheet.create({
 
   // Dupe banner
   dupeBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 12, marginBottom: 8, padding: 12, borderRadius: 12, borderWidth: 1 },
+
+  // Locked banner
+  lockedBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 12, marginBottom: 8, padding: 12, borderRadius: 12, borderWidth: 1 },
 
   // List
   list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },

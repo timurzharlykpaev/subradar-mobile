@@ -32,6 +32,7 @@ import { analytics } from '../../src/services/analytics';
 import AIDuplicateGroup from '../../src/components/AIDuplicateGroup';
 import AnalysisLoadingState from '../../src/components/AnalysisLoadingState';
 import BlurredProSection from '../../src/components/BlurredProSection';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 
 const CHART_HEIGHT = 200;
 
@@ -237,6 +238,7 @@ export default function AnalyticsScreen() {
   const isCancelled = billingStatus?.status === 'cancelled' || billingStatus?.cancelAtPeriodEnd === true;
   const isPro = (billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization') && !isCancelled;
   const { colors, isDark } = useTheme();
+  const access = useEffectiveAccess();
 
   const [summary, setSummary] = useState<any>(null);
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
@@ -322,6 +324,12 @@ export default function AnalyticsScreen() {
     [summary, activeSubs, getMonthlyAmount],
   );
   const totalYearly = useMemo(() => summary?.totalYearly ?? totalMonthly * 12, [summary, totalMonthly]);
+
+  const fullMonthly = useMemo(() => subscriptions.reduce((sum, s) => {
+    if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return sum;
+    const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
+    return sum + (Number(s.amount) || 0) * mult;
+  }, 0), [subscriptions]);
   const mostExpensive = useMemo(
     () => activeSubs.reduce<typeof activeSubs[0] | null>(
       (max, s) => (!max || getMonthlyAmount(s) > getMonthlyAmount(max) ? s : max), null,
@@ -536,6 +544,13 @@ export default function AnalyticsScreen() {
               <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
             )}
           </View>
+          {access.isInDegradedMode && (
+            <View style={{ alignItems: 'center', marginVertical: 8 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
+                {t('team_logic.analytics_locked_hint', { amount: `$${fullMonthly.toFixed(2)}` })}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* ── Team Upsell Card ────────────────────────────────── */}

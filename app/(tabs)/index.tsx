@@ -39,6 +39,9 @@ import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 import ExpirationBanner from '../../src/components/ExpirationBanner';
 import WinBackBanner from '../../src/components/WinBackBanner';
 import { analytics } from '../../src/services/analytics';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
+import { DoublePayBanner } from '../../src/components/DoublePayBanner';
+import { GraceBanner } from '../../src/components/GraceBanner';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -47,6 +50,7 @@ export default function DashboardScreen() {
   const { currency } = useSettingsStore();
   const { colors, isDark } = useTheme();
   const { data: billing } = useBillingStatus();
+  const access = useEffectiveAccess();
   const { data: analysisLatest } = useAnalysisLatest();
   const aiResult = analysisLatest?.result;
   const queryClient = useQueryClient();
@@ -147,6 +151,12 @@ export default function DashboardScreen() {
     return sum + (Number(s.amount) || 0) * mult;
   }, 0);
 
+  const visibleSubs = access.isInDegradedMode ? activeSubs.slice(0, 3) : activeSubs;
+  const totalMonthlyVisible = visibleSubs.reduce((sum, s) => {
+    const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
+    return sum + (Number(s.amount) || 0) * mult;
+  }, 0);
+
   // Previous month estimate from trend data
   const prevMonthAmount = monthlyTrend.length >= 2 ? monthlyTrend[monthlyTrend.length - 2]?.amount || 0 : 0;
   const delta = prevMonthAmount > 0 ? ((totalMonthly - prevMonthAmount) / prevMonthAmount * 100) : 0;
@@ -235,6 +245,11 @@ export default function DashboardScreen() {
         </View>
 
         <TeamSavingsBadge />
+
+        {access.shouldShowDoublePay && <DoublePayBanner />}
+        {access.shouldShowGraceBanner && access.graceReason && (
+          <GraceBanner daysLeft={access.graceDaysLeft!} reason={access.graceReason} />
+        )}
 
         {/* ── Expiration Banner ────────────────────────────────── */}
         {billing?.cancelAtPeriodEnd && billing?.currentPeriodEnd && (
@@ -361,7 +376,7 @@ export default function DashboardScreen() {
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
           <View style={styles.heroAmountRow}>
-            <Text style={styles.heroAmount}>{currency} {totalMonthly.toFixed(2)}</Text>
+            <Text style={styles.heroAmount}>{currency} {totalMonthlyVisible.toFixed(2)}</Text>
             {delta !== 0 && (
               <View style={[styles.deltaBadge, { backgroundColor: delta > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)' }]}>
                 <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={10} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
@@ -374,6 +389,11 @@ export default function DashboardScreen() {
               </View>
             )}
           </View>
+          {access.isInDegradedMode && (
+            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginTop: 4 }}>
+              {t('team_logic.hero_locked_hint', { count: access.hiddenSubsCount })}
+            </Text>
+          )}
           <View style={styles.heroMeta}>
             <View style={styles.heroMetaItem}>
               <Ionicons name="repeat-outline" size={14} color="rgba(255,255,255,0.7)" />

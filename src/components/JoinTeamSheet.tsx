@@ -9,6 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { workspaceApi } from '../api/workspace';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
+import { analytics } from '../services/analytics';
+
+let RevenueCatUI: any = null;
+try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
 
 interface Props {
   onSuccess: () => void;
@@ -21,17 +26,17 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const queryClient = useQueryClient();
+  const access = useEffectiveAccess();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
 
   const canJoin = code.length >= 6 && !loading;
 
-  const handleJoin = async () => {
-    if (!canJoin) return;
+  const performJoin = async (joinCode: string) => {
     Keyboard.dismiss();
     setLoading(true);
     try {
-      await workspaceApi.joinByCode(code.toUpperCase());
+      await workspaceApi.joinByCode(joinCode.toUpperCase());
       await queryClient.invalidateQueries({ queryKey: ['workspace'] });
       Alert.alert(t('workspace.joined', 'Joined!'), t('workspace.joined_msg', 'You are now a team member.'));
       onSuccess();
@@ -40,6 +45,25 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleJoin = async () => {
+    if (!canJoin) return;
+    const trimmedCode = code.trim();
+    if (trimmedCode.length < 6) return;
+    if (access.hasOwnPro) {
+      analytics.track('join_warn_shown' as any);
+      Alert.alert(
+        t('team_logic.join_warn_title'),
+        t('team_logic.join_warn_desc'),
+        [
+          { text: t('team_logic.join_warn_cta_cancel_pro'), onPress: async () => { try { await RevenueCatUI?.presentCustomerCenter(); } catch {} } },
+          { text: t('team_logic.join_warn_cta_continue'), onPress: () => { analytics.track('join_warn_continued' as any); performJoin(trimmedCode); } },
+        ],
+      );
+      return;
+    }
+    await performJoin(trimmedCode);
   };
 
   return (

@@ -78,7 +78,21 @@ export type AnalyticsEvent =
   | 'subscription_cancelled'
   | 'cancellation_intercepted'
   | 'win_back_viewed'
-  | 'win_back_resubscribed';
+  | 'win_back_resubscribed'
+
+  // Team / grace / double-pay
+  | 'grace_started'
+  | 'grace_ending_warning_shown'
+  | 'grace_ended_downgraded'
+  | 'grace_recovered_pro_purchased'
+  | 'locked_sub_tapped'
+  | 'locked_banner_tapped'
+  | 'double_pay_banner_shown'
+  | 'double_pay_cancel_tapped'
+  | 'join_warn_shown'
+  | 'join_warn_continued'
+  | 'team_owner_expired_renewed'
+  | 'team_owner_expired_abandoned';
 
 export type EventProperties = Record<string, string | number | boolean | null | undefined>;
 
