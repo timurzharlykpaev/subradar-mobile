@@ -158,11 +158,27 @@ export function useRevenueCat() {
 
   const isTeam = activeKeys.some((k: string) => /^team$/i.test(k));
 
+  // Check if a specific package has a free trial introductory offer
+  const packageHasTrial = (pkg: any): boolean => {
+    return !!(pkg?.product?.introPrice?.price === 0 || pkg?.product?.introPrice?.periodUnit != null);
+  };
+
   // Check if any package has a free trial introductory offer
-  const trialEligiblePackages = (offerings?.current?.availablePackages ?? []).filter(
-    (pkg: any) => pkg?.product?.introPrice?.price === 0 || pkg?.product?.introPrice?.periodUnit != null
-  );
+  const trialEligiblePackages = (offerings?.current?.availablePackages ?? []).filter(packageHasTrial);
   const hasTrialOffer = trialEligiblePackages.length > 0;
+
+  // Get trial duration in days from first trial-eligible package (for UI display)
+  const trialDurationDays = (() => {
+    const pkg = trialEligiblePackages[0];
+    if (!pkg) return null;
+    const intro = pkg.product?.introPrice;
+    if (!intro) return null;
+    const cycles = intro.cycles ?? 1;
+    const unit = intro.periodUnit?.toUpperCase?.();
+    const perCycle = unit === 'DAY' ? 1 : unit === 'WEEK' ? 7 : unit === 'MONTH' ? 30 : unit === 'YEAR' ? 365 : 7;
+    const num = intro.periodNumberOfUnits ?? 1;
+    return cycles * perCycle * num;
+  })();
 
   const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {
     if (!isAvailable()) return false;
@@ -211,5 +227,5 @@ export function useRevenueCat() {
     }
   }, []);
 
-  return { customerInfo, offerings, isPro, isTeam, hasTrialOffer, purchasePackage, restorePurchases, loading, loadOfferings };
+  return { customerInfo, offerings, isPro, isTeam, hasTrialOffer, packageHasTrial, trialDurationDays, purchasePackage, restorePurchases, loading, loadOfferings };
 }
