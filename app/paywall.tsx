@@ -22,6 +22,7 @@ import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
 import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
 import { analytics } from '../src/services/analytics';
+import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -74,6 +75,14 @@ export default function PaywallScreen() {
   const [showClose, setShowClose] = useState(false);
   const openedAt = useRef(Date.now());
   const { data: billing, isLoading: billingLoading } = useBillingStatus();
+  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+  const userMonthly = subscriptions
+    .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
+    .reduce((sum, s) => {
+      const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
+      return sum + (Number(s.amount) || 0) * mult;
+    }, 0);
+  const teamYearlySavings = userMonthly > 0 ? Math.round(userMonthly * 12 * 0.75) : 0;
   const queryClient = useQueryClient();
   const { offerings, purchasePackage, restorePurchases, hasTrialOffer, loading: rcLoading, loadOfferings } = useRevenueCat();
 
@@ -394,6 +403,13 @@ export default function PaywallScreen() {
                       {plan.id === 'pro' && !isCurrent && (
                         <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
                           <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
+                        </View>
+                      )}
+                      {plan.id === 'org' && teamYearlySavings > 0 && !isCurrent && (
+                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
+                          <Text style={styles.inlineBadgeText}>
+                            {t('team_upsell.save_vs_separate', { amount: `$${teamYearlySavings}` })}
+                          </Text>
                         </View>
                       )}
                       {isCurrent && (

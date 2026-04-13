@@ -47,6 +47,7 @@ import { TranscriptionConfirm } from './TranscriptionConfirm';
 import { InlineConfirmCard, ConfirmCardData } from './InlineConfirmCard';
 import { AICreditsBadge } from './AICreditsBadge';
 import { usePlanLimits } from '../hooks/usePlanLimits';
+import { useBillingStatus } from '../hooks/useBilling';
 import { useTheme } from '../theme';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
@@ -159,6 +160,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const router = useRouter();
   const { colors } = useTheme();
   const { subsLimitReached, isPro, activeCount, maxSubscriptions } = usePlanLimits();
+  const { data: billing } = useBillingStatus();
+  const isProUser = billing?.plan === 'pro';
   if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
 
   // ── Form state (kept for manual mode) ───────────────────────────────────
@@ -519,10 +522,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         Alert.alert(
           t('add.ai_limit_title', 'AI request limit reached'),
           t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
-          [
-            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-            { text: t('common.cancel', 'Close'), style: 'cancel' },
-          ]
+          isProUser
+            ? [
+                { text: t('team_upsell.ai_limit_wait', 'Wait until next month'), style: 'cancel' as const },
+                { text: t('team_upsell.ai_limit_team_cta', 'Upgrade to Team — 1000 AI'), onPress: () => { analytics.track('team_upsell_ai_limit_tapped'); router.push('/paywall' as any); } },
+              ]
+            : [
+                { text: t('common.cancel'), style: 'cancel' as const },
+                { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+              ]
         );
         setFlowState('idle');
         return;
@@ -575,10 +583,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         Alert.alert(
           t('add.ai_limit_title', 'AI request limit reached'),
           t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
-          [
-            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-            { text: t('common.cancel', 'Close'), style: 'cancel' },
-          ]
+          isProUser
+            ? [
+                { text: t('team_upsell.ai_limit_wait', 'Wait until next month'), style: 'cancel' as const },
+                { text: t('team_upsell.ai_limit_team_cta', 'Upgrade to Team — 1000 AI'), onPress: () => { analytics.track('team_upsell_ai_limit_tapped'); router.push('/paywall' as any); } },
+              ]
+            : [
+                { text: t('common.cancel'), style: 'cancel' as const },
+                { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+              ]
         );
       } else {
         reportError(`Voice error: ${err?.message ?? err}`, err?.stack);
@@ -654,10 +667,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         Alert.alert(
           t('add.ai_limit_title', 'AI request limit reached'),
           t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
-          [
-            { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-            { text: t('common.cancel', 'Close'), style: 'cancel' },
-          ]
+          isProUser
+            ? [
+                { text: t('team_upsell.ai_limit_wait', 'Wait until next month'), style: 'cancel' as const },
+                { text: t('team_upsell.ai_limit_team_cta', 'Upgrade to Team — 1000 AI'), onPress: () => { analytics.track('team_upsell_ai_limit_tapped'); router.push('/paywall' as any); } },
+              ]
+            : [
+                { text: t('common.cancel'), style: 'cancel' as const },
+                { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
+              ]
         );
       } else {
         Alert.alert(t('common.error'), msg || t('add.screenshot_parse_error', 'Could not parse the screenshot. Try a clearer image.'));

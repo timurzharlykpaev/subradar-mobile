@@ -24,6 +24,8 @@ import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import { usePlanLimits } from '../../src/hooks/usePlanLimits';
+import { useBillingStatus } from '../../src/hooks/useBilling';
+import { analytics } from '../../src/services/analytics';
 import { useUIStore } from '../../src/stores/uiStore';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
@@ -101,6 +103,19 @@ export default function SubscriptionsScreen() {
   const setSelectedCategory = useSubscriptionsStore((s) => s.setSelectedCategory);
   const setSubscriptions = useSubscriptionsStore((s) => s.setSubscriptions);
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+
+  const { data: billingStatus } = useBillingStatus();
+  const isProBilling = billingStatus?.plan === 'pro';
+  const isTeam = billingStatus?.plan === 'organization';
+
+  const duplicateCategoriesArr = React.useMemo(() => {
+    const counts = subscriptions.reduce((acc, s) => {
+      if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return acc;
+      acc[s.category] = (acc[s.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(counts).filter(([, c]) => c > 1);
+  }, [subscriptions]);
 
   const subs = useMemo(() => {
     const filtered = getFiltered();
@@ -265,6 +280,24 @@ export default function SubscriptionsScreen() {
           ))}
         </ScrollView>
 
+        {/* ── Duplicate category upsell banner ───────────────── */}
+        {isProBilling && !isTeam && duplicateCategoriesArr.length >= 1 && (
+          <TouchableOpacity
+            style={[styles.dupeBanner, { backgroundColor: '#06B6D415', borderColor: '#06B6D440' }]}
+            onPress={() => {
+              analytics.track('team_upsell_dupe_banner_tapped');
+              router.push('/paywall' as any);
+            }}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="people" size={18} color="#06B6D4" />
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: colors.text }}>
+              {t('team_upsell.dupe_banner', { count: duplicateCategoriesArr.length, category: duplicateCategoriesArr[0]?.[0] ?? '' })}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color="#06B6D4" />
+          </TouchableOpacity>
+        )}
+
         {/* ── List ───────────────────────────────────────────── */}
         <FlatList
           testID="subscription-list"
@@ -334,6 +367,9 @@ const styles = StyleSheet.create({
 
   // Category
   catChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+
+  // Dupe banner
+  dupeBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 12, marginBottom: 8, padding: 12, borderRadius: 12, borderWidth: 1 },
 
   // List
   list: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },

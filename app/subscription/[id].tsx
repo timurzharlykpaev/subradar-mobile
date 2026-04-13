@@ -22,6 +22,8 @@ import { useTheme } from '../../src/theme';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
 import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
 import { PencilIcon, TrashIcon } from '../../src/components/icons';
+import { useBillingStatus } from '../../src/hooks/useBilling';
+import { analytics } from '../../src/services/analytics';
 
 export default function SubscriptionDetailScreen() {
   const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,6 +33,9 @@ export default function SubscriptionDetailScreen() {
   const getCard = usePaymentCardsStore((s) => s.getCard);
 
   const { colors, isDark } = useTheme();
+  const { data: billing } = useBillingStatus();
+  const isPro = billing?.plan === 'pro';
+  const isTeam = billing?.plan === 'organization';
   const [editVisible, setEditVisible] = useState(false);
   const [iconError, setIconError] = useState(false);
 
@@ -244,6 +249,24 @@ export default function SubscriptionDetailScreen() {
           )}
         </View>
 
+        {/* Team upsell hint */}
+        {isPro && !isTeam && (
+          <TouchableOpacity
+            style={[styles.teamHint, { backgroundColor: '#06B6D410', borderColor: '#06B6D430' }]}
+            onPress={() => {
+              analytics.track('team_upsell_detail_hint_tapped');
+              router.push('/paywall' as any);
+            }}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="people-outline" size={18} color="#06B6D4" />
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '500', color: colors.text }}>
+              {t('team_upsell.detail_hint', { name: subscription.name })}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color="#06B6D4" />
+          </TouchableOpacity>
+        )}
+
         {/* Actions */}
         <View style={styles.actions}>
           {(subscription as any).serviceUrl && (
@@ -379,6 +402,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   cancelLinkBtnText: { fontSize: 15, fontWeight: '700' },
+  teamHint: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginVertical: 12, padding: 12, borderRadius: 12, borderWidth: 1 },
   notFound: { fontSize: 18, textAlign: 'center', marginTop: 100 },
   backLink: { fontSize: 15, textAlign: 'center', marginTop: 16 },
 });

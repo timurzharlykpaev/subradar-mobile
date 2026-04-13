@@ -30,6 +30,7 @@ import { useTheme, fonts } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
 import { WelcomeSheet } from '../../src/components/WelcomeSheet';
 import { TrialOfferModal } from '../../src/components/TrialOfferModal';
+import { TeamUpsellModal } from '../../src/components/TeamUpsellModal';
 import { useUIStore } from '../../src/stores/uiStore';
 import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
@@ -55,6 +56,7 @@ export default function DashboardScreen() {
   const [categoryData, setCategoryData] = React.useState<{ category: string; amount: number }[]>([]);
   const [showWelcome, setShowWelcome] = React.useState(false);
   const [showTrialOffer, setShowTrialOffer] = React.useState(false);
+  const [showTeamUpsell, setShowTeamUpsell] = React.useState(false);
   const prevSubsCount = useRef<number | null>(null);
 
 
@@ -173,6 +175,28 @@ export default function DashboardScreen() {
       return acc;
     }, {} as Record<string, number>)
   ).filter(([, count]) => count > 1);
+
+  // Show TeamUpsellModal once when Pro user hits a "moment of truth"
+  useEffect(() => {
+    if (loading) return;
+    const isPro = billing?.plan === 'pro';
+    const isTeam = billing?.plan === 'organization';
+    if (!isPro || isTeam) return;
+
+    const duplicateCount = duplicateCategories.length;
+    const subsCount = activeSubs.length;
+    const triggers = subsCount >= 8 || duplicateCount >= 2 || totalMonthly >= 50;
+    if (!triggers) return;
+
+    AsyncStorage.getItem('team_modal_shown_v1').then((val) => {
+      if (val) return;
+      setShowTeamUpsell(true);
+      AsyncStorage.setItem('team_modal_shown_v1', '1');
+      AsyncStorage.setItem('team_modal_dismissed_at', new Date().toISOString());
+      const trigger = duplicateCount >= 2 ? 'duplicates' : subsCount >= 8 ? 'subs_count' : 'spend';
+      analytics.track('team_upsell_modal_shown', { trigger });
+    });
+  }, [loading, billing?.plan, activeSubs.length, duplicateCategories.length, totalMonthly]);
 
   const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
   const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
@@ -294,6 +318,7 @@ export default function DashboardScreen() {
         {isPro && !isTeam && activeSubs.length >= 5 && (
           <TouchableOpacity
             onPress={() => {
+              analytics.track('team_upsell_dashboard_card_tapped');
               analytics.paywallViewed('upsell');
               router.push('/paywall' as any);
             }}
@@ -314,10 +339,10 @@ export default function DashboardScreen() {
             <Ionicons name="people" size={18} color="#3B82F6" />
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text }}>
-                {t('dashboard.team_upsell_title', 'Share with family?')}
+                {t('team_upsell.dashboard_title')}
               </Text>
               <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 1 }}>
-                {t('dashboard.team_upsell_desc', 'Team plan: split costs & spot duplicate subs')}
+                {t('team_upsell.dashboard_dynamic', { amount: `${currency} ${Math.round(totalMonthly * 12 * 0.75)}` })}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={14} color="#3B82F6" />
@@ -619,6 +644,21 @@ export default function DashboardScreen() {
           router.push('/paywall' as any);
         }}
         onSkip={() => setShowTrialOffer(false)}
+      />
+
+      <TeamUpsellModal
+        visible={showTeamUpsell}
+        monthlySpend={totalMonthly}
+        currency={currency}
+        onCreateTeam={() => {
+          setShowTeamUpsell(false);
+          analytics.track('team_upsell_modal_cta_tapped');
+          router.push('/paywall' as any);
+        }}
+        onLater={() => {
+          setShowTeamUpsell(false);
+          analytics.track('team_upsell_modal_dismissed');
+        }}
       />
     </SafeAreaView>
   );

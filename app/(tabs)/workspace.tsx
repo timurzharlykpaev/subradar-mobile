@@ -19,6 +19,9 @@ import { TeamOverlaps } from '../../src/components/TeamOverlaps';
 import { TeamSpendChart } from '../../src/components/TeamSpendChart';
 import { MemberDetailSheet } from '../../src/components/MemberDetailSheet';
 import { useWorkspaceAnalysisLatest } from '../../src/hooks/useWorkspaceAnalysis';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
+import { useSettingsStore } from '../../src/stores/settingsStore';
 
 export default function WorkspaceScreen() {
   const { colors, isDark } = useTheme();

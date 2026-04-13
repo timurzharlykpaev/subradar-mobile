@@ -64,6 +64,16 @@ export type AnalyticsEvent =
   | 'analytics_viewed'
   | 'report_generated'
 
+  // Team upsell
+  | 'team_upsell_modal_shown'
+  | 'team_upsell_modal_cta_tapped'
+  | 'team_upsell_modal_dismissed'
+  | 'team_upsell_dashboard_card_tapped'
+  | 'team_upsell_analytics_card_tapped'
+  | 'team_upsell_dupe_banner_tapped'
+  | 'team_upsell_detail_hint_tapped'
+  | 'team_upsell_ai_limit_tapped'
+
   // Churn / retention
   | 'subscription_cancelled'
   | 'cancellation_intercepted'
