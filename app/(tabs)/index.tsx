@@ -117,7 +117,7 @@ export default function DashboardScreen() {
   // Show WelcomeSheet on first visit with no subscriptions
   useEffect(() => {
     if (loading) return;
-    if (subscriptions.length === 0) {
+    if (subscriptions.length === 0 && !useUIStore.getState().addSheetVisible) {
       AsyncStorage.getItem('welcome_shown').then((val) => {
         if (!val) setShowWelcome(true);
       });

@@ -423,7 +423,9 @@ const QUICK_ADD_SERVICES = [
 ] as const;
 
 export default function OnboardingScreen() {
-  const [step, setStep] = useState(0);
+  const { isOnboarded, setUser, setOnboarded } = useAuthStore();
+  // Returning user (logged out but already onboarded) → skip to auth step
+  const [step, setStep] = useState(isOnboarded ? 3 : 0);
   const [email, setEmail] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [quickAddSelected, setQuickAddSelected] = useState<Set<string>>(new Set());
@@ -438,7 +440,6 @@ export default function OnboardingScreen() {
 
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { setUser, setOnboarded } = useAuthStore();
   const { setLanguage, language, setCurrency } = useSettingsStore();
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
@@ -563,8 +564,12 @@ export default function OnboardingScreen() {
       analytics.identify(user.id, { plan: (user as any).plan, currency: selectedCurrency });
       analytics.track('auth_completed', { method: 'unknown', is_new_user: !user.createdAt || (Date.now() - new Date(user.createdAt).getTime() < 60_000) });
     } catch {}
-    // Go to notifications step (step 4)
-    setStep(4);
+    // Returning user → straight to Dashboard; new user → notifications step
+    if (isOnboarded) {
+      router.replace('/(tabs)');
+    } else {
+      setStep(4);
+    }
   };
 
   const handleGoogleToken = async (accessToken: string) => {

@@ -96,8 +96,8 @@
 | 4.3 | Free User | Бейдж FREE справа вверху | Серый #6B7280, локализованный текст | P0 | ☐ |
 | 4.4 | Free User, добавил 1-ю sub | — | TrialOfferModal через ~0.5с | P0 | ☐ |
 | 4.5 | Free User, Skip TrialOffer | Повторно добавить sub | Модалка НЕ появляется снова | P1 | ☐ |
-| 4.6 | Free User, 5+ subs | Dashboard | Team Upsell карточка "Раздели и сэкономь" | P1 | ☐ |
-| 4.7 | Free User, 8+ subs | Dashboard | TeamUpsellModal (один раз за жизнь юзера) | P1 | ☐ |
+| 4.6 | Pro User, 5+ subs | Dashboard | Team Upsell карточка "Раздели и сэкономь" | P1 | ☐ |
+| 4.7 | Pro User, 8+ subs | Dashboard | TeamUpsellModal (один раз за жизнь юзера) | P1 | ☐ |
 | 4.8 | Pro User | Hero + бейдж PRO (#8B5CF6) | Правильно определяет Pro | P0 | ☐ |
 | 4.9 | Pro User (trial active) | Badge | PRO + счётчик "7d left" если есть trialDaysLeft | P1 | ☐ |
 | 4.10 | Pro User (cancelAtPeriodEnd) | — | ExpirationBanner "Доступ до DD.MM" | P0 | ☐ |
