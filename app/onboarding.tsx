@@ -926,13 +926,6 @@ export default function OnboardingScreen() {
 
     // Step 3: Auth
     <View key="auth" testID="step-auth" style={[styles.step, { flex: 1, justifyContent: 'center', paddingBottom: 8 }]}>
-      {/* Theme toggle top-right — use insets to stay below status bar */}
-      <TouchableOpacity
-        onPress={toggleTheme}
-        style={{ position: 'absolute', top: (safeInsets.top || 0) + 8, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
-      >
-        {isDark ? <SunIcon size={18} color="#F59E0B" /> : <MoonIcon size={18} color="#6366F1" />}
-      </TouchableOpacity>
       <AuthHero />
 
       {loading && (
@@ -1147,6 +1140,13 @@ export default function OnboardingScreen() {
       keyboardVerticalOffset={0}
     >
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Theme toggle — visible on all steps */}
+      <TouchableOpacity
+        onPress={toggleTheme}
+        style={{ position: 'absolute', top: (safeInsets.top || 0) + 8, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
+      >
+        {isDark ? <SunIcon size={18} color="#F59E0B" /> : <MoonIcon size={18} color="#6366F1" />}
+      </TouchableOpacity>
       <View style={styles.content}>{steps[step]}</View>
 
       <View style={styles.footer}>
