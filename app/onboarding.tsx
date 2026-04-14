@@ -527,6 +527,14 @@ export default function OnboardingScreen() {
     router.replace('/(tabs)');
   };
 
+  // Auto-skip notifications step if permission already granted or denied
+  useEffect(() => {
+    if (step !== 4) return;
+    Notifications.getPermissionsAsync().then(({ status }) => {
+      if (status !== 'undetermined') setStep(5);
+    });
+  }, [step]);
+
   // Counter animation for money hook (0 → 624)
   const counterDisplayValue = useRef(0);
   const [counterDisplay, setCounterDisplay] = useState(0);
@@ -566,7 +574,10 @@ export default function OnboardingScreen() {
     if (isOnboarded) {
       router.replace('/(tabs)');
     } else {
-      setStep(4);
+      // Skip notifications step if permission already decided
+      Notifications.getPermissionsAsync().then(({ status }) => {
+        setStep(status === 'undetermined' ? 4 : 5);
+      }).catch(() => setStep(4));
     }
   };
 
