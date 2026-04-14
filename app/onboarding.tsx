@@ -431,6 +431,13 @@ export default function OnboardingScreen() {
   const [quickAddSelected, setQuickAddSelected] = useState<Set<string>>(new Set());
   const counterAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const authErrorTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showAuthError = (msg: string) => {
+    setAuthError(msg);
+    clearTimeout(authErrorTimer.current);
+    authErrorTimer.current = setTimeout(() => setAuthError(null), 4000);
+  };
   const [magicSent, setMagicSent] = useState(false);
   const [otpMode, setOtpMode] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
@@ -489,18 +496,18 @@ export default function OnboardingScreen() {
               finishAuth(userData, jwt, refresh);
             } else {
               console.warn('[GoogleAuth] No id/email in response, skipping finishAuth');
-              Alert.alert(t('auth.google_signin_error'), 'Invalid user data received');
+              showAuthError('Invalid user data received');
             }
           } catch (err) {
             console.error('[GoogleAuth] Error:', err);
-            Alert.alert(t('auth.google_signin_error'), String(err));
+            showAuthError(String(err));
           } finally {
             setLoading(false);
           }
         }
       }
     } catch (e: any) {
-      Alert.alert(t('auth.google_signin_error'), t('auth.google_setup_hint'));
+      showAuthError(t('auth.google_setup_hint'));
     }
   };
 
@@ -559,7 +566,7 @@ export default function OnboardingScreen() {
   const finishAuth = (user: any, token: string, refreshToken?: string) => {
     if (!user || (!user.id && !user.email)) {
       console.error('[Auth] Invalid user object:', user);
-      Alert.alert(t('auth.error_title'), t('auth.invalid_user', 'Invalid account data received. Please try again.'));
+      showAuthError(t('auth.invalid_user', 'Invalid account data received. Please try again.'));
       setLoading(false);
       return;
     }
@@ -588,7 +595,7 @@ export default function OnboardingScreen() {
       const { user, accessToken: jwt, refreshToken } = res.data;
       finishAuth(user, jwt, refreshToken);
     } catch (e: any) {
-      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.google_login_failed'));
+      showAuthError(e?.response?.data?.message || t('auth.google_login_failed'));
     } finally {
       setLoading(false);
     }
@@ -605,7 +612,7 @@ export default function OnboardingScreen() {
         ],
       });
       if (!credential.identityToken) {
-        Alert.alert(t('auth.error_title'), t('auth.apple_no_token', 'No identity token received from Apple. Please try again.'));
+        showAuthError(t('auth.apple_no_token', 'No identity token received from Apple. Please try again.'));
         setLoading(false);
         return;
       }
@@ -614,7 +621,7 @@ export default function OnboardingScreen() {
       finishAuth(user, jwt, refreshToken);
     } catch (e: any) {
       if (e.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.apple_login_failed'));
+        showAuthError(e?.response?.data?.message || t('auth.apple_login_failed'));
       }
     } finally {
       setLoading(false);
@@ -661,7 +668,11 @@ export default function OnboardingScreen() {
       const { user, accessToken: jwt, refreshToken } = res.data;
       finishAuth(user, jwt, refreshToken);
     } catch (e: any) {
-      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.invalid_code'));
+      const status = e?.response?.status;
+      const msg = status === 429
+        ? t('auth.too_many_attempts', 'Too many attempts. Wait a moment.')
+        : (e?.response?.data?.message || t('auth.invalid_code'));
+      showAuthError(msg);
       setOtpCode('');
     } finally {
       setLoading(false);
@@ -696,7 +707,7 @@ export default function OnboardingScreen() {
       await authApi.sendMagicLink(email);
       setMagicSent(true);
     } catch (e: any) {
-      Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.failed_send_link'));
+      showAuthError(e?.response?.data?.message || t('auth.failed_send_link'));
     } finally {
       setLoading(false);
     }
@@ -1171,6 +1182,17 @@ export default function OnboardingScreen() {
           </View>
         )}
       </View>
+
+      {/* Auth error toast */}
+      {authError && (
+        <View style={{ position: 'absolute', bottom: 40, left: 16, right: 16, backgroundColor: '#DC2626', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 8 }}>
+          <Ionicons name="alert-circle" size={20} color="#FFF" />
+          <Text style={{ flex: 1, color: '#FFF', fontSize: 14, fontWeight: '600' }} numberOfLines={2}>{authError}</Text>
+          <TouchableOpacity onPress={() => setAuthError(null)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="close" size={18} color="#FFFFFF99" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
     </KeyboardAvoidingView>
   );

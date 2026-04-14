@@ -375,7 +375,8 @@
     "apple_login_failed": "Appleログインに失敗しました",
     "failed_send_code": "コードの送信に失敗しました",
     "invalid_code": "無効なコード",
-    "failed_send_link": "リンクの送信に失敗しました"
+    "failed_send_link": "リンクの送信に失敗しました",
+    "too_many_attempts": "試行回数が多すぎます。しばらくお待ちください。"
   },
   "landing": {
     "hero_title": "お金がどこへ行くのか正確に把握しましょう",

@@ -376,7 +376,8 @@
     "apple_login_failed": "Не удалось войти через Apple",
     "failed_send_code": "Не удалось отправить код",
     "invalid_code": "Неверный код",
-    "failed_send_link": "Не удалось отправить ссылку"
+    "failed_send_link": "Не удалось отправить ссылку",
+    "too_many_attempts": "Слишком много попыток. Подождите немного."
   },
   "landing": {
     "hero_title": "Знайте, куда уходят деньги",

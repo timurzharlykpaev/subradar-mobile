@@ -383,7 +383,8 @@
     "apple_login_failed": "Apple арқылы кіру сәтсіз",
     "failed_send_code": "Кодты жіберу сәтсіз",
     "invalid_code": "Жарамсыз код",
-    "failed_send_link": "Сілтемені жіберу сәтсіз"
+    "failed_send_link": "Сілтемені жіберу сәтсіз",
+    "too_many_attempts": "Тым көп әрекет. Сәл күте тұрыңыз."
   },
   "landing": {
     "hero_title": "Ақшаңыздың қайда кететінін нақты біліңіз",

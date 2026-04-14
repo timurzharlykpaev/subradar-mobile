@@ -375,7 +375,8 @@
     "apple_login_failed": "Échec de la connexion Apple",
     "failed_send_code": "Impossible d'envoyer le code",
     "invalid_code": "Code invalide",
-    "failed_send_link": "Impossible d'envoyer le lien"
+    "failed_send_link": "Impossible d'envoyer le lien",
+    "too_many_attempts": "Trop de tentatives. Veuillez patienter."
   },
   "landing": {
     "hero_title": "Sachez exactement où va votre argent",

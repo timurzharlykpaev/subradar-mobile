@@ -62,6 +62,9 @@ export function installConsoleInterceptors(): void {
     /getRegistrationInfoAsync/,  // Push notifications fail in Expo Go
     /setValueWithKeyAsync/,
     /Calling the '.*Async' function has failed/,  // Native module not available in Expo Go
+    /\/billing\/me error: 401/,   // Expected when token expires — handled by refresh interceptor
+    /\/auth\/.*429/,              // Rate limiting on auth endpoints — expected on repeated OTP attempts
+    /Too Many Requests/,
   ];
 
   const originalWarn = console.warn.bind(console);

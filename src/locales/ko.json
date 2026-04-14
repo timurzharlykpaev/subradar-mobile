@@ -375,7 +375,8 @@
     "apple_login_failed": "Apple 로그인 실패",
     "failed_send_code": "코드 전송 실패",
     "invalid_code": "잘못된 코드",
-    "failed_send_link": "링크 전송 실패"
+    "failed_send_link": "링크 전송 실패",
+    "too_many_attempts": "시도 횟수가 너무 많습니다. 잠시 후 다시 시도해주세요."
   },
   "landing": {
     "hero_title": "돈이 어디로 가는지 정확히 파악하세요",

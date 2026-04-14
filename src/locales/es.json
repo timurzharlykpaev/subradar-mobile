@@ -375,7 +375,8 @@
     "apple_login_failed": "Error al iniciar sesión con Apple",
     "failed_send_code": "No se pudo enviar el código",
     "invalid_code": "Código inválido",
-    "failed_send_link": "No se pudo enviar el enlace"
+    "failed_send_link": "No se pudo enviar el enlace",
+    "too_many_attempts": "Demasiados intentos. Espera un momento."
   },
   "landing": {
     "hero_title": "Sabe exactamente a dónde va tu dinero",

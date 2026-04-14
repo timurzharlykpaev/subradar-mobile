@@ -383,7 +383,8 @@
     "apple_login_failed": "Apple login failed",
     "failed_send_code": "Failed to send code",
     "invalid_code": "Invalid code",
-    "failed_send_link": "Failed to send link"
+    "failed_send_link": "Failed to send link",
+    "too_many_attempts": "Too many attempts. Please wait a moment."
   },
   "landing": {
     "hero_title": "Know exactly where your money goes",

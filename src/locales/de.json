@@ -375,7 +375,8 @@
     "apple_login_failed": "Apple-Anmeldung fehlgeschlagen",
     "failed_send_code": "Code konnte nicht gesendet werden",
     "invalid_code": "Ungültiger Code",
-    "failed_send_link": "Link konnte nicht gesendet werden"
+    "failed_send_link": "Link konnte nicht gesendet werden",
+    "too_many_attempts": "Zu viele Versuche. Bitte warten Sie einen Moment."
   },
   "landing": {
     "hero_title": "Wissen Sie genau, wohin Ihr Geld fließt",
