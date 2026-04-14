@@ -472,8 +472,6 @@ export default function OnboardingScreen() {
           // Fetch user profile with the JWT
           setLoading(true);
           try {
-            const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-            if (refresh) await AsyncStorage.setItem('refresh_token', refresh);
             const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
             console.log('[GoogleAuth] Fetching /auth/me from:', apiUrl);
             const controller2 = new AbortController();
@@ -488,7 +486,7 @@ export default function OnboardingScreen() {
             console.log('[GoogleAuth] userData:', JSON.stringify(userData).slice(0, 200));
             if (userData?.id || userData?.email) {
               console.log('[GoogleAuth] Calling finishAuth');
-              finishAuth(userData, jwt);
+              finishAuth(userData, jwt, refresh);
             } else {
               console.warn('[GoogleAuth] No id/email in response, skipping finishAuth');
               Alert.alert(t('auth.google_signin_error'), 'Invalid user data received');
