@@ -565,7 +565,7 @@
     "title": "Редактировать профиль",
     "name": "Имя",
     "name_placeholder": "Ваше имя",
-    "email": "Email"
+    "email": "Эл. почта"
   },
   "features": {
     "voice_title": "Голосовое добавление",
