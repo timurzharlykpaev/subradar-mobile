@@ -550,7 +550,7 @@ export default function OnboardingScreen() {
     return () => counterAnim.removeListener(listener);
   }, [step]);
 
-  const finishAuth = (user: any, token: string) => {
+  const finishAuth = (user: any, token: string, refreshToken?: string) => {
     if (!user || (!user.id && !user.email)) {
       console.error('[Auth] Invalid user object:', user);
       Alert.alert(t('auth.error_title'), t('auth.invalid_user', 'Invalid account data received. Please try again.'));
@@ -558,7 +558,7 @@ export default function OnboardingScreen() {
       return;
     }
     setCurrency(selectedCurrency);
-    setUser(user, token);
+    setUser(user, token, refreshToken);
     setOnboarded();
     try {
       analytics.identify(user.id, { plan: (user as any).plan, currency: selectedCurrency });
@@ -577,11 +577,7 @@ export default function OnboardingScreen() {
     try {
       const res = await authApi.loginWithGoogleMobile(accessToken);
       const { user, accessToken: jwt, refreshToken } = res.data;
-      if (refreshToken) {
-        const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-        await AsyncStorage.setItem('refresh_token', refreshToken);
-      }
-      finishAuth(user, jwt);
+      finishAuth(user, jwt, refreshToken);
     } catch (e: any) {
       Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.google_login_failed'));
     } finally {
@@ -606,11 +602,7 @@ export default function OnboardingScreen() {
       }
       const res = await authApi.loginWithApple(credential.identityToken);
       const { user, accessToken: jwt, refreshToken } = res.data;
-      if (refreshToken) {
-        const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-        await AsyncStorage.setItem('refresh_token', refreshToken);
-      }
-      finishAuth(user, jwt);
+      finishAuth(user, jwt, refreshToken);
     } catch (e: any) {
       if (e.code !== 'ERR_REQUEST_CANCELED') {
         Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.apple_login_failed'));
@@ -658,11 +650,7 @@ export default function OnboardingScreen() {
     try {
       const res = await authApi.verifyOtp(email, otpCode);
       const { user, accessToken: jwt, refreshToken } = res.data;
-      if (refreshToken) {
-        const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-        await AsyncStorage.setItem('refresh_token', refreshToken);
-      }
-      finishAuth(user, jwt);
+      finishAuth(user, jwt, refreshToken);
     } catch (e: any) {
       Alert.alert(t('auth.error_title'), e?.response?.data?.message || t('auth.invalid_code'));
       setOtpCode('');
