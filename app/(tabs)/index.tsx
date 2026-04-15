@@ -43,12 +43,13 @@ import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
 import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
 import { GraceBanner } from '../../src/components/GraceBanner';
+import { formatMoney } from '../../src/utils/formatMoney';
 
 export default function DashboardScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
-  const { currency } = useSettingsStore();
+  const currency = useSettingsStore((s) => s.displayCurrency || s.currency);
   const { colors, isDark } = useTheme();
   const { data: billing } = useBillingStatus();
   const access = useEffectiveAccess();
@@ -147,15 +148,18 @@ export default function DashboardScreen() {
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
   const cancelledCount = subscriptions.filter((s) => s.status === 'CANCELLED').length;
 
+  const displayValueOf = (s: { displayAmount?: string; amount: number }) =>
+    Number(s.displayAmount ?? s.amount) || 0;
+
   const totalMonthly = activeSubs.reduce((sum, s) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
-    return sum + (Number(s.amount) || 0) * mult;
+    return sum + displayValueOf(s) * mult;
   }, 0);
 
   const visibleSubs = access.isInDegradedMode ? activeSubs.slice(0, 3) : activeSubs;
   const totalMonthlyVisible = visibleSubs.reduce((sum, s) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
-    return sum + (Number(s.amount) || 0) * mult;
+    return sum + displayValueOf(s) * mult;
   }, 0);
 
   // Previous month estimate from trend data
@@ -441,7 +445,7 @@ export default function DashboardScreen() {
                       {urgent && <View style={[styles.urgentDot, { backgroundColor: colors.warning }]} />}
                     </View>
                     <Text style={[styles.upcomingName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                    <Text style={[styles.upcomingAmount, { color: colors.primary }]}>{sub.currency} {Number(sub.amount).toFixed(0)}</Text>
+                    <Text style={[styles.upcomingAmount, { color: colors.primary }]}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
                     <Text style={[styles.upcomingDays, {
                       fontWeight: days <= 1 ? '700' : '400',
                       color: days === 0 ? '#ef4444' : days === 1 ? '#f59e0b' : colors.textSecondary,
@@ -496,7 +500,7 @@ export default function DashboardScreen() {
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[styles.trialPrice, { color: colors.text }]}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
+                    <Text style={[styles.trialPrice, { color: colors.text }]}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
                     <Text style={[styles.trialPriceSub, { color: colors.textMuted }]}>{t('trials.then')}</Text>
                   </View>
                 </TouchableOpacity>
@@ -527,6 +531,7 @@ export default function DashboardScreen() {
                   <SubIcon
                     iconUrl={sub.iconUrl}
                     name={sub.name}
+                    category={sub.category}
                     imageStyle={styles.subIcon}
                     placeholderStyle={[styles.subIconPlaceholder, { backgroundColor: colors.primaryLight }]}
                     textStyle={[styles.subIconText, { color: colors.primary }]}
@@ -534,12 +539,17 @@ export default function DashboardScreen() {
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {sub.currentPlan || cat?.label || t(`categories.${sub.category?.toLowerCase()}`, sub.category)}
+                      {sub.currentPlan || (sub.category ? t(`categories.${sub.category.toLowerCase()}`, cat?.label || sub.category) : '')}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
-                    <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{sub.currency} {Number(sub.amount).toFixed(2)}</Text>
+                    <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
                     <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{t(`period_short.${sub.billingPeriod}`, sub.billingPeriod)}</Text>
+                    {sub.nextPaymentDate && (
+                      <Text style={[styles.subNextDate, { color: colors.primary }]} numberOfLines={1}>
+                        {new Date(sub.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
+                      </Text>
+                    )}
                   </View>
                 </TouchableOpacity>
               );
@@ -909,6 +919,7 @@ const styles = StyleSheet.create({
   subPlan: { fontSize: 12, marginTop: 1 },
   subAmount: { fontSize: 14, fontWeight: '800' },
   subPeriod: { fontSize: 10 },
+  subNextDate: { fontSize: 11, fontWeight: '600', marginTop: 2 },
 
   // Savings
   savingsCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 16, padding: 16, borderWidth: 1 },

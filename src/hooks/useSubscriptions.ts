@@ -1,10 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionsApi } from '../api/subscriptions';
+import { useSettingsStore } from '../stores/settingsStore';
 
 export function useSubscriptions(params?: any) {
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency);
+  const mergedParams = { ...(params ?? {}), displayCurrency };
   return useQuery({
-    queryKey: ['subscriptions', params],
-    queryFn: () => subscriptionsApi.getAll(params).then((r) => r.data),
+    queryKey: ['subscriptions', mergedParams],
+    queryFn: () => subscriptionsApi.getAll(mergedParams).then((r) => r.data),
   });
 }
 

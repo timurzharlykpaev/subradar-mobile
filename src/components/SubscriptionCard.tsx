@@ -15,6 +15,7 @@ import { CategoryBadge } from './CategoryBadge';
 import { CardBadge } from './CardBadge';
 import { useTheme, fonts } from '../theme';
 import { GiftIcon } from './icons';
+import { formatMoney } from '../utils/formatMoney';
 
 interface Props {
   subscription: Subscription;
@@ -87,9 +88,36 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
       </View>
 
       <View style={styles.right}>
-        <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-          {subscription.currency} {Number(subscription.amount).toFixed(2)}
-        </Text>
+        {(() => {
+          const origCurrency = subscription.originalCurrency || subscription.currency;
+          const hasConversion =
+            !!subscription.displayCurrency &&
+            !!subscription.displayAmount &&
+            subscription.displayCurrency !== origCurrency;
+          const primaryAmount = subscription.displayAmount ?? String(subscription.amount);
+          const primaryCurrency = subscription.displayCurrency ?? subscription.currency;
+          const lang = i18n.language || 'en';
+          return (
+            <>
+              <Text
+                style={[styles.amount, { color: colors.text }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {formatMoney(primaryAmount, primaryCurrency, lang)}
+              </Text>
+              {hasConversion && (
+                <Text
+                  style={[styles.amountOriginal, { color: colors.textMuted }]}
+                  numberOfLines={1}
+                >
+                  {formatMoney(subscription.amount, origCurrency, lang)}
+                </Text>
+              )}
+            </>
+          );
+        })()}
         {subscription.billingPeriod && (
           <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{t(`period_short.${subscription.billingPeriod}`, subscription.billingPeriod)}</Text>
         )}
@@ -154,6 +182,7 @@ const styles = StyleSheet.create({
   statusBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexShrink: 0 },
   statusText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
   amount: { fontSize: 15, fontWeight: '800', fontFamily: fonts.bold },
+  amountOriginal: { fontSize: 10, marginTop: 1 },
   period: { fontSize: 11 },
   nextDate: { fontSize: 11, fontWeight: '600' },
   trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },

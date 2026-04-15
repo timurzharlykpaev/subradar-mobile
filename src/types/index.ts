@@ -40,6 +40,16 @@ export interface Subscription {
   aiMetadata?: Record<string, unknown>;
   createdAt?: string;
   updatedAt?: string;
+  // Historical, immutable — what user actually pays
+  originalCurrency?: string;
+  // Per-request conversion (from backend)
+  displayAmount?: string;
+  displayCurrency?: string;
+  fxRate?: number;
+  fxFetchedAt?: string;
+  // Catalog links
+  catalogServiceId?: string | null;
+  catalogPlanId?: string | null;
 }
 
 export interface PaymentCard {
@@ -61,6 +71,9 @@ export interface User {
   timezone?: string;
   dateFormat?: string;
   country?: string;
+  region?: string;
+  displayCurrency?: string;
+  timezoneDetected?: string;
   onboardingCompleted?: boolean;
   notificationsEnabled?: boolean;
 }

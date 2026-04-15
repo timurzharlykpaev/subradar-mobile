@@ -42,6 +42,11 @@ import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
 import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
+import { CountryPicker } from '../../src/components/CountryPicker';
+import { CurrencyPicker } from '../../src/components/CurrencyPicker';
+import { COUNTRIES } from '../../src/constants/countries';
+import { COUNTRY_DEFAULT_CURRENCY } from '../../src/constants/timezones';
+import { usersApi } from '../../src/api/users';
 
 const DATE_FORMATS = ['DD/MM', 'MM/DD', 'YYYY-MM-DD'];
 
@@ -50,6 +55,13 @@ export default function SettingsScreen() {
   const { user, logout } = useAuthStore();
   const { t } = useTranslation();
   const { currency, setCurrency, language, setLanguage, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled, dateFormat, setDateFormat } = useSettingsStore();
+  const region = useSettingsStore((s) => s.region);
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency);
+  const setRegion = useSettingsStore((s) => s.setRegion);
+  const setDisplayCurrency = useSettingsStore((s) => s.setDisplayCurrency);
+  const [regionPickerVisible, setRegionPickerVisible] = useState(false);
+  const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
+  const regionInfo = COUNTRIES.find((c) => c.code === region);
   const { isDark, toggleTheme, colors } = useTheme();
 
   const { data: billing } = useBillingStatus();
@@ -417,7 +429,38 @@ export default function SettingsScreen() {
         {/* ═══ 3. Preferences ═══ */}
         <SectionHeader icon="settings-outline" title={t('settings.preferences')} />
         <View style={[card, { padding: 0 }]}>
-          {/* Currency */}
+          {/* Region */}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 }}
+            onPress={() => setRegionPickerVisible(true)}
+          >
+            <View style={{ width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryLight }}>
+              <Ionicons name="earth-outline" size={20} color={colors.primary} />
+            </View>
+            <Text style={{ flex: 1, fontSize: 15, color: colors.text }}>{t('settings.region', 'Region')}</Text>
+            <Text style={{ fontSize: 20, marginRight: 6 }}>{regionInfo?.flag ?? '🌐'}</Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, marginRight: 4 }} numberOfLines={1}>
+              {regionInfo?.name ?? region}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
+
+          {/* Display currency */}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 }}
+            onPress={() => setCurrencyPickerVisible(true)}
+          >
+            <View style={{ width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryLight }}>
+              <Ionicons name="wallet-outline" size={20} color={colors.primary} />
+            </View>
+            <Text style={{ flex: 1, fontSize: 15, color: colors.text }}>{t('settings.display_currency', 'Display currency')}</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text, marginRight: 4 }}>{displayCurrency}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
+
+          {/* Currency (legacy quick-select chips — kept for familiarity) */}
           {renderSettingRow(
             'cash-outline',
             colors.success,
@@ -692,6 +735,49 @@ export default function SettingsScreen() {
         {/* Version */}
         <Text style={{ textAlign: 'center', fontSize: 11, color: colors.textMuted, paddingVertical: 28, letterSpacing: 0.3 }}>v{version} · Subradar</Text>
       </ScrollView>
+
+      <CountryPicker
+        visible={regionPickerVisible}
+        selectedCode={region}
+        title={t('settings.region', 'Region')}
+        onClose={() => setRegionPickerVisible(false)}
+        onSelect={async (code) => {
+          setRegion(code);
+          usersApi.updateMe({ region: code }).catch(() => {});
+          const suggested = COUNTRY_DEFAULT_CURRENCY[code];
+          if (suggested && suggested !== displayCurrency) {
+            Alert.alert(
+              t('settings.region_change_currency_title', 'Change display currency?'),
+              t('settings.region_change_currency_body', 'Show subscriptions in {{currency}}?', { currency: suggested }),
+              [
+                { text: t('settings.region_change_keep', 'Keep {{currency}}', { currency: displayCurrency }), style: 'cancel' },
+                {
+                  text: t('settings.region_change_switch', 'Switch to {{currency}}', { currency: suggested }),
+                  onPress: async () => {
+                    setDisplayCurrency(suggested);
+                    usersApi.updateMe({ displayCurrency: suggested }).catch(() => {});
+                    queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+                    queryClient.invalidateQueries({ queryKey: ['analytics'] });
+                  },
+                },
+              ],
+            );
+          }
+        }}
+      />
+
+      <CurrencyPicker
+        visible={currencyPickerVisible}
+        selected={displayCurrency}
+        title={t('settings.display_currency', 'Display currency')}
+        onClose={() => setCurrencyPickerVisible(false)}
+        onSelect={(code) => {
+          setDisplayCurrency(code);
+          usersApi.updateMe({ displayCurrency: code }).catch(() => {});
+          queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+          queryClient.invalidateQueries({ queryKey: ['analytics'] });
+        }}
+      />
 
       <CancellationInterceptModal
         visible={showCancelModal}

@@ -1,0 +1,65 @@
+export interface Country {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+/**
+ * ISO-3166 alpha-2 country list for the region picker.
+ * Ordered by rough global usage; the picker provides search for anything else.
+ */
+export const COUNTRIES: Country[] = [
+  { code: 'US', name: 'United States', flag: '🇺🇸' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+  { code: 'FR', name: 'France', flag: '🇫🇷' },
+  { code: 'ES', name: 'Spain', flag: '🇪🇸' },
+  { code: 'IT', name: 'Italy', flag: '🇮🇹' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+  { code: 'AT', name: 'Austria', flag: '🇦🇹' },
+  { code: 'GR', name: 'Greece', flag: '🇬🇷' },
+  { code: 'PL', name: 'Poland', flag: '🇵🇱' },
+  { code: 'CZ', name: 'Czechia', flag: '🇨🇿' },
+  { code: 'SE', name: 'Sweden', flag: '🇸🇪' },
+  { code: 'NO', name: 'Norway', flag: '🇳🇴' },
+  { code: 'FI', name: 'Finland', flag: '🇫🇮' },
+  { code: 'DK', name: 'Denmark', flag: '🇩🇰' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭' },
+  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
+  { code: 'RU', name: 'Russia', flag: '🇷🇺' },
+  { code: 'KZ', name: 'Kazakhstan', flag: '🇰🇿' },
+  { code: 'UA', name: 'Ukraine', flag: '🇺🇦' },
+  { code: 'BY', name: 'Belarus', flag: '🇧🇾' },
+  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿' },
+  { code: 'KG', name: 'Kyrgyzstan', flag: '🇰🇬' },
+  { code: 'TJ', name: 'Tajikistan', flag: '🇹🇯' },
+  { code: 'TM', name: 'Turkmenistan', flag: '🇹🇲' },
+  { code: 'AZ', name: 'Azerbaijan', flag: '🇦🇿' },
+  { code: 'AM', name: 'Armenia', flag: '🇦🇲' },
+  { code: 'GE', name: 'Georgia', flag: '🇬🇪' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+  { code: 'CN', name: 'China', flag: '🇨🇳' },
+  { code: 'HK', name: 'Hong Kong', flag: '🇭🇰' },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾' },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
+  { code: 'IN', name: 'India', flag: '🇮🇳' },
+  { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪' },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: 'IL', name: 'Israel', flag: '🇮🇱' },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+  { code: 'NZ', name: 'New Zealand', flag: '🇳🇿' },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
+  { code: 'EG', name: 'Egypt', flag: '🇪🇬' },
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬' },
+];

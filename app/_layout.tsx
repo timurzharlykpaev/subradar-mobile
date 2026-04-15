@@ -69,7 +69,16 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, staleTime: 30000 },
+    queries: {
+      staleTime: 30000,
+      retry: (failureCount, error: any) => {
+        // Don't retry client errors (4xx) — server said request is bad, retry won't help
+        const status = error?.response?.status;
+        if (typeof status === 'number' && status >= 400 && status < 500) return false;
+        // Retry network errors and 5xx once
+        return failureCount < 1;
+      },
+    },
   },
 });
 

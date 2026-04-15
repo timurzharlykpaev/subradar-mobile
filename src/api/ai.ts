@@ -3,7 +3,8 @@ import { apiClient } from './client';
 export const aiApi = {
   wizard: (message: string, context?: Record<string, any>, locale?: string, history?: Array<{ role: 'user' | 'assistant'; content: string }>) =>
     apiClient.post('/ai/wizard', { message, context, locale, history }),
-  lookupService: (query: string) => apiClient.post('/ai/lookup', { query }),
+  lookupService: (query: string, opts?: { locale?: string; country?: string }) =>
+    apiClient.post('/ai/lookup', { query, locale: opts?.locale, country: opts?.country }),
   parseText: (text: string) => apiClient.post('/ai/parse-text', { text }),
   searchService: (query: string) => apiClient.post('/ai/search', { query }),
   parseScreenshot: (formData: FormData) =>
