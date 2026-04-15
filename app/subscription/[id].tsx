@@ -22,6 +22,7 @@ import { useTheme } from '../../src/theme';
 import { CategoryBadge } from '../../src/components/CategoryBadge';
 import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
 import { PencilIcon, TrashIcon } from '../../src/components/icons';
+import { formatMoney } from '../../src/utils/formatMoney';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { analytics } from '../../src/services/analytics';
 
@@ -164,10 +165,29 @@ export default function SubscriptionDetailScreen() {
             </Text>
           </View>
 
-          <Text style={[styles.amount, { color: colors.primary }]}>
-            {subscription.currency} {Number(subscription.amount).toFixed(2)}
-            <Text style={[styles.period, { color: colors.textSecondary }]}> / {t(`billing.${subscription.billingPeriod?.toLowerCase()}`, subscription.billingPeriod)}</Text>
-          </Text>
+          {(() => {
+            const origCurrency = subscription.originalCurrency || subscription.currency;
+            const hasConversion =
+              !!subscription.displayCurrency &&
+              !!subscription.displayAmount &&
+              subscription.displayCurrency !== origCurrency;
+            const primaryAmount = subscription.displayAmount ?? String(subscription.amount);
+            const primaryCurrency = subscription.displayCurrency ?? subscription.currency;
+            const lang = i18n.language || 'en';
+            return (
+              <>
+                <Text style={[styles.amount, { color: colors.primary }]}>
+                  {formatMoney(primaryAmount, primaryCurrency, lang)}
+                  <Text style={[styles.period, { color: colors.textSecondary }]}> / {t(`billing.${subscription.billingPeriod?.toLowerCase()}`, subscription.billingPeriod)}</Text>
+                </Text>
+                {hasConversion && (
+                  <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>
+                    {formatMoney(subscription.amount, origCurrency, lang)}
+                  </Text>
+                )}
+              </>
+            );
+          })()}
         </View>
 
         {/* Details */}

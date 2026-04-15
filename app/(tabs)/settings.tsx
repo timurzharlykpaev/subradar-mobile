@@ -742,27 +742,44 @@ export default function SettingsScreen() {
         title={t('settings.region', 'Region')}
         onClose={() => setRegionPickerVisible(false)}
         onSelect={async (code) => {
+          // Read live values from store to avoid stale closure
+          const prevCurrency = useSettingsStore.getState().displayCurrency;
           setRegion(code);
-          usersApi.updateMe({ region: code }).catch(() => {});
           const suggested = COUNTRY_DEFAULT_CURRENCY[code];
-          if (suggested && suggested !== displayCurrency) {
-            Alert.alert(
-              t('settings.region_change_currency_title', 'Change display currency?'),
-              t('settings.region_change_currency_body', 'Show subscriptions in {{currency}}?', { currency: suggested }),
-              [
-                { text: t('settings.region_change_keep', 'Keep {{currency}}', { currency: displayCurrency }), style: 'cancel' },
-                {
-                  text: t('settings.region_change_switch', 'Switch to {{currency}}', { currency: suggested }),
-                  onPress: async () => {
-                    setDisplayCurrency(suggested);
-                    usersApi.updateMe({ displayCurrency: suggested }).catch(() => {});
-                    queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-                    queryClient.invalidateQueries({ queryKey: ['analytics'] });
-                  },
-                },
-              ],
-            );
+          // Always invalidate — region drives AI pricing even if display currency doesn't change
+          queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+          queryClient.invalidateQueries({ queryKey: ['analytics'] });
+
+          if (!suggested || suggested === prevCurrency) {
+            // Single atomic PATCH when no currency change needed
+            usersApi.updateMe({ region: code }).catch(() => {});
+            return;
           }
+
+          Alert.alert(
+            t('settings.region_change_currency_title', 'Change display currency?'),
+            t('settings.region_change_currency_body', 'Show subscriptions in {{currency}}?', { currency: suggested }),
+            [
+              {
+                text: t('settings.region_change_keep', 'Keep {{currency}}', { currency: prevCurrency }),
+                style: 'cancel',
+                // Still persist the region change
+                onPress: () => {
+                  usersApi.updateMe({ region: code }).catch(() => {});
+                },
+              },
+              {
+                text: t('settings.region_change_switch', 'Switch to {{currency}}', { currency: suggested }),
+                onPress: () => {
+                  setDisplayCurrency(suggested);
+                  // Single batched PATCH for atomicity
+                  usersApi.updateMe({ region: code, displayCurrency: suggested }).catch(() => {});
+                  queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+                  queryClient.invalidateQueries({ queryKey: ['analytics'] });
+                },
+              },
+            ],
+          );
         }}
       />
 

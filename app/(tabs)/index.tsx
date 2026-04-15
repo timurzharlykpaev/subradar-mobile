@@ -382,7 +382,7 @@ export default function DashboardScreen() {
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
           <View style={styles.heroAmountRow}>
-            <Text style={styles.heroAmount}>{currency} {totalMonthlyVisible.toFixed(2)}</Text>
+            <Text style={styles.heroAmount}>{formatMoney(totalMonthlyVisible, currency, i18n.language)}</Text>
             {delta !== 0 && (
               <View style={[styles.deltaBadge, { backgroundColor: delta > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)' }]}>
                 <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={10} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
@@ -408,7 +408,7 @@ export default function DashboardScreen() {
             <View style={styles.heroMetaDivider} />
             <View style={styles.heroMetaItem}>
               <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.heroMetaText}>{currency} {(totalMonthly * 12).toFixed(0)}/{t('paywall.year', 'yr')}</Text>
+              <Text style={styles.heroMetaText}>{formatMoney(totalMonthly * 12, currency, i18n.language)}/{t('paywall.year', 'yr')}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -463,9 +463,9 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
           <View testID="dashboard-forecast-row" style={styles.forecastRow}>
-            <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={`${currency} ${forecast30.toFixed(0)}`} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
-            <ForecastBox icon="trending-up" label={`6 ${t('paywall.month', 'mo')}`} amount={`${currency} ${(totalMonthly * 6).toFixed(0)}`} sub={t('dashboard.forecast_title')} color={colors.success} />
-            <ForecastBox icon="analytics" label={`12 ${t('paywall.month', 'mo')}`} amount={`${currency} ${(totalMonthly * 12).toFixed(0)}`} sub={t('dashboard.annually')} color={colors.warning} />
+            <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={formatMoney(forecast30, currency, i18n.language)} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
+            <ForecastBox icon="trending-up" label={`6 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 6, currency, i18n.language)} sub={t('dashboard.forecast_title')} color={colors.success} />
+            <ForecastBox icon="analytics" label={`12 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 12, currency, i18n.language)} sub={t('dashboard.annually')} color={colors.warning} />
           </View>
         </View>
 

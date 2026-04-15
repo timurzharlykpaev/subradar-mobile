@@ -17,7 +17,10 @@ import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
+import { useSettingsStore } from '../../src/stores/settingsStore';
 import { analyticsApi } from '../../src/api/analytics';
+import { formatMoney } from '../../src/utils/formatMoney';
+import i18n from '../../src/i18n';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
@@ -239,6 +242,12 @@ export default function AnalyticsScreen() {
   const isPro = (billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization') && !isCancelled;
   const { colors, isDark } = useTheme();
   const access = useEffectiveAccess();
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const lang = i18n.language || 'en';
+  const money = useCallback(
+    (amount: number | string) => formatMoney(amount, displayCurrency, lang),
+    [displayCurrency, lang],
+  );
 
   const [summary, setSummary] = useState<any>(null);
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
@@ -256,8 +265,8 @@ export default function AnalyticsScreen() {
   const fetchAll = useCallback(async () => {
     let errors = 0;
     const promises = [
-      analyticsApi.getSummary().then((r) => setSummary(r.data)).catch(() => { errors++; }),
-      analyticsApi.getMonthly().then((r) => {
+      analyticsApi.getSummary({ displayCurrency }).then((r) => setSummary(r.data)).catch(() => { errors++; }),
+      analyticsApi.getMonthly(undefined, { displayCurrency }).then((r) => {
         const raw = r.data || [];
         const data = raw.map((d: any) => ({
           month: (d.label || d.month || '').slice(-5) || '',
@@ -265,13 +274,13 @@ export default function AnalyticsScreen() {
         }));
         setMonthlyData(data.slice(-12));
       }).catch(() => { errors++; }),
-      analyticsApi.getByCategory().then((r) => {
+      analyticsApi.getByCategory({ displayCurrency }).then((r) => {
         setByCategoryData(r.data || []);
       }).catch(() => { errors++; }),
-      analyticsApi.getByCard().then((r) => {
+      analyticsApi.getByCard({ displayCurrency }).then((r) => {
         setByCardData(r.data || []);
       }).catch(() => {}),
-      analyticsApi.getForecast().then((r) => {
+      analyticsApi.getForecast({ displayCurrency }).then((r) => {
         const d = r.data;
         setForecast({
           day30: d?.forecast30d ?? d?.day30 ?? null,
@@ -280,16 +289,16 @@ export default function AnalyticsScreen() {
           currency: d?.currency ?? 'USD',
         });
       }).catch(() => {}),
-      analyticsApi.getSavings().then((r) => setSavings(r.data)).catch(() => {}),
+      analyticsApi.getSavings({ displayCurrency }).then((r) => setSavings(r.data)).catch(() => {}),
     ];
     await Promise.all(promises);
     setFetchError(errors >= 3); // Most data failed
-  }, []);
+  }, [displayCurrency]);
 
-  // Initial load
+  // Initial load + re-fetch when displayCurrency changes
   useEffect(() => {
     fetchAll().finally(() => setLoading(false));
-  }, []);
+  }, [fetchAll]);
 
   // Re-fetch when tab gains focus (e.g. after adding a subscription)
   useFocusEffect(
@@ -502,13 +511,13 @@ export default function AnalyticsScreen() {
           <StatCard
             icon="wallet-outline"
             label={t('analytics.avg_month')}
-            value={`$${formatNum(totalMonthly)}`}
+            value={money(totalMonthly)}
             color={colors.primary}
           />
           <StatCard
             icon="calendar-outline"
             label={t('analytics.total_year')}
-            value={`$${formatNum(totalYearly)}`}
+            value={money(totalYearly)}
             color={colors.success}
           />
           <StatCard
@@ -523,7 +532,7 @@ export default function AnalyticsScreen() {
               icon="flame-outline"
               label={t('analytics.most_expensive')}
               value={mostExpensive.name}
-              sub={`$${formatNum(getMonthlyAmount(mostExpensive), 2)}/mo`}
+              sub={`${money(getMonthlyAmount(mostExpensive))}/mo`}
               color={colors.warning}
             />
           )}
@@ -547,7 +556,7 @@ export default function AnalyticsScreen() {
           {access.isInDegradedMode && (
             <View style={{ alignItems: 'center', marginVertical: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
-                {t('team_logic.analytics_locked_hint', { amount: `$${fullMonthly.toFixed(2)}` })}
+                {t('team_logic.analytics_locked_hint', { amount: money(fullMonthly) })}
               </Text>
             </View>
           )}
@@ -573,15 +582,15 @@ export default function AnalyticsScreen() {
             </View>
             <View style={styles.teamCardRow}>
               <Text style={[styles.teamCardLabel, { color: colors.textMuted, flex: 1 }]}>
-                {t('team_upsell.analytics_current', { amount: `$${totalMonthly.toFixed(0)}` })}
+                {t('team_upsell.analytics_current', { amount: money(totalMonthly) })}
               </Text>
               <Ionicons name="arrow-forward" size={16} color={colors.textMuted} />
               <Text style={[styles.teamCardValue, { color: '#06B6D4', flex: 1 }]}>
-                {t('team_upsell.analytics_with_team', { amount: `$${(totalMonthly / 4).toFixed(0)}` })}
+                {t('team_upsell.analytics_with_team', { amount: money(totalMonthly / 4) })}
               </Text>
             </View>
             <Text style={[styles.teamCardSavings, { color: '#22C55E' }]}>
-              {t('team_upsell.analytics_yearly', { amount: `$${Math.round(totalMonthly * 12 * 0.75)}` })}
+              {t('team_upsell.analytics_yearly', { amount: money(totalMonthly * 12 * 0.75) })}
             </Text>
           </TouchableOpacity>
         )}
