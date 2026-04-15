@@ -32,6 +32,10 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { authApi } from '../src/api/auth';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
+import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
+import { COUNTRIES } from '../src/constants/countries';
+import { CountryPicker } from '../src/components/CountryPicker';
+import { usersApi } from '../src/api/users';
 import { useTheme, fonts } from '../src/theme';
 import { SunIcon, MoonIcon, MailIcon } from '../src/components/icons';
 import * as Notifications from 'expo-notifications';
@@ -427,12 +431,26 @@ export default function OnboardingScreen() {
   // Returning user (logged out but already onboarded) → skip to auth step
   const [step, setStep] = useState(isOnboarded ? 3 : 0);
   const [email, setEmail] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [selectedRegion, setSelectedRegion] = useState<string>(() => {
+    try {
+      return detectCountryFromTimezone() || 'US';
+    } catch {
+      return 'US';
+    }
+  });
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(() => {
+    try {
+      return COUNTRY_DEFAULT_CURRENCY[detectCountryFromTimezone() || 'US'] || 'USD';
+    } catch {
+      return 'USD';
+    }
+  });
+  const [regionPickerVisible, setRegionPickerVisible] = useState(false);
   const [quickAddSelected, setQuickAddSelected] = useState<Set<string>>(new Set());
   const counterAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const authErrorTimer = useRef<ReturnType<typeof setTimeout>>();
+  const authErrorTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const showAuthError = (msg: string) => {
     setAuthError(msg);
     clearTimeout(authErrorTimer.current);
@@ -448,6 +466,8 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { setLanguage, language, setCurrency } = useSettingsStore();
+  const setRegionInStore = useSettingsStore((s) => s.setRegion);
+  const setDisplayCurrencyInStore = useSettingsStore((s) => s.setDisplayCurrency);
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
 
@@ -571,8 +591,14 @@ export default function OnboardingScreen() {
       return;
     }
     setCurrency(selectedCurrency);
+    setRegionInStore(selectedRegion);
+    setDisplayCurrencyInStore(selectedCurrency);
     setUser(user, token, refreshToken);
     setOnboarded();
+    // Best-effort sync to backend (non-blocking)
+    usersApi
+      .updateMe({ region: selectedRegion, displayCurrency: selectedCurrency })
+      .catch(() => {});
     try {
       analytics.identify(user.id, { plan: (user as any).plan, currency: selectedCurrency });
       analytics.track('auth_completed', { method: 'unknown', is_new_user: !user.createdAt || (Date.now() - new Date(user.createdAt).getTime() < 60_000) });
@@ -918,8 +944,43 @@ export default function OnboardingScreen() {
           <SvgText x="70" y="127" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#FFF">₸</SvgText>
         </Svg>
       </View>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('settings.currency')}</Text>
-      <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('onboarding.choose_currency')}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('onboarding.region_title', 'Where do you buy subscriptions?')}</Text>
+      <Text style={[styles.subheadline, { color: colors.textSecondary }]}>{t('onboarding.region_subtitle', 'So prices stay accurate for you.')}</Text>
+
+      {/* Region selector */}
+      {(() => {
+        const regionInfo = COUNTRIES.find((c) => c.code === selectedRegion);
+        return (
+          <TouchableOpacity
+            testID="onboarding-region-select"
+            onPress={() => setRegionPickerVisible(true)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              padding: 16,
+              borderRadius: 16,
+              borderWidth: 1.5,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+              marginBottom: 12,
+            }}
+          >
+            <Text style={{ fontSize: 36 }}>{regionInfo?.flag ?? '🌐'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                {t('settings.region', 'Region')}
+              </Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, marginTop: 2 }} numberOfLines={1}>
+                {regionInfo?.name ?? selectedRegion}
+              </Text>
+            </View>
+            <Ionicons name="chevron-down" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        );
+      })()}
+
+      <Text style={[styles.subheadline, { color: colors.textSecondary, marginTop: 4 }]}>{t('onboarding.choose_currency')}</Text>
       <View style={styles.currencyGrid}>
         {CURRENCIES.map((cur) => (
           <TouchableOpacity
@@ -1184,6 +1245,17 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Auth error toast */}
+      <CountryPicker
+        visible={regionPickerVisible}
+        selectedCode={selectedRegion}
+        title={t('onboarding.region_title', 'Where do you buy subscriptions?')}
+        onClose={() => setRegionPickerVisible(false)}
+        onSelect={(code) => {
+          setSelectedRegion(code);
+          const suggested = COUNTRY_DEFAULT_CURRENCY[code];
+          if (suggested) setSelectedCurrency(suggested);
+        }}
+      />
       {authError && (
         <View style={{ position: 'absolute', bottom: 40, left: 16, right: 16, backgroundColor: '#DC2626', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 8 }}>
           <Ionicons name="alert-circle" size={20} color="#FFF" />
