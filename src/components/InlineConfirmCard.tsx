@@ -3,6 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
+import { useSettingsStore } from '../stores/settingsStore';
+import { convertAmount } from '../services/fxCache';
+import { formatMoney } from '../utils/formatMoney';
+import i18n from '../i18n';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -42,6 +46,8 @@ const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'MUSIC', 'PRODUCTIVITY', 'GAMING
 export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const lang = i18n.language || 'en';
   const [name, setName] = useState(data.name.value);
   const [amount, setAmount] = useState(String(data.amount.value || ''));
   const [currency, setCurrency] = useState(data.currency.value || 'USD');
@@ -54,8 +60,14 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
 
   const handlePlanSelect = (plan: { name: string; priceMonthly: number; currency: string }) => {
     setSelectedPlan(plan.name);
-    setAmount(String(plan.priceMonthly));
-    setCurrency(plan.currency);
+    const converted = convertAmount(plan.priceMonthly, plan.currency, displayCurrency);
+    if (converted !== null) {
+      setAmount(String(converted));
+      setCurrency(displayCurrency);
+    } else {
+      setAmount(String(plan.priceMonthly));
+      setCurrency(plan.currency);
+    }
     setPeriod('MONTHLY');
   };
 
@@ -119,7 +131,12 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               <View style={[styles.radio, selectedPlan === plan.name && styles.radioActive]} />
               <Text style={[styles.planName, { color: colors.text }]}>{t(`plans.${plan.name.toLowerCase().replace(/\s+/g, '_')}`, plan.name)}</Text>
               <Text style={[styles.planPrice, { color: colors.textSecondary }]}>
-                {plan.priceMonthly.toFixed(2)} {plan.currency}/{t('add_flow.mo', 'mo')}
+                {(() => {
+                  const converted = convertAmount(plan.priceMonthly, plan.currency, displayCurrency);
+                  return converted !== null
+                    ? `${formatMoney(converted, displayCurrency, lang)}/${t('add_flow.mo', 'mo')}`
+                    : `${plan.priceMonthly.toFixed(2)} ${plan.currency}/${t('add_flow.mo', 'mo')}`;
+                })()}
               </Text>
             </TouchableOpacity>
           ))}

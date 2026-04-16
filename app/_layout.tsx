@@ -21,6 +21,7 @@ import { ErrorBoundary } from '../src/utils/ErrorBoundary';
 import { installConsoleInterceptors } from '../src/utils/errorReporter';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
+import { initFxCache, invalidateFxCache } from '../src/services/fxCache';
 
 // Install global console interceptors as early as possible
 installConsoleInterceptors();
@@ -115,6 +116,20 @@ function DataLoader() {
       }
     }
   }, []);
+
+  // Prefetch FX rates for client-side conversion (popular services, etc.)
+  useEffect(() => {
+    if (isAuthenticated) {
+      initFxCache();
+    }
+  }, [isAuthenticated]);
+
+  // Refetch FX rates when display currency changes
+  useEffect(() => {
+    if (isAuthenticated && displayCurrency) {
+      invalidateFxCache();
+    }
+  }, [displayCurrency]);
 
   useEffect(() => {
     if (!isAuthenticated) {
