@@ -246,6 +246,10 @@
     "search": "Search",
     "or_manual": "or enter manually",
     "searching": "Searching...",
+    "stage_transcribing": "Transcribing voice",
+    "stage_analyzing": "Analyzing image",
+    "stage_thinking": "AI looking up service",
+    "stage_saving": "Saving subscription",
     "already_exists": "Already exists",
     "billing_day": "Billing day",
     "bulk_auto_detected": "Auto-detected subscriptions",
@@ -824,6 +828,8 @@
     "desc_ai_photo": "Snap a receipt or screenshot and AI will recognize the subscription",
     "title_unlimited_subs": "Unlimited Subscriptions",
     "desc_unlimited_subs": "Track all your subscriptions without limits",
+    "title_ai_limit": "AI Request Limit Reached",
+    "desc_ai_limit": "You've used all your free AI requests this month. Pro gives you 200 per month.",
     "title_workspace": "Team Workspace",
     "desc_workspace": "Manage team subscriptions and track shared spending",
     "feat_unlimited": "Unlimited subscriptions",
@@ -840,7 +846,9 @@
     "could_not_parse": "I couldn't understand that. Could you describe the subscription differently?",
     "voice_error_title": "Voice Error",
     "voice_empty": "Couldn't recognize speech. Please try again or type instead.",
-    "voice_error": "Voice processing failed. Please try again."
+    "voice_error": "Voice processing failed. Please try again.",
+    "voice_start_failed": "Could not start recording. Check microphone permission and try again.",
+    "voice_no_audio": "Recording failed. Please try again."
   },
   "billing": {
     "weekly": "Weekly",

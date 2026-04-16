@@ -256,7 +256,11 @@
     "quarterly": "每季度",
     "billing_period": "计费周期",
     "service_name": "名称",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "stage_transcribing": "正在转录语音",
+    "stage_analyzing": "正在分析图像",
+    "stage_thinking": "AI 正在查找服务",
+    "stage_saving": "正在保存订阅"
   },
   "settings": {
     "title": "设置",
@@ -812,7 +816,9 @@
     "could_not_parse": "无法理解。请尝试用其他方式描述订阅。",
     "voice_error_title": "语音错误",
     "voice_empty": "无法识别语音。请重试或输入文字。",
-    "voice_error": "语音处理失败。请重试。"
+    "voice_error": "语音处理失败。请重试。",
+    "voice_start_failed": "无法开始录音。请检查麦克风权限。",
+    "voice_no_audio": "录音失败。请重试。"
   },
   "pro_modal": {
     "title_default": "Pro功能",
@@ -835,7 +841,9 @@
     "feat_reports": "PDF报告",
     "start_trial": "开始7天免费试用",
     "upgrade": "升级 — $2.99/月",
-    "unlock": "解锁"
+    "unlock": "解锁",
+    "title_ai_limit": "已达到 AI 请求限制",
+    "desc_ai_limit": "本月免费 AI 请求已用完。Pro 每月提供 200 次。"
   },
   "categories": {
     "streaming": "流媒体",

@@ -86,6 +86,11 @@ export type AnalyticsEvent =
   | 'team_upsell_detail_hint_tapped'
   | 'team_upsell_ai_limit_tapped'
 
+  // Pro gate
+  | 'pro_gate_shown'
+  | 'pro_gate_upgrade_tapped'
+  | 'pro_gate_dismissed'
+
   // Churn / retention
   | 'subscription_cancelled'
   | 'cancellation_intercepted'

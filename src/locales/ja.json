@@ -256,7 +256,11 @@
     "quarterly": "四半期",
     "billing_period": "請求期間",
     "service_name": "サービス名",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "stage_transcribing": "音声を文字起こし中",
+    "stage_analyzing": "画像を分析中",
+    "stage_thinking": "AIがサービスを検索中",
+    "stage_saving": "サブスクを保存中"
   },
   "settings": {
     "title": "設定",
@@ -812,7 +816,9 @@
     "could_not_parse": "理解できませんでした。サブスクリプションを別の方法で説明していただけますか？",
     "voice_error_title": "音声エラー",
     "voice_empty": "音声を認識できませんでした。もう一度お試しいただくか、テキストで入力してください。",
-    "voice_error": "音声処理に失敗しました。もう一度お試しください。"
+    "voice_error": "音声処理に失敗しました。もう一度お試しください。",
+    "voice_start_failed": "録音を開始できません。マイクの権限を確認してください。",
+    "voice_no_audio": "録音に失敗しました。もう一度お試しください。"
   },
   "pro_modal": {
     "title_default": "Pro機能",
@@ -835,7 +841,9 @@
     "feat_reports": "PDFレポート",
     "start_trial": "7日間無料トライアル開始",
     "upgrade": "アップグレード — $2.99/月",
-    "unlock": "解放"
+    "unlock": "解放",
+    "title_ai_limit": "AIリクエスト上限に達しました",
+    "desc_ai_limit": "今月の無料AIリクエストを使い切りました。Proでは月200回使えます。"
   },
   "categories": {
     "streaming": "ストリーミング",

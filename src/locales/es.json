@@ -256,7 +256,11 @@
     "quarterly": "Trimestral",
     "billing_period": "Período de facturación",
     "service_name": "Nombre",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "stage_transcribing": "Transcribiendo voz",
+    "stage_analyzing": "Analizando imagen",
+    "stage_thinking": "IA buscando servicio",
+    "stage_saving": "Guardando suscripción"
   },
   "settings": {
     "title": "Configuración",
@@ -812,7 +816,9 @@
     "could_not_parse": "No pude entender eso. ¿Podrías describir la suscripción de otra forma?",
     "voice_error_title": "Error de voz",
     "voice_empty": "No se pudo reconocer el habla. Intenta de nuevo o escribe.",
-    "voice_error": "Error al procesar la voz. Intenta de nuevo."
+    "voice_error": "Error al procesar la voz. Intenta de nuevo.",
+    "voice_start_failed": "No se pudo iniciar la grabación. Comprueba el permiso del micrófono e inténtalo de nuevo.",
+    "voice_no_audio": "La grabación falló. Inténtalo de nuevo."
   },
   "pro_modal": {
     "title_default": "Función Pro",
@@ -835,7 +841,9 @@
     "feat_reports": "Informes PDF",
     "start_trial": "Prueba gratis 7 días",
     "upgrade": "Mejorar — $2.99/mes",
-    "unlock": "Desbloquear"
+    "unlock": "Desbloquear",
+    "title_ai_limit": "Límite de IA alcanzado",
+    "desc_ai_limit": "Has usado todas tus solicitudes de IA gratuitas este mes. Pro te da 200 al mes."
   },
   "categories": {
     "streaming": "Streaming",

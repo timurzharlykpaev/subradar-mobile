@@ -46,6 +46,7 @@ import { BulkAddSheet } from './BulkAddSheet';
 import { TranscriptionConfirm } from './TranscriptionConfirm';
 import { InlineConfirmCard, ConfirmCardData } from './InlineConfirmCard';
 import { AICreditsBadge } from './AICreditsBadge';
+import ProFeatureModal from './ProFeatureModal';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useBillingStatus } from '../hooks/useBilling';
 import { useTheme } from '../theme';
@@ -187,6 +188,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     flowStateRef.current = state;
     _setFlowState(state);
   };
+  type LoadingStage = 'transcribing' | 'analyzing' | 'thinking' | 'saving';
+  const [loadingStage, setLoadingStage] = useState<LoadingStage>('thinking');
+  // Modal gate for Pro-only limits (replaces blocking Alert.alert dialogs)
+  const [proGate, setProGate] = useState<string | null>(null);
   const [smartInput, setSmartInput] = useState('');
   const [transcribedText, setTranscribedText] = useState('');
   const [confirmData, setConfirmData] = useState<ConfirmCardData | null>(null);
@@ -300,14 +305,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleSave = useCallback(async () => {
     if (saving) return;
     if (subsLimitReached) {
-      Alert.alert(
-        t('add.limit_title', 'Subscription limit reached'),
-        t('add.limit_msg', 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.', { max: maxSubscriptions }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { analytics.paywallViewed('feature_gate'); onClose(); router.push('/paywall'); } },
-        ],
-      );
+      analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'manual_save' });
+      setProGate('unlimited_subs');
       return;
     }
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
@@ -376,8 +375,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429;
 
       if (isLimitError) {
-        onClose();
-        router.push('/paywall');
+        analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'manual_save_backend' });
+        setProGate('unlimited_subs');
       } else {
         const msg = typeof errorData === 'string' ? errorData
           : errorData?.message || errorData?.message_key || err?.message || t('add.save_failed');
@@ -392,17 +391,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleConfirmSave = useCallback(async (data: any) => {
     if (saving) return;
     if (subsLimitReached) {
-      Alert.alert(
-        t('add.limit_title', 'Subscription limit reached'),
-        t('add.limit_msg', 'Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.', { max: maxSubscriptions }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => { analytics.paywallViewed('feature_gate'); onClose(); router.push('/paywall'); } },
-        ],
-      );
+      analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'confirm_save' });
+      setProGate('unlimited_subs');
       return;
     }
     setSaving(true);
+    setLoadingStage('saving');
 
     try {
     const iconUrl = data.iconUrl || (data.serviceUrl
@@ -454,11 +448,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
     } catch (err: any) {
-      Alert.alert(t('common.error'), translateBackendError(t, err) || t('add.save_failed'));
+      const errorData = err?.response?.data?.error || err?.response?.data;
+      const code = errorData?.code || '';
+      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429;
+      if (isLimitError) {
+        analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'confirm_save_backend' });
+        setProGate('unlimited_subs');
+      } else {
+        Alert.alert(t('common.error'), translateBackendError(t, err) || t('add.save_failed'));
+      }
     } finally {
       setSaving(false);
     }
-  }, [saving, subsLimitReached, onClose, router, currency, addSubscription, addedViaSource]);
+  }, [saving, subsLimitReached, onClose, router, currency, addSubscription, addedViaSource, t]);
 
   // ── Convert CatalogEntry to ConfirmCardData ─────────────────────────────
   const catalogToConfirmData = (entry: CatalogEntry): ConfirmCardData => ({
@@ -482,8 +484,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
     // Check if bulk input
     if (isBulkInput(input)) {
-      setFlowState('loading');
       setAddedViaSource('AI_TEXT');
+      setLoadingStage('thinking');
+      setFlowState('loading');
       try {
         // Try bulk parse via AI
         const res = await aiApi.parseBulkText(input, i18n.language ?? 'en', currency);
@@ -508,8 +511,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
 
     // Single service lookup
-    setFlowState('loading');
     setAddedViaSource('AI_TEXT');
+    setLoadingStage('thinking');
+    setFlowState('loading');
 
     // Step 1: Free lookup (local catalog + backend service-catalog)
     try {
@@ -542,27 +546,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const msg = err?.response?.data?.message || '';
       const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
       if (isLimitError) {
-        Alert.alert(
-          t('add.ai_limit_title', 'AI request limit reached'),
-          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
-          isProUser
-            ? [
-                { text: t('team_upsell.ai_limit_wait', 'Wait until next month'), style: 'cancel' as const },
-                { text: t('team_upsell.ai_limit_team_cta', 'Upgrade to Team — 1000 AI'), onPress: () => { analytics.track('team_upsell_ai_limit_tapped'); router.push('/paywall' as any); } },
-              ]
-            : [
-                { text: t('common.cancel'), style: 'cancel' as const },
-                { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-              ]
-        );
         setFlowState('idle');
+        analytics.track('pro_gate_shown', { feature: 'ai_limit', source: 'smart_input' });
+        setProGate('ai_limit');
         return;
       }
     }
 
     // Nothing found — show wizard as fallback
     setFlowState('wizard');
-  }, [smartInput, i18n.language, currency, t, router]);
+  }, [smartInput, i18n.language, currency, t]);
 
   // ── Quick chip tap ──────────────────────────────────────────────────────
   const handleQuickChip = useCallback((chip: typeof QUICK_CHIPS[number]) => {
@@ -601,15 +594,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleVoiceComplete = useCallback(async (uri: string) => {
     if (!uri) return;
     Keyboard.dismiss();
-    setFlowState('loading');
     setAddedViaSource('AI_TEXT');
+    setLoadingStage('transcribing');
+    setFlowState('loading');
     try {
       const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
       const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
-        Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
         setFlowState('idle');
+        Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
         return;
       }
       setTranscribedText(text);
@@ -618,29 +612,29 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const status = err?.response?.status;
       const msg = err?.response?.data?.message || '';
       const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+      setFlowState('idle');
       if (isLimitError) {
-        Alert.alert(
-          t('add.ai_limit_title', 'AI request limit reached'),
-          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
-          isProUser
-            ? [
-                { text: t('team_upsell.ai_limit_wait', 'Wait until next month'), style: 'cancel' as const },
-                { text: t('team_upsell.ai_limit_team_cta', 'Upgrade to Team — 1000 AI'), onPress: () => { analytics.track('team_upsell_ai_limit_tapped'); router.push('/paywall' as any); } },
-              ]
-            : [
-                { text: t('common.cancel'), style: 'cancel' as const },
-                { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-              ]
-        );
+        analytics.track('pro_gate_shown', { feature: 'ai_limit', source: 'voice' });
+        setProGate('ai_limit');
       } else {
         reportError(`Voice error: ${err?.message ?? err}`, err?.stack);
         Alert.alert(t('ai.voice_error_title'), msg || t('ai.voice_error'));
       }
-      setFlowState('idle');
     }
-  }, [i18n.language, t, router]);
+  }, [i18n.language, t]);
 
-  const { isRecording, durationFmt, start: startRecording, stop: stopRecording } = useVoiceRecorder(handleVoiceComplete);
+  const handleVoiceError = useCallback((reason: 'no_uri' | 'start_failed' | 'stop_failed') => {
+    reportError(`Voice recorder error: ${reason}`);
+    setFlowState('idle');
+    Alert.alert(
+      t('ai.voice_error_title', 'Voice Error'),
+      reason === 'start_failed'
+        ? t('ai.voice_start_failed', 'Could not start recording. Check microphone permission and try again.')
+        : t('ai.voice_no_audio', 'Recording failed. Please try again.'),
+    );
+  }, [t]);
+  const { isRecording, durationFmt, start: startRecording, stop: stopRecording } =
+    useVoiceRecorder(handleVoiceComplete, handleVoiceError);
 
   // ── Camera/Screenshot handler ───────────────────────────────────────────
   const handleCamera = useCallback(async () => {
@@ -656,8 +650,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
     const uri = result.assets[0].uri;
     setScreenshotUri(uri);
-    setFlowState('loading');
     setAddedViaSource('AI_SCREENSHOT');
+    setLoadingStage('analyzing');
+    setFlowState('loading');
 
     try {
       const formData = new FormData();
@@ -702,26 +697,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const status = err?.response?.status;
       const msg = err?.response?.data?.message || '';
       const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
+      setFlowState('idle');
       if (isLimitError) {
-        Alert.alert(
-          t('add.ai_limit_title', 'AI request limit reached'),
-          t('add.ai_limit_msg', 'You\'ve used all your free AI requests. Upgrade to Pro for 200 requests/month.'),
-          isProUser
-            ? [
-                { text: t('team_upsell.ai_limit_wait', 'Wait until next month'), style: 'cancel' as const },
-                { text: t('team_upsell.ai_limit_team_cta', 'Upgrade to Team — 1000 AI'), onPress: () => { analytics.track('team_upsell_ai_limit_tapped'); router.push('/paywall' as any); } },
-              ]
-            : [
-                { text: t('common.cancel'), style: 'cancel' as const },
-                { text: t('subscription_plan.upgrade_pro', 'Upgrade to Pro'), onPress: () => router.push('/paywall' as any) },
-              ]
-        );
+        analytics.track('pro_gate_shown', { feature: 'ai_limit', source: 'screenshot' });
+        setProGate('ai_limit');
       } else {
         Alert.alert(t('common.error'), msg || t('add.screenshot_parse_error', 'Could not parse the screenshot. Try a clearer image.'));
       }
-      setFlowState('idle');
     }
-  }, [t, router]);
+  }, [t]);
 
   // ── Edit from confirm → manual ──────────────────────────────────────────
   const handleEditFromConfirm = useCallback((data: any) => {
@@ -903,27 +887,63 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     </View>
   );
 
-  // ── Render: loading ─────────────────────────────────────────────────────
-  const loadingHint = addedViaSource === 'AI_SCREENSHOT'
-    ? t('add.analyzing_screenshot', 'Analyzing screenshot...')
-    : addedViaSource === 'AI_TEXT'
-    ? t('add.transcribing_voice', 'Transcribing voice...')
-    : t('add.searching', 'Searching...');
+  // ── Render: loading with progressive stages ─────────────────────────────
+  // Stage order — based on source, so once voice transcription is complete the
+  // user still sees "transcribed ✓" when we return to "thinking" after their
+  // edit-and-confirm step.
+  const voiceHadTranscribe = addedViaSource === 'AI_TEXT' && (loadingStage === 'transcribing' || transcribedText);
+  const stageOrder: LoadingStage[] = voiceHadTranscribe
+    ? ['transcribing', 'thinking', 'saving']
+    : addedViaSource === 'AI_SCREENSHOT'
+    ? ['analyzing', 'thinking', 'saving']
+    : ['thinking', 'saving'];
+  const currentIdx = Math.max(stageOrder.indexOf(loadingStage), 0);
+  const stageLabel = (s: LoadingStage) => ({
+    transcribing: t('add.stage_transcribing', 'Transcribing voice'),
+    analyzing:    t('add.stage_analyzing', 'Analyzing image'),
+    thinking:     t('add.stage_thinking', 'AI looking up service'),
+    saving:       t('add.stage_saving', 'Saving subscription'),
+  }[s]);
 
   const renderLoading = () => (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
       <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
-      <Text style={{ color: colors.text, fontSize: 17, fontWeight: '700', marginBottom: 6 }}>
-        {loadingHint}
+      <Text style={{ color: colors.text, fontSize: 17, fontWeight: '700', marginBottom: 4 }}>
+        {stageLabel(loadingStage)}
       </Text>
-      <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', paddingHorizontal: 40 }}>
+      <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', paddingHorizontal: 40, marginBottom: 24 }}>
         {t('add.loading_hint', 'AI is processing your request. This usually takes a few seconds.')}
       </Text>
+
+      {/* Progressive steps — shows all stages, ticks off completed ones */}
+      <View style={{ gap: 10, alignSelf: 'stretch', paddingHorizontal: 32 }}>
+        {stageOrder.map((s, idx) => {
+          const done = idx < currentIdx;
+          const active = idx === currentIdx;
+          const pending = idx > currentIdx;
+          const iconName = done ? 'checkmark-circle' : active ? 'ellipsis-horizontal-circle' : 'ellipse-outline';
+          const iconColor = done ? '#22C55E' : active ? colors.primary : colors.textMuted;
+          return (
+            <View key={s} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name={iconName as any} size={20} color={iconColor} />
+              <Text style={{
+                color: active ? colors.text : pending ? colors.textMuted : colors.textSecondary,
+                fontSize: 14,
+                fontWeight: active ? '700' : '500',
+              }}>
+                {stageLabel(s)}
+              </Text>
+              {active && <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 4 }} />}
+            </View>
+          );
+        })}
+      </View>
+
       <TouchableOpacity
         onPress={() => setFlowState('idle')}
-        style={{ marginTop: 24, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, backgroundColor: colors.surface2 }}
+        style={{ marginTop: 28, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, backgroundColor: colors.surface2 }}
       >
         <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
           {t('common.cancel', 'Cancel')}
@@ -2013,6 +2033,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         </Modal>
       );
     })()}
+
+    {/* Pro gate modal — replaces Alert.alert for AI quota / subs limit. */}
+    <ProFeatureModal
+      visible={proGate !== null}
+      onClose={() => setProGate(null)}
+      feature={proGate ?? 'unlimited_subs'}
+    />
     </>
   );
 }

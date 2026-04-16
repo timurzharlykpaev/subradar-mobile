@@ -256,7 +256,11 @@
     "quarterly": "Тоқсан сайын",
     "billing_period": "Төлем кезеңі",
     "service_name": "Атауы",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "stage_transcribing": "Дауысты мәтінге түрлендіру",
+    "stage_analyzing": "Суретті талдау",
+    "stage_thinking": "AI қызметті іздеуде",
+    "stage_saving": "Жазылым сақталуда"
   },
   "periods": {
     "WEEKLY": "Апта сайын",
@@ -827,7 +831,9 @@
     "feat_reports": "PDF есептер",
     "start_trial": "7 күндік тегін сынақты бастау",
     "upgrade": "Жаңарту — $2.99/ай",
-    "unlock": "Ашу"
+    "unlock": "Ашу",
+    "title_ai_limit": "AI сұрау шегі",
+    "desc_ai_limit": "Осы айдағы барлық тегін AI сұрауларыңызды қолдандыңыз. Pro — айына 200."
   },
   "ai": {
     "or_type": "немесе жазыңыз",
@@ -835,7 +841,9 @@
     "could_not_parse": "Түсіну мүмкін болмады. Жазылымды басқаша сипаттай аласыз ба?",
     "voice_error_title": "Дауыс қатесі",
     "voice_empty": "Сөзді тану мүмкін болмады. Қайталаңыз немесе мәтін жазыңыз.",
-    "voice_error": "Дауысты өңдеу сәтсіз. Қайталап көріңіз."
+    "voice_error": "Дауысты өңдеу сәтсіз. Қайталап көріңіз.",
+    "voice_start_failed": "Жазуды бастау мүмкін болмады. Микрофон рұқсатын тексеріңіз.",
+    "voice_no_audio": "Жазу сәтсіз аяқталды. Қайталап көр."
   },
   "categories": {
     "streaming": "Стриминг",

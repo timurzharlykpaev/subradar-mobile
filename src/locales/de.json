@@ -256,7 +256,11 @@
     "quarterly": "Vierteljährlich",
     "billing_period": "Abrechnungszeitraum",
     "service_name": "Name",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "stage_transcribing": "Sprache wird transkribiert",
+    "stage_analyzing": "Bild wird analysiert",
+    "stage_thinking": "KI sucht Dienst",
+    "stage_saving": "Abo wird gespeichert"
   },
   "settings": {
     "title": "Einstellungen",
@@ -812,7 +816,9 @@
     "could_not_parse": "Das konnte ich nicht verstehen. Kannst du das Abo anders beschreiben?",
     "voice_error_title": "Sprachfehler",
     "voice_empty": "Sprache konnte nicht erkannt werden. Bitte erneut versuchen oder eintippen.",
-    "voice_error": "Sprachverarbeitung fehlgeschlagen. Bitte erneut versuchen."
+    "voice_error": "Sprachverarbeitung fehlgeschlagen. Bitte erneut versuchen.",
+    "voice_start_failed": "Aufnahme konnte nicht gestartet werden. Mikrofon-Berechtigung prüfen.",
+    "voice_no_audio": "Aufnahme fehlgeschlagen. Bitte erneut versuchen."
   },
   "pro_modal": {
     "title_default": "Pro-Funktion",
@@ -835,7 +841,9 @@
     "feat_reports": "PDF-Berichte",
     "start_trial": "7-Tage-Testversion starten",
     "upgrade": "Upgrade — 2,99 $/Monat",
-    "unlock": "Freischalten"
+    "unlock": "Freischalten",
+    "title_ai_limit": "KI-Limit erreicht",
+    "desc_ai_limit": "Du hast alle kostenlosen KI-Anfragen diesen Monat verbraucht. Pro gibt dir 200 pro Monat."
   },
   "categories": {
     "streaming": "Streaming",

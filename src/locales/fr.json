@@ -256,7 +256,11 @@
     "quarterly": "Trimestriel",
     "billing_period": "Période de facturation",
     "service_name": "Nom",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "stage_transcribing": "Transcription vocale",
+    "stage_analyzing": "Analyse de l’image",
+    "stage_thinking": "IA recherche le service",
+    "stage_saving": "Enregistrement de l’abonnement"
   },
   "settings": {
     "title": "Paramètres",
@@ -812,7 +816,9 @@
     "could_not_parse": "Je n'ai pas compris. Pourriez-vous décrire l'abonnement autrement ?",
     "voice_error_title": "Erreur vocale",
     "voice_empty": "Impossible de reconnaître la parole. Réessayez ou tapez.",
-    "voice_error": "Échec du traitement vocal. Veuillez réessayer."
+    "voice_error": "Échec du traitement vocal. Veuillez réessayer.",
+    "voice_start_failed": "Impossible de démarrer l’enregistrement. Vérifiez l’autorisation du microphone.",
+    "voice_no_audio": "L’enregistrement a échoué. Réessayez."
   },
   "pro_modal": {
     "title_default": "Fonctionnalité Pro",
@@ -835,7 +841,9 @@
     "feat_reports": "Rapports PDF",
     "start_trial": "Essai gratuit 7 jours",
     "upgrade": "Passer à Pro — 2,99 $/mois",
-    "unlock": "Débloquer"
+    "unlock": "Débloquer",
+    "title_ai_limit": "Limite IA atteinte",
+    "desc_ai_limit": "Vous avez utilisé toutes vos requêtes IA gratuites ce mois-ci. Pro vous en donne 200 par mois."
   },
   "categories": {
     "streaming": "Streaming",

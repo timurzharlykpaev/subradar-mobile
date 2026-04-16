@@ -26,6 +26,7 @@ const FEATURE_INFO: Record<string, { icon: string; gradient: [string, string] }>
   savings:        { icon: 'cash-outline',     gradient: ['#059669', '#047857'] },
   ai_text:        { icon: 'chatbubble-ellipses-outline', gradient: ['#8B5CF6', '#7C3AED'] },
   ai_photo:       { icon: 'camera-outline',   gradient: ['#F59E0B', '#D97706'] },
+  ai_limit:       { icon: 'sparkles',          gradient: ['#8B5CF6', '#7C3AED'] },
   unlimited_subs: { icon: 'infinite-outline',  gradient: ['#EC4899', '#DB2777'] },
   workspace:      { icon: 'people-outline',   gradient: ['#06B6D4', '#0891B2'] },
   reports:        { icon: 'document-text-outline', gradient: ['#3B82F6', '#2563EB'] },
