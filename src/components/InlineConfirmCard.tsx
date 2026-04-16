@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
@@ -85,6 +85,8 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       startDate: new Date().toISOString().split('T')[0],
       status: 'ACTIVE',
       addedVia: 'AI_TEXT',
+      reminderEnabled: true,
+      reminderDaysBefore: [2],
     });
   };
 
@@ -97,9 +99,13 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={[styles.iconBox, { backgroundColor: colors.background }]}>
-          <Text style={styles.iconLetter}>{name.charAt(0).toUpperCase()}</Text>
-        </View>
+        {iconUrl ? (
+          <Image source={{ uri: iconUrl }} style={styles.iconImage} />
+        ) : (
+          <View style={[styles.iconBox, { backgroundColor: colors.background }]}>
+            <Text style={styles.iconLetter}>{name.charAt(0).toUpperCase()}</Text>
+          </View>
+        )}
         <View style={{ flex: 1 }}>
           <TextInput
             style={[styles.nameInput, { color: colors.text }]}
@@ -236,6 +242,7 @@ const styles = StyleSheet.create({
   container: { borderRadius: 16, padding: 20, borderWidth: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   iconBox: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  iconImage: { width: 48, height: 48, borderRadius: 12 },
   iconLetter: { fontSize: 20, fontWeight: '700', color: '#7c3aed' },
   nameInput: { fontSize: 18, fontWeight: '700' },
   plansSection: { marginBottom: 16 },

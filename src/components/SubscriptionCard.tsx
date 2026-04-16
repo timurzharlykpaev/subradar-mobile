@@ -123,9 +123,25 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
             </Text>
           </View>
         ) : subscription.nextPaymentDate ? (
-          <Text style={[styles.nextDate, { color: colors.primary }]}>
-            {new Date(subscription.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
-          </Text>
+          <>
+            <Text style={[styles.nextDate, { color: colors.primary }]}>
+              {new Date(subscription.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
+            </Text>
+            {(() => {
+              const days = daysUntil(subscription.nextPaymentDate);
+              if (days === null || days < 0) return null;
+              const isUrgent = days <= 2;
+              const isToday = days === 0;
+              return (
+                <Text style={[styles.daysUntil, {
+                  color: isToday ? '#EF4444' : isUrgent ? '#F59E0B' : colors.textMuted,
+                  fontWeight: isToday || isUrgent ? '700' : '400',
+                }]}>
+                  {isToday ? t('upcoming.today') : days === 1 ? t('upcoming.tomorrow') : t('upcoming.in_days', { count: days })}
+                </Text>
+              );
+            })()}
+          </>
         ) : null}
       </View>
     </TouchableOpacity>
@@ -170,6 +186,7 @@ const styles = StyleSheet.create({
   amountOriginal: { fontSize: 10, marginTop: 1 },
   period: { fontSize: 11 },
   nextDate: { fontSize: 11, fontWeight: '600' },
+  daysUntil: { fontSize: 9, marginTop: 1 },
   trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },
   trialBadgeText: { fontSize: 10, fontWeight: '700' },
   tagBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },

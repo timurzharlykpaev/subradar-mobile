@@ -124,7 +124,7 @@ const emptyForm = {
   isTrial: false,
   trialEndDate: '',
   startDate: new Date().toISOString().split('T')[0],
-  reminderDaysBefore: [3] as number[],
+  reminderDaysBefore: [2] as number[],
   color: '' as string,
   tags: [] as string[],
 };
@@ -423,6 +423,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       currentPlan: data.currentPlan || undefined,
       startDate: new Date().toISOString().split('T')[0],
       addedVia: addedViaSource,
+      reminderEnabled: data.reminderEnabled ?? true,
+      reminderDaysBefore: data.reminderDaysBefore ?? [2],
     });
     addSubscription(res.data);
     if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }

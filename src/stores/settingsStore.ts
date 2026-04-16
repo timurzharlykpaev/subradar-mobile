@@ -34,7 +34,7 @@ export const useSettingsStore = create<SettingsState>()(
       region: 'US',
       displayCurrency: 'USD',
       language: 'en',
-      reminderDays: 3,
+      reminderDays: 2,
       notificationsEnabled: true,
       dateFormat: 'DD/MM',
       setCurrency: (currency) => set({ currency, displayCurrency: currency }),
