@@ -8,6 +8,7 @@ import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { convertAmount } from '../services/fxCache';
 import { formatMoney } from '../utils/formatMoney';
 import i18n from '../i18n';
+import { DatePickerField } from './DatePickerField';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -210,18 +211,11 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       </View>
 
       {/* Next payment date */}
-      <View style={styles.fieldRow}>
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.next_payment', 'Next payment date')}</Text>
-        <TextInput
-          style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
-          value={nextPaymentDate}
-          onChangeText={setNextPaymentDate}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={colors.textSecondary}
-          keyboardType="numbers-and-punctuation"
-          maxLength={10}
-        />
-      </View>
+      <DatePickerField
+        label={t('add_flow.next_payment', 'Next payment date')}
+        value={nextPaymentDate}
+        onChange={setNextPaymentDate}
+      />
 
       {/* Period chips */}
       <View style={styles.fieldRow}>
@@ -295,17 +289,10 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
           {/* Start Date + Billing Day (same row) */}
           <View style={styles.fieldRowInline}>
             <View style={{ flex: 1, marginRight: 8 }}>
-              <Text style={[styles.label, { color: colors.textSecondary }]}>
-                {t('add.start_date', 'Start date')}
-              </Text>
-              <TextInput
-                style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              <DatePickerField
+                label={t('add.start_date', 'Start date')}
                 value={startDate}
-                onChangeText={setStartDate}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
+                onChange={setStartDate}
               />
             </View>
             <View style={{ width: 80 }}>
@@ -448,15 +435,13 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               />
             </View>
             {isTrial && (
-              <TextInput
-                style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, marginTop: 8 }]}
-                value={trialEndDate}
-                onChangeText={setTrialEndDate}
-                placeholder={t('add.trial_end_date', 'Trial ends') + ' (YYYY-MM-DD)'}
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
-              />
+              <View style={{ marginTop: 8 }}>
+                <DatePickerField
+                  label={t('add.trial_end_date', 'Trial ends')}
+                  value={trialEndDate}
+                  onChange={setTrialEndDate}
+                />
+              </View>
             )}
           </View>
         </View>

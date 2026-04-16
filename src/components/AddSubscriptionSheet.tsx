@@ -56,6 +56,7 @@ import { CameraIcon, GiftIcon } from './icons';
 import { formatMoney } from '../utils/formatMoney';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { convertAmount } from '../services/fxCache';
+import { DatePickerField } from './DatePickerField';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -1367,34 +1368,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         </ScrollView>
       </View>
 
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-          {t('add.start_date', 'Start date')}
-        </Text>
-        <TextInput
-          style={inputStyle}
-          value={form.startDate}
-          onChangeText={(v) => setF('startDate', v)}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={colors.textMuted}
-          keyboardType="numbers-and-punctuation"
-        />
-      </View>
-
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-          {t('add.next_payment', 'Next payment date')}
-        </Text>
-        <TextInput
-          style={inputStyle}
-          value={form.nextPaymentDate}
-          onChangeText={(v) => setF('nextPaymentDate', v)}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={colors.textMuted}
-          keyboardType="numbers-and-punctuation"
-          maxLength={10}
-        />
-      </View>
+      <DatePickerField
+        label={t('add.start_date', 'Start date')}
+        value={form.startDate}
+        onChange={(v) => setF('startDate', v)}
+      />
+      <DatePickerField
+        label={t('add.next_payment', 'Next payment date')}
+        value={form.nextPaymentDate}
+        onChange={(v) => setF('nextPaymentDate', v)}
+      />
 
       {/* "More" toggle */}
       <TouchableOpacity
@@ -1919,31 +1902,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               {bulkMoreExpanded && (
                 <View style={{ gap: 16 }}>
                   {/* Start Date */}
-                  <View style={{ gap: 6 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.start_date', 'Start date')}</Text>
-                    <TextInput
-                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                      value={sub.startDate || ''}
-                      onChangeText={(v) => updateSub({ startDate: v })}
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor={colors.textMuted}
-                      keyboardType="numbers-and-punctuation"
-                      maxLength={10}
-                    />
-                  </View>
+                  <DatePickerField
+                    label={t('add.start_date', 'Start date')}
+                    value={sub.startDate || new Date().toISOString().split('T')[0]}
+                    onChange={(v) => updateSub({ startDate: v })}
+                  />
                   {/* Next Payment Date */}
-                  <View style={{ gap: 6 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.next_payment', 'Next payment date')}</Text>
-                    <TextInput
-                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                      value={sub.nextPaymentDate || ''}
-                      onChangeText={(v) => updateSub({ nextPaymentDate: v })}
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor={colors.textMuted}
-                      keyboardType="numbers-and-punctuation"
-                      maxLength={10}
-                    />
-                  </View>
+                  <DatePickerField
+                    label={t('add.next_payment', 'Next payment date')}
+                    value={sub.nextPaymentDate || ''}
+                    onChange={(v) => updateSub({ nextPaymentDate: v })}
+                  />
                   {/* Billing Day */}
                   <View style={{ gap: 6 }}>
                     <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_day', 'Billing day')}</Text>
