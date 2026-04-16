@@ -54,6 +54,8 @@ import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catal
 import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
 import { CameraIcon, GiftIcon } from './icons';
 import { formatMoney } from '../utils/formatMoney';
+import { getPopularServices, CatalogService } from '../services/catalogCache';
+import { convertAmount } from '../services/fxCache';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -203,11 +205,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { cards } = usePaymentCardsStore();
   const { currency } = useSettingsStore();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const region = useSettingsStore((s) => s.region || 'US');
+  const [catalogServices, setCatalogServices] = useState<CatalogService[]>([]);
 
   useEffect(() => {
     if (visible) {
       backdropOpacity.value = withTiming(1, { duration: 250 });
       translateY.value = withTiming(0, { duration: 300 });
+      // Load regional catalog when sheet opens
+      getPopularServices(region, displayCurrency).then((services) => {
+        if (services.length > 0) setCatalogServices(services);
+      });
     } else {
       translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 });
       backdropOpacity.value = withTiming(0, { duration: 250 });
@@ -558,7 +566,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       plans: chip.plans?.map(p => ({ name: p.name, priceMonthly: p.priceMonthly, currency: p.currency })),
     });
     setFlowState('confirm');
-  }, []);
+  }, [displayCurrency]);
+
+  // ── Catalog chip tap (from regional catalog) ───────────────────────────
+  const handleCatalogChip = useCallback((service: CatalogService) => {
+    setAddedViaSource('AI_TEXT');
+    const defaultPlan = service.plans?.[0];
+    setConfirmData({
+      name: { value: service.name, confidence: 'high' },
+      amount: { value: defaultPlan?.price ?? 0, confidence: 'high' },
+      currency: { value: defaultPlan?.currency ?? displayCurrency, confidence: 'high' },
+      billingPeriod: { value: defaultPlan?.period ?? 'MONTHLY', confidence: 'high' },
+      category: { value: service.category || 'OTHER', confidence: 'high' },
+      iconUrl: service.iconUrl,
+      plans: service.plans?.map((p) => ({ name: p.name, priceMonthly: p.price, currency: p.currency })),
+    });
+    setFlowState('confirm');
+  }, [displayCurrency]);
 
   // ── Voice handler ───────────────────────────────────────────────────────
   const handleVoiceComplete = useCallback(async (uri: string) => {
@@ -776,25 +800,61 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         )}
       </View>
 
-      {/* Quick chips */}
+      {/* Quick chips — catalog → fallback to QUICK_CHIPS */}
       <View style={{ gap: 8 }}>
         <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary }}>
           {t('add.popular', 'Popular')}
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {(showAllChips ? QUICK_CHIPS : QUICK_CHIPS.slice(0, 8)).map((chip) => (
-            <QuickChipButton key={chip.name} chip={chip} colors={colors} onPress={() => handleQuickChip(chip)} />
-          ))}
-          {!showAllChips && QUICK_CHIPS.length > 8 && (
-            <TouchableOpacity
-              style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
-              onPress={() => setShowAllChips(true)}
-            >
-              <Ionicons name="add" size={18} color={colors.textSecondary} />
-              <Text style={[styles.quickChipText, { color: colors.textSecondary }]}>
-                +{QUICK_CHIPS.length - 8}
-              </Text>
-            </TouchableOpacity>
+          {catalogServices.length > 0 ? (
+            // Regional catalog available — use it
+            <>
+              {(showAllChips ? catalogServices : catalogServices.slice(0, 8)).map((svc) => (
+                <TouchableOpacity
+                  key={svc.slug || svc.name}
+                  style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
+                  onPress={() => handleCatalogChip(svc)}
+                >
+                  {svc.iconUrl ? (
+                    <Image source={{ uri: svc.iconUrl }} style={styles.quickChipIcon} />
+                  ) : (
+                    <View style={[styles.quickChipIconFallback, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.quickChipIconLetter}>{svc.name?.[0]}</Text>
+                    </View>
+                  )}
+                  <Text style={[styles.quickChipText, { color: colors.text }]}>{svc.name}</Text>
+                </TouchableOpacity>
+              ))}
+              {!showAllChips && catalogServices.length > 8 && (
+                <TouchableOpacity
+                  style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
+                  onPress={() => setShowAllChips(true)}
+                >
+                  <Ionicons name="add" size={18} color={colors.textSecondary} />
+                  <Text style={[styles.quickChipText, { color: colors.textSecondary }]}>
+                    +{catalogServices.length - 8}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            // Fallback to hardcoded QUICK_CHIPS (with FX conversion via InlineConfirmCard)
+            <>
+              {(showAllChips ? QUICK_CHIPS : QUICK_CHIPS.slice(0, 8)).map((chip) => (
+                <QuickChipButton key={chip.name} chip={chip} colors={colors} onPress={() => handleQuickChip(chip)} />
+              ))}
+              {!showAllChips && QUICK_CHIPS.length > 8 && (
+                <TouchableOpacity
+                  style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
+                  onPress={() => setShowAllChips(true)}
+                >
+                  <Ionicons name="add" size={18} color={colors.textSecondary} />
+                  <Text style={[styles.quickChipText, { color: colors.textSecondary }]}>
+                    +{QUICK_CHIPS.length - 8}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
       </View>

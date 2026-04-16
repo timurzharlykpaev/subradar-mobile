@@ -22,6 +22,7 @@ import { installConsoleInterceptors } from '../src/utils/errorReporter';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
 import { initFxCache, invalidateFxCache } from '../src/services/fxCache';
+import { invalidateCatalogCache } from '../src/services/catalogCache';
 
 // Install global console interceptors as early as possible
 installConsoleInterceptors();
@@ -100,6 +101,7 @@ function DataLoader() {
   const { setSubscriptions, subscriptions } = useSubscriptionsStore();
   const { reminderDays, notificationsEnabled } = useSettingsStore();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency);
+  const settingsRegion = useSettingsStore((s) => s.region);
 
   // Auto-detect region & display currency on first launch
   useEffect(() => {
@@ -124,12 +126,13 @@ function DataLoader() {
     }
   }, [isAuthenticated]);
 
-  // Refetch FX rates when display currency changes
+  // Refetch FX rates and invalidate catalog when display currency or region changes
   useEffect(() => {
     if (isAuthenticated && displayCurrency) {
       invalidateFxCache();
+      invalidateCatalogCache();
     }
-  }, [displayCurrency]);
+  }, [displayCurrency, settingsRegion]);
 
   useEffect(() => {
     if (!isAuthenticated) {
