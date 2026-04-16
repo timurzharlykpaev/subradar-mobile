@@ -9,6 +9,7 @@ import { convertAmount } from '../services/fxCache';
 import { formatMoney } from '../utils/formatMoney';
 import i18n from '../i18n';
 import { DatePickerField } from './DatePickerField';
+import { NumericInput } from './NumericInput';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -198,13 +199,14 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       <View style={styles.fieldRow}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.amount', 'Amount')}</Text>
         <View style={styles.fieldValue}>
-          <TextInput
+          <NumericInput
             style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
             value={amount}
             onChangeText={setAmount}
             keyboardType="decimal-pad"
             placeholder="0.00"
             placeholderTextColor={colors.textSecondary}
+            accessoryId="confirm-amount"
           />
           {renderConfidence(data.amount.confidence)}
         </View>
@@ -299,7 +301,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               <Text style={[styles.label, { color: colors.textSecondary }]}>
                 {t('add.billing_day', 'Billing day')}
               </Text>
-              <TextInput
+              <NumericInput
                 style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, textAlign: 'center' }]}
                 value={billingDay}
                 onChangeText={(v) => setBillingDay(v.replace(/[^0-9]/g, ''))}
@@ -307,6 +309,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="number-pad"
                 maxLength={2}
+                accessoryId="confirm-billing-day"
               />
             </View>
           </View>

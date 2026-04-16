@@ -27,6 +27,7 @@ import { Subscription } from '../types';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { CardBrand } from '../types';
 import { useTheme } from '../theme';
+import { NumericInput } from './NumericInput';
 
 interface Props {
   visible: boolean;
@@ -241,13 +242,14 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Amount */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.amount')}</Text>
-                  <TextInput
+                  <NumericInput
                     style={inputStyle}
                     value={form.amount}
                     onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
                     placeholder="9.99"
                     keyboardType="decimal-pad"
                     placeholderTextColor={colors.textMuted}
+                    accessoryId="edit-amount"
                   />
                 </View>
 
@@ -297,7 +299,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Billing Day */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('subscription.billing_day')} (1-31)</Text>
-                  <TextInput
+                  <NumericInput
                     style={inputStyle}
                     value={form.billingDay}
                     onChangeText={(v) => setForm((f) => ({ ...f, billingDay: v }))}
@@ -305,6 +307,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                     keyboardType="number-pad"
                     placeholderTextColor={colors.textMuted}
                     maxLength={2}
+                    accessoryId="edit-billing-day"
                   />
                 </View>
 
@@ -359,7 +362,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                     </View>
                     <View style={styles.field}>
                       <Text style={fieldLabel}>{t('subscription.card_last4')}</Text>
-                      <TextInput
+                      <NumericInput
                         style={inputStyle}
                         value={newCard.last4}
                         onChangeText={(v) => setNewCard((c) => ({ ...c, last4: v.replace(/\D/g, '').slice(0, 4) }))}
@@ -367,6 +370,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                         keyboardType="number-pad"
                         placeholderTextColor={colors.textMuted}
                         maxLength={4}
+                        accessoryId="edit-card-last4"
                       />
                     </View>
                     <View style={styles.field}>

@@ -57,6 +57,7 @@ import { formatMoney } from '../utils/formatMoney';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { convertAmount } from '../services/fxCache';
 import { DatePickerField } from './DatePickerField';
+import { NumericInput } from './NumericInput';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -1329,7 +1330,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
           {t('add.amount')} *
         </Text>
-        <TextInput
+        <NumericInput
           testID="amount-input"
           style={inputStyle}
           value={form.amount}
@@ -1337,6 +1338,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           placeholder="9.99"
           keyboardType="decimal-pad"
           placeholderTextColor={colors.textMuted}
+          accessoryId="manual-amount"
         />
       </View>
 
@@ -1538,7 +1540,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
               {t('add.billing_day', 'Billing day')}
             </Text>
-            <TextInput
+            <NumericInput
               style={inputStyle}
               value={form.billingDay}
               onChangeText={(v) => setF('billingDay', v.replace(/[^0-9]/g, ''))}
@@ -1546,6 +1548,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
               maxLength={2}
+              accessoryId="manual-billing-day"
             />
           </View>
 
@@ -1836,11 +1839,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               {/* Amount */}
               <View style={{ gap: 6 }}>
                 <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
-                <TextInput
+                <NumericInput
                   style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
                   value={String(sub.amount || '')}
                   onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })}
                   keyboardType="decimal-pad"
+                  accessoryId="bulk-amount"
                 />
               </View>
               {/* Billing Period */}
@@ -1916,7 +1920,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   {/* Billing Day */}
                   <View style={{ gap: 6 }}>
                     <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_day', 'Billing day')}</Text>
-                    <TextInput
+                    <NumericInput
                       style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, width: 80 }}
                       value={sub.billingDay != null ? String(sub.billingDay) : ''}
                       onChangeText={(v) => {
@@ -1927,6 +1931,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       placeholderTextColor={colors.textMuted}
                       keyboardType="number-pad"
                       maxLength={2}
+                      accessoryId="bulk-billing-day"
                     />
                   </View>
                   {/* Notes */}
