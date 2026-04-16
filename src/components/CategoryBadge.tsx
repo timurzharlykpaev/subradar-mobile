@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { CATEGORIES } from '../constants';
 import { CategoryIcon } from './icons';
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const CategoryBadge: React.FC<Props> = ({ categoryId, size = 'md' }) => {
+  const { t } = useTranslation();
   const cat = CATEGORIES.find((c) => c.id === categoryId) || CATEGORIES[CATEGORIES.length - 1];
   const isSmall = size === 'sm';
 
@@ -16,7 +18,7 @@ export const CategoryBadge: React.FC<Props> = ({ categoryId, size = 'md' }) => {
     <View style={[styles.badge, { backgroundColor: cat.color + '20' }, isSmall && styles.sm]}>
       <CategoryIcon category={cat.id} size={isSmall ? 12 : 14} />
       {!isSmall && (
-        <Text style={[styles.label, { color: cat.color }]}>{cat.label}</Text>
+        <Text style={[styles.label, { color: cat.color }]}>{t(`categories.${cat.id.toLowerCase()}`, cat.label)}</Text>
       )}
     </View>
   );
