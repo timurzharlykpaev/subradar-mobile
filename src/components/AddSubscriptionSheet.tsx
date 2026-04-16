@@ -332,7 +332,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         amount: parseFloat(form.amount),
         currency: form.currency,
         billingPeriod: safeBilling,
-        billingDay: parseInt(form.billingDay) || 1,
+        billingDay: Math.min(Math.max(parseInt(form.billingDay) || 1, 1), 31),
         status: form.isTrial ? 'TRIAL' : 'ACTIVE',
         paymentCardId: form.paymentCardId || undefined,
         currentPlan: form.currentPlan || undefined,
@@ -1543,7 +1543,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             <NumericInput
               style={inputStyle}
               value={form.billingDay}
-              onChangeText={(v) => setF('billingDay', v.replace(/[^0-9]/g, ''))}
+              onChangeText={(v) => {
+                const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
+                if (!v || isNaN(num)) { setF('billingDay', ''); return; }
+                setF('billingDay', String(Math.min(Math.max(num, 1), 31)));
+              }}
               placeholder="1"
               placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
@@ -1925,7 +1929,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       value={sub.billingDay != null ? String(sub.billingDay) : ''}
                       onChangeText={(v) => {
                         const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                        updateSub({ billingDay: isNaN(num) ? undefined : Math.min(num, 31) });
+                        updateSub({ billingDay: isNaN(num) ? undefined : Math.min(Math.max(num, 1), 31) });
                       }}
                       placeholder="1"
                       placeholderTextColor={colors.textMuted}

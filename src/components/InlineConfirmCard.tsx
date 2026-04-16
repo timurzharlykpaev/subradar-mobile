@@ -123,7 +123,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       currentPlan: selectedPlan,
       startDate: startDate || new Date().toISOString().split('T')[0],
       nextPaymentDate: nextPaymentDate || undefined,
-      billingDay: parseInt(billingDay) || 1,
+      billingDay: Math.min(Math.max(parseInt(billingDay) || 1, 1), 31),
       paymentCardId: selectedCard || undefined,
       reminderEnabled: reminderDays.length > 0,
       reminderDaysBefore: reminderDays.length > 0 ? reminderDays : undefined,
@@ -304,7 +304,11 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               <NumericInput
                 style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, textAlign: 'center' }]}
                 value={billingDay}
-                onChangeText={(v) => setBillingDay(v.replace(/[^0-9]/g, ''))}
+                onChangeText={(v) => {
+                  const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
+                  if (!v || isNaN(num)) { setBillingDay(''); return; }
+                  setBillingDay(String(Math.min(Math.max(num, 1), 31)));
+                }}
                 placeholder="1"
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="number-pad"

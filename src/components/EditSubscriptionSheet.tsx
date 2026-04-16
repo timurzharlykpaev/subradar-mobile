@@ -302,7 +302,11 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   <NumericInput
                     style={inputStyle}
                     value={form.billingDay}
-                    onChangeText={(v) => setForm((f) => ({ ...f, billingDay: v }))}
+                    onChangeText={(v) => {
+                      const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
+                      if (!v || isNaN(num)) { setForm((f) => ({ ...f, billingDay: '' })); return; }
+                      setForm((f) => ({ ...f, billingDay: String(Math.min(Math.max(num, 1), 31)) }));
+                    }}
                     placeholder="1"
                     keyboardType="number-pad"
                     placeholderTextColor={colors.textMuted}
