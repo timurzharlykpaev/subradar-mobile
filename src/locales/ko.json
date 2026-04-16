@@ -121,7 +121,9 @@
     "status_trial": "체험",
     "status_cancelled": "취소됨",
     "status_paused": "일시중지",
-    "status_expired": "만료됨"
+    "status_expired": "만료됨",
+    "soft_limit_title": "무료 슬롯 1개 남음",
+    "soft_limit_subtitle": "무제한 추적을 위해 Pro로 업그레이드"
   },
   "add": {
     "title": "구독 추가",
@@ -450,7 +452,12 @@
     "hook_tap_yours": "결제 중인 것을 탭하세요",
     "hook_monthly_total": "이미 월 ${{amount}}입니다",
     "hook_annual": "= ${{amount}}/년",
-    "hook_cta_selected": "나머지 찾기 →"
+    "hook_cta_selected": "나머지 찾기 →",
+    "icp_label": "누가 구독을 추적?",
+    "icp_solo": "저만",
+    "icp_family": "우리 가족",
+    "icp_team": "우리 팀",
+    "trial_spend_hook": "월 {{amount}} 추적 중 — 전체 그림 확인"
   },
   "analytics": {
     "title": "분석",
@@ -760,7 +767,8 @@
     "have_invite_code": "초대 코드가 있으신가요?",
     "leave_btn": "나가기",
     "leave_confirm_msg": "팀 분석에 접근할 수 없게 됩니다.",
-    "leave_confirm_title": "팀에서 나갈까요?"
+    "leave_confirm_title": "팀에서 나갈까요?",
+    "how_team_works": "Team은 어떻게 작동?"
   },
   "paywall": {
     "choose_plan": "플랜 선택",
@@ -1037,7 +1045,29 @@
     "winback_subtitle": "Pro를 구매하고 모든 기능을 잠금 해제하세요",
     "winback_cta": "지금 업그레이드",
     "upgrade_to_see": "전체 분석을 보려면 업그레이드",
-    "blur_upgrade_cta": "Pro로 잠금 해제"
+    "blur_upgrade_cta": "Pro로 잠금 해제",
+    "cancel_title": "떠나기 전에",
+    "cancel_desc": "Pro 플랜으로 잃게 될 것들:",
+    "lose_unlimited": "무제한 구독 관리",
+    "lose_ai": "월 200회 AI 분석",
+    "switch_yearly": "연간 플랜으로 전환",
+    "save": "절약",
+    "pause_a_month": "구독 일시 중지",
+    "finish_trial": "무료 체험 종료",
+    "reason_title": "더 나아지도록 도와주세요",
+    "reason_desc": "왜 취소하시나요? 탭하여 계속",
+    "reason_too_expensive": "너무 비싸요",
+    "reason_not_using": "잘 안 써요",
+    "reason_missing_feature": "기능이 부족",
+    "reason_found_alt": "대안을 찾음",
+    "reason_temporary_break": "잠깐 쉬려고요",
+    "reason_other": "기타",
+    "winback_d02_title": "무제한이 그리우세요?",
+    "winback_d02_cta": "언제든 Pro로 복귀",
+    "winback_d37_title": "{{count}}개의 구독이 기다리고 있어요",
+    "winback_d37_cta": "무제한+AI 알림 해제",
+    "winback_d830_title": "돌아오세요 — 첫 달 50% 할인",
+    "winback_d830_cta": "돌아오는 사용자를 위한 최고 혜택"
   },
   "a11y": {
     "subscription": "{{name}} subscription",
@@ -1047,5 +1077,22 @@
     "restore_purchases": "Restore purchases",
     "save": "Save",
     "close": "Close"
+  },
+  "annual_nudge": {
+    "title": "연간으로 전환 — $ 절약",
+    "subtitle": "동일한 Pro 기능. 매달이 아닌 한 번 결제."
+  },
+  "team_explainer": {
+    "step_invite_title": "가족을 초대",
+    "step_invite_desc": "최대 10명이 구독을 공유.",
+    "step_shared_title": "모두 한곳에서 관리",
+    "step_shared_desc": "가족의 모든 구독, 갱신, 결제를 함께 확인.",
+    "step_duplicates_title": "중복을 즉시 발견",
+    "step_duplicates_desc": "3명이 같은 Netflix를 결제할 때 — 하나만 남기고 나머지를 절약.",
+    "math_label": "4인 가족",
+    "per_person": "월/1인",
+    "savings_vs_separate": "최대 절약",
+    "cta_start": "Team 플랜 시작",
+    "cta_later": "저만 할게요"
   }
 }

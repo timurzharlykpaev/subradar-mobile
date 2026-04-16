@@ -40,7 +40,7 @@ type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 export default function SubscriptionsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
+  const { subsLimitReached, activeCount, maxSubscriptions, slotsLeft, isPro } = usePlanLimits();
   const { colors, isDark } = useTheme();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const [refreshing, setRefreshing] = useState(false);
@@ -66,6 +66,13 @@ export default function SubscriptionsScreen() {
 
   // Always fetch on mount
   useEffect(() => { fetchSubs(); }, []);
+
+  // Fire soft-limit warning analytics once per condition change
+  useEffect(() => {
+    if (!isPro && !subsLimitReached && slotsLeft === 1) {
+      analytics.track('soft_limit_warning_shown');
+    }
+  }, [isPro, subsLimitReached, slotsLeft]);
 
   // Always fetch when screen gains focus (back from detail, other tabs, etc.)
   useFocusEffect(
@@ -228,6 +235,43 @@ export default function SubscriptionsScreen() {
             </View>
           )}
         </View>
+
+        {/* Soft-limit warning — one slot left, not yet reached */}
+        {!isPro && !subsLimitReached && typeof slotsLeft === 'number' && slotsLeft === 1 && (() => {
+          const handleTap = () => {
+            analytics.track('soft_limit_warning_tapped');
+            router.push('/paywall' as any);
+          };
+          return (
+            <TouchableOpacity
+              onPress={handleTap}
+              activeOpacity={0.85}
+              style={{
+                marginHorizontal: 20,
+                marginTop: 10,
+                padding: 14,
+                borderRadius: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                backgroundColor: isDark ? '#2A1F1A' : '#FEF3C7',
+                borderWidth: 1,
+                borderColor: '#F59E0B',
+              }}
+            >
+              <Ionicons name="warning" size={20} color="#F59E0B" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.text }}>
+                  {t('subscriptions.soft_limit_title', { defaultValue: 'Only 1 free slot left' })}
+                </Text>
+                <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                  {t('subscriptions.soft_limit_subtitle', { defaultValue: 'Upgrade to Pro for unlimited tracking' })}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          );
+        })()}
 
         {/* ── Search ─────────────────────────────────────────── */}
         {showSearch && (

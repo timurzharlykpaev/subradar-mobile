@@ -7,7 +7,7 @@
 ## Plans
 
 ### Free
-- Up to 5 subscriptions
+- Up to 3 subscriptions (server-authoritative via `billing.subscriptionLimit`; client falls back to 3)
 - Manual add only
 - Basic reminders (1 day before billing)
 - Basic analytics (monthly total, category breakdown)
@@ -57,7 +57,7 @@ This ensures user sees value before trial starts, preventing wasted trial days.
 
 | Feature | Free | Pro | Team |
 |---------|------|-----|------|
-| Max subscriptions | 5 | Unlimited | Unlimited |
+| Max subscriptions | 3 | Unlimited | Unlimited |
 | Manual add | Yes | Yes | Yes |
 | AI text add | No | Yes | Yes |
 | AI photo add | No | Yes | Yes |

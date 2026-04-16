@@ -18,6 +18,8 @@ interface SettingsState {
   dateFormat: string;
   /** When true, analytics (Amplitude) tracking is disabled. Default false. */
   analyticsOptOut: boolean;
+  /** User-declared ICP segment — drives conditional copy and explainer triggers. */
+  icpSegment: 'solo' | 'family' | 'team' | null;
   setCurrency: (currency: string) => void;
   setCountry: (country: string) => void;
   setRegion: (region: string) => void;
@@ -27,6 +29,7 @@ interface SettingsState {
   setNotificationsEnabled: (enabled: boolean) => void;
   setDateFormat: (format: string) => void;
   setAnalyticsOptOut: (optOut: boolean) => void;
+  setIcpSegment: (segment: 'solo' | 'family' | 'team' | null) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -41,6 +44,7 @@ export const useSettingsStore = create<SettingsState>()(
       notificationsEnabled: true,
       dateFormat: 'DD/MM',
       analyticsOptOut: false,
+      icpSegment: null,
       setCurrency: (currency) => set({ currency, displayCurrency: currency }),
       setCountry: (country) => set({ country, region: country }),
       setRegion: (region) => set({ region: region.toUpperCase(), country: region.toUpperCase() }),
@@ -54,6 +58,7 @@ export const useSettingsStore = create<SettingsState>()(
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
       setDateFormat: (dateFormat) => set({ dateFormat }),
       setAnalyticsOptOut: (analyticsOptOut) => set({ analyticsOptOut }),
+      setIcpSegment: (icpSegment) => set({ icpSegment }),
     }),
     {
       name: 'subradar-settings',

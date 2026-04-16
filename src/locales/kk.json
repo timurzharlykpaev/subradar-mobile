@@ -121,7 +121,9 @@
     "status_trial": "Сынақ",
     "status_cancelled": "Тоқтатылды",
     "status_paused": "Кідіртілді",
-    "status_expired": "Мерзімі өтті"
+    "status_expired": "Мерзімі өтті",
+    "soft_limit_title": "Тек 1 тегін орын қалды",
+    "soft_limit_subtitle": "Шектеусіз бақылау үшін Pro-ға жаңартыңыз"
   },
   "add": {
     "title": "Жазылым қосу",
@@ -458,7 +460,12 @@
     "hook_tap_yours": "Төлейтіндеріңді бас",
     "hook_monthly_total": "Бұл айына ${{amount}}",
     "hook_annual": "= ${{amount}}/жыл",
-    "hook_cta_selected": "Қалғанын тап →"
+    "hook_cta_selected": "Қалғанын тап →",
+    "icp_label": "Жазылымдарды кім бақылайды?",
+    "icp_solo": "Тек мен",
+    "icp_family": "Отбасым",
+    "icp_team": "Біздің команда",
+    "trial_spend_hook": "Сіз {{amount}}/ай бақылап жатырсыз — толық суретті ашыңыз"
   },
   "analytics": {
     "title": "Аналитика",
@@ -760,7 +767,8 @@
     "have_invite_code": "Шақыру кодыңыз бар ма?",
     "leave_btn": "Шығу",
     "leave_confirm_msg": "Топтық аналитикаға қолжетімділік жоғалады.",
-    "leave_confirm_title": "Топтан шығу керек пе?"
+    "leave_confirm_title": "Топтан шығу керек пе?",
+    "how_team_works": "Team қалай жұмыс істейді?"
   },
   "paywall": {
     "choose_plan": "Жоспар таңдаңыз",
@@ -1037,7 +1045,29 @@
     "winback_subtitle": "Pro алыңыз және барлық мүмкіндіктерді ашыңыз",
     "winback_cta": "Қазір жаңарту",
     "upgrade_to_see": "Толық аналитиканы көру үшін жаңартыңыз",
-    "blur_upgrade_cta": "Pro арқылы ашу"
+    "blur_upgrade_cta": "Pro арқылы ашу",
+    "cancel_title": "Кетер алдында",
+    "cancel_desc": "Pro жоспарымен жоғалтатыныңыз:",
+    "lose_unlimited": "Шексіз жазылымдар",
+    "lose_ai": "Айына 200 AI талдау",
+    "switch_yearly": "Жылдық жоспарға ауысу",
+    "save": "Үнемдеу",
+    "pause_a_month": "Жазылымды уақытша тоқтату",
+    "finish_trial": "Тегін сынақты аяқтау",
+    "reason_title": "Жақсаруға көмектесіңіз",
+    "reason_desc": "Неге бас тартасыз? Жалғастыру үшін түртіңіз.",
+    "reason_too_expensive": "Тым қымбат",
+    "reason_not_using": "Сирек қолданамын",
+    "reason_missing_feature": "Қажетті мүмкіндік жоқ",
+    "reason_found_alt": "Баламасын таптым",
+    "reason_temporary_break": "Үзіліс керек",
+    "reason_other": "Басқа",
+    "winback_d02_title": "Шектеусіз бақылауды сағынасыз ба?",
+    "winback_d02_cta": "Pro-ға кез келген уақытта қайтыңыз",
+    "winback_d37_title": "{{count}} жазылым бақылауды күтуде",
+    "winback_d37_cta": "Шектеусіз + AI ескертулерін ашу",
+    "winback_d830_title": "Қайтыңыз — алғашқы айға 50% жеңілдік",
+    "winback_d830_cta": "Қайтушыларға ең жақсы ұсыныс"
   },
   "a11y": {
     "subscription": "{{name}} subscription",
@@ -1047,5 +1077,22 @@
     "restore_purchases": "Restore purchases",
     "save": "Save",
     "close": "Close"
+  },
+  "annual_nudge": {
+    "title": "Жылдық жоспарға — $ үнемдеу",
+    "subtitle": "Сол Pro мүмкіндіктері. Ай сайын емес, бір рет төлеңіз."
+  },
+  "team_explainer": {
+    "step_invite_title": "Отбасыңызды шақырыңыз",
+    "step_invite_desc": "10 адамға дейін бір жазылым кітапханасын бөлісу.",
+    "step_shared_title": "Барлығы бір жерде",
+    "step_shared_desc": "Отбасының барлық жазылымдарын, жаңартуларын, төлемдерін бірге көріңіз.",
+    "step_duplicates_title": "Дубликаттарды бірден табу",
+    "step_duplicates_desc": "3 адам бір Netflix үшін төлегенде — біреуін қалдырып, қалғанын үнемдеңіз.",
+    "math_label": "4 адамдық отбасы",
+    "per_person": "адам басына/айына",
+    "savings_vs_separate": "Ең жоғары үнемдеу",
+    "cta_start": "Team жоспарын бастау",
+    "cta_later": "Тек мен, рахмет"
   }
 }

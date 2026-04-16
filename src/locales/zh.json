@@ -121,7 +121,9 @@
     "status_trial": "试用",
     "status_cancelled": "已取消",
     "status_paused": "暂停",
-    "status_expired": "已过期"
+    "status_expired": "已过期",
+    "soft_limit_title": "仅剩1个免费位",
+    "soft_limit_subtitle": "升级到Pro以无限追踪"
   },
   "add": {
     "title": "添加订阅",
@@ -450,7 +452,12 @@
     "hook_tap_yours": "点击你正在付费的订阅",
     "hook_monthly_total": "每月已花费 ${{amount}}",
     "hook_annual": "= ${{amount}}/年",
-    "hook_cta_selected": "找出剩下的 →"
+    "hook_cta_selected": "找出剩下的 →",
+    "icp_label": "谁追踪订阅?",
+    "icp_solo": "只有我",
+    "icp_family": "我的家庭",
+    "icp_team": "我们团队",
+    "trial_spend_hook": "您正在追踪{{amount}}/月 — 解锁完整图景"
   },
   "analytics": {
     "title": "分析",
@@ -760,7 +767,8 @@
     "have_invite_code": "有邀请码？",
     "leave_btn": "退出",
     "leave_confirm_msg": "你将无法访问团队分析。",
-    "leave_confirm_title": "退出团队？"
+    "leave_confirm_title": "退出团队？",
+    "how_team_works": "Team如何工作?"
   },
   "paywall": {
     "choose_plan": "选择计划",
@@ -1037,7 +1045,29 @@
     "winback_subtitle": "获取Pro，解锁所有功能",
     "winback_cta": "立即升级",
     "upgrade_to_see": "升级查看完整分析",
-    "blur_upgrade_cta": "使用Pro解锁"
+    "blur_upgrade_cta": "使用Pro解锁",
+    "cancel_title": "离开之前",
+    "cancel_desc": "Pro计划将失去的:",
+    "lose_unlimited": "无限订阅追踪",
+    "lose_ai": "每月200次AI分析",
+    "switch_yearly": "切换到年付",
+    "save": "节省",
+    "pause_a_month": "暂停订阅",
+    "finish_trial": "结束免费试用",
+    "reason_title": "帮助我们改进",
+    "reason_desc": "为什么取消?点击继续",
+    "reason_too_expensive": "太贵",
+    "reason_not_using": "用得少",
+    "reason_missing_feature": "缺少功能",
+    "reason_found_alt": "找到替代",
+    "reason_temporary_break": "需要休息",
+    "reason_other": "其他",
+    "winback_d02_title": "想念无限追踪?",
+    "winback_d02_cta": "随时回归Pro",
+    "winback_d37_title": "{{count}}个订阅等待追踪",
+    "winback_d37_cta": "解锁无限+AI续订提醒",
+    "winback_d830_title": "回归 — 首月5折",
+    "winback_d830_cta": "回归用户最佳优惠"
   },
   "a11y": {
     "subscription": "{{name}} subscription",
@@ -1047,5 +1077,22 @@
     "restore_purchases": "Restore purchases",
     "save": "Save",
     "close": "Close"
+  },
+  "annual_nudge": {
+    "title": "切换到年付 — 节省$",
+    "subtitle": "相同Pro功能。一次付清,无需每月付费。"
+  },
+  "team_explainer": {
+    "step_invite_title": "邀请家人",
+    "step_invite_desc": "最多10人共享订阅库。",
+    "step_shared_title": "所有人共同管理",
+    "step_shared_desc": "查看家庭所有订阅、续订、费用。",
+    "step_duplicates_title": "立即发现重复",
+    "step_duplicates_desc": "当3人支付相同Netflix时 — 保留一个,节省其余。",
+    "math_label": "4人家庭",
+    "per_person": "每人/月",
+    "savings_vs_separate": "最高节省",
+    "cta_start": "开始Team计划",
+    "cta_later": "只有我,谢谢"
   }
 }

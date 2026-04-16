@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -68,8 +68,13 @@ export default function PaywallScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
-  const [selected, setSelected] = useState('pro');
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
+  // Prefill from query: "pro-yearly" | "pro-monthly" | "org-yearly" | "org-monthly"
+  const { prefill } = useLocalSearchParams<{ prefill?: string }>();
+  const [prefPlan, prefPeriod] = (typeof prefill === 'string' ? prefill : '').split('-');
+  const initialPlan = prefPlan === 'org' || prefPlan === 'pro' ? prefPlan : 'pro';
+  const initialPeriod: 'monthly' | 'yearly' = prefPeriod === 'monthly' ? 'monthly' : 'yearly';
+  const [selected, setSelected] = useState(initialPlan);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>(initialPeriod);
   const [purchasing, setPurchasing] = useState(false);
   const [successPlan, setSuccessPlan] = useState<string | null>(null);
   const [showClose, setShowClose] = useState(false);

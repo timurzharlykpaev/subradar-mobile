@@ -38,6 +38,7 @@ import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 import ExpirationBanner from '../../src/components/ExpirationBanner';
 import WinBackBanner from '../../src/components/WinBackBanner';
+import AnnualUpgradeBanner from '../../src/components/AnnualUpgradeBanner';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
@@ -133,16 +134,17 @@ export default function DashboardScreen() {
     }
   }, [loading, subscriptions.length]);
 
-  // Show TrialOfferModal when first subscription is added and no active plan
+  // Aha trial trigger — fires when user has invested enough to see value
+  // (2nd subscription added per BILLING_RULES.md trial trigger spec).
   useEffect(() => {
     if (loading) return;
-    // Trigger when subs go from 0 to ≥1 (prevSubsCount starts as null, treat as 0)
     const prev = prevSubsCount.current ?? 0;
-    if (prev === 0 && subscriptions.length >= 1) {
+    if (prev < 2 && subscriptions.length >= 2) {
       const hasActivePlan = billing?.plan === 'pro' || billing?.plan === 'organization';
       if (!hasActivePlan) {
         AsyncStorage.getItem('trial_offered').then((val) => {
           if (!val) {
+            analytics.track('aha_trial_offer_shown', { trigger: 'second_sub' });
             setShowTrialOffer(true);
             AsyncStorage.setItem('trial_offered', '1');
           }
@@ -279,6 +281,9 @@ export default function DashboardScreen() {
         {!isPro && (
           <WinBackBanner downgradedAt={(billing as any)?.downgradedAt ?? null} />
         )}
+
+        {/* ── Annual Upgrade Nudge (for monthly Pro users) ─────── */}
+        <AnnualUpgradeBanner location="dashboard" />
 
         {/* ── AI Insights Widget ────────────────────────────────── */}
         {aiResult && isPro && (

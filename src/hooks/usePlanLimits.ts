@@ -27,7 +27,11 @@ export function usePlanLimits() {
   const activeCount = subscriptions.filter(
     (s) => s.status === 'ACTIVE' || s.status === 'TRIAL'
   ).length;
-  const subsLimitReached = !isPro && activeCount >= FREE_LIMITS.maxSubscriptions;
+  // Server limit is authoritative when present; otherwise fall back to constant.
+  const serverLimit = billing?.subscriptionLimit ?? null;
+  const effectiveFreeLimit = serverLimit ?? FREE_LIMITS.maxSubscriptions;
+  const subsLimitReached = !isPro && activeCount >= effectiveFreeLimit;
+  const slotsLeft = isPro ? Infinity : Math.max(0, effectiveFreeLimit - activeCount);
 
   const cards = usePaymentCardsStore((s) => s.cards);
   const maxCards = plan === 'organization' ? Infinity : isPro ? PRO_LIMITS.maxCards : FREE_LIMITS.maxCards;
@@ -39,7 +43,8 @@ export function usePlanLimits() {
     isCancelled,
     subsLimitReached,
     activeCount,
-    maxSubscriptions: isPro ? Infinity : FREE_LIMITS.maxSubscriptions,
+    slotsLeft,
+    maxSubscriptions: isPro ? Infinity : effectiveFreeLimit,
     cards,
     maxCards,
     cardsLimitReached,

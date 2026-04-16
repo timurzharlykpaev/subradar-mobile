@@ -121,7 +121,9 @@
     "status_trial": "Prueba",
     "status_cancelled": "Cancelada",
     "status_paused": "Pausada",
-    "status_expired": "Expirada"
+    "status_expired": "Expirada",
+    "soft_limit_title": "Solo 1 espacio gratis",
+    "soft_limit_subtitle": "Actualiza a Pro para seguimiento ilimitado"
   },
   "add": {
     "title": "Agregar Suscripción",
@@ -450,7 +452,12 @@
     "hook_tap_yours": "Toca las que pagas",
     "hook_monthly_total": "Eso ya es ${{amount}}/mes",
     "hook_annual": "= ${{amount}}/año",
-    "hook_cta_selected": "Encuentra el resto →"
+    "hook_cta_selected": "Encuentra el resto →",
+    "icp_label": "¿Quién rastrea suscripciones?",
+    "icp_solo": "Solo yo",
+    "icp_family": "Mi familia",
+    "icp_team": "Nuestro equipo",
+    "trial_spend_hook": "Rastreas {{amount}}/mes — desbloquea la imagen completa"
   },
   "analytics": {
     "title": "Analítica",
@@ -760,7 +767,8 @@
     "have_invite_code": "¿Tienes un código de invitación?",
     "leave_btn": "Salir",
     "leave_confirm_msg": "Perderás acceso a la analítica del equipo.",
-    "leave_confirm_title": "¿Salir del equipo?"
+    "leave_confirm_title": "¿Salir del equipo?",
+    "how_team_works": "¿Cómo funciona Team?"
   },
   "paywall": {
     "choose_plan": "Elige un plan",
@@ -1037,7 +1045,29 @@
     "winback_subtitle": "Obtén Pro y desbloquea todas las funciones",
     "winback_cta": "Actualizar ahora",
     "upgrade_to_see": "Actualiza para ver analíticas completas",
-    "blur_upgrade_cta": "Desbloquear con Pro"
+    "blur_upgrade_cta": "Desbloquear con Pro",
+    "cancel_title": "Antes de irte",
+    "cancel_desc": "Esto es lo que perderás con tu plan Pro:",
+    "lose_unlimited": "Suscripciones ilimitadas",
+    "lose_ai": "200 análisis IA al mes",
+    "switch_yearly": "Cambiar a anual",
+    "save": "Ahorra",
+    "pause_a_month": "Pausar suscripción",
+    "finish_trial": "Terminar prueba gratis",
+    "reason_title": "Ayúdanos a mejorar",
+    "reason_desc": "¿Por qué cancelas? Toca para continuar.",
+    "reason_too_expensive": "Muy caro",
+    "reason_not_using": "Lo uso poco",
+    "reason_missing_feature": "Falta una función",
+    "reason_found_alt": "Encontré alternativa",
+    "reason_temporary_break": "Necesito un descanso",
+    "reason_other": "Otro",
+    "winback_d02_title": "¿Extrañas ilimitado?",
+    "winback_d02_cta": "Vuelve a Pro cuando quieras",
+    "winback_d37_title": "{{count}} suscripciones esperando",
+    "winback_d37_cta": "Desbloquea ilimitado + alertas IA",
+    "winback_d830_title": "Regresa — 50% en tu primer mes",
+    "winback_d830_cta": "Mejor oferta para regresar"
   },
   "a11y": {
     "subscription": "{{name}} subscription",
@@ -1047,5 +1077,22 @@
     "restore_purchases": "Restore purchases",
     "save": "Save",
     "close": "Close"
+  },
+  "annual_nudge": {
+    "title": "Cambia a anual — ahorra $",
+    "subtitle": "Mismas funciones Pro. Paga una vez, no cada mes."
+  },
+  "team_explainer": {
+    "step_invite_title": "Invita a tu familia",
+    "step_invite_desc": "Hasta 10 personas comparten una biblioteca de suscripciones.",
+    "step_shared_title": "Todos en un lugar",
+    "step_shared_desc": "Ve todas las suscripciones, renovaciones y pagos juntos.",
+    "step_duplicates_title": "Detecta duplicados al instante",
+    "step_duplicates_desc": "Cuando 3 personas pagan el mismo Netflix — queda uno, ahorra el resto.",
+    "math_label": "Tu familia de 4",
+    "per_person": "por persona/mes",
+    "savings_vs_separate": "Ahorra hasta",
+    "cta_start": "Iniciar plan Team",
+    "cta_later": "Solo yo, gracias"
   }
 }

@@ -11,6 +11,11 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useBillingStatus } from '../src/hooks/useBilling';
 import { billingApi } from '../src/api/billing';
 import { useTheme } from '../src/theme';
+import CancellationInterceptModal from '../src/components/CancellationInterceptModal';
+import AnnualUpgradeBanner from '../src/components/AnnualUpgradeBanner';
+import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
+import { useSettingsStore } from '../src/stores/settingsStore';
+import { analytics } from '../src/services/analytics';
 
 const PLAN_DISPLAY: Record<string, { name: string; icon: string; color: string }> = {
   free:         { name: 'Free',  icon: 'leaf-outline',    color: '#6B7280' },
@@ -31,6 +36,18 @@ export default function SubscriptionPlanScreen() {
   const queryClient = useQueryClient();
   const { data: billing, isLoading } = useBillingStatus();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+  const currencySymbol = useSettingsStore((s) => s.currency === 'RUB' ? '₽' : s.currency === 'EUR' ? '€' : s.currency === 'GBP' ? '£' : '$');
+
+  // Personalised yearly savings = monthly_price*12 - yearly_price (Pro only)
+  const yearlySavings = React.useMemo(() => {
+    if (billing?.plan !== 'pro') return 0;
+    // Default prices fallback; real prices may be injected via RC offerings later
+    const monthlyTotal = 2.99 * 12;
+    const yearly = 24.99;
+    return Math.max(0, Math.round(monthlyTotal - yearly));
+  }, [billing?.plan]);
 
   // Sync billing period from API response
   useEffect(() => {
@@ -58,14 +75,17 @@ export default function SubscriptionPlanScreen() {
   });
 
   const handleCancel = () => {
-    Alert.alert(
-      t('subscription_plan.cancel_confirm_title'),
-      t('subscription_plan.cancel_confirm_msg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('subscription_plan.cancel_sub'), style: 'destructive', onPress: () => cancelMutation.mutate() },
-      ]
-    );
+    // Gate cancel behind intercept modal — retention offer + reason capture.
+    // If user is trialing, skip to native confirm (don't interrupt trial cancel).
+    setCancelModalVisible(true);
+  };
+
+  const handleConfirmCancel = (reason?: string) => {
+    setCancelModalVisible(false);
+    if (reason) {
+      analytics.track('subscription_cancelled', { plan: billing?.plan ?? 'free', reason });
+    }
+    cancelMutation.mutate();
   };
 
   const handleStartTrial = () => {
@@ -185,6 +205,8 @@ export default function SubscriptionPlanScreen() {
         </View>
 
         <Animated.View style={{ opacity: fadeAnim }}>
+
+          <AnnualUpgradeBanner location="subscription_plan" />
 
           {/* Plan hero card */}
           <View style={[styles.heroCard, { backgroundColor: display.color }]}>
@@ -361,6 +383,15 @@ export default function SubscriptionPlanScreen() {
 
         </Animated.View>
       </ScrollView>
+
+      <CancellationInterceptModal
+        visible={cancelModalVisible}
+        onClose={() => setCancelModalVisible(false)}
+        onConfirmCancel={handleConfirmCancel as any}
+        context={isTrialing ? 'trial' : (billing?.billingPeriod === 'yearly' ? 'yearly' : 'monthly')}
+        yearlySavings={yearlySavings}
+        currencySymbol={currencySymbol}
+      />
     </SafeAreaView>
   );
 }

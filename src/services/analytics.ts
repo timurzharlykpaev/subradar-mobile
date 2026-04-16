@@ -94,8 +94,30 @@ export type AnalyticsEvent =
   // Churn / retention
   | 'subscription_cancelled'
   | 'cancellation_intercepted'
+  | 'cancellation_retention_tapped'
+  | 'cancellation_paused_tapped'
+  | 'cancellation_reason_selected'
   | 'win_back_viewed'
   | 'win_back_resubscribed'
+  | 'winback_banner_shown'
+  | 'winback_banner_tapped'
+  | 'winback_banner_dismissed'
+
+  // Annual upgrade nudge
+  | 'annual_nudge_shown'
+  | 'annual_nudge_tapped'
+  | 'annual_nudge_dismissed'
+
+  // Family / ICP segmentation
+  | 'icp_selected'
+  | 'team_explainer_viewed'
+  | 'team_explainer_cta_tapped'
+  | 'team_explainer_dismissed'
+
+  // Soft-gate + aha
+  | 'soft_limit_warning_shown'
+  | 'soft_limit_warning_tapped'
+  | 'aha_trial_offer_shown'
 
   // Team / grace / double-pay
   | 'grace_started'

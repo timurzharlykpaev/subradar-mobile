@@ -121,7 +121,9 @@
     "status_trial": "お試し",
     "status_cancelled": "キャンセル",
     "status_paused": "一時停止",
-    "status_expired": "期限切れ"
+    "status_expired": "期限切れ",
+    "soft_limit_title": "無料枠が1つ残っています",
+    "soft_limit_subtitle": "無制限追跡のためProへ"
   },
   "add": {
     "title": "サブスクリプションを追加",
@@ -450,7 +452,12 @@
     "hook_tap_yours": "支払っているものをタップ",
     "hook_monthly_total": "すでに月${{amount}}です",
     "hook_annual": "= ${{amount}}/年",
-    "hook_cta_selected": "残りを見つける →"
+    "hook_cta_selected": "残りを見つける →",
+    "icp_label": "誰がサブスクを追跡?",
+    "icp_solo": "私だけ",
+    "icp_family": "家族",
+    "icp_team": "チーム",
+    "trial_spend_hook": "{{amount}}/月を追跡中 — 全体像を表示"
   },
   "analytics": {
     "title": "分析",
@@ -760,7 +767,8 @@
     "have_invite_code": "招待コードをお持ちですか？",
     "leave_btn": "脱退",
     "leave_confirm_msg": "チーム分析へのアクセスを失います。",
-    "leave_confirm_title": "チームを脱退しますか？"
+    "leave_confirm_title": "チームを脱退しますか？",
+    "how_team_works": "Teamの仕組み"
   },
   "paywall": {
     "choose_plan": "プランを選択",
@@ -1037,7 +1045,29 @@
     "winback_subtitle": "Proを取得してすべての機能を解放",
     "winback_cta": "今すぐアップグレード",
     "upgrade_to_see": "完全な分析を見るにはアップグレード",
-    "blur_upgrade_cta": "Proで解放"
+    "blur_upgrade_cta": "Proで解放",
+    "cancel_title": "去る前に",
+    "cancel_desc": "Proプランで失うもの:",
+    "lose_unlimited": "無制限のサブスク管理",
+    "lose_ai": "月200回のAI分析",
+    "switch_yearly": "年額プランに切り替え",
+    "save": "節約",
+    "pause_a_month": "サブスクを一時停止",
+    "finish_trial": "無料トライアルを終了",
+    "reason_title": "改善のためにお聞かせください",
+    "reason_desc": "なぜキャンセルしますか?タップで続ける",
+    "reason_too_expensive": "高すぎる",
+    "reason_not_using": "あまり使っていない",
+    "reason_missing_feature": "機能が足りない",
+    "reason_found_alt": "代替を見つけた",
+    "reason_temporary_break": "休憩が必要",
+    "reason_other": "その他",
+    "winback_d02_title": "無制限が恋しい?",
+    "winback_d02_cta": "いつでもProに戻れます",
+    "winback_d37_title": "{{count}}個のサブスクが待っています",
+    "winback_d37_cta": "無制限+AI通知を解除",
+    "winback_d830_title": "戻ってきてください — 初月50%オフ",
+    "winback_d830_cta": "復帰者への最高オファー"
   },
   "a11y": {
     "subscription": "{{name}} subscription",
@@ -1047,5 +1077,22 @@
     "restore_purchases": "Restore purchases",
     "save": "Save",
     "close": "Close"
+  },
+  "annual_nudge": {
+    "title": "年額に切り替え — $節約",
+    "subtitle": "同じPro機能。毎月ではなく一度だけ支払い。"
+  },
+  "team_explainer": {
+    "step_invite_title": "家族を招待",
+    "step_invite_desc": "最大10人でサブスクライブラリを共有。",
+    "step_shared_title": "みんなが一つの場所で管理",
+    "step_shared_desc": "家族のサブスク、更新、今後の請求を一緒に確認。",
+    "step_duplicates_title": "重複をすぐに発見",
+    "step_duplicates_desc": "3人が同じNetflixに支払っている時 — 1つ残して残りを節約。",
+    "math_label": "4人家族",
+    "per_person": "1人あたり/月",
+    "savings_vs_separate": "最大節約",
+    "cta_start": "Teamプランを開始",
+    "cta_later": "自分だけでOK"
   }
 }

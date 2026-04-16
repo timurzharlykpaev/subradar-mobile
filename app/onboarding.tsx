@@ -468,6 +468,8 @@ export default function OnboardingScreen() {
   const { setLanguage, language, setCurrency } = useSettingsStore();
   const setRegionInStore = useSettingsStore((s) => s.setRegion);
   const setDisplayCurrencyInStore = useSettingsStore((s) => s.setDisplayCurrency);
+  const icpSegment = useSettingsStore((s) => s.icpSegment);
+  const setIcpSegment = useSettingsStore((s) => s.setIcpSegment);
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
 
@@ -804,6 +806,45 @@ export default function OnboardingScreen() {
         <Text style={{ fontSize: 15, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', lineHeight: 22 }}>
           {t('onboarding.hook_subtitle', 'on subscriptions they forgot about.\nHow many do YOU have?')}
         </Text>
+      </View>
+
+      {/* ICP chip selector — drives conditional experience downstream */}
+      <View style={{ alignItems: 'center', marginTop: 6, gap: 6 }}>
+        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          {t('onboarding.icp_label', 'Who tracks subscriptions?')}
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          {(['solo', 'family', 'team'] as const).map((seg) => {
+            const isSel = icpSegment === seg;
+            const emoji = seg === 'solo' ? '🙋' : seg === 'family' ? '👨‍👩‍👧' : '💼';
+            const label = t(`onboarding.icp_${seg}`, { defaultValue: seg === 'solo' ? 'Just me' : seg === 'family' ? 'My family' : 'Our team' });
+            return (
+              <TouchableOpacity
+                key={seg}
+                onPress={() => {
+                  setIcpSegment(seg);
+                  analytics.track('icp_selected', { segment: seg });
+                }}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                  borderWidth: 1.5,
+                  borderColor: isSel ? colors.primary : (isDark ? '#2A2A3E' : '#E5E7EB'),
+                  backgroundColor: isSel ? colors.primary + '18' : 'transparent',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                <Text style={{ fontSize: 13 }}>{emoji}</Text>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: isSel ? colors.primary : colors.textSecondary }}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       {/* Quick-add cards */}

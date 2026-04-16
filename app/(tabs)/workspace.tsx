@@ -24,6 +24,7 @@ import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { GraceBanner } from '../../src/components/GraceBanner';
+import TeamExplainerModal from '../../src/components/TeamExplainerModal';
 
 export default function WorkspaceScreen() {
   const { colors, isDark } = useTheme();
@@ -40,6 +41,7 @@ export default function WorkspaceScreen() {
   const [showInviteCode, setShowInviteCode] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showJoinTeam, setShowJoinTeam] = useState(false);
+  const [showTeamExplainer, setShowTeamExplainer] = useState(false);
 
   // Force billing refresh when workspace tab opens to get latest plan status
   useEffect(() => {
@@ -188,6 +190,26 @@ export default function WorkspaceScreen() {
             {!isTeam ? (
               <>
                 <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    borderWidth: 1.5,
+                    borderColor: colors.primary,
+                    paddingVertical: 14,
+                    borderRadius: 16,
+                    marginBottom: 10,
+                  }}
+                  onPress={() => setShowTeamExplainer(true)}
+                >
+                  <Ionicons name="help-circle-outline" size={18} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 15 }}>
+                    {t('workspace.how_team_works', 'How does Team work?')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   testID="btn-workspace-upgrade"
                   style={{
                     flexDirection: 'row',
@@ -198,7 +220,7 @@ export default function WorkspaceScreen() {
                     paddingVertical: 16,
                     borderRadius: 16,
                   }}
-                  onPress={() => router.push('/paywall')}
+                  onPress={() => router.push('/paywall?prefill=org-yearly' as any)}
                 >
                   <Ionicons name="star" size={18} color="#FFF" />
                   <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 16 }}>
@@ -324,6 +346,12 @@ export default function WorkspaceScreen() {
         </ScrollView>
         </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
+
+        <TeamExplainerModal
+          visible={showTeamExplainer}
+          onClose={() => setShowTeamExplainer(false)}
+          source="workspace_tab"
+        />
       </SafeAreaView>
     );
   }

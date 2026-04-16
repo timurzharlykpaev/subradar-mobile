@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
+import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import { useSettingsStore } from '../stores/settingsStore';
 
 interface Props {
   visible: boolean;
@@ -21,6 +23,22 @@ interface Props {
 export function TrialOfferModal({ visible, onStartTrial, onSkip, isPending }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+  const currency = useSettingsStore((s) => s.currency || 'USD');
+  const symbol = currency === 'RUB' ? '₽' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+
+  // Personalised monthly spend from active subs — shown as loss-framing hook
+  const monthlySpend = React.useMemo(() => {
+    return subscriptions
+      .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
+      .reduce((sum, s) => {
+        const mult =
+          s.billingPeriod === 'WEEKLY' ? 4 :
+          s.billingPeriod === 'QUARTERLY' ? 1 / 3 :
+          s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
+        return sum + (Number(s.amount) || 0) * mult;
+      }, 0);
+  }, [subscriptions]);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.9)).current;
 
@@ -65,6 +83,16 @@ export function TrialOfferModal({ visible, onStartTrial, onSkip, isPending }: Pr
             <Text style={[styles.description, { color: colors.textSecondary }]}>
               {t('onboarding.trial_description')}
             </Text>
+            {monthlySpend > 0 && (
+              <View style={{ backgroundColor: colors.surface2, borderRadius: 12, paddingVertical: 8, paddingHorizontal: 14, marginBottom: 20 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
+                  {t('onboarding.trial_spend_hook', {
+                    defaultValue: "You're tracking {{amount}}/mo — unlock the full picture",
+                    amount: `${symbol}${monthlySpend.toFixed(2)}`,
+                  })}
+                </Text>
+              </View>
+            )}
 
             <TouchableOpacity
               style={[styles.trialButton, { backgroundColor: colors.success }]}
