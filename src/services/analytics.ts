@@ -241,9 +241,10 @@ class AnalyticsService {
   init() {
     if (this.initialized) return;
     // Use Amplitude in prod when a key is present; Console otherwise.
-    if (AMPLITUDE_KEY && !__DEV__) {
+    const keyIsReal = AMPLITUDE_KEY && !AMPLITUDE_KEY.startsWith('__TODO_');
+    if (keyIsReal && !__DEV__) {
       this.provider = new AmplitudeProvider();
-      this.provider.init(AMPLITUDE_KEY);
+      this.provider.init(AMPLITUDE_KEY as string);
     }
     this.initialized = true;
     this.track('app_open');

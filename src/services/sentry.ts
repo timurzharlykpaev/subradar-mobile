@@ -10,7 +10,7 @@ import * as Sentry from '@sentry/react-native';
 export function initSentry() {
   if (__DEV__) return;
   const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
-  if (!dsn) return; // Not configured yet — skip init, don't crash.
+  if (!dsn || dsn.startsWith('__TODO_')) return; // Not configured yet — skip init, don't crash.
 
   try {
     Sentry.init({
