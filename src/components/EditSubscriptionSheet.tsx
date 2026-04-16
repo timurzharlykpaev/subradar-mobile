@@ -162,8 +162,11 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
         reminderEnabled: form.reminderDaysBefore.length > 0,
       };
-      await subscriptionsApi.update(subscription.id, payload);
-      updateSubscription(subscription.id, payload);
+      // Backend recomputes nextPaymentDate when billingDay/Period/startDate
+      // changes — use the response, not the request payload, so the card shows
+      // the new "в X дн." label immediately.
+      const res = await subscriptionsApi.update(subscription.id, payload);
+      updateSubscription(subscription.id, res.data ?? payload);
       handleClose();
     } catch {
       Alert.alert(t('common.error'), '');

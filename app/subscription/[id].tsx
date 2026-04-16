@@ -141,11 +141,11 @@ export default function SubscriptionDetailScreen() {
             <Text style={[styles.backBtnText, { color: colors.primary }]}>←</Text>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.editBtn} onPress={() => setEditVisible(true)}>
-              <PencilIcon size={16} color={colors.primary} />
+            <TouchableOpacity style={[styles.editBtn, { backgroundColor: colors.primary + '14' }]} onPress={() => setEditVisible(true)} accessibilityLabel={t('common.edit')}>
+              <PencilIcon size={22} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-              <TrashIcon size={16} color={colors.error} />
+            <TouchableOpacity style={[styles.deleteBtn, { backgroundColor: colors.error + '14' }]} onPress={handleDelete} accessibilityLabel={t('common.delete')}>
+              <TrashIcon size={22} color={colors.error} />
             </TouchableOpacity>
           </View>
         </View>
@@ -362,10 +362,10 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 10, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   backBtnText: { fontSize: 24 },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  editBtn: { padding: 10, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  editBtn: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   editBtnText: { fontSize: 20 },
-  deleteBtn: { padding: 10, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' },
+  deleteBtn: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   deleteBtnText: { fontSize: 20 },
   serviceCard: {
     alignItems: 'center',
