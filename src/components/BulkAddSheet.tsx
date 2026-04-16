@@ -374,7 +374,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     }
     // Refresh store
     try {
-      const r = await subscriptionsApi.getAll();
+      const r = await subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency });
       setSubscriptions(r.data || []);
     } catch {}
     setSaving(false);

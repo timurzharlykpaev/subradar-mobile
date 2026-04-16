@@ -29,6 +29,9 @@ import { analytics } from '../../src/services/analytics';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { LockedSubscriptionCard } from '../../src/components/LockedSubscriptionCard';
+import { useSettingsStore } from '../../src/stores/settingsStore';
+import { formatMoney } from '../../src/utils/formatMoney';
+import i18n from '../../src/i18n';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 
@@ -37,6 +40,7 @@ export default function SubscriptionsScreen() {
   const router = useRouter();
   const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
   const { colors, isDark } = useTheme();
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const [refreshing, setRefreshing] = useState(false);
   const [sortBy, setSortBy] = useState<SortType>('next_date');
   const [showSearch, setShowSearch] = useState(false);
@@ -44,12 +48,12 @@ export default function SubscriptionsScreen() {
   const fetchSubs = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
     try {
-      const res = await subscriptionsApi.getAll();
+      const res = await subscriptionsApi.getAll({ displayCurrency });
       setSubscriptions(res.data || []);
     } catch (err: any) {
       reportError(`subscriptions.fetchSubs: ${err?.message ?? err}`, err?.stack);
     } finally { setRefreshing(false); }
-  }, []);
+  }, [displayCurrency]);
 
   const addSheetVisible = useUIStore((s) => s.addSheetVisible);
   const prevSheetVisible = useRef(addSheetVisible);
@@ -124,8 +128,8 @@ export default function SubscriptionsScreen() {
     const filtered = getFiltered();
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
-        case 'amount_high': return (Number(b.amount) || 0) - (Number(a.amount) || 0);
-        case 'amount_low': return (Number(a.amount) || 0) - (Number(b.amount) || 0);
+        case 'amount_high': return (Number(b.displayAmount ?? b.amount) || 0) - (Number(a.displayAmount ?? a.amount) || 0);
+        case 'amount_low': return (Number(a.displayAmount ?? a.amount) || 0) - (Number(b.displayAmount ?? b.amount) || 0);
         case 'name': return (a.name || '').localeCompare(b.name || '');
         case 'next_date':
         default:
@@ -160,13 +164,16 @@ export default function SubscriptionsScreen() {
   };
 
   // Stats
-  const totalActive = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL').length;
-  const totalMonthly = subscriptions
-    .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
-    .reduce((sum, s) => {
-      const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
-      return sum + (Number(s.amount) || 0) * mult;
-    }, 0);
+  const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
+  const totalActive = activeSubs.length;
+  const totalMonthly = activeSubs.reduce((sum, s) => {
+    const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
+    return sum + (Number(s.displayAmount ?? s.amount) || 0) * mult;
+  }, 0);
+  // Use displayCurrency only if backend returned converted amounts, otherwise original
+  const effectiveCurrency = activeSubs.length > 0 && activeSubs[0]?.displayCurrency
+    ? displayCurrency
+    : (activeSubs[0]?.currency || displayCurrency);
 
   return (
     <SafeAreaView testID="subscriptions-screen" edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
@@ -203,7 +210,7 @@ export default function SubscriptionsScreen() {
             <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('subscriptions.active')}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>${totalMonthly.toFixed(0)}</Text>
+            <Text style={[styles.summaryValue, { color: colors.text }]}>{formatMoney(totalMonthly, effectiveCurrency, i18n.language)}</Text>
             <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>/{t('paywall.month', 'mo')}</Text>
           </View>
           {!isPro && (

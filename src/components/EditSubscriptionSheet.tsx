@@ -238,36 +238,17 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   />
                 </View>
 
-                {/* Amount + Currency */}
-                <View style={styles.row}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={fieldLabel}>{t('add.amount')}</Text>
-                    <TextInput
-                      style={inputStyle}
-                      value={form.amount}
-                      onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
-                      placeholder="9.99"
-                      keyboardType="decimal-pad"
-                      placeholderTextColor={colors.textMuted}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={fieldLabel}>{t('add.currency')}</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                      <View style={styles.chips}>
-                        {CURRENCIES.map((cur) => (
-                          <TouchableOpacity
-                            key={cur}
-                            style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                              form.currency === cur && { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                            onPress={() => setForm((f) => ({ ...f, currency: cur }))}
-                          >
-                            <Text style={{ fontSize: 13, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </ScrollView>
-                  </View>
+                {/* Amount */}
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.amount')}</Text>
+                  <TextInput
+                    style={inputStyle}
+                    value={form.amount}
+                    onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
+                    placeholder="9.99"
+                    keyboardType="decimal-pad"
+                    placeholderTextColor={colors.textMuted}
+                  />
                 </View>
 
                 {/* Billing Period */}

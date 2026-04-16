@@ -20,6 +20,7 @@ import { schedulePaymentReminders } from '../src/utils/localNotifications';
 import { ErrorBoundary } from '../src/utils/ErrorBoundary';
 import { installConsoleInterceptors } from '../src/utils/errorReporter';
 import { OfflineBanner } from '../src/components/OfflineBanner';
+import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
 
 // Install global console interceptors as early as possible
 installConsoleInterceptors();
@@ -97,6 +98,23 @@ function DataLoader() {
   const { setCards } = usePaymentCardsStore();
   const { setSubscriptions, subscriptions } = useSubscriptionsStore();
   const { reminderDays, notificationsEnabled } = useSettingsStore();
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency);
+
+  // Auto-detect region & display currency on first launch
+  useEffect(() => {
+    const settings = useSettingsStore.getState();
+    // Only auto-detect if still at defaults (user hasn't chosen yet)
+    if (settings.region === 'US' && settings.displayCurrency === 'USD') {
+      const detected = detectCountryFromTimezone();
+      if (detected !== 'US') {
+        settings.setRegion(detected);
+        const suggestedCurrency = COUNTRY_DEFAULT_CURRENCY[detected];
+        if (suggestedCurrency) {
+          settings.setDisplayCurrency(suggestedCurrency);
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -122,8 +140,9 @@ function DataLoader() {
     });
 
     // Load subscriptions and schedule local reminders
+    const currency = useSettingsStore.getState().displayCurrency;
     import('../src/api/subscriptions').then(({ subscriptionsApi }) => {
-      subscriptionsApi.getAll().then((res: any) => {
+      subscriptionsApi.getAll({ displayCurrency: currency }).then((res: any) => {
         const subs = res.data || [];
         setSubscriptions(subs);
         if (notificationsEnabled) {

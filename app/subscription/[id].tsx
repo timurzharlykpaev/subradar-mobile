@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { subscriptionsApi } from '../../src/api/subscriptions';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
+import { useSettingsStore } from '../../src/stores/settingsStore';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { COLORS, STATUS_COLORS, CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
@@ -81,7 +82,7 @@ export default function SubscriptionDetailScreen() {
               updateSubscription(id!, { status: 'CANCELLED' });
               // Sync full list from server BEFORE navigating back
               try {
-                const r = await subscriptionsApi.getAll();
+                const r = await subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency });
                 useSubscriptionsStore.getState().setSubscriptions(r.data || []);
               } catch {}
               Alert.alert(
@@ -112,7 +113,7 @@ export default function SubscriptionDetailScreen() {
             removeSubscription(id!);
             // Refresh subscriptions list from server BEFORE navigating back
             try {
-              const r = await subscriptionsApi.getAll();
+              const r = await subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency });
               useSubscriptionsStore.getState().setSubscriptions(r.data || []);
             } catch {}
             router.back();

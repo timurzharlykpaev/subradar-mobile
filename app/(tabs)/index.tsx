@@ -50,6 +50,14 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const currency = useSettingsStore((s) => s.displayCurrency || s.currency);
+  const currencySymbol = React.useMemo(() => {
+    try {
+      const parts = new Intl.NumberFormat(i18n.language || 'en', { style: 'currency', currency }).formatToParts(0);
+      return parts.find((p) => p.type === 'currency')?.value ?? currency;
+    } catch {
+      return currency;
+    }
+  }, [currency, i18n.language]);
   const { colors, isDark } = useTheme();
   const { data: billing } = useBillingStatus();
   const access = useEffectiveAccess();
@@ -69,7 +77,7 @@ export default function DashboardScreen() {
   const fetchSubscriptions = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await subscriptionsApi.getAll();
+      const res = await subscriptionsApi.getAll({ displayCurrency: currency });
       setSubscriptions(res.data || []);
     } catch {} finally {
       setLoading(false);
@@ -80,8 +88,8 @@ export default function DashboardScreen() {
   const fetchAnalytics = async () => {
     try {
       const [monthlyRes, categoryRes] = await Promise.all([
-        analyticsApi.getMonthly().catch(() => null),
-        analyticsApi.getByCategory().catch(() => null),
+        analyticsApi.getMonthly(undefined, { displayCurrency: currency }).catch(() => null),
+        analyticsApi.getByCategory({ displayCurrency: currency }).catch(() => null),
       ]);
       if (monthlyRes?.data) {
         const raw = Array.isArray(monthlyRes.data) ? monthlyRes.data : monthlyRes.data.months || [];
@@ -102,7 +110,7 @@ export default function DashboardScreen() {
     } catch {}
   };
 
-  useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, []);
+  useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, [currency]);
 
   // Refetch billing when app returns to foreground (e.g. after purchase)
   useEffect(() => {
@@ -151,6 +159,11 @@ export default function DashboardScreen() {
   const displayValueOf = (s: { displayAmount?: string; amount: number }) =>
     Number(s.displayAmount ?? s.amount) || 0;
 
+  // Use displayCurrency from subscriptions if backend returned it, otherwise original currency
+  const effectiveCurrency = activeSubs.length > 0 && activeSubs[0]?.displayCurrency
+    ? currency
+    : (activeSubs[0]?.currency || currency);
+
   const totalMonthly = activeSubs.reduce((sum, s) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1 / 3 : s.billingPeriod === 'YEARLY' ? 1 / 12 : 1;
     return sum + displayValueOf(s) * mult;
@@ -181,7 +194,7 @@ export default function DashboardScreen() {
     const in30 = new Date(now.getTime() + 30 * 86400000);
     return date >= now && date <= in30;
   });
-  const forecast30 = upcomingNext30.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+  const forecast30 = upcomingNext30.reduce((sum, s) => sum + displayValueOf(s), 0);
 
   const duplicateCategories = Object.entries(
     subscriptions.reduce((acc, s) => {
@@ -298,7 +311,7 @@ export default function DashboardScreen() {
               </Text>
               {Number(aiResult.totalMonthlySavings) > 0 && (
                 <Text style={{ fontSize: 13, color: '#22c55e', fontWeight: '600', marginTop: 2 }}>
-                  {t('dashboard.save_potential', 'Potential savings')}: {currency}{Number(aiResult.totalMonthlySavings).toFixed(0)}/{t('add_flow.mo', 'mo')}
+                  {t('dashboard.save_potential', 'Potential savings')}: {formatMoney(aiResult.totalMonthlySavings, currency, i18n.language)}/{t('add_flow.mo', 'mo')}
                 </Text>
               )}
             </View>
@@ -363,7 +376,7 @@ export default function DashboardScreen() {
                 {t('team_upsell.dashboard_title')}
               </Text>
               <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 1 }}>
-                {t('team_upsell.dashboard_dynamic', { amount: `${currency} ${Math.round(totalMonthly * 12 * 0.75)}` })}
+                {t('team_upsell.dashboard_dynamic', { amount: `${effectiveCurrency} ${Math.round(totalMonthly * 12 * 0.75)}` })}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={14} color="#3B82F6" />
@@ -382,7 +395,7 @@ export default function DashboardScreen() {
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
           <View style={styles.heroAmountRow}>
-            <Text style={styles.heroAmount}>{formatMoney(totalMonthlyVisible, currency, i18n.language)}</Text>
+            <Text style={styles.heroAmount}>{formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}</Text>
             {delta !== 0 && (
               <View style={[styles.deltaBadge, { backgroundColor: delta > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)' }]}>
                 <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={10} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
@@ -408,7 +421,7 @@ export default function DashboardScreen() {
             <View style={styles.heroMetaDivider} />
             <View style={styles.heroMetaItem}>
               <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.heroMetaText}>{formatMoney(totalMonthly * 12, currency, i18n.language)}/{t('paywall.year', 'yr')}</Text>
+              <Text style={styles.heroMetaText}>{formatMoney(totalMonthly * 12, effectiveCurrency, i18n.language)}/{t('paywall.year', 'yr')}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -463,9 +476,9 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
           <View testID="dashboard-forecast-row" style={styles.forecastRow}>
-            <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={formatMoney(forecast30, currency, i18n.language)} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
-            <ForecastBox icon="trending-up" label={`6 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 6, currency, i18n.language)} sub={t('dashboard.forecast_title')} color={colors.success} />
-            <ForecastBox icon="analytics" label={`12 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 12, currency, i18n.language)} sub={t('dashboard.annually')} color={colors.warning} />
+            <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={formatMoney(forecast30, effectiveCurrency, i18n.language)} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
+            <ForecastBox icon="trending-up" label={`6 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 6, effectiveCurrency, i18n.language)} sub={t('dashboard.forecast_title')} color={colors.success} />
+            <ForecastBox icon="analytics" label={`12 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 12, effectiveCurrency, i18n.language)} sub={t('dashboard.annually')} color={colors.warning} />
           </View>
         </View>
 
@@ -585,7 +598,7 @@ export default function DashboardScreen() {
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.monthly_trend')}</Text>
             <View testID="dashboard-monthly-chart" style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <MonthlyBarChart data={monthlyTrend} />
+              <MonthlyBarChart data={monthlyTrend} currencySymbol={currencySymbol} />
             </View>
           </View>
         )}
@@ -603,7 +616,7 @@ export default function DashboardScreen() {
                   <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 }}>
                     <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t(`categories.${cat.category?.toLowerCase()}`, cat.category?.replace('_', ' '))}</Text>
                     <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
-                      {currency} {cat.amount?.toFixed(0)}/{t('add_flow.mo', 'mo')}
+                      {formatMoney(cat.amount, effectiveCurrency, i18n.language)}/{t('add_flow.mo', 'mo')}
                     </Text>
                   </View>
                 ))}
@@ -681,7 +694,7 @@ export default function DashboardScreen() {
       <TeamUpsellModal
         visible={showTeamUpsell}
         monthlySpend={totalMonthly}
-        currency={currency}
+        currency={effectiveCurrency}
         onCreateTeam={() => {
           setShowTeamUpsell(false);
           analytics.track('team_upsell_modal_cta_tapped');
@@ -736,7 +749,7 @@ function StatCard({ icon, label, value, color }: { icon: string; label: string; 
   );
 }
 
-function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }) {
+function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string; amount: number }[]; currencySymbol?: string }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
@@ -772,7 +785,7 @@ function MonthlyBarChart({ data }: { data: { month: string; amount: number }[] }
                 <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
                 {val > 0 && (
                   <SvgText x={x + barW / 2} y={y - 6} fontSize={9} fontWeight="700" fill={isMax ? colors.primary : colors.textMuted} textAnchor="middle">
-                    {val >= 1000 ? `$ ${(val / 1000).toFixed(1)}k` : `$ ${val.toFixed(0)}`}
+                    {val >= 1000 ? `${currencySymbol} ${(val / 1000).toFixed(1)}k` : `${currencySymbol} ${val.toFixed(0)}`}
                   </SvgText>
                 )}
               </React.Fragment>

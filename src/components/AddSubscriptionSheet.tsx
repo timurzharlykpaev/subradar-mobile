@@ -53,6 +53,7 @@ import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
 import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
 import { CameraIcon, GiftIcon } from './icons';
+import { formatMoney } from '../utils/formatMoney';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -109,7 +110,7 @@ const emptyForm = {
   name: '',
   category: 'STREAMING',
   amount: '',
-  currency: 'USD',
+  currency: 'USD' as string,
   billingPeriod: 'MONTHLY' as const,
   billingDay: '1',
   paymentCardId: '',
@@ -201,6 +202,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { addSubscription } = useSubscriptionsStore();
   const { cards } = usePaymentCardsStore();
   const { currency } = useSettingsStore();
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
 
   useEffect(() => {
     if (visible) {
@@ -219,7 +221,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setConfirmData(null);
     setBulkItems([]);
     setManualExpanded(false);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, currency: displayCurrency });
     setScreenshotUri(null);
     setMoreExpanded(false);
     setAddedViaSource('MANUAL');
@@ -347,7 +349,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       );
       setSuccessName(form.name);
       setShowSuccess(true);
-      subscriptionsApi.getAll().then((r) => {
+      subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
         useSubscriptionsStore.getState().setSubscriptions(r.data || []);
       }).catch(() => {});
     } catch (err: any) {
@@ -427,7 +429,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     );
     setSuccessName(data.name || '');
     setShowSuccess(true);
-    subscriptionsApi.getAll().then((r) => {
+    subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
     } catch (err: any) {
@@ -441,7 +443,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const catalogToConfirmData = (entry: CatalogEntry): ConfirmCardData => ({
     name: { value: entry.name, confidence: 'high' },
     amount: { value: entry.amount, confidence: entry.amount > 0 ? 'high' : 'low' },
-    currency: { value: entry.currency, confidence: 'high' },
+    currency: { value: useSettingsStore.getState().displayCurrency || entry.currency, confidence: 'high' },
     billingPeriod: { value: entry.billingPeriod, confidence: 'high' },
     category: { value: entry.category || 'OTHER', confidence: 'medium' },
     iconUrl: entry.iconUrl,
@@ -547,7 +549,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setConfirmData({
       name: { value: chip.name, confidence: 'high' },
       amount: { value: chip.amount, confidence: 'high' },
-      currency: { value: chip.currency, confidence: 'high' },
+      currency: { value: displayCurrency, confidence: 'high' },
       billingPeriod: { value: chip.billingPeriod, confidence: 'high' },
       category: { value: chip.category, confidence: 'high' },
       iconUrl: chip.iconUrl,
@@ -930,7 +932,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         failed.push(sub.name || '?');
       }
     }
-    subscriptionsApi.getAll().then((r) => {
+    subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
     setBulkSaving(false);
@@ -1057,7 +1059,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               {/* Price + Actions */}
               <View style={{ alignItems: 'flex-end', gap: 8 }}>
                 <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
-                  {sub.currency || 'USD'} {(sub.amount || 0).toFixed(2)}
+                  {formatMoney(sub.amount || 0, sub.currency || displayCurrency, i18n.language)}
                 </Text>
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <TouchableOpacity
@@ -1149,7 +1151,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
           setSuccessName(sub.name || '');
           setShowSuccess(true);
-          subscriptionsApi.getAll().then((r) => {
+          subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
             useSubscriptionsStore.getState().setSubscriptions(r.data || []);
           }).catch(() => {});
         }}
@@ -1188,7 +1190,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               failed.push(sub.name || '?');
             }
           }
-          subscriptionsApi.getAll().then((r) => {
+          subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
             useSubscriptionsStore.getState().setSubscriptions(r.data || []);
           }).catch(() => {});
           if (saved > 0) {
@@ -1259,34 +1261,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           keyboardType="decimal-pad"
           placeholderTextColor={colors.textMuted}
         />
-      </View>
-
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-          {t('add.currency')}
-        </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'nowrap' }}>
-            {CURRENCIES.map((cur) => (
-              <TouchableOpacity
-                key={cur}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 7,
-                  borderRadius: 20,
-                  backgroundColor: form.currency === cur ? colors.primary : colors.background,
-                  borderWidth: 1,
-                  borderColor: form.currency === cur ? colors.primary : colors.border,
-                }}
-                onPress={() => setF('currency', cur)}
-              >
-                <Text style={{ fontSize: 13, fontWeight: '600', color: form.currency === cur ? '#FFF' : colors.text }}>
-                  {cur}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
       </View>
 
       <View style={{ marginBottom: 16 }}>
@@ -1785,26 +1759,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   onChangeText={(v) => updateSub({ name: v })}
                 />
               </View>
-              {/* Amount + Currency */}
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <View style={{ flex: 1, gap: 6 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
-                  <TextInput
-                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                    value={String(sub.amount || '')}
-                    onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })}
-                    keyboardType="decimal-pad"
-                  />
-                </View>
-                <View style={{ width: 80, gap: 6 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.currency', 'Currency')}</Text>
-                  <TextInput
-                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, textAlign: 'center' }}
-                    value={sub.currency || 'USD'}
-                    onChangeText={(v) => updateSub({ currency: v.toUpperCase() })}
-                    maxLength={3}
-                  />
-                </View>
+              {/* Amount */}
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
+                <TextInput
+                  style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                  value={String(sub.amount || '')}
+                  onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })}
+                  keyboardType="decimal-pad"
+                />
               </View>
               {/* Billing Period */}
               <View style={{ gap: 6 }}>

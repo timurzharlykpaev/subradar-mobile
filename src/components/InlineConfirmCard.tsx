@@ -38,7 +38,6 @@ const CONFIDENCE_ICON: Record<Confidence, { name: string; color: string }> = {
 
 const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'];
 const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'MUSIC', 'PRODUCTIVITY', 'GAMING', 'INFRASTRUCTURE', 'HEALTH', 'NEWS', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'DEVELOPER', 'SPORT', 'BUSINESS', 'OTHER'];
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'RUB', 'KZT'];
 
 export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const { t } = useTranslation();
@@ -118,9 +117,9 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               onPress={() => handlePlanSelect(plan)}
             >
               <View style={[styles.radio, selectedPlan === plan.name && styles.radioActive]} />
-              <Text style={[styles.planName, { color: colors.text }]}>{plan.name}</Text>
+              <Text style={[styles.planName, { color: colors.text }]}>{t(`plans.${plan.name.toLowerCase().replace(/\s+/g, '_')}`, plan.name)}</Text>
               <Text style={[styles.planPrice, { color: colors.textSecondary }]}>
-                ${plan.priceMonthly}/{t('add_flow.mo', 'mo')}
+                {plan.priceMonthly.toFixed(2)} {plan.currency}/{t('add_flow.mo', 'mo')}
               </Text>
             </TouchableOpacity>
           ))}
@@ -141,22 +140,6 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
           />
           {renderConfidence(data.amount.confidence)}
         </View>
-      </View>
-
-      {/* Currency chips */}
-      <View style={styles.fieldRow}>
-        <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.currency', 'Currency')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          {CURRENCIES.map(c => (
-            <TouchableOpacity
-              key={c}
-              style={[styles.chip, currency === c && styles.chipActive, { borderColor: colors.border }]}
-              onPress={() => setCurrency(c)}
-            >
-              <Text style={[styles.chipText, currency === c && styles.chipTextActive, { color: currency === c ? '#fff' : colors.textSecondary }]}>{c}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
       </View>
 
       {/* Period chips */}

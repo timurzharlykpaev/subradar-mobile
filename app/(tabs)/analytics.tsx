@@ -50,7 +50,7 @@ function formatNum(n: number | string | undefined | null, decimals = 0): string 
 }
 
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
-function MonthlyBarChart({ data }: { data: { month: string; total: number }[] }) {
+function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string; total: number }[]; currencySymbol?: string }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
@@ -64,7 +64,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
 
   const gridLines = [0.25, 0.5, 0.75].map((frac) => ({
     y: chartAreaH - frac * chartAreaH,
-    label: `$${formatNum(Math.round(maxVal * frac))}`,
+    label: `${currencySymbol} ${formatNum(Math.round(maxVal * frac))}`,
   }));
 
   const getMonthLabel = (monthStr: string) => {
@@ -104,7 +104,7 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
               <Rect x={x} y={y} width={barW} height={barH} rx={barW / 4} fill={isMax ? 'url(#barGrad)' : 'url(#barGradDim)'} />
               {d.total > 0 && (
                 <SvgText x={x + barW / 2} y={y - 5} fontSize={10} fontWeight={isMax ? '700' : '500'} fill={isMax ? colors.primary : colors.textMuted} textAnchor="middle" opacity={isMax ? 1 : 0.7}>
-                  ${d.total >= 1000 ? `${(d.total / 1000).toFixed(1)}k` : d.total.toFixed(0)}
+                  {d.total >= 1000 ? `${currencySymbol} ${(d.total / 1000).toFixed(1)}k` : `${currencySymbol} ${d.total.toFixed(0)}`}
                 </SvgText>
               )}
             </React.Fragment>
@@ -121,9 +121,10 @@ function MonthlyBarChart({ data }: { data: { month: string; total: number }[] })
 }
 
 // ─── Custom CategoryDonutChart ───────────────────────────────────────────────
-function CategoryDonutChart({ categories, total }: {
+function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
   categories: { id: string; color: string; total: number; label?: string; categoryId?: string }[];
   total: number;
+  currencySymbol?: string;
 }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -187,7 +188,7 @@ function CategoryDonutChart({ categories, total }: {
         ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>${formatNum(total)}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>{currencySymbol} {formatNum(total)}</Text>
         <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('analytics.total')}</Text>
       </View>
     </View>
@@ -248,6 +249,14 @@ export default function AnalyticsScreen() {
     (amount: number | string) => formatMoney(amount, displayCurrency, lang),
     [displayCurrency, lang],
   );
+  const currencySymbol = useMemo(() => {
+    try {
+      const parts = new Intl.NumberFormat(lang, { style: 'currency', currency: displayCurrency }).formatToParts(0);
+      return parts.find((p) => p.type === 'currency')?.value ?? displayCurrency;
+    } catch {
+      return displayCurrency;
+    }
+  }, [displayCurrency, lang]);
 
   const [summary, setSummary] = useState<any>(null);
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
@@ -325,7 +334,7 @@ export default function AnalyticsScreen() {
       : s.billingPeriod === 'LIFETIME' ? 0
       : s.billingPeriod === 'ONE_TIME' ? 0
       : 1;
-    return (Number(s.amount) || 0) * mult;
+    return (Number(s.displayAmount ?? s.amount) || 0) * mult;
   }, []);
 
   const totalMonthly = useMemo(
@@ -337,7 +346,7 @@ export default function AnalyticsScreen() {
   const fullMonthly = useMemo(() => subscriptions.reduce((sum, s) => {
     if (s.status !== 'ACTIVE' && s.status !== 'TRIAL') return sum;
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
-    return sum + (Number(s.amount) || 0) * mult;
+    return sum + (Number(s.displayAmount ?? s.amount) || 0) * mult;
   }, 0), [subscriptions]);
   const mostExpensive = useMemo(
     () => activeSubs.reduce<typeof activeSubs[0] | null>(
@@ -548,7 +557,7 @@ export default function AnalyticsScreen() {
           </View>
           <View testID="analytics-monthly-chart" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {monthlyData.length > 0 ? (
-              <MonthlyBarChart data={monthlyData} />
+              <MonthlyBarChart data={monthlyData} currencySymbol={currencySymbol} />
             ) : (
               <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
             )}
@@ -611,7 +620,7 @@ export default function AnalyticsScreen() {
           <View testID="analytics-category-chart" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {byCategory.length > 0 ? (
               <>
-                <CategoryDonutChart categories={byCategory} total={categoryTotal} />
+                <CategoryDonutChart categories={byCategory} total={categoryTotal} currencySymbol={currencySymbol} />
                 <View style={styles.legendContainer}>
                   {byCategory.map((cat, idx) => {
                     const pct = categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0;
@@ -626,7 +635,7 @@ export default function AnalyticsScreen() {
                           <Text style={[styles.legendPercent, { color: colors.textSecondary }]}>
                             {pct}%
                           </Text>
-                          <Text style={[styles.legendAmount, { color: colors.primary }]}>${formatNum(cat.total)}</Text>
+                          <Text style={[styles.legendAmount, { color: colors.primary }]}>{money(cat.total)}</Text>
                         </View>
                       </View>
                     );
@@ -677,7 +686,7 @@ export default function AnalyticsScreen() {
                           }
                           return nick;
                         })()}</Text>
-                        <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>${formatNum(amount, 2)}</Text>
+                        <Text style={[styles.cardBreakdownAmount, { color: colors.primary }]}>{money(amount)}</Text>
                       </View>
                       <View style={[styles.barBg, { backgroundColor: colors.border }]}>
                         <View
@@ -716,7 +725,7 @@ export default function AnalyticsScreen() {
               <ForecastCard
                 icon="calendar"
                 label={t('analytics.forecast_30d')}
-                value={formatNum(forecast?.day30 ?? totalMonthly)}
+                value={money(forecast?.day30 ?? totalMonthly)}
                 sub={t('analytics.avg_month')}
                 color={colors.primary}
                 accent={true}
@@ -724,14 +733,14 @@ export default function AnalyticsScreen() {
               <ForecastCard
                 icon="trending-up"
                 label={t('analytics.forecast_6m')}
-                value={formatNum(forecast?.month6 ?? totalMonthly * 6)}
+                value={money(forecast?.month6 ?? totalMonthly * 6)}
                 sub={t('analytics.forecast')}
                 color={colors.success}
               />
               <ForecastCard
                 icon="analytics"
                 label={t('analytics.forecast_12m')}
-                value={formatNum(forecast?.month12 ?? totalYearly)}
+                value={money(forecast?.month12 ?? totalYearly)}
                 sub={t('analytics.forecast')}
                 color={colors.warning}
               />
@@ -759,7 +768,7 @@ export default function AnalyticsScreen() {
                   <Ionicons name="leaf" size={20} color={colors.success} />
                 </View>
                 <Text style={[styles.savingsAmount, { color: colors.success }]}>
-                  ${formatNum(savings?.estimatedMonthlySavings ?? summary?.savingsPossible ?? 0, 2)}
+                  {money(savings?.estimatedMonthlySavings ?? summary?.savingsPossible ?? 0)}
                 </Text>
                 <Text style={[styles.savingsLabel, { color: colors.textMuted }]}>{t('analytics.potential_savings')}</Text>
               </View>
@@ -791,11 +800,11 @@ export default function AnalyticsScreen() {
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, flex: 1 }} numberOfLines={1}>{d.name}</Text>
                         <View style={{ backgroundColor: colors.success + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 12, fontWeight: '700', color: colors.success }}>-${formatNum(d.potentialSavings ?? 0, 2)}/{t('common.mo', 'mo')}</Text>
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: colors.success }}>-{money(d.potentialSavings ?? 0)}/{t('common.mo', 'mo')}</Text>
                         </View>
                       </View>
                       <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                        {d.count ?? 2} {t('analytics.subs_in_category', 'subs in')} {t(`categories.${(d.category ?? '').toLowerCase()}`, d.category)} · ${formatNum(d.totalMonthly ?? 0, 2)}/{t('period_short.MONTHLY', 'mo')} {t('analytics.total_spend', 'total')}
+                        {d.count ?? 2} {t('analytics.subs_in_category', 'subs in')} {t(`categories.${(d.category ?? '').toLowerCase()}`, d.category)} · {money(d.totalMonthly ?? 0)}/{t('period_short.MONTHLY', 'mo')} {t('analytics.total_spend', 'total')}
                       </Text>
                     </View>
                   ))}
@@ -855,7 +864,7 @@ export default function AnalyticsScreen() {
                       </View>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={[styles.top5Amount, { color: colors.text }]}>${formatNum(monthlyAmt, 2)}</Text>
+                      <Text style={[styles.top5Amount, { color: colors.text }]}>{money(monthlyAmt)}</Text>
                       <Text style={{ fontSize: 10, color: colors.textMuted }}>/{t(`period_short.${sub.billingPeriod}`, 'mo')}</Text>
                     </View>
                     <View style={[styles.top5ProgressBg, { backgroundColor: colors.border }]}>
@@ -899,7 +908,7 @@ export default function AnalyticsScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
-                  {sub.currency} {formatNum(sub.amount, 2)}/{t(`period_short.${sub.billingPeriod}`, 'mo')}
+                  {formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? displayCurrency, lang)}/{t(`period_short.${sub.billingPeriod}`, 'mo')}
                 </Text>
               </View>
             ))}
@@ -949,7 +958,7 @@ function ForecastCard({ icon, label, value, sub, color, accent }: {
       <View style={[styles.forecastIconCircle, { backgroundColor: color + '18' }]}>
         <Ionicons name={icon as any} size={16} color={color} />
       </View>
-      <Text style={[{ fontSize: accent ? 20 : 16, fontWeight: '900', color: colors.text }]}>${value}</Text>
+      <Text style={[{ fontSize: accent ? 20 : 16, fontWeight: '900', color: colors.text }]}>{value}</Text>
       <Text style={[styles.forecastLabel, { color: colors.textMuted }]}>{label}</Text>
       <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{sub}</Text>
     </View>

@@ -89,33 +89,18 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
 
       <View style={styles.right}>
         {(() => {
-          const origCurrency = subscription.originalCurrency || subscription.currency;
-          const hasConversion =
-            !!subscription.displayCurrency &&
-            !!subscription.displayAmount &&
-            subscription.displayCurrency !== origCurrency;
           const primaryAmount = subscription.displayAmount ?? String(subscription.amount);
           const primaryCurrency = subscription.displayCurrency ?? subscription.currency;
           const lang = i18n.language || 'en';
           return (
-            <>
-              <Text
-                style={[styles.amount, { color: colors.text }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.8}
-              >
-                {formatMoney(primaryAmount, primaryCurrency, lang)}
-              </Text>
-              {hasConversion && (
-                <Text
-                  style={[styles.amountOriginal, { color: colors.textMuted }]}
-                  numberOfLines={1}
-                >
-                  {formatMoney(subscription.amount, origCurrency, lang)}
-                </Text>
-              )}
-            </>
+            <Text
+              style={[styles.amount, { color: colors.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {formatMoney(primaryAmount, primaryCurrency, lang)}
+            </Text>
           );
         })()}
         {subscription.billingPeriod && (
