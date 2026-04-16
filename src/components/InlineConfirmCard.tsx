@@ -55,6 +55,11 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const [category, setCategory] = useState(data.category.value || 'OTHER');
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
+  const [nextPaymentDate, setNextPaymentDate] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return d.toISOString().split('T')[0];
+  });
 
   const iconUrl = data.iconUrl || `https://icon.horse/icon/${name.toLowerCase().replace(/\s+/g, '')}.com`;
 
@@ -83,6 +88,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       cancelUrl: data.cancelUrl,
       currentPlan: selectedPlan,
       startDate: new Date().toISOString().split('T')[0],
+      nextPaymentDate: nextPaymentDate || undefined,
       status: 'ACTIVE',
       addedVia: 'AI_TEXT',
       reminderEnabled: true,
@@ -163,6 +169,20 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
           />
           {renderConfidence(data.amount.confidence)}
         </View>
+      </View>
+
+      {/* Next payment date */}
+      <View style={styles.fieldRow}>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.next_payment', 'Next payment date')}</Text>
+        <TextInput
+          style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+          value={nextPaymentDate}
+          onChangeText={setNextPaymentDate}
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor={colors.textSecondary}
+          keyboardType="numbers-and-punctuation"
+          maxLength={10}
+        />
       </View>
 
       {/* Period chips */}

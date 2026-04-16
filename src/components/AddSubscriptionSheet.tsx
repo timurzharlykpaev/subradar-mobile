@@ -124,6 +124,7 @@ const emptyForm = {
   isTrial: false,
   trialEndDate: '',
   startDate: new Date().toISOString().split('T')[0],
+  nextPaymentDate: (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString().split('T')[0]; })(),
   reminderDaysBefore: [2] as number[],
   color: '' as string,
   tags: [] as string[],
@@ -339,6 +340,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         notes: form.notes || undefined,
         trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : undefined,
         startDate: form.startDate || undefined,
+        nextPaymentDate: form.nextPaymentDate || undefined,
         reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
         reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
         color: form.color || undefined,
@@ -1364,6 +1366,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           placeholder="YYYY-MM-DD"
           placeholderTextColor={colors.textMuted}
           keyboardType="numbers-and-punctuation"
+        />
+      </View>
+
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
+          {t('add.next_payment', 'Next payment date')}
+        </Text>
+        <TextInput
+          style={inputStyle}
+          value={form.nextPaymentDate}
+          onChangeText={(v) => setF('nextPaymentDate', v)}
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor={colors.textMuted}
+          keyboardType="numbers-and-punctuation"
+          maxLength={10}
         />
       </View>
 
