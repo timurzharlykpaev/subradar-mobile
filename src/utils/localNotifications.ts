@@ -4,6 +4,7 @@
  */
 import * as Notifications from 'expo-notifications';
 import { Subscription } from '../types';
+import { resolveNextPaymentDate } from './nextPaymentDate';
 
 const CHANNEL_ID = 'payment-reminders';
 
@@ -24,10 +25,8 @@ export async function schedulePaymentReminders(
       // Skip if reminders are explicitly disabled for this subscription
       if (sub.reminderEnabled === false) continue;
 
-      if (!sub.nextPaymentDate) continue;
-
-      const payDate = new Date(sub.nextPaymentDate);
-      if (isNaN(payDate.getTime())) continue;
+      const payDate = resolveNextPaymentDate(sub);
+      if (!payDate) continue;
 
       const reminderDays = (sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0)
         ? sub.reminderDaysBefore

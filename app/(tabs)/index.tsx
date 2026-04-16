@@ -40,6 +40,7 @@ import ExpirationBanner from '../../src/components/ExpirationBanner';
 import WinBackBanner from '../../src/components/WinBackBanner';
 import AnnualUpgradeBanner from '../../src/components/AnnualUpgradeBanner';
 import { analytics } from '../../src/services/analytics';
+import { resolveNextPaymentDate, daysUntil as daysUntilDate } from '../../src/utils/nextPaymentDate';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
 import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
@@ -181,21 +182,26 @@ export default function DashboardScreen() {
   const prevMonthAmount = monthlyTrend.length >= 2 ? monthlyTrend[monthlyTrend.length - 2]?.amount || 0 : 0;
   const delta = prevMonthAmount > 0 ? ((totalMonthly - prevMonthAmount) / prevMonthAmount * 100) : 0;
 
-  const upcomingNext7 = subscriptions
-    .filter((s) => {
-      if (!s.nextPaymentDate) return false;
-      const days = (new Date(s.nextPaymentDate).getTime() - Date.now()) / 86400000;
-      return days >= 0 && days <= 7;
-    })
-    .sort((a, b) => new Date(a.nextPaymentDate!).getTime() - new Date(b.nextPaymentDate!).getTime());
+  // Resolve next payment date locally once per sub — cheaper and stable for
+  // filter+sort+render. The server-stored value is used as fallback only.
+  const subsWithNext = subscriptions.map((s) => ({ sub: s, next: resolveNextPaymentDate(s) }));
 
-  const upcomingNext30 = subscriptions.filter((s) => {
-    if (!s.nextPaymentDate) return false;
-    const date = new Date(s.nextPaymentDate);
-    const now = new Date();
-    const in30 = new Date(now.getTime() + 30 * 86400000);
-    return date >= now && date <= in30;
-  });
+  const upcomingNext7 = subsWithNext
+    .filter(({ next }) => {
+      if (!next) return false;
+      const days = daysUntilDate(next);
+      return days !== null && days >= 0 && days <= 7;
+    })
+    .sort((a, b) => a.next!.getTime() - b.next!.getTime())
+    .map(({ sub }) => sub);
+
+  const upcomingNext30 = subsWithNext
+    .filter(({ next }) => {
+      if (!next) return false;
+      const days = daysUntilDate(next);
+      return days !== null && days >= 0 && days <= 30;
+    })
+    .map(({ sub }) => sub);
   const forecast30 = upcomingNext30.reduce((sum, s) => sum + displayValueOf(s), 0);
 
   const duplicateCategories = Object.entries(
@@ -447,7 +453,7 @@ export default function DashboardScreen() {
             </View>
             <ScrollView testID="dashboard-upcoming-list" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
               {upcomingNext7.map((sub) => {
-                const days = Math.ceil((new Date(sub.nextPaymentDate!).getTime() - Date.now()) / 86400000);
+                const days = daysUntilDate(resolveNextPaymentDate(sub)) ?? 0;
                 const cat = CATEGORIES.find((c) => c.id === sub.category);
                 const urgent = days <= 1;
                 return (
@@ -497,8 +503,8 @@ export default function DashboardScreen() {
               </View>
             </View>
             {trialSubs.map((sub) => {
-              const endDate = sub.nextPaymentDate;
-              const daysLeft = endDate ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000)) : null;
+              const endDate = resolveNextPaymentDate(sub);
+              const daysLeft = endDate ? Math.max(0, daysUntilDate(endDate) ?? 0) : null;
               const dotColor = daysLeft === null ? colors.textSecondary : daysLeft < 3 ? colors.error : daysLeft <= 7 ? colors.warning : colors.success;
               return (
                 <TouchableOpacity
@@ -570,11 +576,14 @@ export default function DashboardScreen() {
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
                     <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
                     <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, sub.billingPeriod)}</Text>
-                    {sub.nextPaymentDate && (
-                      <Text style={[styles.subNextDate, { color: colors.primary }]} numberOfLines={1}>
-                        {new Date(sub.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
-                      </Text>
-                    )}
+                    {(() => {
+                      const nd = resolveNextPaymentDate(sub);
+                      return nd ? (
+                        <Text style={[styles.subNextDate, { color: colors.primary }]} numberOfLines={1}>
+                          {nd.toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
+                        </Text>
+                      ) : null;
+                    })()}
                   </View>
                 </TouchableOpacity>
               );

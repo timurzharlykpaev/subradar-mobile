@@ -15,17 +15,15 @@ import { CardBadge } from './CardBadge';
 import { useTheme, fonts } from '../theme';
 import { GiftIcon } from './icons';
 import { formatMoney } from '../utils/formatMoney';
+import { resolveNextPaymentDate, daysUntil as daysUntilDate } from '../utils/nextPaymentDate';
 
 interface Props {
   subscription: Subscription;
   onSwipeDelete?: () => void;
 }
 
-function daysUntil(date?: string | null): number | null {
-  if (!date) return null;
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return null;
-  return Math.ceil((d.getTime() - Date.now()) / 86400000);
+function daysUntilString(date?: string | null): number | null {
+  return daysUntilDate(date ? new Date(date) : null);
 }
 
 const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
@@ -36,7 +34,9 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
   const statusColor = STATUS_COLORS[subscription.status] || colors.textSecondary;
 
   const isTrial = subscription.status === 'TRIAL';
-  const trialDays = isTrial ? daysUntil((subscription as any).trialEndDate) : null;
+  const trialDays = isTrial ? daysUntilString((subscription as any).trialEndDate) : null;
+  const nextDate = resolveNextPaymentDate(subscription);
+  const nextDateDays = daysUntilDate(nextDate);
   const trialUrgent = trialDays !== null && trialDays <= 3 && trialDays >= 0;
   const trialExpired = trialDays !== null && trialDays < 0;
 
@@ -125,22 +125,21 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
               {trialExpired ? t('trials.expired') : trialDays === 0 ? t('trials.ends_today') : `${trialDays}d`}
             </Text>
           </View>
-        ) : subscription.nextPaymentDate ? (
+        ) : nextDate ? (
           <>
             <Text style={[styles.nextDate, { color: colors.primary }]}>
-              {new Date(subscription.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
+              {nextDate.toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
             </Text>
             {(() => {
-              const days = daysUntil(subscription.nextPaymentDate);
-              if (days === null || days < 0) return null;
-              const isUrgent = days <= 2;
-              const isToday = days === 0;
+              if (nextDateDays === null || nextDateDays < 0) return null;
+              const isUrgent = nextDateDays <= 2;
+              const isToday = nextDateDays === 0;
               return (
                 <Text style={[styles.daysUntil, {
                   color: isToday ? '#EF4444' : isUrgent ? '#F59E0B' : colors.textMuted,
                   fontWeight: isToday || isUrgent ? '700' : '400',
                 }]}>
-                  {isToday ? t('upcoming.today') : days === 1 ? t('upcoming.tomorrow') : t('upcoming.in_days', { count: days })}
+                  {isToday ? t('upcoming.today') : nextDateDays === 1 ? t('upcoming.tomorrow') : t('upcoming.in_days', { count: nextDateDays })}
                 </Text>
               );
             })()}

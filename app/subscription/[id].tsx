@@ -26,6 +26,7 @@ import { PencilIcon, TrashIcon } from '../../src/components/icons';
 import { formatMoney } from '../../src/utils/formatMoney';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { analytics } from '../../src/services/analytics';
+import { resolveNextPaymentDate } from '../../src/utils/nextPaymentDate';
 
 export default function SubscriptionDetailScreen() {
   const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
@@ -223,15 +224,18 @@ export default function SubscriptionDetailScreen() {
                 );
               })()}
             </DetailRow>
-          ) : subscription.nextPaymentDate ? (
-            <DetailRow label={t("subscriptions.next_payment")}>
-              <Text style={[styles.detailValue, { color: colors.text }]}>
-                {new Date(subscription.nextPaymentDate).toLocaleDateString(i18n.language || 'en', {
-                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-                })}
-              </Text>
-            </DetailRow>
-          ) : null}
+          ) : (() => {
+            const nd = resolveNextPaymentDate(subscription);
+            return nd ? (
+              <DetailRow label={t("subscriptions.next_payment")}>
+                <Text style={[styles.detailValue, { color: colors.text }]}>
+                  {nd.toLocaleDateString(i18n.language || 'en', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                  })}
+                </Text>
+              </DetailRow>
+            ) : null;
+          })()}
 
           <DetailRow label={t("subscription.billing_day")}>
             <Text style={[styles.detailValue, { color: colors.text }]}>{t('subscription.day', { day: subscription.billingDay })}</Text>
