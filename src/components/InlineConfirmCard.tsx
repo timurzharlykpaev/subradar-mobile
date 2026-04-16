@@ -48,7 +48,6 @@ const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'MUSIC', 'PRODUCTIVITY', 'GAMING
 const REMINDER_OPTIONS = [
   { label: 'Off', value: null },
   { label: '1d', value: 1 },
-  { label: '2d', value: 2 },
   { label: '3d', value: 3 },
   { label: '7d', value: 7 },
 ];
@@ -78,7 +77,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [billingDay, setBillingDay] = useState('1');
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
-  const [reminderDays, setReminderDays] = useState<number[]>([2]);
+  const [reminderDays, setReminderDays] = useState<number[]>([3]);
   const [notes, setNotes] = useState('');
   const [tags, setTags] = useState('');
   const [color, setColor] = useState<string | null>(null);

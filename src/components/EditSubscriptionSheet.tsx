@@ -432,27 +432,54 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   />
                 </View>
 
-                {/* Reminder */}
+                {/* Reminder — multi-select: reflect any persisted day (e.g. [2], [1,3]) */}
                 <View style={{ marginBottom: 16 }}>
                   <Text style={fieldLabel}>{t('add.reminder', 'Reminder')}</Text>
-                  <View style={{ flexDirection: 'row', gap: 6 }}>
-                    {[
-                      { label: t('add.reminder_off', 'Off'), value: [] as number[] },
-                      { label: '1d', value: [1] },
-                      { label: '3d', value: [3] },
-                      { label: '7d', value: [7] },
-                    ].map((opt) => {
-                      const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
+                  <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                    {(() => {
+                      const OPTIONS = [1, 3, 7];
+                      const selected = form.reminderDaysBefore ?? [];
+                      const isOff = selected.length === 0;
+                      const toggle = (day: number) => {
+                        setForm((f) => {
+                          const cur = f.reminderDaysBefore ?? [];
+                          const next = cur.includes(day) ? cur.filter((d) => d !== day) : [...cur, day].sort((a, b) => a - b);
+                          return { ...f, reminderDaysBefore: next };
+                        });
+                      };
                       return (
-                        <TouchableOpacity
-                          key={opt.label}
-                          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: isSelected ? colors.primary : colors.background, borderWidth: 1, borderColor: isSelected ? colors.primary : colors.border }}
-                          onPress={() => setForm((f) => ({ ...f, reminderDaysBefore: opt.value }))}
-                        >
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>{opt.label}</Text>
-                        </TouchableOpacity>
+                        <>
+                          <TouchableOpacity
+                            style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: isOff ? colors.primary : colors.background, borderWidth: 1, borderColor: isOff ? colors.primary : colors.border }}
+                            onPress={() => setForm((f) => ({ ...f, reminderDaysBefore: [] }))}
+                          >
+                            <Text style={{ fontSize: 12, fontWeight: '600', color: isOff ? '#FFF' : colors.text }}>{t('add.reminder_off', 'Off')}</Text>
+                          </TouchableOpacity>
+                          {OPTIONS.map((day) => {
+                            const active = selected.includes(day);
+                            return (
+                              <TouchableOpacity
+                                key={day}
+                                style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: active ? colors.primary : colors.background, borderWidth: 1, borderColor: active ? colors.primary : colors.border }}
+                                onPress={() => toggle(day)}
+                              >
+                                <Text style={{ fontSize: 12, fontWeight: '600', color: active ? '#FFF' : colors.text }}>{`${day}d`}</Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                          {/* Legacy non-standard days (e.g. [2] from older data) */}
+                          {selected.filter((d) => !OPTIONS.includes(d)).map((day) => (
+                            <TouchableOpacity
+                              key={`legacy-${day}`}
+                              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: colors.primary, borderWidth: 1, borderColor: colors.primary }}
+                              onPress={() => toggle(day)}
+                            >
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFF' }}>{`${day}d`}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </>
                       );
-                    })}
+                    })()}
                   </View>
                 </View>
 

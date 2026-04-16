@@ -552,8 +552,15 @@ export default function DashboardScreen() {
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.subPlan, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {sub.currentPlan || (sub.category ? t(`categories.${sub.category.toLowerCase()}`, cat?.label || sub.category) : '')}
+                      {sub.category ? t(`categories.${sub.category.toLowerCase()}`, cat?.label || sub.category) : ''}
                     </Text>
+                    {sub.tags && sub.tags.length > 0 && (
+                      <View style={{ flexDirection: 'row', gap: 4, marginTop: 2, flexWrap: 'wrap' }}>
+                        {sub.tags.filter(Boolean).slice(0, 3).map((tag) => (
+                          <Text key={tag} style={{ fontSize: 10, color: colors.textMuted }}>#{tag}</Text>
+                        ))}
+                      </View>
+                    )}
                   </View>
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
                     <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>

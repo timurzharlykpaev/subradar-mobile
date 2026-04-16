@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { Subscription } from '../types';
 import { STATUS_COLORS } from '../constants';
-import { CategoryBadge } from './CategoryBadge';
 import { CardBadge } from './CardBadge';
 import { useTheme, fonts } from '../theme';
 import { GiftIcon } from './icons';
@@ -74,12 +73,14 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
           </View>
         </View>
 
-        {subscription.currentPlan && (
-          <Text style={[styles.plan, { color: colors.textSecondary }]} numberOfLines={1}>{subscription.currentPlan}</Text>
+        {/* Subtitle shows category (was currentPlan — confusing UX: "Family" plan read as period). */}
+        {subscription.category && (
+          <Text style={[styles.plan, { color: colors.textSecondary }]} numberOfLines={1}>
+            {t(`categories.${subscription.category.toLowerCase()}`, subscription.category)}
+          </Text>
         )}
 
         <View style={styles.tagsRow}>
-          <CategoryBadge categoryId={subscription.category} size="sm" />
           {subscription.paymentCardId && <CardBadge cardId={subscription.paymentCardId} />}
           {subscription.tags?.filter(Boolean).map((tag) => (
             <View key={tag} style={[styles.tagBadge, { backgroundColor: colors.surface2 }]}>

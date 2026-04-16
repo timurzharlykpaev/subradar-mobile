@@ -131,7 +131,7 @@ const emptyForm = {
   trialEndDate: '',
   startDate: new Date().toISOString().split('T')[0],
   nextPaymentDate: (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString().split('T')[0]; })(),
-  reminderDaysBefore: [2] as number[],
+  reminderDaysBefore: [3] as number[],
   color: '' as string,
   tags: [] as string[],
 };
@@ -419,16 +419,20 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       amount: data.amount || 0,
       currency: data.currency || currency || 'USD',
       billingPeriod: safeBillingPeriod,
-      billingDay: 1,
+      billingDay: data.billingDay ? Math.min(Math.max(parseInt(String(data.billingDay)) || 1, 1), 31) : 1,
       status: 'ACTIVE',
       serviceUrl: data.serviceUrl || undefined,
       cancelUrl: data.cancelUrl || undefined,
       iconUrl: iconUrl || undefined,
       currentPlan: data.currentPlan || undefined,
-      startDate: new Date().toISOString().split('T')[0],
+      notes: data.notes || undefined,
+      tags: Array.isArray(data.tags) && data.tags.length > 0 ? data.tags : undefined,
+      paymentCardId: data.paymentCardId || undefined,
+      startDate: data.startDate || new Date().toISOString().split('T')[0],
+      nextPaymentDate: data.nextPaymentDate || undefined,
       addedVia: addedViaSource,
       reminderEnabled: data.reminderEnabled ?? true,
-      reminderDaysBefore: data.reminderDaysBefore ?? [2],
+      reminderDaysBefore: data.reminderDaysBefore ?? [3],
     });
     addSubscription(res.data);
     if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
@@ -1985,11 +1989,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                       {[
                         { label: t('add.reminder_off', 'Off'), value: [] as number[] },
                         { label: t('add.reminder_1d', '1d'), value: [1] },
-                        { label: '2d', value: [2] },
                         { label: t('add.reminder_3d', '3d'), value: [3] },
                         { label: t('add.reminder_7d', '7d'), value: [7] },
                       ].map((opt) => {
-                        const current = sub.reminderDaysBefore ?? [2];
+                        const current = sub.reminderDaysBefore ?? [3];
                         const isSelected = JSON.stringify(current) === JSON.stringify(opt.value);
                         return (
                           <TouchableOpacity
