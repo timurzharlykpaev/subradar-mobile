@@ -48,7 +48,9 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "SubRadar needs microphone access to add subscriptions by voice.",
         "NSLocalNetworkUsageDescription": "SubRadar needs local network access to connect to the development server.",
-        "NSBonjourServices": ["_http._tcp"]
+        "NSBonjourServices": [
+          "_http._tcp"
+        ]
       },
       "xcodeproj": {
         "buildSettings": {
@@ -83,7 +85,10 @@
               "host": "app.subradar.ai"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "permissions": [
