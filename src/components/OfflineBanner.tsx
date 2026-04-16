@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, AppState } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { API_URL } from '../api/client';
+
+// Derive the base (strip /api/v1 suffix if present) and re-append health path
+const HEALTH_URL = `${API_URL.replace(/\/api\/v1\/?$/, '')}/api/v1/health`;
 
 export function OfflineBanner() {
   const { t } = useTranslation();
@@ -9,21 +13,32 @@ export function OfflineBanner() {
   const retryRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
+    let cancelled = false;
+
     const checkConnection = async () => {
+      // Always clear any previously scheduled retry before a new attempt.
+      if (retryRef.current) {
+        clearTimeout(retryRef.current);
+        retryRef.current = undefined;
+      }
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
-        const res = await fetch('https://api.subradar.ai/api/v1/health', {
-          method: 'HEAD',
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        // Any HTTP response (even 5xx) means network is reachable
-        setIsOffline(false);
+        try {
+          await fetch(HEALTH_URL, {
+            method: 'HEAD',
+            signal: controller.signal,
+          });
+          if (!cancelled) setIsOffline(false);
+        } finally {
+          clearTimeout(timeout);
+        }
       } catch {
-        setIsOffline(true);
-        // Retry after 5 seconds when offline
-        retryRef.current = setTimeout(checkConnection, 5000);
+        if (!cancelled) {
+          setIsOffline(true);
+          // Retry after 5 seconds when offline
+          retryRef.current = setTimeout(checkConnection, 5000);
+        }
       }
     };
 
@@ -37,16 +52,24 @@ export function OfflineBanner() {
       if (isOffline) checkConnection();
     }, 10000);
     return () => {
+      cancelled = true;
       sub.remove();
       clearInterval(interval);
-      if (retryRef.current) clearTimeout(retryRef.current);
+      if (retryRef.current) {
+        clearTimeout(retryRef.current);
+        retryRef.current = undefined;
+      }
     };
   }, [isOffline]);
 
   if (!isOffline) return null;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessibilityRole="alert"
+      accessibilityLabel={t('a11y.offline_banner', 'Offline banner')}
+    >
       <Ionicons name="cloud-offline-outline" size={16} color="#fff" />
       <Text style={styles.text}>
         {t('common.offline', 'No internet connection')}

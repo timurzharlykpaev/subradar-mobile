@@ -11,15 +11,37 @@ export const MAX_RECORDING_SECONDS = 30;
 export function useVoiceRecorder(onDone: (uri: string) => void) {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Refs survive re-renders and can be read/cleared from unmount cleanup
+  // without triggering React warnings or racing with setState.
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stoppingRef = useRef(false);
+  const mountedRef = useRef(true);
+
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderRef = useRef(recorder);
+  recorderRef.current = recorder;
+
+  const clearTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
 
   const stop = useCallback(async () => {
     if (!isRecording || stoppingRef.current) return;
     stoppingRef.current = true;
-    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-    await recorder.stop();
+    clearTimer();
+    try {
+      await recorder.stop();
+    } catch {
+      // recorder might already be stopped/unloaded on cleanup path
+    }
+    if (!mountedRef.current) {
+      stoppingRef.current = false;
+      return;
+    }
     setIsRecording(false);
     setDuration(0);
     stoppingRef.current = false;
@@ -31,13 +53,24 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
   const start = useCallback(async () => {
     try {
       const { granted } = await requestRecordingPermissionsAsync();
-      if (!granted) return;
+      if (!granted || !mountedRef.current) return;
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
+      if (!mountedRef.current) {
+        // Unmounted while we were preparing — tear down immediately
+        try { await recorder.stop(); } catch {}
+        return;
+      }
       setIsRecording(true);
       setDuration(0);
-      timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
+      intervalRef.current = setInterval(() => {
+        if (!mountedRef.current) {
+          clearTimer();
+          return;
+        }
+        setDuration(d => d + 1);
+      }, 1000);
     } catch (e) {
       if (__DEV__) console.warn('Voice start error', e);
     }
@@ -50,11 +83,19 @@ export function useVoiceRecorder(onDone: (uri: string) => void) {
     }
   }, [duration, isRecording, stop]);
 
+  // Mount/unmount guard + cleanup.
+  // Runs once at mount, cleans timer AND force-unloads the recorder on unmount
+  // so we don't leak the native audio session when the component disappears
+  // mid-recording (e.g. user navigates away).
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+      mountedRef.current = false;
+      clearTimer();
+      try {
+        recorderRef.current?.stop?.();
+      } catch {
+        // already stopped — ignore
       }
     };
   }, []);

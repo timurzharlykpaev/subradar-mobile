@@ -1,7 +1,14 @@
+// Must be imported BEFORE `uuid` so crypto.getRandomValues is polyfilled.
+import 'react-native-get-random-values';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import { useAuthStore } from '../stores/authStore';
 import { reportError } from '../utils/errorReporter';
 
+// TODO(security): add certificate pinning for api.subradar.ai.
+// Requires a native library (e.g. react-native-pinch or @mattrglobal/pin) and
+// therefore EAS Build (not Expo Go). Pin the public key of the api.subradar.ai
+// leaf cert + a backup. Plan: docs/superpowers/specs/2026-04-16-cert-pinning-todo.md
 export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
 
 export const apiClient = axios.create({
@@ -14,6 +21,14 @@ apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Attach a correlation ID so server-side logs and client errors can be cross-referenced.
+  try {
+    const cid = uuidv4();
+    (config as any).__correlationId = cid;
+    config.headers['x-correlation-id'] = cid;
+  } catch {
+    // UUID generation shouldn't throw, but never block the request.
   }
   return config;
 });
@@ -84,16 +99,22 @@ apiClient.interceptors.response.use(
     const status: number | undefined = error.response?.status;
     const url = error.config?.url ?? 'unknown';
     const method = error.config?.method?.toUpperCase() ?? '?';
+    // Prefer server-echoed correlation ID, fall back to the one we attached on the request.
+    const correlationId: string | null =
+      (error.response?.headers as any)?.['x-correlation-id'] ??
+      (error.config as any)?.__correlationId ??
+      null;
 
     // Report all non-auth errors: 4xx (except 401/403) + 5xx + network errors
     const isAuthError = status === 401 || status === 403;
     const shouldReport = !isAuthError && (!status || status >= 400);
     if (shouldReport) {
       const serverMsg = error.response?.data?.message ?? error.response?.data?.error ?? '';
+      const cidTag = correlationId ? ` [cid=${correlationId}]` : '';
       reportError(
-        `API ${method} ${url} → ${status ?? 'network error'}${serverMsg ? `: ${serverMsg}` : ''}`,
+        `API ${method} ${url} → ${status ?? 'network error'}${cidTag}${serverMsg ? `: ${serverMsg}` : ''}`,
         error.stack,
-        { status, url, method },
+        { status, url, method, correlationId },
       );
     }
 

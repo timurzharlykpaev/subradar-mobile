@@ -1,5 +1,11 @@
+// Init Sentry as early as possible — before any module that might throw.
+// No-op in __DEV__ and when DSN is not configured, so this is safe always.
+import { initSentry } from '../src/services/sentry';
+initSentry();
+
 import { useEffect, useRef, useState } from 'react';
-import { BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
+import { AppState, BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
+import type { AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
@@ -279,6 +285,19 @@ export default function RootLayout() {
     });
 
     return () => backHandler.remove();
+  }, []);
+
+  // Session tracking — fire session_start on app resume (background → active)
+  useEffect(() => {
+    let previousState: AppStateStatus = AppState.currentState;
+    const sub = AppState.addEventListener('change', (next) => {
+      if (previousState.match(/inactive|background/) && next === 'active') {
+        analytics.newSession();
+        analytics.track('session_start');
+      }
+      previousState = next;
+    });
+    return () => sub.remove();
   }, []);
 
   if (showSplash || !fontsLoaded) return <SplashScreen />;

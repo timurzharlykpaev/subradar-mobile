@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import axios from 'axios';
 import { API_URL } from '../api/client';
+import { Sentry } from '../services/sentry';
 
 const DEDUP_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const recentErrors = new Map<string, number>();
@@ -28,6 +29,16 @@ export async function reportError(
     // Cleanup stale entries
     for (const [k, t] of recentErrors) {
       if (now - t > DEDUP_INTERVAL_MS) recentErrors.delete(k);
+    }
+
+    // Forward to Sentry in parallel with our own API. Sentry is no-op in DEV
+    // and when DSN is missing, so this is safe.
+    try {
+      const err = new Error(message);
+      if (stack) err.stack = stack;
+      Sentry.captureException(err, context ? { extra: context } : undefined);
+    } catch {
+      // swallow — never break reporting
     }
 
     await axios.post(`${API_URL}/monitoring/client-error`, {

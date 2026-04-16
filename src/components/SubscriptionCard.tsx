@@ -47,6 +47,8 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
       style={[styles.card, { backgroundColor: colors.surface }]}
       activeOpacity={0.85}
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}
+      accessibilityRole="button"
+      accessibilityLabel={t('a11y.subscription', { name: subscription.name, defaultValue: `${subscription.name} subscription` })}
     >
       <View style={styles.left}>
         {subscription.iconUrl && !iconError ? (

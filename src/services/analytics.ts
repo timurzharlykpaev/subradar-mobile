@@ -1,12 +1,17 @@
 /**
  * Analytics Service
  * Unified tracking layer over Amplitude (or any provider).
- * Drop-in: install @amplitude/analytics-react-native and call analytics.init() in _layout.tsx
+ * Initialized in app/_layout.tsx via analytics.init().
  *
  * Usage:
  *   import { analytics } from '../services/analytics';
  *   analytics.track('paywall_viewed', { source: 'onboarding' });
+ *
+ * Opt-out: controlled by useSettingsStore().analyticsOptOut — when true, all
+ * track/identify/revenue calls are no-ops (not even buffered).
  */
+
+import { useSettingsStore } from '../stores/settingsStore';
 
 // ─── Event catalogue ──────────────────────────────────────────────────────────
 export type AnalyticsEvent =
@@ -22,6 +27,7 @@ export type AnalyticsEvent =
   | 'onboarding_completed'
   | 'onboarding_money_hook_viewed'
   | 'onboarding_quick_add_tapped'
+  | 'region_selected'
 
   // Auth
   | 'auth_method_selected'
@@ -33,6 +39,8 @@ export type AnalyticsEvent =
   | 'subscription_first_added'
   | 'subscription_deleted'
   | 'subscription_edited'
+  | 'subscription_paused'
+  | 'subscription_restored'
 
   // AI
   | 'ai_voice_started'
@@ -59,6 +67,10 @@ export type AnalyticsEvent =
   | 'notification_permission_granted'
   | 'notification_permission_denied'
   | 'push_opened'
+
+  // Settings
+  | 'currency_changed'
+  | 'analytics_opt_out_toggled'
 
   // Engagement
   | 'analytics_viewed'
@@ -105,7 +117,7 @@ interface AnalyticsProvider {
   reset(): void;
 }
 
-// ─── Console provider (dev / no SDK installed) ───────────────────────────────
+// ─── Console provider (dev / no SDK key configured) ──────────────────────────
 class ConsoleProvider implements AnalyticsProvider {
   init(_apiKey: string) {}
   identify(userId: string, traits?: Record<string, any>) {
@@ -120,36 +132,69 @@ class ConsoleProvider implements AnalyticsProvider {
   reset() {}
 }
 
-// ─── Amplitude provider (uncomment after: npm i @amplitude/analytics-react-native) ──
-// import * as Amplitude from '@amplitude/analytics-react-native';
-// class AmplitudeProvider implements AnalyticsProvider {
-//   init(apiKey: string) {
-//     Amplitude.init(apiKey, {
-//       flushIntervalMillis: 10_000,
-//       flushQueueSize: 30,
-//       trackingSessionEvents: true,
-//     });
-//   }
-//   identify(userId: string, traits?: Record<string, any>) {
-//     Amplitude.setUserId(userId);
-//     if (traits) {
-//       const ev = new Amplitude.Identify();
-//       Object.entries(traits).forEach(([k, v]) => ev.set(k, v));
-//       Amplitude.identify(ev);
-//     }
-//   }
-//   track(event: string, properties?: EventProperties) {
-//     Amplitude.track(event, properties);
-//   }
-//   revenue(productId: string, price: number, revenue: number) {
-//     const ev = new Amplitude.Revenue()
-//       .setProductId(productId)
-//       .setPrice(price)
-//       .setRevenue(revenue);
-//     Amplitude.revenue(ev);
-//   }
-//   reset() { Amplitude.reset(); }
-// }
+// ─── Amplitude provider ──────────────────────────────────────────────────────
+// Lazy require so tests that mock this module don't need the native module.
+class AmplitudeProvider implements AnalyticsProvider {
+  private amp: any = null;
+
+  private load() {
+    if (this.amp) return this.amp;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      this.amp = require('@amplitude/analytics-react-native');
+    } catch (e) {
+      if (__DEV__) console.warn('[Analytics] Amplitude SDK not available, falling back to console', e);
+    }
+    return this.amp;
+  }
+
+  init(apiKey: string) {
+    const amp = this.load();
+    if (!amp) return;
+    amp.init(apiKey, undefined, {
+      defaultTracking: { sessions: true, appLifecycles: true },
+      flushIntervalMillis: 10_000,
+      flushQueueSize: 30,
+    });
+  }
+
+  identify(userId: string, traits?: Record<string, any>) {
+    const amp = this.load();
+    if (!amp) return;
+    amp.setUserId(userId);
+    if (traits && amp.Identify) {
+      const ev = new amp.Identify();
+      Object.entries(traits).forEach(([k, v]) => {
+        if (v != null) ev.set(k, v as any);
+      });
+      amp.identify(ev);
+    }
+  }
+
+  track(event: string, properties?: EventProperties) {
+    const amp = this.load();
+    if (!amp) return;
+    amp.track(event, properties);
+  }
+
+  revenue(productId: string, price: number, revenue: number) {
+    const amp = this.load();
+    if (!amp || !amp.Revenue) return;
+    const ev = new amp.Revenue()
+      .setProductId(productId)
+      .setPrice(price)
+      .setRevenue(revenue);
+    amp.revenue(ev);
+  }
+
+  reset() {
+    const amp = this.load();
+    if (!amp) return;
+    amp.reset();
+  }
+}
+
+const AMPLITUDE_KEY = process.env.EXPO_PUBLIC_AMPLITUDE_KEY;
 
 // ─── Analytics service ────────────────────────────────────────────────────────
 class AnalyticsService {
@@ -157,26 +202,43 @@ class AnalyticsService {
   private sessionId: string = Date.now().toString();
   private initialized = false;
 
-  /** Call once in app/_layout.tsx after auth check */
-  init(apiKey?: string) {
+  private isOptedOut(): boolean {
+    try {
+      return useSettingsStore.getState().analyticsOptOut === true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Call once in app/_layout.tsx. */
+  init() {
     if (this.initialized) return;
-    // To switch to Amplitude: replace ConsoleProvider with AmplitudeProvider()
-    // this.provider = new AmplitudeProvider();
-    if (apiKey) this.provider.init(apiKey);
+    // Use Amplitude in prod when a key is present; Console otherwise.
+    if (AMPLITUDE_KEY && !__DEV__) {
+      this.provider = new AmplitudeProvider();
+      this.provider.init(AMPLITUDE_KEY);
+    }
     this.initialized = true;
     this.track('app_open');
   }
 
   identify(userId: string, traits?: { plan?: string; currency?: string; language?: string }) {
+    if (this.isOptedOut()) return;
     this.provider.identify(userId, traits);
   }
 
   track(event: AnalyticsEvent, properties?: EventProperties) {
+    if (this.isOptedOut()) return;
     this.provider.track(event, {
       ...properties,
       session_id: this.sessionId,
       ts: Date.now(),
     });
+  }
+
+  /** Reset session id — call on app resume from background. */
+  newSession() {
+    this.sessionId = Date.now().toString();
   }
 
   reset() {
@@ -199,6 +261,7 @@ class AnalyticsService {
   }
 
   purchaseCompleted(plan: string, period: string, price: number) {
+    if (this.isOptedOut()) return;
     const revenue = parseFloat((price * 0.85).toFixed(2)); // after App Store 15% fee
     this.track('purchase_completed', { plan, period, price, revenue });
     this.provider.revenue(`io.subradar.mobile.${plan}.${period}`, price, revenue);

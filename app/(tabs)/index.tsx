@@ -727,7 +727,13 @@ function ForecastBox({ icon, label, amount, sub, color }: { icon: string; label:
 function QuickAction({ icon, label, onPress, color }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void; color: string }) {
   const { colors } = useTheme();
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]} activeOpacity={0.8}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
       <View style={[styles.actionIcon, { backgroundColor: color + '18' }]}>
         <Ionicons name={icon} size={20} color={color} />
       </View>

@@ -31,6 +31,8 @@ import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { LockedSubscriptionCard } from '../../src/components/LockedSubscriptionCard';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { formatMoney } from '../../src/utils/formatMoney';
+import { translateBackendError } from '../../src/utils/translateBackendError';
+import { SubscriptionSkeleton } from '../../src/components/SubscriptionSkeleton';
 import i18n from '../../src/i18n';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
@@ -42,6 +44,7 @@ export default function SubscriptionsScreen() {
   const { colors, isDark } = useTheme();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortType>('next_date');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -52,7 +55,10 @@ export default function SubscriptionsScreen() {
       setSubscriptions(res.data || []);
     } catch (err: any) {
       reportError(`subscriptions.fetchSubs: ${err?.message ?? err}`, err?.stack);
-    } finally { setRefreshing(false); }
+    } finally {
+      setRefreshing(false);
+      setInitialLoading(false);
+    }
   }, [displayCurrency]);
 
   const addSheetVisible = useUIStore((s) => s.addSheetVisible);
@@ -76,10 +82,13 @@ export default function SubscriptionsScreen() {
     prevSheetVisible.current = addSheetVisible;
   }, [addSheetVisible]);
 
-  // Periodic refresh every 15 seconds while screen is visible
+  // Periodic refresh while screen is visible.
+  // 60s (down from 15s) — subscriptions rarely change mid-session and the old
+  // 15s poll burned battery + data on mobile. Reconciliation still happens
+  // on focus, on AddSheet close, and on explicit pull-to-refresh.
   useFocusEffect(
     useCallback(() => {
-      const interval = setInterval(() => fetchSubs(true), 15000);
+      const interval = setInterval(() => fetchSubs(true), 60000);
       return () => clearInterval(interval);
     }, [fetchSubs])
   );
@@ -156,8 +165,7 @@ export default function SubscriptionsScreen() {
           await subscriptionsApi.delete(id);
           removeSubscription(id);
         } catch (err: any) {
-          const msg = err?.response?.data?.message || err?.message || t('common.error');
-          Alert.alert(t('common.error'), msg);
+          Alert.alert(t('common.error'), translateBackendError(t, err));
         }
       }},
     ]);
@@ -346,23 +354,31 @@ export default function SubscriptionsScreen() {
           maxToRenderPerBatch={10}
           updateCellsBatchingPeriod={50}
           removeClippedSubviews={true}
-          windowSize={5}
+          windowSize={10}
           getItemLayout={(_data, index) => ({ length: 88, offset: 88 * index, index })}
           renderItem={({ item }) => (
             <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
           )}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <View style={[styles.emptyIcon, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name={searchQuery ? 'search' : 'albums-outline'} size={36} color={colors.primary} />
+            initialLoading ? (
+              <View style={{ paddingTop: 8 }}>
+                <SubscriptionSkeleton />
+                <SubscriptionSkeleton />
+                <SubscriptionSkeleton />
               </View>
-              <Text style={[styles.emptyText, { color: colors.text }]}>
-                {searchQuery ? t('subscriptions.no_results', 'No results') : t('subscriptions.empty')}
-              </Text>
-              <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                {searchQuery ? t('subscriptions.try_different', 'Try a different search') : t('subscriptions.empty_hint')}
-              </Text>
-            </View>
+            ) : (
+              <View style={styles.empty}>
+                <View style={[styles.emptyIcon, { backgroundColor: colors.primaryLight }]}>
+                  <Ionicons name={searchQuery ? 'search' : 'albums-outline'} size={36} color={colors.primary} />
+                </View>
+                <Text style={[styles.emptyText, { color: colors.text }]}>
+                  {searchQuery ? t('subscriptions.no_results', 'No results') : t('subscriptions.empty')}
+                </Text>
+                <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+                  {searchQuery ? t('subscriptions.try_different', 'Try a different search') : t('subscriptions.empty_hint')}
+                </Text>
+              </View>
+            )
           }
           ListFooterComponent={
             access.isInDegradedMode ? (

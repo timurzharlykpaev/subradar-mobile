@@ -26,6 +26,15 @@
     "ok": "ОК",
     "share": "Поделиться"
   },
+  "a11y": {
+    "subscription": "Подписка {{name}}",
+    "offline_banner": "Нет соединения",
+    "add_subscription": "Добавить подписку",
+    "subscribe": "Оформить подписку",
+    "restore_purchases": "Восстановить покупки",
+    "save": "Сохранить",
+    "close": "Закрыть"
+  },
   "tabs": {
     "home": "Главная",
     "subs": "Подписки",
@@ -256,7 +265,8 @@
     "enter_manually": "Ввести вручную",
     "limit_partial_msg": "Сохранено {{saved}} из {{total}}. Обновитесь для безлимита.",
     "limit_partial_title": "Лимит достигнут",
-    "service_url": "Ссылка на сервис"
+    "service_url": "Ссылка на сервис",
+    "ai_quota_exceeded": "Лимит AI-запросов исчерпан. Перейдите на Pro для большего количества запросов."
   },
   "settings": {
     "title": "Настройки",
@@ -325,6 +335,9 @@
     "date_format_label": "Формат даты",
     "email_notifications": "Email уведомления",
     "email_notifications_desc": "Напоминания об оплате по почте",
+    "privacy": "Приватность",
+    "analytics_opt_out": "Отключить аналитику",
+    "analytics_opt_out_desc": "Не отправлять события использования",
     "weekly_digest": "Еженедельный AI дайджест",
     "weekly_digest_desc": "Сводка AI анализа каждый понедельник",
     "weekly_digest_pro": "Доступно в Pro",
@@ -338,6 +351,7 @@
     "replay_onboarding_desc": "Обучение покажется при следующем открытии",
     "onboarding_reset": "Обучение покажется при следующем запуске",
     "delete_account_warning": "Все данные будут удалены безвозвратно. Это нельзя отменить.",
+    "delete_account_title": "Удалить аккаунт?",
     "type_delete": "Введите DELETE для подтверждения:",
     "account_section": "Аккаунт",
     "notifications_section": "Уведомления",
@@ -353,7 +367,11 @@
     "date_format": "Формат даты",
     "off": "Выкл",
     "subradar_team": "Команда Subradar",
-    "subs_count": "подписок"
+    "subs_count": "подписок",
+    "help_support": "Помощь и поддержка",
+    "contact_us": "Связаться с нами",
+    "faq": "Часто задаваемые вопросы",
+    "mail_unavailable": "Не удалось открыть почтовое приложение"
   },
   "auth": {
     "welcome": "С возвращением",
@@ -378,7 +396,19 @@
     "failed_send_code": "Не удалось отправить код",
     "invalid_code": "Неверный код",
     "failed_send_link": "Не удалось отправить ссылку",
-    "too_many_attempts": "Слишком много попыток. Подождите немного."
+    "too_many_attempts": "Слишком много попыток. Подождите немного.",
+    "invalid_credentials": "Неверный email или пароль.",
+    "user_not_found": "Пользователь не найден.",
+    "email_already_exists": "Этот email уже зарегистрирован."
+  },
+  "errors": {
+    "subscription_not_found": "Подписка не найдена.",
+    "card_not_found": "Карта не найдена.",
+    "payment_required": "Требуется оплата.",
+    "forbidden": "Недостаточно прав для этого действия.",
+    "not_found": "Не найдено.",
+    "validation": "Некоторые поля заполнены некорректно.",
+    "unauthorized": "Войдите в аккаунт для продолжения."
   },
   "landing": {
     "hero_title": "Знайте, куда уходят деньги",
@@ -774,6 +804,10 @@
     "restored_msg": "Ваша подписка была восстановлена.",
     "free_price": "Бесплатно",
     "no_purchases": "Активных подписок не найдено.",
+    "no_purchases_title": "Нет активных подписок",
+    "no_purchases_help": "Не найдено активных подписок на этом Apple ID / Google-аккаунте. Если вы уверены, что покупка была, напишите в поддержку.",
+    "restore_unavailable_title": "Восстановление недоступно",
+    "restore_unavailable_msg": "Попробуйте снова при подключении к App Store или Google Play.",
     "restore_purchases": "Восстановить покупки",
     "upgrade_success": "Успешно!",
     "upgrade_success_msg": "Добро пожаловать в Pro!",

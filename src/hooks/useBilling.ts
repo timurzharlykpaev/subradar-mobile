@@ -14,8 +14,9 @@ export function useBillingStatus() {
         throw e;
       }
     },
-    staleTime: 30_000,
+    staleTime: 10_000,
     refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     retry: 1,
   });
 }

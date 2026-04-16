@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { reportError } from './errorReporter';
+import { Sentry } from '../services/sentry';
 import { WarningIcon } from '../components/icons';
 import i18n from '../i18n';
 
@@ -22,6 +23,13 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     const stack = error.stack ?? info.componentStack ?? undefined;
     reportError(error.message, stack, { componentStack: info.componentStack });
+    try {
+      Sentry.captureException(error, {
+        contexts: { react: { componentStack: info.componentStack } },
+      });
+    } catch {
+      // Never let monitoring crash the error boundary
+    }
   }
 
   private handleRestart = () => {

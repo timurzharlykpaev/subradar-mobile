@@ -30,6 +30,10 @@ let configured = false;
 
 const isAvailable = () => Purchases != null;
 
+export function isRevenueCatAvailable(): boolean {
+  return isAvailable();
+}
+
 // Promise that resolves when RC is configured — useRevenueCat can await it
 let resolveConfigured: () => void;
 const configuredPromise = new Promise<void>((resolve) => {
@@ -167,7 +171,11 @@ export function useRevenueCat() {
   const trialEligiblePackages = (offerings?.current?.availablePackages ?? []).filter(packageHasTrial);
   const hasTrialOffer = trialEligiblePackages.length > 0;
 
-  // Get trial duration in days from first trial-eligible package (for UI display)
+  // Get trial duration in days from first trial-eligible package (for UI display).
+  //
+  // Use UTC dates + Math.floor to avoid DST boundaries and local-time rollover
+  // shifting the displayed number by ±1 day (e.g. user in UTC-8 seeing "6 days"
+  // for a 7-day trial because local midnight lands before UTC midnight).
   const trialDurationDays = (() => {
     const pkg = trialEligiblePackages[0];
     if (!pkg) return null;
@@ -175,9 +183,28 @@ export function useRevenueCat() {
     if (!intro) return null;
     const cycles = intro.cycles ?? 1;
     const unit = intro.periodUnit?.toUpperCase?.();
-    const perCycle = unit === 'DAY' ? 1 : unit === 'WEEK' ? 7 : unit === 'MONTH' ? 30 : unit === 'YEAR' ? 365 : 7;
     const num = intro.periodNumberOfUnits ?? 1;
-    return cycles * perCycle * num;
+
+    // Compute end date by stepping the UTC calendar forward, then diff in
+    // whole UTC days. This treats 1 MONTH as "add 1 to UTC month" rather than
+    // a naive 30-day approximation, avoiding the ~5 day drift on yearly trials.
+    const start = new Date();
+    const end = new Date(start.getTime());
+    const total = cycles * num;
+    if (unit === 'DAY') {
+      end.setUTCDate(end.getUTCDate() + total);
+    } else if (unit === 'WEEK') {
+      end.setUTCDate(end.getUTCDate() + total * 7);
+    } else if (unit === 'MONTH') {
+      end.setUTCMonth(end.getUTCMonth() + total);
+    } else if (unit === 'YEAR') {
+      end.setUTCFullYear(end.getUTCFullYear() + total);
+    } else {
+      // Fallback: assume weeks if unknown unit
+      end.setUTCDate(end.getUTCDate() + total * 7);
+    }
+    const ms = end.getTime() - start.getTime();
+    return Math.floor(ms / 86_400_000);
   })();
 
   const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {

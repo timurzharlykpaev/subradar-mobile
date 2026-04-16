@@ -25,6 +25,7 @@ import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useSettingsStore } from '../stores/settingsStore';
 import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useRouter } from 'expo-router';
+import { prefetchImage } from '../utils/imagePrefetch';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -72,14 +73,42 @@ function VoiceBtn({ onVoice, loading, colors }: { onVoice: (uri: string) => void
   const { t } = useTranslation();
   const { isRecording, durationFmt, start, stop } = useVoiceRecorder(onVoice);
   const pulse = useRef(new Animated.Value(1)).current;
+  const loopRef = useRef<Animated.CompositeAnimation | null>(null);
+  const mountedRef = useRef(true);
 
   React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      // Make sure any in-flight loop is stopped when component unmounts
+      if (loopRef.current) {
+        loopRef.current.stop();
+        loopRef.current = null;
+      }
+    };
+  }, []);
+
+  React.useEffect(() => {
+    // Stop any previous loop before starting a new one
+    if (loopRef.current) {
+      loopRef.current.stop();
+      loopRef.current = null;
+    }
+    if (!mountedRef.current) return;
+
     const loop = Animated.loop(Animated.sequence([
       Animated.timing(pulse, { toValue: isRecording ? 1.4 : 1.15, duration: 500, useNativeDriver: true }),
       Animated.timing(pulse, { toValue: 1, duration: 500, useNativeDriver: true }),
     ]));
+    loopRef.current = loop;
     loop.start();
-    return () => loop.stop();
+    return () => {
+      // Guard against race on unmount — only stop if this loop is still the active one
+      if (loopRef.current === loop) {
+        loop.stop();
+        loopRef.current = null;
+      }
+    };
   }, [isRecording]);
 
   const bg = isRecording ? '#EF4444' : colors.primary;
@@ -366,7 +395,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
           startDate: new Date().toISOString().split('T')[0],
           addedVia: 'AI_TEXT',
         });
-        if (res.data?.iconUrl) Image.prefetch(res.data.iconUrl).catch(() => {});
+        if (res.data?.iconUrl) prefetchImage(res.data.iconUrl);
         saved++;
       } catch {
         // continue with others

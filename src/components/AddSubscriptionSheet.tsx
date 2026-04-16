@@ -50,6 +50,7 @@ import { usePlanLimits } from '../hooks/usePlanLimits';
 import { useBillingStatus } from '../hooks/useBilling';
 import { useTheme } from '../theme';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
+import { useIsMounted } from '../hooks/useIsMounted';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
 import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
 import { CameraIcon, GiftIcon } from './icons';
@@ -58,6 +59,8 @@ import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { convertAmount } from '../services/fxCache';
 import { DatePickerField } from './DatePickerField';
 import { NumericInput } from './NumericInput';
+import { prefetchImage } from '../utils/imagePrefetch';
+import { translateBackendError } from '../utils/translateBackendError';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -180,7 +183,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [flowState, _setFlowState] = useState<FlowState>('idle');
   const flowStateRef = React.useRef<FlowState>('idle');
   const setFlowState = (state: FlowState) => {
-    console.log('[AddSheet] flowState:', flowStateRef.current, '→', state);
+    if (__DEV__) console.log('[AddSheet] flowState:', flowStateRef.current, '→', state);
     flowStateRef.current = state;
     _setFlowState(state);
   };
@@ -210,6 +213,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const region = useSettingsStore((s) => s.region || 'US');
   const [catalogServices, setCatalogServices] = useState<CatalogService[]>([]);
+  const isMounted = useIsMounted();
 
   useEffect(() => {
     if (visible) {
@@ -217,6 +221,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       translateY.value = withTiming(0, { duration: 300 });
       // Load regional catalog when sheet opens
       getPopularServices(region, displayCurrency).then((services) => {
+        if (!isMounted.current) return;
         if (services.length > 0) setCatalogServices(services);
       });
     } else {
@@ -362,6 +367,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setSuccessName(form.name);
       setShowSuccess(true);
       subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
+        if (!isMounted.current) return;
         useSubscriptionsStore.getState().setSubscriptions(r.data || []);
       }).catch(() => {});
     } catch (err: any) {
@@ -431,7 +437,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       reminderDaysBefore: data.reminderDaysBefore ?? [2],
     });
     addSubscription(res.data);
-    if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+    if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
     const allSubs = useSubscriptionsStore.getState().subscriptions;
     analytics.subscriptionAdded(
       (data.category || 'OTHER').toLowerCase(),
@@ -444,10 +450,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setSuccessName(data.name || '');
     setShowSuccess(true);
     subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
+      if (!isMounted.current) return;
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
     } catch (err: any) {
-      Alert.alert(t('common.error'), err?.response?.data?.message || err?.message || t('add.save_failed'));
+      Alert.alert(t('common.error'), translateBackendError(t, err) || t('add.save_failed'));
     } finally {
       setSaving(false);
     }
@@ -637,13 +644,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Camera/Screenshot handler ───────────────────────────────────────────
   const handleCamera = useCallback(async () => {
-    console.log('[Screenshot] Opening image picker...');
+    if (__DEV__) console.log('[Screenshot] Opening image picker...');
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.7,
     });
     if (result.canceled) {
-      console.log('[Screenshot] User cancelled picker');
+      if (__DEV__) console.log('[Screenshot] User cancelled picker');
       return;
     }
 
@@ -659,9 +666,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         type: 'image/jpeg',
         name: 'screenshot.jpg',
       } as any);
-      console.log('[Screenshot] Sending to API, uri:', uri?.slice(0, 80));
+      if (__DEV__) console.log('[Screenshot] Sending to API, uri:', uri?.slice(0, 80));
       const res = await aiApi.parseScreenshot(formData);
-      console.log('[Screenshot] API response:', JSON.stringify(res.data).slice(0, 300));
+      if (__DEV__) console.log('[Screenshot] API response:', JSON.stringify(res.data).slice(0, 300));
       const data = res.data;
       const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);
       const validSubs = subs.filter((s: any) => s && s.name);
@@ -686,12 +693,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         });
         setFlowState('confirm');
       } else {
-        console.log('[Screenshot] Multiple subs found:', validSubs.length, 'setting bulk-confirm');
+        if (__DEV__) console.log('[Screenshot] Multiple subs found:', validSubs.length, 'setting bulk-confirm');
         setBulkItems(validSubs);
         setFlowState('bulk-confirm');
       }
     } catch (err: any) {
-      console.error('[Screenshot] Full error:', JSON.stringify({ status: err?.response?.status, data: err?.response?.data, message: err?.message }));
+      if (__DEV__) console.error('[Screenshot] Full error:', JSON.stringify({ status: err?.response?.status, data: err?.response?.data, message: err?.message }));
       const status = err?.response?.status;
       const msg = err?.response?.data?.message || '';
       const isLimitError = status === 429 || status === 403 || /limit|exceeded|quota/i.test(msg);
@@ -1220,7 +1227,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             addedVia: 'AI_TEXT',
           });
           addSubscription(res.data);
-          if (res.data.iconUrl) { Image.prefetch(res.data.iconUrl).catch(() => {}); }
+          if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
           setSuccessName(sub.name || '');
           setShowSuccess(true);
           subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {

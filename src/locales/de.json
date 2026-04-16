@@ -255,7 +255,8 @@
     "weekly": "Wöchentlich",
     "quarterly": "Vierteljährlich",
     "billing_period": "Abrechnungszeitraum",
-    "service_name": "Name"
+    "service_name": "Name",
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
   },
   "settings": {
     "title": "Einstellungen",
@@ -324,6 +325,9 @@
     "date_format_label": "Datumsformat",
     "email_notifications": "E-Mail-Benachrichtigungen",
     "email_notifications_desc": "Zahlungserinnerungen per E-Mail",
+    "privacy": "Datenschutz",
+    "analytics_opt_out": "Analytik deaktivieren",
+    "analytics_opt_out_desc": "Keine Nutzungsereignisse mehr senden",
     "weekly_digest": "Wöchentlicher KI-Bericht",
     "weekly_digest_desc": "KI-Zusammenfassung jeden Montag",
     "weekly_digest_pro": "Verfügbar in Pro",
@@ -337,6 +341,7 @@
     "replay_onboarding_desc": "Onboarding wird beim nächsten Öffnen erneut angezeigt",
     "onboarding_reset": "Onboarding wird beim nächsten Start angezeigt",
     "delete_account_warning": "Alle Daten werden unwiderruflich gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    "delete_account_title": "Konto löschen?",
     "type_delete": "DELETE eingeben zur Bestätigung:",
     "account_section": "Konto",
     "notifications_section": "Benachrichtigungen",
@@ -352,7 +357,11 @@
     "date_format": "Datumsformat",
     "off": "Aus",
     "subradar_team": "Subradar Team",
-    "subs_count": "Abonnements"
+    "subs_count": "Abonnements",
+    "help_support": "Hilfe & Support",
+    "contact_us": "Kontakt",
+    "faq": "Häufig gestellte Fragen",
+    "mail_unavailable": "Mail-App konnte nicht geöffnet werden"
   },
   "auth": {
     "welcome": "Willkommen zurück",
@@ -377,7 +386,10 @@
     "failed_send_code": "Code konnte nicht gesendet werden",
     "invalid_code": "Ungültiger Code",
     "failed_send_link": "Link konnte nicht gesendet werden",
-    "too_many_attempts": "Zu viele Versuche. Bitte warten Sie einen Moment."
+    "too_many_attempts": "Zu viele Versuche. Bitte warten Sie einen Moment.",
+    "invalid_credentials": "Invalid email or password.",
+    "user_not_found": "User not found.",
+    "email_already_exists": "This email is already registered."
   },
   "landing": {
     "hero_title": "Wissen Sie genau, wohin Ihr Geld fließt",
@@ -788,7 +800,11 @@
     "testimonial_author": "— Alex M., verifizierter Nutzer",
     "auto_renew_notice": "Abo verlängert sich automatisch. Jederzeit kündbar unter Einstellungen > Abonnements.",
     "terms": "Nutzungsbedingungen",
-    "privacy": "Datenschutzrichtlinie"
+    "privacy": "Datenschutzrichtlinie",
+    "no_purchases_title": "No active subscriptions",
+    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
+    "restore_unavailable_title": "Restore unavailable",
+    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play."
   },
   "ai": {
     "or_type": "oder eingeben",
@@ -1014,5 +1030,14 @@
     "winback_cta": "Jetzt upgraden",
     "upgrade_to_see": "Upgrade für vollständige Analysen",
     "blur_upgrade_cta": "Mit Pro freischalten"
+  },
+  "a11y": {
+    "subscription": "{{name}} subscription",
+    "offline_banner": "Offline banner",
+    "add_subscription": "Add subscription",
+    "subscribe": "Subscribe",
+    "restore_purchases": "Restore purchases",
+    "save": "Save",
+    "close": "Close"
   }
 }

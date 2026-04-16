@@ -255,7 +255,8 @@
     "weekly": "Апта сайын",
     "quarterly": "Тоқсан сайын",
     "billing_period": "Төлем кезеңі",
-    "service_name": "Атауы"
+    "service_name": "Атауы",
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
   },
   "periods": {
     "WEEKLY": "Апта сайын",
@@ -332,6 +333,9 @@
     "date_format_label": "Күн пішімі",
     "email_notifications": "Email хабарландырулар",
     "email_notifications_desc": "Төлем еске салулары email арқылы",
+    "privacy": "Құпиялылық",
+    "analytics_opt_out": "Аналитиканы өшіру",
+    "analytics_opt_out_desc": "Пайдалану оқиғаларын жіберуді тоқтату",
     "weekly_digest": "Апталық AI дайджест",
     "weekly_digest_desc": "AI талдау жиынтығы әр дүйсенбі",
     "weekly_digest_pro": "Pro-да қолжетімді",
@@ -345,6 +349,7 @@
     "replay_onboarding_desc": "Қосымшаны келесі ашқанда онбординг қайта көрсетіледі",
     "onboarding_reset": "Қосымшаны келесі ашқанда онбординг көрсетіледі",
     "delete_account_warning": "Барлық деректер біржола жойылады. Бұл кері қайтарылмайды.",
+    "delete_account_title": "Аккаунтты жою керек пе?",
     "type_delete": "Растау үшін DELETE сөзін жазыңыз:",
     "account_section": "Аккаунт",
     "notifications_section": "Хабарландырулар",
@@ -360,7 +365,11 @@
     "date_format": "Күн пішімі",
     "off": "Өшірулі",
     "subradar_team": "Subradar Team",
-    "subs_count": "жазылым"
+    "subs_count": "жазылым",
+    "help_support": "Көмек және қолдау",
+    "contact_us": "Бізбен байланысу",
+    "faq": "Жиі қойылатын сұрақтар",
+    "mail_unavailable": "Пошта қолданбасын ашу мүмкін болмады"
   },
   "auth": {
     "welcome": "Қайта оралуыңызбен",
@@ -385,7 +394,10 @@
     "failed_send_code": "Кодты жіберу сәтсіз",
     "invalid_code": "Жарамсыз код",
     "failed_send_link": "Сілтемені жіберу сәтсіз",
-    "too_many_attempts": "Тым көп әрекет. Сәл күте тұрыңыз."
+    "too_many_attempts": "Тым көп әрекет. Сәл күте тұрыңыз.",
+    "invalid_credentials": "Invalid email or password.",
+    "user_not_found": "User not found.",
+    "email_already_exists": "This email is already registered."
   },
   "landing": {
     "hero_title": "Ақшаңыздың қайда кететінін нақты біліңіз",
@@ -788,7 +800,11 @@
     "testimonial_author": "— Alex M., расталған пайдаланушы",
     "auto_renew_notice": "Жазылым автоматты жаңартылады. Кез келген уақытта Баптаулар > Жазылымдар арқылы тоқтатуға болады.",
     "terms": "Пайдалану шарттары",
-    "privacy": "Құпиялылық саясаты"
+    "privacy": "Құпиялылық саясаты",
+    "no_purchases_title": "No active subscriptions",
+    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
+    "restore_unavailable_title": "Restore unavailable",
+    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play."
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",
@@ -1014,5 +1030,14 @@
     "winback_cta": "Қазір жаңарту",
     "upgrade_to_see": "Толық аналитиканы көру үшін жаңартыңыз",
     "blur_upgrade_cta": "Pro арқылы ашу"
+  },
+  "a11y": {
+    "subscription": "{{name}} subscription",
+    "offline_banner": "Offline banner",
+    "add_subscription": "Add subscription",
+    "subscribe": "Subscribe",
+    "restore_purchases": "Restore purchases",
+    "save": "Save",
+    "close": "Close"
   }
 }

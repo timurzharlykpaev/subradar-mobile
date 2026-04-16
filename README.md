@@ -316,10 +316,32 @@ eas submit --platform ios --id <build-id>
 
 ---
 
-## Demo Account (for reviewers)
+## Demo Account (App Store / Play Store review)
+
+Apple and Google reviewers use a gated demo account that bypasses OTP delivery. Always include these credentials in App Store Connect → App Review Information → Sign-In Information before submission.
 
 | Field | Value |
 |-------|-------|
-| Email | `reviewer@subradar.ai` |
-| OTP Code | `123456` |
+| Email | `review@subradar.ai` |
+| OTP Code | `000000` |
 | Plan | Pro (full access) |
+
+### Test flow for reviewers (also paste this into the "Notes" field)
+
+1. Open the app → tap **Continue with Email**
+2. Enter `review@subradar.ai`
+3. On the code screen, enter `000000`
+4. Dashboard loads with seeded subscriptions
+5. Tap **+** → add a subscription manually (no payment info needed for this flow)
+6. Open the **Analytics** tab to see the chart update
+
+Pre-seeded fixtures include 3 active subscriptions (Netflix, Spotify, iCloud) plus one cancelled entry, covering every UI state reviewers need to exercise.
+
+### Backend flag
+
+The review account only works when the backend flag `ENABLE_REVIEW_ACCOUNT=true` is set (production only). The code `000000` is read from `REVIEW_ACCOUNT_CODE` env var on the backend — rotate if leaked. See `subradar-backend/docs/FEATURE_FLAGS.md`.
+
+### Related
+
+- [Versioning](docs/VERSIONING.md)
+- [Build profiles](docs/BUILD_PROFILES.md)

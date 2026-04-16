@@ -76,6 +76,12 @@ export default function SubscriptionDetailScreen() {
           onPress: async () => {
             try {
               await subscriptionsApi.cancel(id!);
+              analytics.track('subscription_cancelled', {
+                id: id!,
+                category: subscription.category,
+                amount: subscription.amount,
+                currency: subscription.currency,
+              });
               if (subscription.cancelUrl) {
                 Linking.openURL(subscription.cancelUrl);
               }

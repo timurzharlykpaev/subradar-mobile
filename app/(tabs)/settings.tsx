@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -59,6 +60,8 @@ export default function SettingsScreen() {
   const displayCurrency = useSettingsStore((s) => s.displayCurrency);
   const setRegion = useSettingsStore((s) => s.setRegion);
   const setDisplayCurrency = useSettingsStore((s) => s.setDisplayCurrency);
+  const analyticsOptOut = useSettingsStore((s) => s.analyticsOptOut);
+  const setAnalyticsOptOut = useSettingsStore((s) => s.setAnalyticsOptOut);
   const [regionPickerVisible, setRegionPickerVisible] = useState(false);
   const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
   const regionInfo = COUNTRIES.find((c) => c.code === region);
@@ -71,7 +74,6 @@ export default function SettingsScreen() {
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -173,19 +175,38 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleDeleteAccount = async () => {
-    try {
-      const { authApi } = await import('../../src/api/auth');
-      await authApi.deleteAccount();
-      logout();
-      router.replace('/onboarding' as any);
-    } catch (e: any) {
-      console.error('Delete account failed:', e);
-      Alert.alert(
-        t('common.error'),
-        t('settings.delete_failed', 'Failed to delete account. Please try again or contact support.'),
-      );
-    }
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('settings.delete_account_title', 'Delete Account?'),
+      t(
+        'settings.delete_account_warning',
+        'All data will be permanently removed. This cannot be undone.',
+      ),
+      [
+        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+        {
+          text: t('common.delete', 'Delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { authApi } = await import('../../src/api/auth');
+              await authApi.deleteAccount();
+              logout();
+              router.replace('/onboarding' as any);
+            } catch (e: any) {
+              console.error('Delete account failed:', e);
+              Alert.alert(
+                t('common.error', 'Error'),
+                t(
+                  'settings.delete_failed',
+                  'Failed to delete account. Please try again or contact support.',
+                ),
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -478,7 +499,13 @@ export default function SettingsScreen() {
                     testID={`btn-currency-${cur}`}
                     key={cur}
                     style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: currency === cur ? colors.primary : colors.surface2, borderWidth: 1, borderColor: currency === cur ? colors.primary : colors.border }}
-                    onPress={() => setCurrency(cur)}
+                    onPress={() => {
+                      const prev = currency;
+                      setCurrency(cur);
+                      if (prev !== cur) {
+                        analytics.track('currency_changed', { from: prev, to: cur, source: 'chip' });
+                      }
+                    }}
                   >
                     <Text style={{ fontSize: 13, fontWeight: '600', color: currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
                   </TouchableOpacity>
@@ -673,6 +700,64 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* ═══ Privacy ═══ */}
+        <SectionHeader icon="shield-checkmark-outline" title={t('settings.privacy', 'Privacy')} />
+        <View style={[card, { padding: 0 }]}>
+          {renderSettingRow(
+            'stats-chart-outline',
+            '#64748B',
+            t('settings.analytics_opt_out', 'Opt out of analytics'),
+            t('settings.analytics_opt_out_desc', 'Stop sending usage events'),
+            <Switch
+              testID="btn-analytics-opt-out"
+              value={analyticsOptOut}
+              onValueChange={(val) => {
+                // Fire the toggle event BEFORE flipping the flag, so we still
+                // capture the moment the user opts out (last signal they allow).
+                if (val) analytics.track('analytics_opt_out_toggled', { opt_out: true });
+                setAnalyticsOptOut(val);
+                if (!val) analytics.track('analytics_opt_out_toggled', { opt_out: false });
+              }}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor="#FFFFFF"
+            />,
+            undefined,
+            false,
+          )}
+        </View>
+
+        {/* ═══ Help & Support ═══ */}
+        <SectionHeader icon="help-circle-outline" title={t('settings.help_support', 'Help & Support')} />
+        <View style={[card, { padding: 0 }]}>
+          {renderSettingRow(
+            'mail-outline',
+            '#3B82F6',
+            t('settings.contact_us', 'Contact us'),
+            'support@subradar.ai',
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => {
+              const url = 'mailto:support@subradar.ai?subject=' + encodeURIComponent('Support request');
+              Linking.openURL(url).catch(() => {
+                Alert.alert(t('common.error', 'Error'), t('settings.mail_unavailable', 'Could not open mail app'));
+              });
+            },
+            true,
+          )}
+          {renderSettingRow(
+            'book-outline',
+            '#8B5CF6',
+            t('settings.faq', 'FAQ'),
+            'subradar.ai/help',
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => {
+              Linking.openURL('https://subradar.ai/help').catch(() => {
+                Linking.openURL('https://subradar.ai').catch(() => {});
+              });
+            },
+            false,
+          )}
+        </View>
+
         {/* ═══ 6. Account ═══ */}
         <SectionHeader icon="person-circle-outline" title={t('settings.account')} />
         <View style={[card, { padding: 0 }]}>
@@ -701,35 +786,45 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        {/* Delete Account */}
-        <View style={{ marginHorizontal: 20, marginTop: 16 }}>
-          {!showDeleteConfirm ? (
-            <TouchableOpacity
-              style={{ paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: colors.error + '40', backgroundColor: colors.error + '08', alignItems: 'center' }}
-              onPress={() => setShowDeleteConfirm(true)}
-            >
-              <Text style={{ fontSize: 15, fontWeight: '700', color: colors.error }}>{t('settings.delete_account')}</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.error + '40', backgroundColor: colors.error + '08', padding: 16, gap: 12 }}>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: colors.error, textAlign: 'center' }}>{t('settings.delete_account')}</Text>
-              <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center' }}>{t('settings.delete_account_confirm')}</Text>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity
-                  style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: colors.surface2, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
-                  onPress={() => setShowDeleteConfirm(false)}
-                >
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textSecondary }}>{t('common.cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: colors.error, alignItems: 'center' }}
-                  onPress={handleDeleteAccount}
-                >
-                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#FFF' }}>{t('common.delete')}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
+        {/* ═══ Danger Zone ═══ */}
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginTop: 32,
+            paddingTop: 20,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            borderTopColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: '800',
+              color: colors.error,
+              textTransform: 'uppercase',
+              letterSpacing: 0.8,
+              marginBottom: 12,
+              paddingHorizontal: 4,
+            }}
+          >
+            {t('settings.danger_zone', 'Danger Zone')}
+          </Text>
+          <TouchableOpacity
+            testID="btn-delete-account"
+            style={{
+              paddingVertical: 14,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.error + '40',
+              backgroundColor: colors.error + '08',
+              alignItems: 'center',
+            }}
+            onPress={handleDeleteAccount}
+          >
+            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.error }}>
+              {t('settings.delete_account', 'Delete Account')}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Version */}
@@ -772,6 +867,7 @@ export default function SettingsScreen() {
                 text: t('settings.region_change_switch', 'Switch to {{currency}}', { currency: suggested }),
                 onPress: () => {
                   setDisplayCurrency(suggested);
+                  analytics.track('currency_changed', { from: prevCurrency, to: suggested, source: 'region_switch' });
                   // Single batched PATCH for atomicity
                   usersApi.updateMe({ region: code, displayCurrency: suggested }).catch(() => {});
                   queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
@@ -789,7 +885,11 @@ export default function SettingsScreen() {
         title={t('settings.display_currency', 'Display currency')}
         onClose={() => setCurrencyPickerVisible(false)}
         onSelect={(code) => {
+          const prev = displayCurrency;
           setDisplayCurrency(code);
+          if (prev !== code) {
+            analytics.track('currency_changed', { from: prev, to: code, source: 'picker' });
+          }
           usersApi.updateMe({ displayCurrency: code }).catch(() => {});
           queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
           queryClient.invalidateQueries({ queryKey: ['analytics'] });

@@ -1254,6 +1254,7 @@ export default function OnboardingScreen() {
           setSelectedRegion(code);
           const suggested = COUNTRY_DEFAULT_CURRENCY[code];
           if (suggested) setSelectedCurrency(suggested);
+          analytics.track('region_selected', { region: code, suggested_currency: suggested ?? null });
         }}
       />
       {authError && (

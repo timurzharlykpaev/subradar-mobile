@@ -16,6 +16,8 @@ interface SettingsState {
   reminderDays: number;
   notificationsEnabled: boolean;
   dateFormat: string;
+  /** When true, analytics (Amplitude) tracking is disabled. Default false. */
+  analyticsOptOut: boolean;
   setCurrency: (currency: string) => void;
   setCountry: (country: string) => void;
   setRegion: (region: string) => void;
@@ -24,6 +26,7 @@ interface SettingsState {
   setReminderDays: (days: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   setDateFormat: (format: string) => void;
+  setAnalyticsOptOut: (optOut: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -37,6 +40,7 @@ export const useSettingsStore = create<SettingsState>()(
       reminderDays: 2,
       notificationsEnabled: true,
       dateFormat: 'DD/MM',
+      analyticsOptOut: false,
       setCurrency: (currency) => set({ currency, displayCurrency: currency }),
       setCountry: (country) => set({ country, region: country }),
       setRegion: (region) => set({ region: region.toUpperCase(), country: region.toUpperCase() }),
@@ -49,6 +53,7 @@ export const useSettingsStore = create<SettingsState>()(
       setReminderDays: (reminderDays) => set({ reminderDays }),
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
       setDateFormat: (dateFormat) => set({ dateFormat }),
+      setAnalyticsOptOut: (analyticsOptOut) => set({ analyticsOptOut }),
     }),
     {
       name: 'subradar-settings',

@@ -255,7 +255,8 @@
     "enter_manually": "Enter manually",
     "limit_partial_msg": "Saved {{saved}} out of {{total}}. Upgrade for unlimited.",
     "limit_partial_title": "Limit reached",
-    "service_url": "Service URL"
+    "service_url": "Service URL",
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
   },
   "periods": {
     "WEEKLY": "Weekly",
@@ -332,6 +333,9 @@
     "date_format_label": "Date Format",
     "email_notifications": "Email Notifications",
     "email_notifications_desc": "Payment reminders by email",
+    "privacy": "Privacy",
+    "analytics_opt_out": "Opt out of analytics",
+    "analytics_opt_out_desc": "Stop sending usage events",
     "weekly_digest": "Weekly AI Digest",
     "weekly_digest_desc": "AI analysis summary every Monday",
     "weekly_digest_pro": "Available in Pro",
@@ -345,6 +349,7 @@
     "replay_onboarding_desc": "Onboarding will replay next time you open the app",
     "onboarding_reset": "Onboarding will show on next app open",
     "delete_account_warning": "All data will be permanently removed. This cannot be undone.",
+    "delete_account_title": "Delete Account?",
     "type_delete": "Type DELETE to confirm:",
     "account_section": "Account",
     "notifications_section": "Notifications",
@@ -360,7 +365,11 @@
     "date_format": "Date format",
     "off": "Off",
     "subradar_team": "Subradar Team",
-    "subs_count": "subscriptions"
+    "subs_count": "subscriptions",
+    "help_support": "Help & Support",
+    "contact_us": "Contact us",
+    "faq": "FAQ",
+    "mail_unavailable": "Could not open mail app"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -385,7 +394,15 @@
     "failed_send_code": "Failed to send code",
     "invalid_code": "Invalid code",
     "failed_send_link": "Failed to send link",
-    "too_many_attempts": "Too many attempts. Please wait a moment."
+    "too_many_attempts": "Too many attempts. Please wait a moment.",
+    "invalid_credentials": "Invalid email or password.",
+    "user_not_found": "User not found.",
+    "email_already_exists": "This email is already registered."
+  },
+  "errors": {
+    "something_went_wrong": "Something went wrong",
+    "try_restart": "Try restarting the app",
+    "restart": "Restart"
   },
   "landing": {
     "hero_title": "Know exactly where your money goes",
@@ -773,6 +790,10 @@
     "restored_msg": "Your subscription has been restored.",
     "free_price": "Free",
     "no_purchases": "No active subscriptions found.",
+    "no_purchases_title": "No active subscriptions",
+    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
+    "restore_unavailable_title": "Restore unavailable",
+    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
     "restore_purchases": "Restore Purchases",
     "upgrade_success": "Success!",
     "upgrade_success_msg": "Welcome to Pro!",
@@ -984,11 +1005,6 @@
     "more_options": "More options",
     "less_options": "Less"
   },
-  "errors": {
-    "something_went_wrong": "Something went wrong",
-    "try_restart": "Try restarting the app",
-    "restart": "Restart"
-  },
   "retention": {
     "cancel_intercept_title": "Are you sure?",
     "what_you_lose": "You'll lose access to:",
@@ -1014,5 +1030,14 @@
     "winback_cta": "Upgrade now",
     "upgrade_to_see": "Upgrade to see full analytics",
     "blur_upgrade_cta": "Unlock with Pro"
+  },
+  "a11y": {
+    "subscription": "{{name}} subscription",
+    "offline_banner": "Offline banner",
+    "add_subscription": "Add subscription",
+    "subscribe": "Subscribe",
+    "restore_purchases": "Restore purchases",
+    "save": "Save",
+    "close": "Close"
   }
 }
