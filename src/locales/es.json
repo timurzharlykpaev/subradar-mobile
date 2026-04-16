@@ -980,7 +980,9 @@
     "onboarding_or_tap": "O toca un servicio abajo",
     "got_it": "Entendido",
     "analyzing": "Analizando...",
-    "not_found_manual": "¿No lo encontraste? Ingresa manualmente"
+    "not_found_manual": "¿No lo encontraste? Ingresa manualmente",
+    "more_options": "Más opciones",
+    "less_options": "Menos"
   },
   "errors": {
     "something_went_wrong": "Algo salió mal",

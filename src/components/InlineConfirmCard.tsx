@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { useSettingsStore } from '../stores/settingsStore';
+import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { convertAmount } from '../services/fxCache';
 import { formatMoney } from '../utils/formatMoney';
 import i18n from '../i18n';
@@ -42,11 +43,20 @@ const CONFIDENCE_ICON: Record<Confidence, { name: string; color: string }> = {
 
 const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'];
 const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'MUSIC', 'PRODUCTIVITY', 'GAMING', 'INFRASTRUCTURE', 'HEALTH', 'NEWS', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'DEVELOPER', 'SPORT', 'BUSINESS', 'OTHER'];
+const REMINDER_OPTIONS = [
+  { label: 'Off', value: null },
+  { label: '1d', value: 1 },
+  { label: '2d', value: 2 },
+  { label: '3d', value: 3 },
+  { label: '7d', value: 7 },
+];
+const COLOR_PALETTE = ['#7c3aed', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#8B5CF6'];
 
 export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const cards = usePaymentCardsStore((s) => s.cards);
   const lang = i18n.language || 'en';
   const [name, setName] = useState(data.name.value);
   const [amount, setAmount] = useState(String(data.amount.value || ''));
@@ -60,6 +70,18 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     d.setMonth(d.getMonth() + 1);
     return d.toISOString().split('T')[0];
   });
+
+  // "More options" state
+  const [showExtras, setShowExtras] = useState(false);
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [billingDay, setBillingDay] = useState('1');
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [reminderDays, setReminderDays] = useState<number[]>([2]);
+  const [notes, setNotes] = useState('');
+  const [tags, setTags] = useState('');
+  const [color, setColor] = useState<string | null>(null);
+  const [isTrial, setIsTrial] = useState(false);
+  const [trialEndDate, setTrialEndDate] = useState('');
 
   const iconUrl = data.iconUrl || `https://icon.horse/icon/${name.toLowerCase().replace(/\s+/g, '')}.com`;
 
@@ -76,6 +98,16 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     setPeriod('MONTHLY');
   };
 
+  const toggleReminder = (day: number | null) => {
+    if (day === null) {
+      setReminderDays([]);
+    } else {
+      setReminderDays((prev) =>
+        prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+      );
+    }
+  };
+
   const handleSave = () => {
     onSave({
       name,
@@ -87,12 +119,18 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       serviceUrl: data.serviceUrl,
       cancelUrl: data.cancelUrl,
       currentPlan: selectedPlan,
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: startDate || new Date().toISOString().split('T')[0],
       nextPaymentDate: nextPaymentDate || undefined,
-      status: 'ACTIVE',
+      billingDay: parseInt(billingDay) || 1,
+      paymentCardId: selectedCard || undefined,
+      reminderEnabled: reminderDays.length > 0,
+      reminderDaysBefore: reminderDays.length > 0 ? reminderDays : undefined,
+      notes: notes || undefined,
+      tags: tags ? tags.split(',').map((tg) => tg.trim()).filter(Boolean) : undefined,
+      color: color || undefined,
+      status: isTrial ? 'TRIAL' : 'ACTIVE',
+      trialEndDate: isTrial && trialEndDate ? trialEndDate : undefined,
       addedVia: 'AI_TEXT',
-      reminderEnabled: true,
-      reminderDaysBefore: [2],
     });
   };
 
@@ -237,6 +275,193 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
         </View>
       )}
 
+      {/* More options toggle */}
+      <TouchableOpacity
+        style={styles.extrasToggle}
+        onPress={() => setShowExtras(!showExtras)}
+      >
+        <Ionicons
+          name={showExtras ? 'chevron-up' : 'chevron-down'}
+          size={16}
+          color={colors.textSecondary}
+        />
+        <Text style={[styles.extrasToggleText, { color: colors.textSecondary }]}>
+          {showExtras ? t('add.show_less', 'Less') : t('add.show_more', 'More options')}
+        </Text>
+      </TouchableOpacity>
+
+      {showExtras && (
+        <View style={styles.extrasSection}>
+          {/* Start Date + Billing Day (same row) */}
+          <View style={styles.fieldRowInline}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
+                {t('add.start_date', 'Start date')}
+              </Text>
+              <TextInput
+                style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+                value={startDate}
+                onChangeText={setStartDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+            </View>
+            <View style={{ width: 80 }}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
+                {t('add.billing_day', 'Billing day')}
+              </Text>
+              <TextInput
+                style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, textAlign: 'center' }]}
+                value={billingDay}
+                onChangeText={(v) => setBillingDay(v.replace(/[^0-9]/g, ''))}
+                placeholder="1"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="number-pad"
+                maxLength={2}
+              />
+            </View>
+          </View>
+
+          {/* Payment Card */}
+          {cards.length > 0 && (
+            <View style={styles.fieldRow}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
+                {t('add.card', 'Payment Card')}
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+                <TouchableOpacity
+                  style={[styles.chip, !selectedCard && styles.chipActive, { borderColor: colors.border }]}
+                  onPress={() => setSelectedCard(null)}
+                >
+                  <Text style={[styles.chipText, !selectedCard && styles.chipTextActive, { color: !selectedCard ? '#fff' : colors.textSecondary }]}>
+                    {t('add.no_card', 'No card')}
+                  </Text>
+                </TouchableOpacity>
+                {cards.map((card) => (
+                  <TouchableOpacity
+                    key={card.id}
+                    style={[styles.chip, selectedCard === card.id && styles.chipActive, { borderColor: colors.border }]}
+                    onPress={() => setSelectedCard(card.id)}
+                  >
+                    <Text style={[styles.chipText, selectedCard === card.id && styles.chipTextActive, { color: selectedCard === card.id ? '#fff' : colors.textSecondary }]}>
+                      {card.nickname || `•••• ${card.last4}`}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Reminder Days */}
+          <View style={styles.fieldRow}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t('add.reminder', 'Reminder')}
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+              {REMINDER_OPTIONS.map((opt) => {
+                const isActive = opt.value === null
+                  ? reminderDays.length === 0
+                  : reminderDays.includes(opt.value);
+                return (
+                  <TouchableOpacity
+                    key={opt.label}
+                    style={[styles.chip, isActive && styles.chipActive, { borderColor: colors.border }]}
+                    onPress={() => toggleReminder(opt.value)}
+                  >
+                    <Text style={[styles.chipText, isActive && styles.chipTextActive, { color: isActive ? '#fff' : colors.textSecondary }]}>
+                      {opt.value === null ? t('add.reminder_off', 'Off') : opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Color */}
+          <View style={styles.fieldRow}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t('subscription.color', 'Color')}
+            </Text>
+            <View style={styles.colorRow}>
+              <TouchableOpacity
+                style={[styles.colorCircle, { borderColor: !color ? '#7c3aed' : 'transparent', backgroundColor: colors.background }]}
+                onPress={() => setColor(null)}
+              >
+                <Text style={[styles.colorAutoText, { color: colors.textSecondary }]}>
+                  {t('add.color_auto', 'Auto')}
+                </Text>
+              </TouchableOpacity>
+              {COLOR_PALETTE.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={[styles.colorCircle, { backgroundColor: c, borderColor: color === c ? '#fff' : 'transparent' }]}
+                  onPress={() => setColor(c)}
+                >
+                  {color === c && <Ionicons name="checkmark" size={14} color="#fff" />}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Notes */}
+          <View style={styles.fieldRow}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t('add.notes', 'Notes')}
+            </Text>
+            <TextInput
+              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, minHeight: 60, textAlignVertical: 'top' }]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder={t('add.notes_placeholder', 'Additional notes...')}
+              placeholderTextColor={colors.textSecondary}
+              multiline
+            />
+          </View>
+
+          {/* Tags */}
+          <View style={styles.fieldRow}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t('add.tags', 'Tags')}
+            </Text>
+            <TextInput
+              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              value={tags}
+              onChangeText={setTags}
+              placeholder={t('add.tags_placeholder', 'work, personal, shared')}
+              placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          {/* Trial toggle */}
+          <View style={styles.fieldRow}>
+            <View style={styles.trialRow}>
+              <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 0 }]}>
+                {t('add.trial_period', 'Trial period')}
+              </Text>
+              <Switch
+                value={isTrial}
+                onValueChange={setIsTrial}
+                trackColor={{ false: colors.border, true: '#7c3aed' }}
+                thumbColor="#fff"
+              />
+            </View>
+            {isTrial && (
+              <TextInput
+                style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, marginTop: 8 }]}
+                value={trialEndDate}
+                onChangeText={setTrialEndDate}
+                placeholder={t('add.trial_end_date', 'Trial ends') + ' (YYYY-MM-DD)'}
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Actions */}
       <TouchableOpacity
         style={[styles.saveBtn, saving && { opacity: 0.6 }]}
@@ -282,6 +507,14 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: '500' },
   chipTextActive: { color: '#fff' },
   moreCategories: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
+  extrasToggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, marginBottom: 4 },
+  extrasToggleText: { fontSize: 13, fontWeight: '500' },
+  extrasSection: { marginBottom: 4 },
+  fieldRowInline: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
+  colorRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  colorCircle: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, justifyContent: 'center', alignItems: 'center' },
+  colorAutoText: { fontSize: 8, fontWeight: '600' },
+  trialRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   saveBtn: { backgroundColor: '#22c55e', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, marginTop: 16 },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   cancelBtn: { alignItems: 'center', paddingVertical: 12 },

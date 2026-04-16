@@ -952,6 +952,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
+  const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
 
   useEffect(() => {
     if (bulkItems.length > 0) setBulkChecked(bulkItems.map(() => true));
@@ -971,18 +972,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
         const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
         const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+        const todayStr = new Date().toISOString().split('T')[0];
         const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',
           category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
           amount: sub.amount || 0,
           currency: sub.currency || currency || 'USD',
           billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
-          billingDay: 1,
+          billingDay: sub.billingDay ?? 1,
           status: 'ACTIVE',
           serviceUrl: sub.serviceUrl || undefined,
           cancelUrl: sub.cancelUrl || undefined,
           iconUrl: iconUrl || undefined,
-          startDate: new Date().toISOString().split('T')[0],
+          startDate: sub.startDate || todayStr,
+          nextPaymentDate: sub.nextPaymentDate || undefined,
+          notes: sub.notes || undefined,
+          reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
+          reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,
           addedVia: addedViaSource,
         });
         addSubscription(res.data);
@@ -1230,17 +1236,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
               const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
               const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+              const todayStr2 = new Date().toISOString().split('T')[0];
               const res = await subscriptionsApi.create({
                 name: sub.name || 'Subscription',
                 category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
                 amount: sub.amount || 0,
                 currency: sub.currency || currency || 'USD',
                 billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
-                billingDay: 1, status: 'ACTIVE',
+                billingDay: sub.billingDay ?? 1,
+                status: 'ACTIVE',
                 serviceUrl: sub.serviceUrl || undefined,
                 cancelUrl: sub.cancelUrl || undefined,
                 iconUrl: iconUrl || undefined,
-                startDate: new Date().toISOString().split('T')[0],
+                startDate: sub.startDate || todayStr2,
+                nextPaymentDate: sub.nextPaymentDate || undefined,
+                notes: sub.notes || undefined,
+                reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
+                reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,
                 addedVia: 'AI_TEXT',
               });
               addSubscription(res.data);
@@ -1814,15 +1826,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       const ALL_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DESIGN', 'EDUCATION', 'FINANCE', 'INFRASTRUCTURE', 'SECURITY', 'HEALTH', 'SPORT', 'DEVELOPER', 'NEWS', 'BUSINESS', 'OTHER'];
       const updateSub = (patch: Partial<typeof sub>) => setBulkItems(prev => { const n = [...prev]; n[bulkEditIdx] = { ...n[bulkEditIdx], ...patch }; return n; });
       return (
-        <Modal visible transparent animationType="slide" onRequestClose={() => setBulkEditIdx(null)}>
+        <Modal visible transparent animationType="slide" onRequestClose={() => { setBulkEditIdx(null); setBulkMoreExpanded(false); }}>
           <View style={{ flex: 1, backgroundColor: colors.background }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12, gap: 12 }}>
-              <TouchableOpacity onPress={() => setBulkEditIdx(null)}>
+              <TouchableOpacity onPress={() => { setBulkEditIdx(null); setBulkMoreExpanded(false); }}>
                 <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
               <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, flex: 1 }}>{t('common.edit', 'Edit')}</Text>
               <TouchableOpacity
-                onPress={() => setBulkEditIdx(null)}
+                onPress={() => { setBulkEditIdx(null); setBulkMoreExpanded(false); }}
                 style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.primary }}
               >
                 <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
@@ -1880,6 +1892,124 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   ))}
                 </View>
               </View>
+              {/* More options toggle */}
+              <TouchableOpacity
+                onPress={() => setBulkMoreExpanded(!bulkMoreExpanded)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  paddingVertical: 14,
+                  marginTop: 4,
+                  borderTopWidth: 1,
+                  borderTopColor: colors.border,
+                }}
+              >
+                <Ionicons
+                  name={bulkMoreExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.textSecondary}
+                />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
+                  {bulkMoreExpanded ? t('add_flow.less_options', 'Less') : t('add_flow.more_options', 'More options')}
+                </Text>
+              </TouchableOpacity>
+
+              {bulkMoreExpanded && (
+                <View style={{ gap: 16 }}>
+                  {/* Start Date */}
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.start_date', 'Start date')}</Text>
+                    <TextInput
+                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                      value={sub.startDate || ''}
+                      onChangeText={(v) => updateSub({ startDate: v })}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor={colors.textMuted}
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={10}
+                    />
+                  </View>
+                  {/* Next Payment Date */}
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.next_payment', 'Next payment date')}</Text>
+                    <TextInput
+                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
+                      value={sub.nextPaymentDate || ''}
+                      onChangeText={(v) => updateSub({ nextPaymentDate: v })}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor={colors.textMuted}
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={10}
+                    />
+                  </View>
+                  {/* Billing Day */}
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_day', 'Billing day')}</Text>
+                    <TextInput
+                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, width: 80 }}
+                      value={sub.billingDay != null ? String(sub.billingDay) : ''}
+                      onChangeText={(v) => {
+                        const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
+                        updateSub({ billingDay: isNaN(num) ? undefined : Math.min(num, 31) });
+                      }}
+                      placeholder="1"
+                      placeholderTextColor={colors.textMuted}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                    />
+                  </View>
+                  {/* Notes */}
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.notes', 'Notes')}</Text>
+                    <TextInput
+                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, minHeight: 80, textAlignVertical: 'top', paddingTop: 14 }}
+                      value={sub.notes || ''}
+                      onChangeText={(v) => updateSub({ notes: v })}
+                      placeholder={t('add.notes_placeholder', 'Additional notes...')}
+                      placeholderTextColor={colors.textMuted}
+                      multiline
+                      numberOfLines={3}
+                    />
+                  </View>
+                  {/* Reminder Days */}
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.reminder', 'Reminder')}</Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                      {[
+                        { label: t('add.reminder_off', 'Off'), value: [] as number[] },
+                        { label: t('add.reminder_1d', '1d'), value: [1] },
+                        { label: '2d', value: [2] },
+                        { label: t('add.reminder_3d', '3d'), value: [3] },
+                        { label: t('add.reminder_7d', '7d'), value: [7] },
+                      ].map((opt) => {
+                        const current = sub.reminderDaysBefore ?? [2];
+                        const isSelected = JSON.stringify(current) === JSON.stringify(opt.value);
+                        return (
+                          <TouchableOpacity
+                            key={opt.label}
+                            style={{
+                              paddingHorizontal: 14,
+                              paddingVertical: 10,
+                              borderRadius: 10,
+                              borderWidth: 1.5,
+                              borderColor: isSelected ? colors.primary : colors.border,
+                              backgroundColor: isSelected ? colors.primary + '12' : colors.card,
+                            }}
+                            onPress={() => updateSub({ reminderDaysBefore: opt.value })}
+                          >
+                            <Text style={{ fontSize: 13, fontWeight: '600', color: isSelected ? colors.primary : colors.textSecondary }}>
+                              {opt.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                </View>
+              )}
+
               {/* Delete */}
               <TouchableOpacity
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
@@ -1887,6 +2017,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                   setBulkItems(prev => prev.filter((_, j) => j !== bulkEditIdx));
                   setBulkChecked(prev => prev.filter((_, j) => j !== bulkEditIdx));
                   setBulkEditIdx(null);
+                  setBulkMoreExpanded(false);
                 }}
               >
                 <Ionicons name="trash-outline" size={18} color="#EF4444" />

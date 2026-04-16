@@ -980,7 +980,9 @@
     "onboarding_or_tap": "Or tap a service below",
     "got_it": "Got it",
     "analyzing": "Analyzing...",
-    "not_found_manual": "Not found? Enter manually"
+    "not_found_manual": "Not found? Enter manually",
+    "more_options": "More options",
+    "less_options": "Less"
   },
   "errors": {
     "something_went_wrong": "Something went wrong",

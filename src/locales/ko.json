@@ -980,7 +980,9 @@
     "onboarding_or_tap": "또는 아래 서비스를 탭하세요",
     "got_it": "알겠어요",
     "analyzing": "분석 중...",
-    "not_found_manual": "못 찾으셨나요? 직접 입력"
+    "not_found_manual": "못 찾으셨나요? 직접 입력",
+    "more_options": "추가 옵션",
+    "less_options": "접기"
   },
   "errors": {
     "something_went_wrong": "문제가 발생했습니다",

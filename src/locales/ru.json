@@ -981,7 +981,9 @@
     "onboarding_or_tap": "Или нажмите на сервис ниже",
     "got_it": "Понятно",
     "analyzing": "Анализируем...",
-    "not_found_manual": "Не нашли? Введите вручную"
+    "not_found_manual": "Не нашли? Введите вручную",
+    "more_options": "Дополнительно",
+    "less_options": "Свернуть"
   },
   "errors": {
     "something_went_wrong": "Что-то пошло не так",

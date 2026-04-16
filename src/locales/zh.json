@@ -980,7 +980,9 @@
     "onboarding_or_tap": "或点选以下服务",
     "got_it": "知道了",
     "analyzing": "分析中...",
-    "not_found_manual": "没找到？手动输入"
+    "not_found_manual": "没找到？手动输入",
+    "more_options": "更多选项",
+    "less_options": "收起"
   },
   "errors": {
     "something_went_wrong": "出了点问题",

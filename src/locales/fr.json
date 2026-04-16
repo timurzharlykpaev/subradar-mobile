@@ -980,7 +980,9 @@
     "onboarding_or_tap": "Ou appuyez sur un service ci-dessous",
     "got_it": "Compris",
     "analyzing": "Analyse en cours...",
-    "not_found_manual": "Introuvable ? Saisir manuellement"
+    "not_found_manual": "Introuvable ? Saisir manuellement",
+    "more_options": "Plus d'options",
+    "less_options": "Moins"
   },
   "errors": {
     "something_went_wrong": "Une erreur est survenue",

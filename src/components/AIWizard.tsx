@@ -39,6 +39,11 @@ export interface ParsedSub {
   cancelUrl?: string;
   iconUrl?: string;
   paymentCardId?: string;
+  startDate?: string;
+  nextPaymentDate?: string;
+  billingDay?: number;
+  notes?: string;
+  reminderDaysBefore?: number[];
 }
 
 interface Props {

@@ -980,7 +980,9 @@
     "onboarding_or_tap": "Немесе төмендегі қызметті басыңыз",
     "got_it": "Түсінікті",
     "analyzing": "Талдауда...",
-    "not_found_manual": "Табылмады ма? Қолмен енгізіңіз"
+    "not_found_manual": "Табылмады ма? Қолмен енгізіңіз",
+    "more_options": "Қосымша параметрлер",
+    "less_options": "Жасыру"
   },
   "errors": {
     "something_went_wrong": "Бірдеңе дұрыс болмады",

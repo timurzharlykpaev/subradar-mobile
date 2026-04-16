@@ -980,7 +980,9 @@
     "onboarding_or_tap": "Oder tippen Sie auf einen Dienst",
     "got_it": "Verstanden",
     "analyzing": "Wird analysiert...",
-    "not_found_manual": "Nicht gefunden? Manuell eingeben"
+    "not_found_manual": "Nicht gefunden? Manuell eingeben",
+    "more_options": "Weitere Optionen",
+    "less_options": "Weniger"
   },
   "errors": {
     "something_went_wrong": "Etwas ist schiefgelaufen",

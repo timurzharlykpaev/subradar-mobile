@@ -980,7 +980,9 @@
     "onboarding_or_tap": "または下のサービスをタップ",
     "got_it": "了解",
     "analyzing": "分析中...",
-    "not_found_manual": "見つからない？手動で入力"
+    "not_found_manual": "見つからない？手動で入力",
+    "more_options": "その他のオプション",
+    "less_options": "閉じる"
   },
   "errors": {
     "something_went_wrong": "問題が発生しました",
