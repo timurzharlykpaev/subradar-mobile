@@ -104,7 +104,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
           );
         })()}
         {subscription.billingPeriod && (
-          <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{t(`period_short.${subscription.billingPeriod}`, subscription.billingPeriod)}</Text>
+          <Text style={[styles.period, { color: colors.textSecondary }]} numberOfLines={1}>/{t(`period_short.${(subscription.billingPeriod || 'MONTHLY').toUpperCase()}`, subscription.billingPeriod)}</Text>
         )}
         {isTrial && trialDays !== null ? (
           <View style={[styles.trialBadge, {

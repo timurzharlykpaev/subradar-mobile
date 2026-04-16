@@ -557,7 +557,7 @@ export default function DashboardScreen() {
                   </View>
                   <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
                     <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
-                    <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{t(`period_short.${sub.billingPeriod}`, sub.billingPeriod)}</Text>
+                    <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, sub.billingPeriod)}</Text>
                     {sub.nextPaymentDate && (
                       <Text style={[styles.subNextDate, { color: colors.primary }]} numberOfLines={1}>
                         {new Date(sub.nextPaymentDate).toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
@@ -718,7 +718,7 @@ function ForecastBox({ icon, label, amount, sub, color }: { icon: string; label:
       <View style={[styles.forecastIconCircle, { backgroundColor: color + '18' }]}>
         <Ionicons name={icon as any} size={16} color={color} />
       </View>
-      <Text style={[styles.forecastAmount, { color: colors.text }]}>{amount}</Text>
+      <Text style={[styles.forecastAmount, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{amount}</Text>
       <Text style={[styles.forecastSub, { color: colors.textMuted }]} numberOfLines={1}>{sub}</Text>
     </View>
   );
@@ -912,7 +912,7 @@ const styles = StyleSheet.create({
   forecastRow: { flexDirection: 'row', gap: 8 },
   forecastCard: { flex: 1, borderRadius: 16, padding: 12, borderWidth: 1, alignItems: 'center', gap: 6 },
   forecastIconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  forecastAmount: { fontSize: 16, fontWeight: '900' },
+  forecastAmount: { fontSize: 14, fontWeight: '700' },
   forecastSub: { fontSize: 10, fontWeight: '600' },
 
   // Trials

@@ -865,7 +865,7 @@ export default function AnalyticsScreen() {
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={[styles.top5Amount, { color: colors.text }]}>{money(monthlyAmt)}</Text>
-                      <Text style={{ fontSize: 10, color: colors.textMuted }}>/{t(`period_short.${sub.billingPeriod}`, 'mo')}</Text>
+                      <Text style={{ fontSize: 10, color: colors.textMuted }}>/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, 'mo')}</Text>
                     </View>
                     <View style={[styles.top5ProgressBg, { backgroundColor: colors.border }]}>
                       <View style={[styles.top5ProgressFill, { width: `${Math.min(pct, 100)}%`, backgroundColor: catInfo?.color || colors.primary }]} />
@@ -908,7 +908,7 @@ export default function AnalyticsScreen() {
                   </Text>
                 </View>
                 <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
-                  {formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? displayCurrency, lang)}/{t(`period_short.${sub.billingPeriod}`, 'mo')}
+                  {formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? displayCurrency, lang)}/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, 'mo')}
                 </Text>
               </View>
             ))}
