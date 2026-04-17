@@ -133,6 +133,10 @@ export default function PaywallScreen() {
 
   const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
   const isTrialing = billing?.status === 'trialing';
+  // Access via team means user inherits Pro/Team features from a workspace
+  // owner's subscription — they have NO Apple receipt of their own.
+  const accessViaTeam = billing?.source === 'team';
+  const hasOwnPro = billing?.hasOwnPro === true;
   // Trial eligibility comes from RevenueCat (Apple manages trial per Apple ID)
   const canTrial = hasTrialOffer && !isPro && !isTrialing;
 
@@ -173,17 +177,26 @@ export default function PaywallScreen() {
   const handleAction = async () => {
     if (selected === 'free') { router.back(); return; }
 
-    // Trial flow — now goes through Apple IAP (RC purchasePackage shows trial confirmation)
-    // Apple will show "7 days free, then $X.XX/month" confirmation sheet
-    // No separate backend trial — Apple manages the entire subscription lifecycle
-
-    // Already on this exact plan — do nothing (but allow period switch for upgrades)
-    // Note: RC handles the actual upgrade/crossgrade logic
-    const currentMatch =
-      (selected === 'pro' && billing?.plan === 'pro') ||
-      (selected === 'org' && billing?.plan === 'organization');
-    // Allow purchase even on current plan so user can switch monthly→yearly
-    // RC will handle upgrade properly (PRODUCT_CHANGE event)
+    // Team members ALREADY have Pro features via the team owner's subscription.
+    // Warn them before initiating a redundant purchase — Apple often refuses
+    // ("Purchases unavailable") because their Apple ID sees the team entitlement
+    // already active through Family Sharing or cached entitlement state.
+    if (accessViaTeam && !hasOwnPro && selected === 'pro') {
+      const proceed = await new Promise<boolean>((resolve) => {
+        Alert.alert(
+          t('paywall.team_access_title', 'You already have Pro'),
+          t(
+            'paywall.team_access_msg',
+            'Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.',
+          ),
+          [
+            { text: t('common.cancel', 'Cancel'), style: 'cancel', onPress: () => resolve(false) },
+            { text: t('paywall.buy_anyway', 'Buy anyway'), onPress: () => resolve(true) },
+          ],
+        );
+      });
+      if (!proceed) return;
+    }
 
     // Find RC package by product identifier
     const pkg = findPackage(selected, billingPeriod);
@@ -208,6 +221,18 @@ export default function PaywallScreen() {
       if (!purchaseSuccess) {
         analytics.track('purchase_cancelled', { plan: selected, period: billingPeriod });
         setPurchasing(false);
+        // If user has team access and Apple refused/cancelled, explain why and
+        // what to try. Classic cause: same Apple ID is also signed into the
+        // team owner's Family Sharing or has a stale entitlement cache.
+        if (accessViaTeam && !hasOwnPro) {
+          Alert.alert(
+            t('paywall.purchase_blocked_title', "Purchase didn't complete"),
+            t(
+              'paywall.purchase_blocked_team',
+              "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
+            ),
+          );
+        }
         return;
       }
       // Show success immediately
@@ -405,7 +430,12 @@ export default function PaywallScreen() {
                         {plan.id === 'free' ? 'Free' : plan.id === 'pro' ? 'Pro' : 'Team'}
                       </Text>
                       {/* Badge inline — no overlap */}
-                      {plan.id === 'pro' && !isCurrent && (
+                      {plan.id === 'pro' && accessViaTeam && !hasOwnPro && (
+                        <View style={[styles.inlineBadge, { backgroundColor: '#10B981' }]}>
+                          <Text style={styles.inlineBadgeText}>{t('paywall.active_via_team', 'ACTIVE VIA TEAM')}</Text>
+                        </View>
+                      )}
+                      {plan.id === 'pro' && !isCurrent && !(accessViaTeam && !hasOwnPro) && (
                         <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
                           <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
                         </View>
