@@ -239,12 +239,32 @@ export default function PaywallScreen() {
       const planLabel = selected === 'org' ? 'Team' : 'Pro';
       analytics.purchaseCompleted(selected, billingPeriod, pkg.product.price);
       setSuccessPlan(planLabel);
-      // Sync RC then refetch billing so button state updates before user dismisses success screen
-      try {
-        await billingApi.syncRevenueCat(pkg.product.identifier);
-        console.log('[Paywall] RC sync done');
-      } catch (e) {
-        console.warn('[Paywall] RC sync failed:', e);
+      // Sync RC then refetch billing so button state updates before user dismisses success screen.
+      // If sync fails the purchase is still valid on Apple's side — RevenueCat webhook
+      // will eventually reconcile. Retry the sync a few times before giving up so transient
+      // 5xx/network errors don't leave the user stuck on the success screen.
+      let syncOk = false;
+      for (let attempt = 0; attempt < 3 && !syncOk; attempt++) {
+        try {
+          await billingApi.syncRevenueCat(pkg.product.identifier);
+          console.log('[Paywall] RC sync done (attempt', attempt + 1, ')');
+          syncOk = true;
+        } catch (e: any) {
+          console.warn('[Paywall] RC sync failed attempt', attempt + 1, ':', e?.response?.status, e?.message);
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+        }
+      }
+      if (!syncOk) {
+        // The Apple receipt is valid; the server just hasn't caught up yet.
+        // Surface an unobtrusive toast-style alert so the user knows what happened
+        // and isn't left wondering why Pro features aren't unlocked immediately.
+        Alert.alert(
+          t('paywall.sync_delayed_title', 'Purchase received'),
+          t(
+            'paywall.sync_delayed_msg',
+            "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+          ),
+        );
       }
       await queryClient.refetchQueries({ queryKey: ['billing'] });
     } catch (e: any) {

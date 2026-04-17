@@ -822,7 +822,9 @@
     "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
     "buy_anyway": "Buy anyway",
     "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace)."
+    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
+    "sync_delayed_title": "Purchase received",
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",

@@ -784,6 +784,8 @@
     "buy_anyway": "Buy anyway",
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
+    "sync_delayed_title": "Purchase received",
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
     "maybe_later": "Maybe Later",
     "free_trial_disclaimer": "7-day free trial, then auto-renews. Cancel anytime in iOS Settings.",
     "paid_disclaimer": "Billed via App Store. Cancel anytime.",
