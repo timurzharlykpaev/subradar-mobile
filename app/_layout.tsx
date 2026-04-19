@@ -40,7 +40,12 @@ Text.defaultProps = Text.defaultProps || {};
 Text.defaultProps.style = { fontFamily: 'Inter-Medium' };
 import { analytics } from '../src/services/analytics';
 analytics.init();
-import { configureRevenueCat, loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
+import { loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
+import * as SecureStore from 'expo-secure-store';
+import * as Sentry from '@sentry/react-native';
+import { billingApi } from '../src/api/billing';
+
+const PENDING_RECEIPT_KEY = 'pending_receipt';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -141,44 +146,78 @@ function DataLoader() {
   }, [displayCurrency, settingsRegion]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    // Async RC init + pending receipt recovery.
+    // configure-before-login is handled inside loginRevenueCat (singleton promise).
+    (async () => {
+      try {
+        if (!isAuthenticated) {
+          await logoutRevenueCat();
+          return;
+        }
+
+        const userId = useAuthStore.getState().user?.id;
+        if (!userId) return;
+
+        await loginRevenueCat(userId);
+        if (cancelled) return;
+
+        const user = useAuthStore.getState().user;
+        analytics.identify(userId, { plan: (user as any)?.plan });
+
+        // Pending receipt recovery — if a previous purchase couldn't reach
+        // the backend, retry the sync now that we're authenticated and RC
+        // is configured. Keep the receipt on failure so next launch retries.
+        const pending = await SecureStore.getItemAsync(PENDING_RECEIPT_KEY);
+        if (pending && !cancelled) {
+          try {
+            await billingApi.syncRevenueCat(pending);
+            await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY);
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
+            analytics.pendingReceiptRecovered(pending);
+          } catch (e: any) {
+            analytics.pendingReceiptRecoveryFailed(pending, e?.message);
+            // Intentionally do NOT delete — retry on next launch.
+          }
+        }
+      } catch (e) {
+        Sentry.captureException(e, { tags: { source: 'rc_init' } });
+      }
+    })();
+
     if (!isAuthenticated) {
-      // Clean up RevenueCat identity when user signs out
-      logoutRevenueCat().catch(() => {});
-      return;
-    }
-
-    // Configure RevenueCat lazily (safe after native modules loaded)
-    try { configureRevenueCat(); } catch {}
-
-    // Identify user in RevenueCat and analytics
-    const userId = useAuthStore.getState().user?.id;
-    if (userId) {
-      loginRevenueCat(userId).catch(() => {});
-      const user = useAuthStore.getState().user;
-      analytics.identify(userId, { plan: (user as any)?.plan });
+      return () => { cancelled = true; };
     }
 
     // Load cards
     import('../src/api/cards').then(({ cardsApi }) => {
-      cardsApi.getAll().then((res: any) => setCards(res.data || [])).catch(() => {});
+      cardsApi.getAll().then((res: any) => {
+        if (cancelled) return;
+        setCards(res.data || []);
+      }).catch(() => {});
     });
 
     // Load subscriptions and schedule local reminders
     const currency = useSettingsStore.getState().displayCurrency;
     import('../src/api/subscriptions').then(({ subscriptionsApi }) => {
       subscriptionsApi.getAll({ displayCurrency: currency }).then((res: any) => {
+        if (cancelled) return;
         const subs = res.data || [];
         setSubscriptions(subs);
         if (notificationsEnabled) {
           schedulePaymentReminders(subs);
         }
       }).catch(() => {
+        if (cancelled) return;
         // Offline — use cached subscriptions from store
         if (subscriptions.length > 0 && notificationsEnabled) {
           schedulePaymentReminders(subscriptions);
         }
       });
     });
+
+    return () => { cancelled = true; };
   }, [isAuthenticated]);
 
   return null;
