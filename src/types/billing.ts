@@ -83,7 +83,11 @@ export interface BillingSubscriptionsLimit {
 
 export interface BillingAiRequestsLimit {
   used: number;
-  limit: number;
+  /**
+   * `null` means unlimited. Backend source: plans.config.ts `aiRequestsLimit`.
+   * UI renders `limit ?? '∞'` — check for null before numeric comparisons.
+   */
+  limit: number | null;
   resetAt: string;
 }
 
