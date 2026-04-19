@@ -131,7 +131,22 @@ export type AnalyticsEvent =
   | 'join_warn_shown'
   | 'join_warn_continued'
   | 'team_owner_expired_renewed'
-  | 'team_owner_expired_abandoned';
+  | 'team_owner_expired_abandoned'
+
+  // Billing sync / restore / pending receipt (refactor)
+  // Note: 'restore_completed' already declared above (legacy monetization funnel);
+  // it is reused by restoreCompleted() with richer payload.
+  | 'sync_retry_attempt'
+  | 'sync_retry_succeeded'
+  | 'sync_retry_exhausted'
+  | 'pending_receipt_recovered'
+  | 'pending_receipt_recovery_failed'
+  | 'restore_initiated'
+  | 'restore_failed'
+
+  // Unified banner surface
+  | 'banner_shown'
+  | 'banner_action_tapped';
 
 export type EventProperties = Record<string, string | number | boolean | null | undefined>;
 
@@ -330,6 +345,79 @@ class AnalyticsService {
 
   notificationPermission(granted: boolean) {
     this.track(granted ? 'notification_permission_granted' : 'notification_permission_denied');
+  }
+
+  // ─── Billing sync / restore / pending receipt ───────────────────────────────
+
+  syncRetryAttempt(attempt: number, productId: string) {
+    this.track('sync_retry_attempt', { attempt, product_id: productId });
+  }
+
+  syncRetrySucceeded(attempt: number, productId: string) {
+    this.track('sync_retry_succeeded', { attempt, product_id: productId });
+  }
+
+  syncRetryExhausted(productId: string, lastError?: string) {
+    this.track('sync_retry_exhausted', {
+      product_id: productId,
+      last_error: lastError?.slice(0, 200),
+    });
+  }
+
+  pendingReceiptRecovered(productId: string) {
+    this.track('pending_receipt_recovered', { product_id: productId });
+  }
+
+  pendingReceiptRecoveryFailed(productId: string, error?: string) {
+    this.track('pending_receipt_recovery_failed', {
+      product_id: productId,
+      error: error?.slice(0, 200),
+    });
+  }
+
+  restoreInitiated(origin: 'paywall' | 'settings') {
+    this.track('restore_initiated', { origin });
+  }
+
+  restoreCompleted(origin: 'paywall' | 'settings', success: boolean, productId?: string) {
+    this.track('restore_completed', {
+      origin,
+      success,
+      product_id: productId ?? null,
+    });
+  }
+
+  restoreFailed(origin: 'paywall' | 'settings', error?: string) {
+    this.track('restore_failed', { origin, error: error?.slice(0, 200) });
+  }
+
+  // ─── Unified banner surface ─────────────────────────────────────────────────
+
+  bannerShown(
+    priority:
+      | 'billing_issue'
+      | 'grace'
+      | 'expiration'
+      | 'double_pay'
+      | 'annual_upgrade'
+      | 'win_back',
+    payload?: EventProperties,
+  ) {
+    this.track('banner_shown', { priority, ...(payload ?? {}) });
+  }
+
+  bannerActionTapped(
+    priority:
+      | 'billing_issue'
+      | 'grace'
+      | 'expiration'
+      | 'double_pay'
+      | 'annual_upgrade'
+      | 'win_back',
+    action: string,
+    payload?: EventProperties,
+  ) {
+    this.track('banner_action_tapped', { priority, action, ...(payload ?? {}) });
   }
 }
 
