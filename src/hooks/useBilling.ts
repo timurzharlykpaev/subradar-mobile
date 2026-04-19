@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billingApi } from '../api/billing';
+import type { BillingMeResponse } from '../types/billing';
 
 export function useBillingStatus() {
-  return useQuery({
+  return useQuery<BillingMeResponse>({
     queryKey: ['billing', 'me'],
     queryFn: async () => {
       try {
@@ -27,7 +28,6 @@ export function usePlans() {
     queryFn: () => billingApi.getPlans().then((r) => r.data),
   });
 }
-
 
 export function useStartTrial() {
   const qc = useQueryClient();
