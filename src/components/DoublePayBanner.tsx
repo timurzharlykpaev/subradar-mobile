@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -8,21 +8,29 @@ import { analytics } from '../services/analytics';
 let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
 
-export function DoublePayBanner() {
+interface Props {
+  payload: Record<string, unknown>;
+}
+
+export function DoublePayBanner({ payload }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
+  useEffect(() => {
+    analytics.track('banner_shown', { priority: 'double_pay', ...payload });
+  }, [payload]);
+
   const onCancel = async () => {
+    analytics.track('banner_action_tapped', { priority: 'double_pay', ...payload });
     analytics.track('double_pay_cancel_tapped');
     try { await RevenueCatUI?.presentCustomerCenter(); } catch {}
   };
 
-  React.useEffect(() => {
-    analytics.track('double_pay_banner_shown');
-  }, []);
-
   return (
-    <View style={[styles.banner, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B40' }]}>
+    <View
+      testID="double_pay-banner"
+      style={[styles.banner, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B40' }]}
+    >
       <Ionicons name="alert-circle" size={20} color="#F59E0B" />
       <View style={{ flex: 1 }}>
         <Text style={[styles.title, { color: colors.text }]}>{t('team_logic.double_pay_banner_title')}</Text>

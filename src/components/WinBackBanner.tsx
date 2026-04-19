@@ -9,7 +9,7 @@ import { analytics } from '../services/analytics';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 
 interface Props {
-  downgradedAt: string | null;
+  payload: Record<string, unknown>;
 }
 
 type Bucket = 'd0_2' | 'd3_7' | 'd8_30';
@@ -17,32 +17,31 @@ type Bucket = 'd0_2' | 'd3_7' | 'd8_30';
 const DISMISS_KEY_PREFIX = 'subradar:winback-dismissed:';
 const DISMISS_TTL_MS = 24 * 60 * 60 * 1000; // 24h — banner re-shows after a day
 
-function bucketFor(days: number): Bucket | null {
-  if (days < 0 || days > 30) return null;
+function bucketFor(days: number | null): Bucket {
+  if (days === null || days < 0) return 'd3_7';
   if (days <= 2) return 'd0_2';
   if (days <= 7) return 'd3_7';
   return 'd8_30';
 }
 
-export default function WinBackBanner({ downgradedAt }: Props) {
+export default function WinBackBanner({ payload }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+
+  const daysSince =
+    typeof payload.daysSince === 'number'
+      ? payload.daysSince
+      : typeof payload.daysSince === 'string'
+      ? Number(payload.daysSince)
+      : null;
+  const bucket: Bucket = bucketFor(daysSince);
+
   const [dismissed, setDismissed] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [shownLogged, setShownLogged] = useState(false);
-
-  const daysSince = downgradedAt
-    ? Math.floor((Date.now() - new Date(downgradedAt).getTime()) / 86_400_000)
-    : -1;
-  const bucket = bucketFor(daysSince);
 
   useEffect(() => {
-    if (!bucket) {
-      setLoaded(true);
-      return;
-    }
     const key = DISMISS_KEY_PREFIX + bucket;
     AsyncStorage.getItem(key).then((val) => {
       if (val) {
@@ -56,13 +55,13 @@ export default function WinBackBanner({ downgradedAt }: Props) {
   }, [bucket]);
 
   useEffect(() => {
-    if (loaded && !dismissed && bucket && !shownLogged) {
+    if (loaded && !dismissed) {
+      analytics.track('banner_shown', { priority: 'win_back', bucket });
       analytics.track('winback_banner_shown', { bucket });
-      setShownLogged(true);
     }
-  }, [loaded, dismissed, bucket, shownLogged]);
+  }, [loaded, dismissed, bucket]);
 
-  if (!loaded || dismissed || !bucket) return null;
+  if (!loaded || dismissed) return null;
 
   const trackedCount = subscriptions.filter((s) => s.status === 'ACTIVE').length;
 
@@ -92,6 +91,7 @@ export default function WinBackBanner({ downgradedAt }: Props) {
   })();
 
   const handleTap = () => {
+    analytics.track('banner_action_tapped', { priority: 'win_back', bucket });
     analytics.track('winback_banner_tapped', { bucket });
     router.push('/paywall?prefill=pro-yearly' as any);
   };
@@ -103,7 +103,7 @@ export default function WinBackBanner({ downgradedAt }: Props) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: content.bg }]}>
+    <View testID="win_back-banner" style={[styles.container, { backgroundColor: content.bg }]}>
       <TouchableOpacity
         onPress={handleTap}
         activeOpacity={0.8}

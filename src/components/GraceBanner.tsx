@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -7,14 +7,21 @@ import { useTheme, fonts } from '../theme';
 import { analytics } from '../services/analytics';
 
 interface Props {
-  daysLeft: number;
-  reason: 'team_expired' | 'pro_expired';
+  payload: Record<string, unknown>;
 }
 
-export function GraceBanner({ daysLeft, reason }: Props) {
+export function GraceBanner({ payload }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+
+  const daysLeft = typeof payload.daysLeft === 'number' ? payload.daysLeft : 0;
+  const reason: 'team_expired' | 'pro_expired' =
+    payload.reason === 'team_expired' ? 'team_expired' : 'pro_expired';
+
+  useEffect(() => {
+    analytics.track('banner_shown', { priority: 'grace', daysLeft, reason });
+  }, [daysLeft, reason]);
 
   const titleKey = reason === 'team_expired' ? 'team_logic.grace_member_banner_title' : 'team_logic.grace_pro_banner_title';
   const descKey = reason === 'team_expired' ? 'team_logic.grace_member_banner_desc' : 'team_logic.grace_pro_banner_desc';
@@ -22,8 +29,10 @@ export function GraceBanner({ daysLeft, reason }: Props) {
 
   return (
     <TouchableOpacity
+      testID="grace-banner"
       style={[styles.banner, { backgroundColor: '#FBBF2415', borderColor: '#FBBF2440' }]}
       onPress={() => {
+        analytics.track('banner_action_tapped', { priority: 'grace', daysLeft, reason });
         analytics.track('grace_ending_warning_shown');
         router.push('/paywall' as any);
       }}

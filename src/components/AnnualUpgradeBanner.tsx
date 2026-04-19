@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useTheme } from '../theme';
 import { analytics } from '../services/analytics';
 
@@ -12,19 +11,18 @@ const DISMISS_KEY = 'subradar:annual-nudge-dismissed-at';
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface Props {
-  /** Where banner is rendered — used for analytics only. */
-  location: 'dashboard' | 'subscription_plan';
+  payload: Record<string, unknown>;
 }
 
-export default function AnnualUpgradeBanner({ location }: Props) {
+export default function AnnualUpgradeBanner({ payload }: Props) {
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const access = useEffectiveAccess();
+
+  const plan = typeof payload.plan === 'string' ? payload.plan : 'pro';
 
   const [dismissedUntil, setDismissedUntil] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [shownLogged, setShownLogged] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(DISMISS_KEY).then((raw) => {
@@ -36,41 +34,35 @@ export default function AnnualUpgradeBanner({ location }: Props) {
     });
   }, []);
 
-  // Show only for monthly Pro users in an active, non-cancelled state —
-  // matches backend's `banner.priority === 'annual_upgrade'` logic.
-  const shouldShow =
-    loaded &&
-    !dismissedUntil &&
-    !!access &&
-    access.plan === 'pro' &&
-    access.billingPeriod === 'monthly' &&
-    access.state === 'active';
-
   useEffect(() => {
-    if (shouldShow && !shownLogged) {
-      analytics.track('annual_nudge_shown', { location });
-      setShownLogged(true);
+    if (loaded && !dismissedUntil) {
+      analytics.track('banner_shown', { priority: 'annual_upgrade', plan });
+      analytics.track('annual_nudge_shown', { location: 'dashboard' });
     }
-  }, [shouldShow, shownLogged, location]);
+  }, [loaded, dismissedUntil, plan]);
 
-  if (!shouldShow) return null;
+  if (!loaded || dismissedUntil) return null;
 
   // Pro monthly $2.99 × 12 = $35.88; yearly $24.99 → save ~$11/yr
   const savings = 11;
 
   const handleTap = () => {
-    analytics.track('annual_nudge_tapped', { location });
+    analytics.track('banner_action_tapped', { priority: 'annual_upgrade', plan });
+    analytics.track('annual_nudge_tapped', { location: 'dashboard' });
     router.push('/paywall?prefill=pro-yearly' as any);
   };
 
   const handleDismiss = () => {
-    analytics.track('annual_nudge_dismissed', { location });
+    analytics.track('annual_nudge_dismissed', { location: 'dashboard' });
     AsyncStorage.setItem(DISMISS_KEY, Date.now().toString());
     setDismissedUntil(Date.now() + DISMISS_TTL_MS);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#1F2937' : '#F0FDF4', borderColor: '#10B981' }]}>
+    <View
+      testID="annual_upgrade-banner"
+      style={[styles.container, { backgroundColor: isDark ? '#1F2937' : '#F0FDF4', borderColor: '#10B981' }]}
+    >
       <TouchableOpacity onPress={handleTap} activeOpacity={0.85} style={styles.inner}>
         <View style={[styles.iconCircle, { backgroundColor: '#10B981' + '20' }]}>
           <Ionicons name="trending-up" size={20} color="#10B981" />

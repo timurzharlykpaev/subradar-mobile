@@ -1,22 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme, fonts } from '../theme';
+import { analytics } from '../services/analytics';
 
 let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
 
-export function BillingIssueBanner() {
+interface Props {
+  payload: Record<string, unknown>;
+}
+
+export function BillingIssueBanner({ payload }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
+  const startedAt = typeof payload.startedAt === 'string' ? payload.startedAt : null;
+
+  useEffect(() => {
+    analytics.track('banner_shown', { priority: 'billing_issue', startedAt });
+  }, [startedAt]);
+
   const onUpdate = async () => {
+    analytics.track('banner_action_tapped', { priority: 'billing_issue', startedAt });
     try { await RevenueCatUI?.presentCustomerCenter(); } catch {}
   };
 
   return (
     <TouchableOpacity
+      testID="billing_issue-banner"
       style={[styles.banner, { backgroundColor: '#EF444415', borderColor: '#EF444450' }]}
       onPress={onUpdate}
       activeOpacity={0.85}
