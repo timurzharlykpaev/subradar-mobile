@@ -19,9 +19,10 @@ import { useTranslation } from 'react-i18next';
 import { useTheme, fonts } from '../src/theme';
 import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRevenueCat, isRevenueCatAvailable } from '../src/hooks/useRevenueCat';
+import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
 import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
+import { RestorePurchasesButton } from '../src/components/RestorePurchasesButton';
 import { SyncRetryModal } from '../src/components/SyncRetryModal';
 import { analytics } from '../src/services/analytics';
 import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
@@ -105,7 +106,7 @@ export default function PaywallScreen() {
     }, 0);
   const teamYearlySavings = userMonthly > 0 ? Math.round(userMonthly * 12 * 0.75) : 0;
   const queryClient = useQueryClient();
-  const { offerings, purchasePackage, restorePurchases, hasTrialOffer, loading: rcLoading, loadOfferings } = useRevenueCat();
+  const { offerings, purchasePackage, hasTrialOffer, loading: rcLoading, loadOfferings } = useRevenueCat();
 
   // Force-refresh billing when paywall opens to get latest plan status
   useEffect(() => {
@@ -702,55 +703,8 @@ export default function PaywallScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Restore Purchases */}
-        <TouchableOpacity
-          style={{ alignItems: 'center', paddingTop: 16, paddingBottom: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel={t('paywall.restore_purchases', 'Restore Purchases')}
-          onPress={async () => {
-            // If RevenueCat native module isn't linked (Expo Go, simulator), IAP can't
-            // reach App Store / Google Play — communicate that clearly instead of
-            // showing a confusing "no subscriptions found" message.
-            if (!isRevenueCatAvailable()) {
-              Alert.alert(
-                t('paywall.restore_unavailable_title', 'Restore unavailable'),
-                t(
-                  'paywall.restore_unavailable_msg',
-                  'Please try again when connected to App Store or Google Play.',
-                ),
-              );
-              return;
-            }
-            const { success, customerInfo: info } = await restorePurchases();
-            if (success) {
-              // Sync restored plan to backend
-              try {
-                const activeEntitlement = info?.entitlements?.active;
-                const productId = activeEntitlement?.['team']?.productIdentifier
-                  || activeEntitlement?.['pro']?.productIdentifier;
-                if (productId) await billingApi.syncRevenueCat(productId);
-              } catch (e) {
-                if (__DEV__) console.warn('RC restore sync failed:', e);
-              }
-              await queryClient.invalidateQueries({ queryKey: ['billing'] });
-              Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'),
-                [{ text: 'OK', onPress: () => { try { router.dismissAll(); } catch {} router.replace('/(tabs)' as any); } }]
-              );
-            } else {
-              Alert.alert(
-                t('paywall.no_purchases_title', 'No active subscriptions'),
-                t(
-                  'paywall.no_purchases_help',
-                  'No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.',
-                ),
-              );
-            }
-          }}
-        >
-          <Text style={{ color: colors.textMuted, fontSize: 13, textDecorationLine: 'underline' }}>
-            {t('paywall.restore_purchases', 'Restore Purchases')}
-          </Text>
-        </TouchableOpacity>
+        {/* Restore Purchases — unified component: analytics + backend sync + cache invalidation. */}
+        <RestorePurchasesButton origin="paywall" styleLink />
 
       </ScrollView>
       <PurchaseSuccessScreen

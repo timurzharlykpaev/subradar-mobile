@@ -33,11 +33,11 @@ let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
 let Purchases: any = null;
 try { const rc = require('react-native-purchases'); Purchases = rc.default || rc; } catch {}
-import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { notificationsApi } from '../../src/api/notifications';
 import { billingApi } from '../../src/api/billing';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
+import { RestorePurchasesButton } from '../../src/components/RestorePurchasesButton';
 import CancellationInterceptModal from '../../src/components/CancellationInterceptModal';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
@@ -67,8 +67,6 @@ export default function SettingsScreen() {
 
   const { data: billing } = useBillingStatus();
   const access = useEffectiveAccess();
-
-  const { restorePurchases } = useRevenueCat();
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
@@ -412,31 +410,8 @@ export default function SettingsScreen() {
             },
             true,
           )}
-          {/* Restore Purchases */}
-          {renderSettingRow(
-            'refresh-outline',
-            '#3B82F6',
-            t('settings.restore_purchases', 'Restore Purchases'),
-            undefined,
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
-            async () => {
-              const { success, customerInfo: info } = await restorePurchases();
-              if (success) {
-                try {
-                  const activeEntitlement = info?.entitlements?.active;
-                  const productId = activeEntitlement?.['team']?.productIdentifier
-                    || activeEntitlement?.['pro']?.productIdentifier;
-                  if (productId) await billingApi.syncRevenueCat(productId);
-                } catch (e) {
-                  console.warn('RC restore sync failed:', e);
-                }
-                Alert.alert(t('paywall.restored', 'Restored!'), t('paywall.restored_msg', 'Your subscription has been restored.'));
-              } else {
-                Alert.alert(t('settings.no_purchases', 'No active subscriptions found to restore.'));
-              }
-            },
-            true,
-          )}
+          {/* Restore Purchases — unified component; always visible (including for Pro). */}
+          <RestorePurchasesButton origin="settings" styleLink />
           {/* Payment Cards */}
           {renderSettingRow(
             'wallet-outline',
