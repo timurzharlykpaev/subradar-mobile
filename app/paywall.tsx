@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -21,8 +22,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat, isRevenueCatAvailable } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
 import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
+import { SyncRetryModal } from '../src/components/SyncRetryModal';
 import { analytics } from '../src/services/analytics';
 import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
+
+// Key used to persist a "purchase happened but server sync didn't succeed yet"
+// marker across app restarts. DataLoader (Phase 7) will reconcile on cold start.
+const PENDING_RECEIPT_KEY = 'pending_receipt';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -80,6 +86,13 @@ export default function PaywallScreen() {
   const [showClose, setShowClose] = useState(false);
   // If RC offerings don't resolve within 10s → show "prices unavailable" + retry
   const [pricesUnavailable, setPricesUnavailable] = useState(false);
+  // Sync retry modal — shown when post-purchase sync to /billing/sync-revenuecat
+  // fails 3x in a row. The Apple receipt is valid, server just hasn't caught up.
+  const [showSyncRetry, setShowSyncRetry] = useState(false);
+  const [syncRetrying, setSyncRetrying] = useState(false);
+  // Last RC product identifier that entered the purchase flow — used to drive
+  // manual retry from the SyncRetryModal.
+  const [lastProductId, setLastProductId] = useState<string | null>(null);
   const openedAt = useRef(Date.now());
   const access = useEffectiveAccess();
   const billingLoading = access?.isLoading ?? !access;
@@ -190,6 +203,33 @@ export default function PaywallScreen() {
     return { price: '…', period: '' };
   };
 
+  /**
+   * Attempts to sync a verified Apple receipt with our backend.
+   * Retries up to 3 times with exponential-ish backoff (1.5s / 3s / 4.5s).
+   * Returns true on the first successful sync, false if all attempts fail.
+   *
+   * Emits `sync_retry_attempt` on every try, `sync_retry_succeeded` on the
+   * first success, and `sync_retry_exhausted` only when all 3 attempts fail.
+   */
+  const attemptSync = async (productId: string): Promise<boolean> => {
+    let lastError: string | undefined;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      analytics.syncRetryAttempt(attempt + 1, productId);
+      try {
+        await billingApi.syncRevenueCat(productId);
+        console.log('[Paywall] RC sync done (attempt', attempt + 1, ')');
+        analytics.syncRetrySucceeded(attempt + 1, productId);
+        return true;
+      } catch (e: any) {
+        lastError = e?.message;
+        console.warn('[Paywall] RC sync failed attempt', attempt + 1, ':', e?.response?.status, e?.message);
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      }
+    }
+    analytics.syncRetryExhausted(productId, lastError);
+    return false;
+  };
+
   const handleAction = async () => {
     if (selected === 'free') { router.back(); return; }
 
@@ -228,6 +268,17 @@ export default function PaywallScreen() {
       return;
     }
 
+    // Persist a "pending receipt" marker BEFORE calling Apple — if the user
+    // force-kills the app mid-purchase, DataLoader (Phase 7) will reconcile
+    // on next cold start. Best-effort: storage failures must not block purchase.
+    const productId = pkg.product.identifier;
+    setLastProductId(productId);
+    try {
+      await SecureStore.setItemAsync(PENDING_RECEIPT_KEY, productId);
+    } catch (e) {
+      if (__DEV__) console.warn('[Paywall] pending_receipt write failed:', e);
+    }
+
     // Native IAP purchase via RevenueCat
     analytics.track('purchase_initiated', { plan: selected, period: billingPeriod, price: pkg.product.price });
     setPurchasing(true);
@@ -237,6 +288,8 @@ export default function PaywallScreen() {
       if (!purchaseSuccess) {
         analytics.track('purchase_cancelled', { plan: selected, period: billingPeriod });
         setPurchasing(false);
+        // User cancelled or Apple refused — no receipt was created. Clear marker.
+        try { await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY); } catch {}
         // If user has team access and Apple refused/cancelled, explain why and
         // what to try. Classic cause: same Apple ID is also signed into the
         // team owner's Family Sharing or has a stale entitlement cache.
@@ -255,40 +308,44 @@ export default function PaywallScreen() {
       const planLabel = selected === 'org' ? 'Team' : 'Pro';
       analytics.purchaseCompleted(selected, billingPeriod, pkg.product.price);
       setSuccessPlan(planLabel);
+
       // Sync RC then refetch billing so button state updates before user dismisses success screen.
       // If sync fails the purchase is still valid on Apple's side — RevenueCat webhook
-      // will eventually reconcile. Retry the sync a few times before giving up so transient
-      // 5xx/network errors don't leave the user stuck on the success screen.
-      let syncOk = false;
-      for (let attempt = 0; attempt < 3 && !syncOk; attempt++) {
-        try {
-          await billingApi.syncRevenueCat(pkg.product.identifier);
-          console.log('[Paywall] RC sync done (attempt', attempt + 1, ')');
-          syncOk = true;
-        } catch (e: any) {
-          console.warn('[Paywall] RC sync failed attempt', attempt + 1, ':', e?.response?.status, e?.message);
-          if (attempt < 2) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-        }
+      // will eventually reconcile. Surface a retry modal if all 3 attempts fail.
+      const syncOk = await attemptSync(productId);
+      if (syncOk) {
+        try { await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY); } catch {}
+        await queryClient.refetchQueries({ queryKey: ['billing'] });
+      } else {
+        // Keep pending_receipt in storage so DataLoader can retry on next cold start.
+        setShowSyncRetry(true);
       }
-      if (!syncOk) {
-        // The Apple receipt is valid; the server just hasn't caught up yet.
-        // Surface an unobtrusive toast-style alert so the user knows what happened
-        // and isn't left wondering why Pro features aren't unlocked immediately.
-        Alert.alert(
-          t('paywall.sync_delayed_title', 'Purchase received'),
-          t(
-            'paywall.sync_delayed_msg',
-            "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
-          ),
-        );
-      }
-      await queryClient.refetchQueries({ queryKey: ['billing'] });
     } catch (e: any) {
       console.error('[Paywall] Purchase error:', e?.message);
       analytics.purchaseFailed(selected, e?.message ?? 'unknown');
+      // Purchase threw before we got a receipt — safe to clear the marker.
+      try { await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY); } catch {}
       Alert.alert(t('common.error'), e?.message || t('paywall.purchase_failed', 'Purchase failed. Please try again.'));
     } finally {
       setPurchasing(false);
+    }
+  };
+
+  /** User tapped "Проверить ещё раз" on the SyncRetryModal. */
+  const handleSyncRetry = async () => {
+    if (!lastProductId || syncRetrying) return;
+    setSyncRetrying(true);
+    try {
+      const ok = await attemptSync(lastProductId);
+      if (ok) {
+        try { await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY); } catch {}
+        await queryClient.refetchQueries({ queryKey: ['billing'] });
+        setShowSyncRetry(false);
+      }
+      // If still failing — keep modal open so the user can try again; the
+      // pending_receipt marker persists so DataLoader catches it on restart.
+    } finally {
+      setSyncRetrying(false);
     }
   };
 
@@ -710,6 +767,12 @@ export default function PaywallScreen() {
           try { router.dismissAll(); } catch {}
           router.replace('/(tabs)' as any);
         }}
+      />
+      <SyncRetryModal
+        visible={showSyncRetry}
+        loading={syncRetrying}
+        onRetry={handleSyncRetry}
+        onDismiss={() => setShowSyncRetry(false)}
       />
     </SafeAreaView>
   );
