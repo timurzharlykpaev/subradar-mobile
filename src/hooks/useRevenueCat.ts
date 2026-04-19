@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Alert, Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 
 let Purchases: any = null;
 let PURCHASES_ERROR_CODE: any = {};
@@ -20,55 +21,125 @@ try {
 }
 
 // RevenueCat public API keys are designed to be in client code (not a secret).
-// Production key set via EXPO_PUBLIC_REVENUECAT_KEY in eas.json (production profile).
-// Dev/TestFlight use test key (set via eas.json preview profiles or .env.local).
-const RC_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS || process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
-const RC_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_KEY_ANDROID || process.env.EXPO_PUBLIC_REVENUECAT_KEY || 'test_KCkKkTcGjgMgysTZtGukFRBZBBh';
-const API_KEY = Platform.OS === 'ios' ? RC_KEY_IOS : RC_KEY_ANDROID;
+// Production key set via EXPO_PUBLIC_REVENUECAT_KEY_IOS in eas.json (production profile).
+// Dev/TestFlight use test key (set via eas.json preview/testflight profiles or .env.local).
+//
+// IMPORTANT: no hardcoded fallback — a missing key in prod must fail fast so we never
+// ship a build that silently uses the wrong (or no) billing SDK.
+const RC_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS ?? process.env.EXPO_PUBLIC_REVENUECAT_KEY ?? null;
+const RC_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_KEY_ANDROID ?? process.env.EXPO_PUBLIC_REVENUECAT_KEY ?? null;
 
-let configured = false;
+/**
+ * Resolve the RevenueCat API key for the current platform.
+ *
+ * Rules:
+ * - Dev build + missing key  -> return null, log warning, no-op billing.
+ * - Dev build + test key     -> return test key (expected).
+ * - Prod build + missing key -> throw (fail fast, Sentry alert).
+ * - Prod build + test key    -> throw (fail fast, Sentry alert — prevents shipping
+ *                                       a build that runs against RC sandbox).
+ */
+export function resolveRcKey(): string | null {
+  const key = Platform.OS === 'ios' ? RC_KEY_IOS : RC_KEY_ANDROID;
+
+  if (!key) {
+    if (!__DEV__) {
+      Sentry.captureMessage('RevenueCat key missing in production build', 'fatal');
+      throw new Error('RevenueCat key missing — billing will not work');
+    }
+    console.warn('[RC] key missing — billing disabled in dev');
+    return null;
+  }
+
+  if (!__DEV__ && key.startsWith('test_')) {
+    Sentry.captureMessage('RevenueCat TEST key in production build', 'fatal');
+    throw new Error('RevenueCat misconfigured: test key in production');
+  }
+
+  return key;
+}
 
 const isAvailable = () => Purchases != null;
 
 export function isRevenueCatAvailable(): boolean {
-  return isAvailable();
-}
-
-// Promise that resolves when RC is configured — useRevenueCat can await it
-let resolveConfigured: () => void;
-const configuredPromise = new Promise<void>((resolve) => {
-  resolveConfigured = resolve;
-});
-
-export function configureRevenueCat() {
-  if (configured || !isAvailable()) return;
+  if (!isAvailable()) return false;
   try {
-    if (__DEV__ && LOG_LEVEL?.DEBUG) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-    console.log('[RevenueCat] Configuring with key:', API_KEY?.slice(0, 8) + '...', 'platform:', Platform.OS);
-    Purchases.configure({ apiKey: API_KEY, appUserID: null });
-    configured = true;
-    resolveConfigured();
-    console.log('[RevenueCat] Configured successfully');
-  } catch (e) {
-    if (__DEV__) console.warn('RevenueCat configure failed:', e);
+    return !!resolveRcKey();
+  } catch {
+    return false;
   }
 }
 
-export async function loginRevenueCat(userId: string) {
-  if (!isAvailable() || !configured) return;
+// Singleton configure promise. Ensures `configureRevenueCat()` is idempotent and that
+// any caller (loginRevenueCat, the hook itself) can `await` a single shared init.
+let configurePromise: Promise<void> | null = null;
+let configured = false;
+
+/**
+ * Configure the RevenueCat SDK. Idempotent — subsequent calls return the same promise.
+ * Resolves even when RC is not available (dev without native module) so callers can
+ * safely `await` it without branching.
+ */
+export function configureRevenueCat(): Promise<void> {
+  if (configurePromise) return configurePromise;
+
+  configurePromise = (async () => {
+    if (!isAvailable()) return; // native module not linked
+    let apiKey: string | null = null;
+    try {
+      apiKey = resolveRcKey();
+    } catch (e) {
+      // In prod this rethrows — we want that. Reset promise so a later retry (e.g. after
+      // a fixed env) can try again instead of being cached.
+      configurePromise = null;
+      throw e;
+    }
+    if (!apiKey) return; // dev fallback — no-op
+
+    try {
+      if (__DEV__ && LOG_LEVEL?.DEBUG) await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      console.log('[RevenueCat] Configuring with key:', apiKey.slice(0, 8) + '...', 'platform:', Platform.OS);
+      await Purchases.configure({ apiKey, appUserID: null });
+      configured = true;
+      console.log('[RevenueCat] Configured successfully');
+    } catch (e) {
+      if (__DEV__) console.warn('RevenueCat configure failed:', e);
+      Sentry.captureException(e, { tags: { source: 'rc_configure' } });
+      // Reset so a later caller can retry (e.g. network flake at cold start).
+      configurePromise = null;
+      configured = false;
+      throw e;
+    }
+  })();
+
+  return configurePromise;
+}
+
+/**
+ * Log in a user to RevenueCat. Always configures first (configure-before-login is
+ * required — RC will crash if you call logIn before configure).
+ */
+export async function loginRevenueCat(userId: string): Promise<void> {
+  if (!isAvailable()) return;
   try {
+    await configureRevenueCat();
+    if (!configured) return; // dev fallback (no key) — skip
     await Purchases.logIn(userId);
   } catch (e) {
     if (__DEV__) console.warn('RevenueCat logIn failed:', e);
+    Sentry.captureException(e, { tags: { source: 'rc_login' } });
   }
 }
 
-export async function logoutRevenueCat() {
-  if (!isAvailable() || !configured) return;
+export async function logoutRevenueCat(): Promise<void> {
+  if (!isAvailable()) return;
   try {
+    await configureRevenueCat();
+    if (!configured) return;
     await Purchases.logOut();
   } catch (e) {
     if (__DEV__) console.warn('RevenueCat logOut failed:', e);
+    // tolerate — user may have been anon
   }
 }
 
@@ -85,14 +156,15 @@ export function useRevenueCat() {
       return;
     }
 
-    // Wait for configureRevenueCat() to be called (max 5s)
-    if (!configured) {
-      const timeout = new Promise<void>((resolve) => setTimeout(resolve, 5000));
-      await Promise.race([configuredPromise, timeout]);
+    try {
+      await configureRevenueCat();
+    } catch (e) {
+      console.warn('[RevenueCat] configure failed:', e);
+      if (mountedRef.current) setLoading(false);
+      return;
     }
 
     if (!configured) {
-      console.warn('[RevenueCat] Not configured after 5s wait');
       if (mountedRef.current) setLoading(false);
       return;
     }
@@ -151,16 +223,17 @@ export function useRevenueCat() {
     };
   }, [loadOfferings]);
 
-  // Check entitlements case-insensitively (RC dashboard may use Pro/pro/PRO)
+  // Check entitlements case-insensitively (RC dashboard may use Pro/pro/PRO).
+  // NOTE: we deliberately do NOT treat "any entitlement key present" as Pro — that
+  // caused false positives when RC returned stale / unrelated entitlements.
   const activeEntitlements = customerInfo?.entitlements?.active ?? {};
   const activeKeys = Object.keys(activeEntitlements);
-  const isPro = activeKeys.some((k: string) => /^(pro|team)$/i.test(k)) || activeKeys.length > 0;
+  const isPro = activeKeys.some((k: string) => /^(pro|team)$/i.test(k));
+  const isTeam = activeKeys.some((k: string) => /^team$/i.test(k));
 
   if (__DEV__ && customerInfo) {
     console.log('[RevenueCat] Active entitlements:', activeKeys, 'isPro:', isPro);
   }
-
-  const isTeam = activeKeys.some((k: string) => /^team$/i.test(k));
 
   // Check if a specific package has a free trial introductory offer
   const packageHasTrial = (pkg: any): boolean => {
@@ -255,4 +328,13 @@ export function useRevenueCat() {
   }, []);
 
   return { customerInfo, offerings, isPro, isTeam, hasTrialOffer, packageHasTrial, trialDurationDays, purchasePackage, restorePurchases, loading, loadOfferings };
+}
+
+/**
+ * TEST-ONLY helper to reset the module-level singletons between tests.
+ * Exported under an obvious name so production code doesn't accidentally call it.
+ */
+export function __resetRevenueCatForTests() {
+  configurePromise = null;
+  configured = false;
 }
