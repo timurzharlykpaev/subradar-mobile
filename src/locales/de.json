@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "Synchronisation verzögert",
+    "sync_retry_message": "Der Kauf wurde bei Apple abgeschlossen, aber der Server hat die Aktivierung noch nicht bestätigt. Erneut versuchen?",
+    "sync_retry_cta": "Erneut versuchen",
+    "sync_retry_later": "Später"
   },
   "ai": {
     "or_type": "oder eingeben",
@@ -885,7 +889,56 @@
     "quarterly": "Vierteljährlich",
     "yearly": "Jährlich",
     "lifetime": "Lebenslang",
-    "one_time": "Einmalig"
+    "one_time": "Einmalig",
+    "syncRetry": {
+      "title": "Synchronisierung dauert länger als erwartet",
+      "message": "Dein Kauf ist durchgegangen, aber wir haben die Bestätigung noch nicht erhalten",
+      "cta": "Erneut versuchen",
+      "later": "Später"
+    },
+    "restore": {
+      "button": "Käufe wiederherstellen",
+      "success": "Käufe wiederhergestellt",
+      "notFound": "Keine aktiven Abonnements gefunden",
+      "errorTitle": "Fehler",
+      "unavailableTitle": "Nicht verfügbar",
+      "unavailableMessage": "Käufe sind in dieser Version nicht konfiguriert"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "Zahlungsproblem",
+        "message": "Bitte aktualisiere deine Zahlungsmethode, um dein Abonnement aktiv zu halten",
+        "cta": "Zahlung aktualisieren"
+      },
+      "grace": {
+        "titleProExpired": "Pro ist abgelaufen",
+        "titleTeamExpired": "Team-Zugriff abgelaufen",
+        "daysLeft_one": "Noch {{count}} Tag",
+        "daysLeft_other": "Noch {{count}} Tage",
+        "cta": "Verlängern"
+      },
+      "expiration": {
+        "title": "Abonnement endet bald",
+        "daysLeft_one": "Noch {{count}} Tag",
+        "daysLeft_other": "Noch {{count}} Tage",
+        "cta": "Abonnement behalten"
+      },
+      "doublePay": {
+        "title": "Du zahlst doppelt",
+        "message": "Team enthält alle Pro-Funktionen. Kündige dein persönliches Pro, um Geld zu sparen",
+        "cta": "Verwalten"
+      },
+      "annualUpgrade": {
+        "title": "Mit Jahresabo sparen",
+        "message": "Spare mit der jährlichen Abrechnung",
+        "cta": "Upgraden"
+      },
+      "winBack": {
+        "title": "Zurück zu Pro",
+        "message": "Unbegrenzte Abos und KI-Funktionen warten auf dich",
+        "cta": "Pro holen"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "Zahlst du für alle? Teile die Rechnung.",

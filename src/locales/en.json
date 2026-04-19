@@ -786,6 +786,10 @@
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
     "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "Sync delayed",
+    "sync_retry_message": "Your purchase went through on Apple's side, but the server hasn't confirmed the activation yet. Try again?",
+    "sync_retry_cta": "Try again",
+    "sync_retry_later": "Later",
     "maybe_later": "Maybe Later",
     "free_trial_disclaimer": "7-day free trial, then auto-renews. Cancel anytime in iOS Settings.",
     "paid_disclaimer": "Billed via App Store. Cancel anytime.",
@@ -872,7 +876,56 @@
     "quarterly": "Quarterly",
     "yearly": "Yearly",
     "lifetime": "Lifetime",
-    "one_time": "One-time"
+    "one_time": "One-time",
+    "syncRetry": {
+      "title": "Sync taking longer than expected",
+      "message": "Your purchase went through, but we haven't received the confirmation yet",
+      "cta": "Try again",
+      "later": "Later"
+    },
+    "restore": {
+      "button": "Restore purchases",
+      "success": "Purchases restored",
+      "notFound": "No active subscriptions found",
+      "errorTitle": "Error",
+      "unavailableTitle": "Unavailable",
+      "unavailableMessage": "Purchases not configured in this build"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "Payment problem",
+        "message": "Please update your payment method to keep your subscription active",
+        "cta": "Fix payment"
+      },
+      "grace": {
+        "titleProExpired": "Pro expired",
+        "titleTeamExpired": "Team access expired",
+        "daysLeft_one": "{{count}} day left",
+        "daysLeft_other": "{{count}} days left",
+        "cta": "Renew"
+      },
+      "expiration": {
+        "title": "Subscription ending soon",
+        "daysLeft_one": "{{count}} day left",
+        "daysLeft_other": "{{count}} days left",
+        "cta": "Stay subscribed"
+      },
+      "doublePay": {
+        "title": "You're paying twice",
+        "message": "Team gives you Pro features. Cancel your personal Pro subscription to save money",
+        "cta": "Manage"
+      },
+      "annualUpgrade": {
+        "title": "Save with yearly",
+        "message": "Save on yearly billing",
+        "cta": "Upgrade"
+      },
+      "winBack": {
+        "title": "Come back to Pro",
+        "message": "Unlock unlimited subscriptions and AI features",
+        "cta": "Get Pro"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "Paying for everyone? Split the bill.",

@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "Sincronización retrasada",
+    "sync_retry_message": "La compra se completó en Apple, pero el servidor aún no ha confirmado la activación. ¿Intentamos de nuevo?",
+    "sync_retry_cta": "Intentar de nuevo",
+    "sync_retry_later": "Más tarde"
   },
   "ai": {
     "or_type": "o escribe",
@@ -885,7 +889,56 @@
     "quarterly": "Trimestral",
     "yearly": "Anual",
     "lifetime": "De por vida",
-    "one_time": "Único"
+    "one_time": "Único",
+    "syncRetry": {
+      "title": "La sincronización tarda más de lo esperado",
+      "message": "Tu compra se realizó, pero aún no hemos recibido la confirmación",
+      "cta": "Reintentar",
+      "later": "Más tarde"
+    },
+    "restore": {
+      "button": "Restaurar compras",
+      "success": "Compras restauradas",
+      "notFound": "No se encontraron suscripciones activas",
+      "errorTitle": "Error",
+      "unavailableTitle": "No disponible",
+      "unavailableMessage": "Las compras no están configuradas en esta versión"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "Problema con el pago",
+        "message": "Actualiza tu método de pago para mantener tu suscripción activa",
+        "cta": "Corregir pago"
+      },
+      "grace": {
+        "titleProExpired": "Pro ha expirado",
+        "titleTeamExpired": "Acceso a Team expirado",
+        "daysLeft_one": "Queda {{count}} día",
+        "daysLeft_other": "Quedan {{count}} días",
+        "cta": "Renovar"
+      },
+      "expiration": {
+        "title": "Tu suscripción termina pronto",
+        "daysLeft_one": "Queda {{count}} día",
+        "daysLeft_other": "Quedan {{count}} días",
+        "cta": "Mantener suscripción"
+      },
+      "doublePay": {
+        "title": "Estás pagando dos veces",
+        "message": "Team incluye las funciones de Pro. Cancela tu Pro personal para ahorrar",
+        "cta": "Gestionar"
+      },
+      "annualUpgrade": {
+        "title": "Ahorra con el plan anual",
+        "message": "Ahorra al pagar anualmente",
+        "cta": "Cambiar a anual"
+      },
+      "winBack": {
+        "title": "Vuelve a Pro",
+        "message": "Suscripciones ilimitadas y funciones de IA te esperan",
+        "cta": "Obtener Pro"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "¿Pagas por todos? Divide la cuenta.",

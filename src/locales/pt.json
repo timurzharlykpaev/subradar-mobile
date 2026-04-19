@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "Sincronização atrasada",
+    "sync_retry_message": "Sua compra foi concluída no Apple, mas o servidor ainda não confirmou a ativação. Tentar novamente?",
+    "sync_retry_cta": "Tentar novamente",
+    "sync_retry_later": "Mais tarde"
   },
   "ai": {
     "or_type": "ou digite",
@@ -885,7 +889,56 @@
     "quarterly": "Trimestral",
     "yearly": "Anual",
     "lifetime": "Vitalício",
-    "one_time": "Único"
+    "one_time": "Único",
+    "syncRetry": {
+      "title": "A sincronização está demorando mais que o esperado",
+      "message": "Sua compra foi concluída, mas ainda não recebemos a confirmação",
+      "cta": "Tentar novamente",
+      "later": "Mais tarde"
+    },
+    "restore": {
+      "button": "Restaurar compras",
+      "success": "Compras restauradas",
+      "notFound": "Nenhuma assinatura ativa encontrada",
+      "errorTitle": "Erro",
+      "unavailableTitle": "Indisponível",
+      "unavailableMessage": "Compras não estão configuradas nesta versão"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "Problema no pagamento",
+        "message": "Atualize sua forma de pagamento para manter sua assinatura ativa",
+        "cta": "Corrigir pagamento"
+      },
+      "grace": {
+        "titleProExpired": "Pro expirou",
+        "titleTeamExpired": "Acesso Team expirou",
+        "daysLeft_one": "Resta {{count}} dia",
+        "daysLeft_other": "Restam {{count}} dias",
+        "cta": "Renovar"
+      },
+      "expiration": {
+        "title": "Sua assinatura termina em breve",
+        "daysLeft_one": "Resta {{count}} dia",
+        "daysLeft_other": "Restam {{count}} dias",
+        "cta": "Manter assinatura"
+      },
+      "doublePay": {
+        "title": "Você está pagando duas vezes",
+        "message": "Team inclui todos os recursos do Pro. Cancele seu Pro pessoal para economizar",
+        "cta": "Gerenciar"
+      },
+      "annualUpgrade": {
+        "title": "Economize com o anual",
+        "message": "Economize pagando anualmente",
+        "cta": "Mudar para anual"
+      },
+      "winBack": {
+        "title": "Volte para o Pro",
+        "message": "Assinaturas ilimitadas e recursos de IA estão esperando",
+        "cta": "Obter Pro"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "Pagando por todos? Divida a conta.",

@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "Синхрондау кешігіп жатыр",
+    "sync_retry_message": "Сатып алу App Store жағында аяқталды, бірақ сервер белсендіруді әлі растаған жоқ. Қайта әрекет етейік пе?",
+    "sync_retry_cta": "Қайта әрекет ету",
+    "sync_retry_later": "Кейінірек"
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",
@@ -885,7 +889,56 @@
     "quarterly": "Тоқсандық",
     "yearly": "Жылдық",
     "lifetime": "Мәңгілік",
-    "one_time": "Бір реттік"
+    "one_time": "Бір реттік",
+    "syncRetry": {
+      "title": "Синхрондау күтілгеннен ұзағырақ",
+      "message": "Сатып алу өтті, бірақ растау әлі келмеді",
+      "cta": "Қайталау",
+      "later": "Кейінірек"
+    },
+    "restore": {
+      "button": "Сатып алуларды қалпына келтіру",
+      "success": "Сатып алулар қалпына келтірілді",
+      "notFound": "Белсенді жазылымдар табылмады",
+      "errorTitle": "Қате",
+      "unavailableTitle": "Қол жетімсіз",
+      "unavailableMessage": "Бұл құрастыруда сатып алулар реттелмеген"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "Төлем мәселесі",
+        "message": "Жазылымды белсенді ұстау үшін төлем әдісін жаңартыңыз",
+        "cta": "Төлемді түзету"
+      },
+      "grace": {
+        "titleProExpired": "Pro мерзімі аяқталды",
+        "titleTeamExpired": "Team қол жеткізу мерзімі аяқталды",
+        "daysLeft_one": "{{count}} күн қалды",
+        "daysLeft_other": "{{count}} күн қалды",
+        "cta": "Жаңарту"
+      },
+      "expiration": {
+        "title": "Жазылым жақында аяқталады",
+        "daysLeft_one": "{{count}} күн қалды",
+        "daysLeft_other": "{{count}} күн қалды",
+        "cta": "Жазылымды сақтау"
+      },
+      "doublePay": {
+        "title": "Сіз екі рет төлеп жатырсыз",
+        "message": "Team Pro мүмкіндіктерін қамтиды. Үнемдеу үшін жеке Pro жазылымыңызды тоқтатыңыз",
+        "cta": "Басқару"
+      },
+      "annualUpgrade": {
+        "title": "Жылдықпен үнемдеңіз",
+        "message": "Жылдық төлемде үнемдеңіз",
+        "cta": "Жаңарту"
+      },
+      "winBack": {
+        "title": "Pro-ға қайта оралыңыз",
+        "message": "Шексіз жазылымдар мен AI мүмкіндіктері қайтадан қолжетімді",
+        "cta": "Pro алу"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "Барлығы үшін төлеп жүрсіз бе? Бөлісіңіз.",

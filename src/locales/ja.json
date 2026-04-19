@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "同期が遅延しています",
+    "sync_retry_message": "App Storeでは購入が完了しましたが、サーバー側の有効化がまだ確認されていません。もう一度試しますか？",
+    "sync_retry_cta": "もう一度試す",
+    "sync_retry_later": "あとで"
   },
   "ai": {
     "or_type": "または入力",
@@ -885,7 +889,54 @@
     "quarterly": "四半期",
     "yearly": "年額",
     "lifetime": "永久",
-    "one_time": "一回"
+    "one_time": "一回",
+    "syncRetry": {
+      "title": "同期に時間がかかっています",
+      "message": "購入は完了しましたが、まだ確認が届いていません",
+      "cta": "再試行",
+      "later": "後で"
+    },
+    "restore": {
+      "button": "購入を復元",
+      "success": "購入を復元しました",
+      "notFound": "有効なサブスクリプションが見つかりません",
+      "errorTitle": "エラー",
+      "unavailableTitle": "利用できません",
+      "unavailableMessage": "このビルドでは購入が設定されていません"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "お支払いに問題があります",
+        "message": "サブスクリプションを継続するには、お支払い方法を更新してください",
+        "cta": "支払いを修正"
+      },
+      "grace": {
+        "titleProExpired": "Proの期限が切れました",
+        "titleTeamExpired": "Teamの期限が切れました",
+        "daysLeft_other": "残り{{count}}日",
+        "cta": "更新"
+      },
+      "expiration": {
+        "title": "まもなく期限切れ",
+        "daysLeft_other": "残り{{count}}日",
+        "cta": "継続する"
+      },
+      "doublePay": {
+        "title": "二重に支払っています",
+        "message": "TeamにはProの機能が含まれています。個人のProを解約して節約しましょう",
+        "cta": "管理"
+      },
+      "annualUpgrade": {
+        "title": "年額でお得に",
+        "message": "年額プランでさらにお得",
+        "cta": "アップグレード"
+      },
+      "winBack": {
+        "title": "Proに戻る",
+        "message": "無制限のサブスクリプションとAI機能をもう一度",
+        "cta": "Proを取得"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "みんなの分を払ってる？割り勘にしよう。",

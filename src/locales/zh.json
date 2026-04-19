@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "同步延迟",
+    "sync_retry_message": "您的购买已在 Apple 端完成，但服务器尚未确认激活。要重试吗？",
+    "sync_retry_cta": "重试",
+    "sync_retry_later": "稍后"
   },
   "ai": {
     "or_type": "或输入",
@@ -885,7 +889,54 @@
     "quarterly": "每季",
     "yearly": "每年",
     "lifetime": "终身",
-    "one_time": "一次性"
+    "one_time": "一次性",
+    "syncRetry": {
+      "title": "同步时间比预期长",
+      "message": "您的购买已完成，但我们尚未收到确认",
+      "cta": "重试",
+      "later": "稍后"
+    },
+    "restore": {
+      "button": "恢复购买",
+      "success": "购买已恢复",
+      "notFound": "未找到有效订阅",
+      "errorTitle": "错误",
+      "unavailableTitle": "不可用",
+      "unavailableMessage": "此版本未配置购买功能"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "付款问题",
+        "message": "请更新您的付款方式以保持订阅有效",
+        "cta": "修复付款"
+      },
+      "grace": {
+        "titleProExpired": "Pro 已过期",
+        "titleTeamExpired": "Team 访问权限已过期",
+        "daysLeft_other": "剩余 {{count}} 天",
+        "cta": "续订"
+      },
+      "expiration": {
+        "title": "订阅即将到期",
+        "daysLeft_other": "剩余 {{count}} 天",
+        "cta": "继续订阅"
+      },
+      "doublePay": {
+        "title": "您正在重复付费",
+        "message": "Team 已包含 Pro 功能。取消个人 Pro 订阅以节省费用",
+        "cta": "管理"
+      },
+      "annualUpgrade": {
+        "title": "年付更优惠",
+        "message": "按年付费更划算",
+        "cta": "升级"
+      },
+      "winBack": {
+        "title": "回到 Pro",
+        "message": "无限订阅和 AI 功能正等着您",
+        "cta": "获取 Pro"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "替所有人买单？一起分摊吧。",

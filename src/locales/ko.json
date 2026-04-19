@@ -824,7 +824,11 @@
     "purchase_blocked_title": "Purchase didn't complete",
     "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
     "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app."
+    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "sync_retry_title": "동기화 지연",
+    "sync_retry_message": "App Store 쪽에서는 구매가 완료되었지만 서버에서 활성화가 아직 확인되지 않았습니다. 다시 시도할까요?",
+    "sync_retry_cta": "다시 시도",
+    "sync_retry_later": "나중에"
   },
   "ai": {
     "or_type": "또는 입력",
@@ -885,7 +889,54 @@
     "quarterly": "분기",
     "yearly": "연간",
     "lifetime": "평생",
-    "one_time": "일회성"
+    "one_time": "일회성",
+    "syncRetry": {
+      "title": "동기화가 예상보다 오래 걸립니다",
+      "message": "구매는 완료되었지만 아직 확인을 받지 못했습니다",
+      "cta": "다시 시도",
+      "later": "나중에"
+    },
+    "restore": {
+      "button": "구매 복원",
+      "success": "구매가 복원되었습니다",
+      "notFound": "활성 구독을 찾을 수 없습니다",
+      "errorTitle": "오류",
+      "unavailableTitle": "사용할 수 없음",
+      "unavailableMessage": "이 빌드에서는 구매가 구성되지 않았습니다"
+    },
+    "banners": {
+      "billingIssue": {
+        "title": "결제 문제",
+        "message": "구독을 유지하려면 결제 수단을 업데이트하세요",
+        "cta": "결제 수정"
+      },
+      "grace": {
+        "titleProExpired": "Pro가 만료되었습니다",
+        "titleTeamExpired": "Team 이용 기간이 만료되었습니다",
+        "daysLeft_other": "{{count}}일 남음",
+        "cta": "갱신"
+      },
+      "expiration": {
+        "title": "구독이 곧 종료됩니다",
+        "daysLeft_other": "{{count}}일 남음",
+        "cta": "구독 유지"
+      },
+      "doublePay": {
+        "title": "두 번 결제 중입니다",
+        "message": "Team에는 Pro 기능이 포함되어 있습니다. 개인 Pro를 해지하여 절약하세요",
+        "cta": "관리"
+      },
+      "annualUpgrade": {
+        "title": "연간 결제로 절약",
+        "message": "연간 결제로 더 저렴하게",
+        "cta": "업그레이드"
+      },
+      "winBack": {
+        "title": "Pro로 돌아오세요",
+        "message": "무제한 구독과 AI 기능이 기다립니다",
+        "cta": "Pro 받기"
+      }
+    }
   },
   "team_upsell": {
     "modal_title": "모두를 위해 결제 중? 나눠서 내세요.",
