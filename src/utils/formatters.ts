@@ -25,6 +25,29 @@ export function getDaysUntil(dateStr: string): number {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
+const MS_PER_DAY = 86_400_000;
+
+/**
+ * Parse a backend-provided ISO date string into a `Date`, or `null` if
+ * missing/invalid. Single source of truth for `subscription.nextPaymentDate`
+ * rendering across the app — backend computes + stores it, client just reads.
+ */
+export function parseBackendDate(value?: string | Date | null): Date | null {
+  if (!value) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Integer days from today (local midnight) to `date`. Negative = past. */
+export function daysUntilDate(date: Date | null): number | null {
+  if (!date) return null;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(0, 0, 0, 0);
+  return Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
+}
+
 export function periodToMonthlyAmount(amount: number, period: BillingPeriod): number {
   switch (period) {
     case 'WEEKLY': return amount * 4.33;

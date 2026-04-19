@@ -15,7 +15,7 @@ import { CardBadge } from './CardBadge';
 import { useTheme, fonts } from '../theme';
 import { GiftIcon } from './icons';
 import { formatMoney } from '../utils/formatMoney';
-import { resolveNextPaymentDate, daysUntil as daysUntilDate } from '../utils/nextPaymentDate';
+import { parseBackendDate, daysUntilDate } from '../utils/formatters';
 
 interface Props {
   subscription: Subscription;
@@ -35,7 +35,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
 
   const isTrial = subscription.status === 'TRIAL';
   const trialDays = isTrial ? daysUntilString((subscription as any).trialEndDate) : null;
-  const nextDate = resolveNextPaymentDate(subscription);
+  const nextDate = parseBackendDate(subscription.nextPaymentDate);
   const nextDateDays = daysUntilDate(nextDate);
   const trialUrgent = trialDays !== null && trialDays <= 3 && trialDays >= 0;
   const trialExpired = trialDays !== null && trialDays < 0;

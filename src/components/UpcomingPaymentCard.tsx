@@ -5,7 +5,7 @@ import { Subscription } from '../types';
 import { CATEGORIES } from '../constants';
 import { useTheme } from '../theme';
 import { CategoryIcon } from './icons';
-import { resolveNextPaymentDate, daysUntil as daysUntilFn } from '../utils/nextPaymentDate';
+import { parseBackendDate, daysUntilDate } from '../utils/formatters';
 
 interface Props {
   subscription: Subscription;
@@ -15,7 +15,7 @@ export const UpcomingPaymentCard: React.FC<Props> = ({ subscription }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const cat = CATEGORIES.find((c) => c.id === subscription.category);
-  const daysUntil = daysUntilFn(resolveNextPaymentDate(subscription)) ?? 0;
+  const daysUntil = daysUntilDate(parseBackendDate(subscription.nextPaymentDate)) ?? 0;
 
   return (
     <TouchableOpacity testID={`upcoming-card-${subscription.id}`} style={[styles.card, { backgroundColor: colors.surface, borderTopColor: cat?.color || colors.primary }]}>

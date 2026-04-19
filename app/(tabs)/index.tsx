@@ -40,7 +40,7 @@ import ExpirationBanner from '../../src/components/ExpirationBanner';
 import WinBackBanner from '../../src/components/WinBackBanner';
 import AnnualUpgradeBanner from '../../src/components/AnnualUpgradeBanner';
 import { analytics } from '../../src/services/analytics';
-import { resolveNextPaymentDate, daysUntil as daysUntilDate } from '../../src/utils/nextPaymentDate';
+import { parseBackendDate, daysUntilDate } from '../../src/utils/formatters';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { DoublePayBanner } from '../../src/components/DoublePayBanner';
 import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
@@ -184,9 +184,9 @@ export default function DashboardScreen() {
   const prevMonthAmount = monthlyTrend.length >= 2 ? monthlyTrend[monthlyTrend.length - 2]?.amount || 0 : 0;
   const delta = prevMonthAmount > 0 ? ((totalMonthly - prevMonthAmount) / prevMonthAmount * 100) : 0;
 
-  // Resolve next payment date locally once per sub — cheaper and stable for
-  // filter+sort+render. The server-stored value is used as fallback only.
-  const subsWithNext = subscriptions.map((s) => ({ sub: s, next: resolveNextPaymentDate(s) }));
+  // Backend-computed `nextPaymentDate` is the source of truth — refreshed
+  // daily server-side + on create/update. Client just parses and sorts.
+  const subsWithNext = subscriptions.map((s) => ({ sub: s, next: parseBackendDate(s.nextPaymentDate) }));
 
   const upcomingNext7 = subsWithNext
     .filter(({ next }) => {
@@ -456,7 +456,7 @@ export default function DashboardScreen() {
             </View>
             <ScrollView testID="dashboard-upcoming-list" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
               {upcomingNext7.map((sub) => {
-                const days = daysUntilDate(resolveNextPaymentDate(sub)) ?? 0;
+                const days = daysUntilDate(parseBackendDate(sub.nextPaymentDate)) ?? 0;
                 const cat = CATEGORIES.find((c) => c.id === sub.category);
                 const urgent = days <= 1;
                 return (
@@ -506,7 +506,7 @@ export default function DashboardScreen() {
               </View>
             </View>
             {trialSubs.map((sub) => {
-              const endDate = resolveNextPaymentDate(sub);
+              const endDate = parseBackendDate(sub.nextPaymentDate);
               const daysLeft = endDate ? Math.max(0, daysUntilDate(endDate) ?? 0) : null;
               const dotColor = daysLeft === null ? colors.textSecondary : daysLeft < 3 ? colors.error : daysLeft <= 7 ? colors.warning : colors.success;
               return (
@@ -580,7 +580,7 @@ export default function DashboardScreen() {
                     <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
                     <Text style={[styles.subPeriod, { color: colors.textMuted }]}>/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, sub.billingPeriod)}</Text>
                     {(() => {
-                      const nd = resolveNextPaymentDate(sub);
+                      const nd = parseBackendDate(sub.nextPaymentDate);
                       return nd ? (
                         <Text style={[styles.subNextDate, { color: colors.primary }]} numberOfLines={1}>
                           {nd.toLocaleDateString(i18n.language || 'en', { month: 'short', day: 'numeric' })}
