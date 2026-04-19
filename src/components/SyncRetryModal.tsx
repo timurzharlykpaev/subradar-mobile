@@ -6,7 +6,7 @@
  * without losing the purchase — the Apple receipt is already valid, we just
  * need the server to catch up.
  *
- * i18n: TODO (Phase 10) — strings intentionally hardcoded in Russian for now.
+ * All copy is routed through i18n — keys live under `paywall.sync_retry_*`.
  */
 import React from 'react';
 import {
@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '../theme';
 
@@ -29,6 +30,15 @@ interface Props {
 
 export function SyncRetryModal({ visible, loading = false, onRetry, onDismiss }: Props) {
   const { colors, isDark } = useTheme();
+  const { t } = useTranslation();
+
+  const title = t('paywall.sync_retry_title', 'Sync delayed');
+  const message = t(
+    'paywall.sync_retry_message',
+    "Your purchase went through on Apple's side, but the server hasn't confirmed the activation yet. Try again?",
+  );
+  const retryCta = t('paywall.sync_retry_cta', 'Try again');
+  const laterCta = t('paywall.sync_retry_later', 'Later');
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
@@ -42,25 +52,20 @@ export function SyncRetryModal({ visible, loading = false, onRetry, onDismiss }:
             },
           ]}
         >
-          <Text style={[styles.title, { color: colors.text }]}>
-            Синхронизация задерживается
-          </Text>
-          <Text style={[styles.message, { color: colors.textSecondary }]}>
-            Покупка прошла на стороне App Store, но сервер пока не подтвердил
-            активацию. Попробуем ещё раз?
-          </Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
 
           <TouchableOpacity
             onPress={onRetry}
             disabled={loading}
             style={[styles.primaryBtn, { backgroundColor: colors.primary }, loading && { opacity: 0.6 }]}
             accessibilityRole="button"
-            accessibilityLabel="Проверить ещё раз"
+            accessibilityLabel={retryCta}
           >
             {loading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.primaryBtnText}>Проверить ещё раз</Text>
+              <Text style={styles.primaryBtnText}>{retryCta}</Text>
             )}
           </TouchableOpacity>
 
@@ -69,11 +74,9 @@ export function SyncRetryModal({ visible, loading = false, onRetry, onDismiss }:
             disabled={loading}
             style={styles.secondaryBtn}
             accessibilityRole="button"
-            accessibilityLabel="Позже"
+            accessibilityLabel={laterCta}
           >
-            <Text style={[styles.secondaryBtnText, { color: colors.textMuted }]}>
-              Позже
-            </Text>
+            <Text style={[styles.secondaryBtnText, { color: colors.textMuted }]}>{laterCta}</Text>
           </TouchableOpacity>
         </View>
       </View>
