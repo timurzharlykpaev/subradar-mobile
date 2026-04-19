@@ -78,6 +78,8 @@ export default function PaywallScreen() {
   const [purchasing, setPurchasing] = useState(false);
   const [successPlan, setSuccessPlan] = useState<string | null>(null);
   const [showClose, setShowClose] = useState(false);
+  // If RC offerings don't resolve within 10s → show "prices unavailable" + retry
+  const [pricesUnavailable, setPricesUnavailable] = useState(false);
   const openedAt = useRef(Date.now());
   const access = useEffectiveAccess();
   const billingLoading = access?.isLoading ?? !access;
@@ -109,6 +111,17 @@ export default function PaywallScreen() {
       return () => clearTimeout(timer);
     }
   }, [rcLoading, offerings]);
+
+  // After 10s without offerings → surface "prices unavailable" state with retry button.
+  // Reset whenever offerings resolve.
+  useEffect(() => {
+    if (offerings) {
+      setPricesUnavailable(false);
+      return;
+    }
+    const timer = setTimeout(() => setPricesUnavailable(true), 10_000);
+    return () => clearTimeout(timer);
+  }, [offerings]);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -142,14 +155,21 @@ export default function PaywallScreen() {
   // the user is still eligible from our side (not used before).
   const canTrial = hasTrialOffer && (access?.actions.canStartTrial ?? false);
 
-  // Map plan + period to RevenueCat product identifier
-  const PRODUCT_IDS: Record<string, Record<string, string>> = {
-    pro:  { monthly: 'io.subradar.mobile.pro.monthly',  yearly: 'io.subradar.mobile.pro.yearly' },
-    org:  { monthly: 'io.subradar.mobile.team.monthly', yearly: 'io.subradar.mobile.team.yearly' },
+  // Product IDs come from backend (`access.products`) — no hardcoded fallback.
+  // UI plan id `'org'` maps to backend key `team`.
+  const productIdFor = (planId: string, period: 'monthly' | 'yearly'): string | undefined => {
+    if (!access?.products) return undefined;
+    const bucket =
+      planId === 'pro'
+        ? access.products.pro
+        : planId === 'org'
+          ? access.products.team
+          : undefined;
+    return bucket?.[period];
   };
 
-  const findPackage = (planId: string, period: string): any | undefined => {
-    const productId = PRODUCT_IDS[planId]?.[period];
+  const findPackage = (planId: string, period: 'monthly' | 'yearly'): any | undefined => {
+    const productId = productIdFor(planId, period);
     if (!productId) return undefined;
     return offerings?.current?.availablePackages?.find(
       (p: any) => p.product?.identifier === productId,
@@ -165,15 +185,9 @@ export default function PaywallScreen() {
       return { price: pkg.product.priceString, period: `/${periodLabel}` };
     }
 
-    // Fallback prices when RC packages not loaded yet
-    if (planId === 'pro') {
-      return billingPeriod === 'yearly'
-        ? { price: '$24.99', period: `/${t('paywall.year', 'yr')}` }
-        : { price: '$2.99', period: `/${t('paywall.month', 'mo')}` };
-    }
-    return billingPeriod === 'yearly'
-      ? { price: '$79.99', period: `/${t('paywall.year', 'yr')}` }
-      : { price: '$9.99', period: `/${t('paywall.month', 'mo')}` };
+    // No hardcoded fallback — show a neutral placeholder while offerings load.
+    // If the 10s timer fires, the full "prices unavailable" block is rendered elsewhere.
+    return { price: '…', period: '' };
   };
 
   const handleAction = async () => {
@@ -416,8 +430,34 @@ export default function PaywallScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Prices unavailable — RC offerings never resolved after 10s. Swap plan cards for a retry card. */}
+        {pricesUnavailable && !offerings && (
+          <View style={[styles.planCard, { backgroundColor: isDark ? '#1C1C2E' : '#FFFFFF', borderColor: isDark ? '#2A2A3E' : '#E5E7EB', borderWidth: 1, alignItems: 'center', gap: 12 }]}>
+            <Ionicons name="cloud-offline-outline" size={32} color={colors.textMuted} />
+            <Text style={[styles.planName, { color: colors.text, textAlign: 'center' }]}>
+              {t('paywall.prices_unavailable_title', 'Цены временно недоступны')}
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 18 }}>
+              {t('paywall.prices_unavailable_msg', 'Не удалось загрузить актуальные цены из App Store. Попробуйте ещё раз.')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setPricesUnavailable(false);
+                loadOfferings();
+              }}
+              style={{ marginTop: 4, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary }}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.retry', 'Retry')}
+            >
+              <Text style={{ color: '#FFF', fontWeight: '700' }}>
+                {t('common.retry', 'Попробовать снова')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Plan cards */}
-        {PLANS.map((plan, index) => {
+        {!(pricesUnavailable && !offerings) && PLANS.map((plan, index) => {
           const isSelected = selected === plan.id;
           const isCurrent = isCurrentPlan(plan.id);
           const { price, period } = getPrice(plan.id);
@@ -537,7 +577,10 @@ export default function PaywallScreen() {
             (selected === 'pro' && access?.plan === 'pro' && !isTrialing) ||
             (selected === 'org' && access?.plan === 'organization' && !isTrialing);
           const alreadyOnThisPlan = planMatches && billingPeriod === 'monthly';
-          const ctaDisabled = isLoading || alreadyOnThisPlan;
+          // Also block the CTA when offerings failed to load — the purchase
+          // flow would fail immediately without a resolvable RC package.
+          const offeringsMissing = pricesUnavailable && !offerings;
+          const ctaDisabled = isLoading || alreadyOnThisPlan || offeringsMissing;
 
           return (
         <TouchableOpacity
