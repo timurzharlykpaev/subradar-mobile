@@ -65,12 +65,16 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
     router.push('/paywall' as any);
   };
 
-  const handleTrial = async () => {
-    try {
-      await startTrialMutation.mutateAsync();
-      await queryClient.invalidateQueries({ queryKey: ['billing'] });
-      onClose();
-    } catch {}
+  const handleTrial = () => {
+    // Trial is delivered via Apple's introductory offer on the Pro package —
+    // RevenueCat requires a real `purchasePackage()` call so the user sees
+    // the Apple payment sheet (sandbox in dev, real in prod) and the intro
+    // period is recorded against their Apple ID. Hitting the deprecated
+    // backend /billing/trial endpoint just writes a 7-day user_trials row
+    // with no IAP tied to it, so auto-renew on day 8 never fires. Route the
+    // user through the paywall where purchasePackage + RC webhook handle it.
+    onClose();
+    router.push('/paywall?trial=1' as any);
   };
 
   const proFeatures = [
