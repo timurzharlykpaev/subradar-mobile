@@ -93,14 +93,17 @@
   "jest": {
     "testEnvironment": "node",
     "testMatch": [
-      "**/__tests__/**/*.test.ts"
+      "**/__tests__/**/*.test.ts",
+      "**/__tests__/**/*.test.tsx"
     ],
     "transform": {
       "^.+\\.tsx?$": [
         "ts-jest",
         {
           "tsconfig": {
-            "module": "commonjs"
+            "module": "commonjs",
+            "jsx": "react",
+            "esModuleInterop": true
           }
         }
       ]
