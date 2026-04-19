@@ -21,7 +21,6 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { analyticsApi } from '../../src/api/analytics';
 import { formatMoney } from '../../src/utils/formatMoney';
 import i18n from '../../src/i18n';
-import { useBillingStatus } from '../../src/hooks/useBilling';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
@@ -238,11 +237,11 @@ export default function AnalyticsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { subscriptions } = useSubscriptionsStore();
-  const { data: billingStatus } = useBillingStatus();
-  const isCancelled = billingStatus?.status === 'cancelled' || billingStatus?.cancelAtPeriodEnd === true;
-  const isPro = (billingStatus?.plan === 'pro' || billingStatus?.plan === 'organization') && !isCancelled;
-  const { colors, isDark } = useTheme();
   const access = useEffectiveAccess();
+  // `cancel_at_period_end` still has Pro access until period ends, so
+  // `access.isPro` matches that semantics — no need for manual isCancelled gating.
+  const isPro = access?.isPro ?? false;
+  const { colors, isDark } = useTheme();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const lang = i18n.language || 'en';
   const money = useCallback(
@@ -562,7 +561,7 @@ export default function AnalyticsScreen() {
               <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
             )}
           </View>
-          {access.isInDegradedMode && (
+          {access?.flags.degradedMode && (
             <View style={{ alignItems: 'center', marginVertical: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
                 {t('team_logic.analytics_locked_hint', { amount: money(fullMonthly) })}
@@ -572,7 +571,7 @@ export default function AnalyticsScreen() {
         </View>
 
         {/* ── Team Upsell Card ────────────────────────────────── */}
-        {billingStatus?.plan === 'pro' && totalMonthly >= 20 && (
+        {access?.plan === 'pro' && totalMonthly >= 20 && (
           <TouchableOpacity
             style={[styles.teamCard, { backgroundColor: colors.card, borderColor: '#06B6D440' }]}
             onPress={() => {

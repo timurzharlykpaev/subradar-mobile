@@ -141,7 +141,7 @@ export default function DashboardScreen() {
     if (loading) return;
     const prev = prevSubsCount.current ?? 0;
     if (prev < 2 && subscriptions.length >= 2) {
-      const hasActivePlan = billing?.plan === 'pro' || billing?.plan === 'organization';
+      const hasActivePlan = access?.isPro ?? false;
       if (!hasActivePlan) {
         AsyncStorage.getItem('trial_offered').then((val) => {
           if (!val) {
@@ -153,7 +153,7 @@ export default function DashboardScreen() {
       }
     }
     prevSubsCount.current = subscriptions.length;
-  }, [loading, subscriptions.length, billing?.plan]);
+  }, [loading, subscriptions.length, access?.plan]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
@@ -172,7 +172,9 @@ export default function DashboardScreen() {
     return sum + displayValueOf(s) * mult;
   }, 0);
 
-  const visibleSubs = access.isInDegradedMode ? activeSubs.slice(0, 3) : activeSubs;
+  const isDegraded = access?.flags.degradedMode ?? false;
+  const hiddenSubsCount = access?.flags.hiddenSubscriptionsCount ?? 0;
+  const visibleSubs = isDegraded ? activeSubs.slice(0, 3) : activeSubs;
   const totalMonthlyVisible = visibleSubs.reduce((sum, s) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
     return sum + displayValueOf(s) * mult;
@@ -215,9 +217,9 @@ export default function DashboardScreen() {
   // Show TeamUpsellModal once when Pro user hits a "moment of truth"
   useEffect(() => {
     if (loading) return;
-    const isPro = billing?.plan === 'pro';
-    const isTeam = billing?.plan === 'organization';
-    if (!isPro || isTeam) return;
+    const isProPlan = access?.plan === 'pro';
+    const isOrgPlan = access?.plan === 'organization';
+    if (!isProPlan || isOrgPlan) return;
 
     const duplicateCount = duplicateCategories.length;
     const subsCount = activeSubs.length;
@@ -232,11 +234,12 @@ export default function DashboardScreen() {
       const trigger = duplicateCount >= 2 ? 'duplicates' : subsCount >= 8 ? 'subs_count' : 'spend';
       analytics.track('team_upsell_modal_shown', { trigger });
     });
-  }, [loading, billing?.plan, activeSubs.length, duplicateCategories.length, totalMonthly]);
+  }, [loading, access?.plan, activeSubs.length, duplicateCategories.length, totalMonthly]);
 
-  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
-  const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
-  const isTeam = billing?.plan === 'organization' && !isCancelled;
+  // Derived UI flags. `cancel_at_period_end` still has Pro access until the
+  // period ends — treat it as `isPro = true` in the dashboard header.
+  const isPro = access?.isPro ?? false;
+  const isTeam = access?.plan === 'organization';
   const planLabel = isTeam ? 'TEAM' : isPro ? 'PRO' : 'FREE';
 
   if (loading) {
@@ -272,20 +275,20 @@ export default function DashboardScreen() {
 
         <TeamSavingsBadge />
 
-        {access.shouldShowBillingIssue && <BillingIssueBanner />}
-        {access.shouldShowDoublePay && <DoublePayBanner />}
-        {access.shouldShowGraceBanner && access.graceReason && (
-          <GraceBanner daysLeft={access.graceDaysLeft!} reason={access.graceReason} />
+        {access?.flags.hasBillingIssue && <BillingIssueBanner />}
+        {access?.flags.shouldShowDoublePay && <DoublePayBanner />}
+        {!!access && access.graceDaysLeft !== null && access.graceDaysLeft > 0 && access.graceReason && (
+          <GraceBanner daysLeft={access.graceDaysLeft} reason={access.graceReason} />
         )}
 
         {/* ── Expiration Banner ────────────────────────────────── */}
-        {billing?.cancelAtPeriodEnd && billing?.currentPeriodEnd && (
-          <ExpirationBanner currentPeriodEnd={billing.currentPeriodEnd} variant="full" />
+        {access?.flags.cancelAtPeriodEnd && access.currentPeriodEnd && (
+          <ExpirationBanner currentPeriodEnd={access.currentPeriodEnd.toISOString()} variant="full" />
         )}
 
         {/* ── Win-Back Banner (for downgraded free users) ──────── */}
         {!isPro && (
-          <WinBackBanner downgradedAt={(billing as any)?.downgradedAt ?? null} />
+          <WinBackBanner downgradedAt={null} />
         )}
 
         {/* ── Annual Upgrade Nudge (for monthly Pro users) ─────── */}
@@ -419,9 +422,9 @@ export default function DashboardScreen() {
               </View>
             )}
           </View>
-          {access.isInDegradedMode && (
+          {isDegraded && (
             <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginTop: 4 }}>
-              {t('team_logic.hero_locked_hint', { count: access.hiddenSubsCount })}
+              {t('team_logic.hero_locked_hint', { count: hiddenSubsCount })}
             </Text>
           )}
           <View style={styles.heroMeta}>

@@ -47,8 +47,7 @@ import { TranscriptionConfirm } from './TranscriptionConfirm';
 import { InlineConfirmCard, ConfirmCardData } from './InlineConfirmCard';
 import { AICreditsBadge } from './AICreditsBadge';
 import ProFeatureModal from './ProFeatureModal';
-import { usePlanLimits } from '../hooks/usePlanLimits';
-import { useBillingStatus } from '../hooks/useBilling';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useTheme } from '../theme';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useIsMounted } from '../hooks/useIsMounted';
@@ -169,9 +168,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
-  const { subsLimitReached, isPro, activeCount, maxSubscriptions } = usePlanLimits();
-  const { data: billing } = useBillingStatus();
-  const isProUser = billing?.plan === 'pro';
+  const access = useEffectiveAccess();
+  const isPro = access?.isPro ?? false;
+  const isProUser = access?.plan === 'pro';
+  const activeCount = access?.limits.subscriptions.used ?? 0;
+  const maxSubscriptions =
+    access && access.limits.subscriptions.limit !== null
+      ? access.limits.subscriptions.limit
+      : Infinity;
+  const subsLimitReached =
+    !!access &&
+    access.limits.subscriptions.limit !== null &&
+    access.limits.subscriptions.used >= access.limits.subscriptions.limit;
   if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
 
   // ── Form state (kept for manual mode) ───────────────────────────────────

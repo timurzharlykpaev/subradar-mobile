@@ -24,9 +24,8 @@ import { CategoryBadge } from '../../src/components/CategoryBadge';
 import { EditSubscriptionSheet } from '../../src/components/EditSubscriptionSheet';
 import { PencilIcon, TrashIcon } from '../../src/components/icons';
 import { formatMoney } from '../../src/utils/formatMoney';
-import { useBillingStatus } from '../../src/hooks/useBilling';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { analytics } from '../../src/services/analytics';
-import { resolveNextPaymentDate } from '../../src/utils/nextPaymentDate';
 
 export default function SubscriptionDetailScreen() {
   const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,9 +35,9 @@ export default function SubscriptionDetailScreen() {
   const getCard = usePaymentCardsStore((s) => s.getCard);
 
   const { colors, isDark } = useTheme();
-  const { data: billing } = useBillingStatus();
-  const isPro = billing?.plan === 'pro';
-  const isTeam = billing?.plan === 'organization';
+  const access = useEffectiveAccess();
+  const isPro = access?.plan === 'pro';
+  const isTeam = access?.plan === 'organization';
   const [editVisible, setEditVisible] = useState(false);
   const [iconError, setIconError] = useState(false);
 
@@ -225,8 +224,10 @@ export default function SubscriptionDetailScreen() {
               })()}
             </DetailRow>
           ) : (() => {
-            const nd = resolveNextPaymentDate(subscription);
-            return nd ? (
+            // Backend is source of truth for nextPaymentDate — computed server-side
+            // at create/update and refreshed via daily cron.
+            const nd = subscription.nextPaymentDate ? new Date(subscription.nextPaymentDate) : null;
+            return nd && !Number.isNaN(nd.getTime()) ? (
               <DetailRow label={t("subscriptions.next_payment")}>
                 <Text style={[styles.detailValue, { color: colors.text }]}>
                   {nd.toLocaleDateString(i18n.language || 'en', {

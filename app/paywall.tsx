@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme, fonts } from '../src/theme';
-import { useBillingStatus } from '../src/hooks/useBilling';
+import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat, isRevenueCatAvailable } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
@@ -79,7 +79,8 @@ export default function PaywallScreen() {
   const [successPlan, setSuccessPlan] = useState<string | null>(null);
   const [showClose, setShowClose] = useState(false);
   const openedAt = useRef(Date.now());
-  const { data: billing, isLoading: billingLoading } = useBillingStatus();
+  const access = useEffectiveAccess();
+  const billingLoading = access?.isLoading ?? !access;
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
   const userMonthly = subscriptions
     .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
@@ -131,14 +132,15 @@ export default function PaywallScreen() {
     });
   }, []);
 
-  const isPro = billing?.plan === 'pro' || billing?.plan === 'organization';
-  const isTrialing = billing?.status === 'trialing';
+  const isPro = access?.isPro ?? false;
+  const isTrialing = access?.source === 'trial';
   // Access via team means user inherits Pro/Team features from a workspace
   // owner's subscription — they have NO Apple receipt of their own.
-  const accessViaTeam = billing?.source === 'team';
-  const hasOwnPro = billing?.hasOwnPro === true;
-  // Trial eligibility comes from RevenueCat (Apple manages trial per Apple ID)
-  const canTrial = hasTrialOffer && !isPro && !isTrialing;
+  const accessViaTeam = access?.source === 'team';
+  const hasOwnPro = access?.hasOwnPaidPlan === true;
+  // Trial eligibility: RC exposes the Apple trial offer, backend says whether
+  // the user is still eligible from our side (not used before).
+  const canTrial = hasTrialOffer && (access?.actions.canStartTrial ?? false);
 
   // Map plan + period to RevenueCat product identifier
   const PRODUCT_IDS: Record<string, Record<string, string>> = {
@@ -282,8 +284,8 @@ export default function PaywallScreen() {
     if (selected === 'free') return t('paywall.continue_free');
     if (canTrial && selected === 'pro') return `${t('paywall.start_free_trial', '7 days free — Start Trial')} →`;
     const planMatches =
-      (selected === 'pro' && billing?.plan === 'pro') ||
-      (selected === 'org' && billing?.plan === 'organization');
+      (selected === 'pro' && access?.plan === 'pro') ||
+      (selected === 'org' && access?.plan === 'organization');
     // If on same plan and switching to yearly — show "Switch to Yearly"
     if (planMatches && !isTrialing && billingPeriod === 'yearly') {
       return t('paywall.switch_to_yearly', 'Switch to Yearly →');
@@ -298,8 +300,8 @@ export default function PaywallScreen() {
   // isCurrentPlan: only mark as "current" on monthly badge — yearly is always upgradable
   const isCurrentPlan = (planId: string) => {
     if (planId === 'free' && !isPro) return true;
-    if (planId === 'pro' && billing?.plan === 'pro' && billingPeriod === 'monthly') return true;
-    if (planId === 'org' && billing?.plan === 'organization' && billingPeriod === 'monthly') return true;
+    if (planId === 'pro' && access?.plan === 'pro' && billingPeriod === 'monthly') return true;
+    if (planId === 'org' && access?.plan === 'organization' && billingPeriod === 'monthly') return true;
     return false;
   };
 
@@ -359,7 +361,12 @@ export default function PaywallScreen() {
           <View style={[styles.statusBadge, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B40' }]}>
             <Ionicons name="time" size={16} color="#F59E0B" />
             <Text style={[styles.statusText, { color: '#F59E0B' }]}>
-              {t('subscription_plan.trial_active', { days: billing?.trialDaysLeft ?? 0 })}
+              {(() => {
+                const trialDays = access?.trialEndsAt
+                  ? Math.max(0, Math.ceil((access.trialEndsAt.getTime() - Date.now()) / 86_400_000))
+                  : 0;
+                return t('subscription_plan.trial_active', { days: trialDays });
+              })()}
             </Text>
           </View>
         )}
@@ -527,8 +534,8 @@ export default function PaywallScreen() {
 
           // Plan already active on the selected billing period — disable button to prevent double-purchase
           const planMatches =
-            (selected === 'pro' && billing?.plan === 'pro' && !isTrialing) ||
-            (selected === 'org' && billing?.plan === 'organization' && !isTrialing);
+            (selected === 'pro' && access?.plan === 'pro' && !isTrialing) ||
+            (selected === 'org' && access?.plan === 'organization' && !isTrialing);
           const alreadyOnThisPlan = planMatches && billingPeriod === 'monthly';
           const ctaDisabled = isLoading || alreadyOnThisPlan;
 

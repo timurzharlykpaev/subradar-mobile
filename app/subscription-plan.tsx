@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { useBillingStatus } from '../src/hooks/useBilling';
+import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { billingApi } from '../src/api/billing';
 import { useTheme } from '../src/theme';
 import CancellationInterceptModal from '../src/components/CancellationInterceptModal';
@@ -34,7 +34,8 @@ export default function SubscriptionPlanScreen() {
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data: billing, isLoading } = useBillingStatus();
+  const access = useEffectiveAccess();
+  const isLoading = !access;
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
@@ -42,19 +43,19 @@ export default function SubscriptionPlanScreen() {
 
   // Personalised yearly savings = monthly_price*12 - yearly_price (Pro only)
   const yearlySavings = React.useMemo(() => {
-    if (billing?.plan !== 'pro') return 0;
+    if (access?.plan !== 'pro') return 0;
     // Default prices fallback; real prices may be injected via RC offerings later
     const monthlyTotal = 2.99 * 12;
     const yearly = 24.99;
     return Math.max(0, Math.round(monthlyTotal - yearly));
-  }, [billing?.plan]);
+  }, [access?.plan]);
 
   // Sync billing period from API response
   useEffect(() => {
-    if (billing?.billingPeriod === 'yearly' || billing?.billingPeriod === 'monthly') {
-      setBillingPeriod(billing.billingPeriod);
+    if (access?.billingPeriod === 'yearly' || access?.billingPeriod === 'monthly') {
+      setBillingPeriod(access.billingPeriod);
     }
-  }, [billing?.billingPeriod]);
+  }, [access?.billingPeriod]);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function SubscriptionPlanScreen() {
   const handleConfirmCancel = (reason?: string) => {
     setCancelModalVisible(false);
     if (reason) {
-      analytics.track('subscription_cancelled', { plan: billing?.plan ?? 'free', reason });
+      analytics.track('subscription_cancelled', { plan: access?.plan ?? 'free', reason });
     }
     cancelMutation.mutate();
   };
@@ -92,13 +93,15 @@ export default function SubscriptionPlanScreen() {
     router.push('/paywall' as any);
   };
 
-  const rawPlan = billing?.plan ?? 'free';
-  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
-  const plan = isCancelled ? 'free' : rawPlan;
-  const isPro = (plan === 'pro' || plan === 'organization') && !isCancelled;
-  const isTeam = plan === 'organization' && !isCancelled;
-  const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
-  const canTrial = !isPro && !isTrialing;
+  // `cancel_at_period_end` keeps Pro features until the period ends.
+  // We surface that as still-Pro in the UI while showing the cancel warning.
+  const rawPlan = access?.plan ?? 'free';
+  const isCancelled = access?.state === 'cancel_at_period_end';
+  const plan = rawPlan;
+  const isPro = access?.isPro ?? false;
+  const isTeam = plan === 'organization';
+  const isTrialing = access?.source === 'trial';
+  const canTrial = access?.actions.canStartTrial ?? false;
   const display = PLAN_DISPLAY[plan] ?? PLAN_DISPLAY.free;
   const features: string[] = t(`subscription_plan.feat_${plan === 'organization' ? 'org' : plan}`, { returnObjects: true }) as string[] ?? [];
 
@@ -110,10 +113,10 @@ export default function SubscriptionPlanScreen() {
     );
   }
 
-  const subsUsed = billing?.subscriptionCount ?? 0;
-  const subsLimit = isCancelled && billing?.subscriptionLimit == null ? 3 : billing?.subscriptionLimit;
-  const aiUsed = billing?.aiRequestsUsed ?? 0;
-  const aiLimit = isCancelled && billing?.aiRequestsLimit == null ? 5 : billing?.aiRequestsLimit;
+  const subsUsed = access?.limits.subscriptions.used ?? 0;
+  const subsLimit = access?.limits.subscriptions.limit ?? null;
+  const aiUsed = access?.limits.aiRequests.used ?? 0;
+  const aiLimit = access?.limits.aiRequests.limit ?? null;
   const subsPercent = subsLimit ? Math.min((subsUsed / subsLimit) * 100, 100) : 0;
   const aiPercent = aiLimit ? Math.min((aiUsed / aiLimit) * 100, 100) : 0;
 
@@ -141,7 +144,7 @@ export default function SubscriptionPlanScreen() {
                 <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
                   <Text style={styles.currentBadgeText}>
                     {t('subscription_plan.current_plan')}
-                    {planKey !== 'free' ? ` · ${billing?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` : ''}
+                    {planKey !== 'free' ? ` · ${access?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` : ''}
                   </Text>
                 </View>
               )}
@@ -222,10 +225,10 @@ export default function SubscriptionPlanScreen() {
                 <Text style={styles.heroName}>{display.name}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.heroPrice}>{PRICES[plan]?.[billing?.billingPeriod || 'monthly'] ?? '$0'}</Text>
+                <Text style={styles.heroPrice}>{PRICES[plan]?.[access?.billingPeriod || 'monthly'] ?? '$0'}</Text>
                 {plan !== 'free' && (
                   <Text style={styles.heroPeriod}>
-                    /{billing?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}
+                    /{access?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}
                   </Text>
                 )}
               </View>
@@ -237,22 +240,27 @@ export default function SubscriptionPlanScreen() {
                 <View style={styles.heroBadge}>
                   <Ionicons name="time-outline" size={12} color="#FFF" />
                   <Text style={styles.heroBadgeText}>
-                    {t('subscription_plan.trial_active', { days: billing?.trialDaysLeft ?? 0 })}
+                    {(() => {
+                      const trialDays = access?.trialEndsAt
+                        ? Math.max(0, Math.ceil((access.trialEndsAt.getTime() - Date.now()) / 86_400_000))
+                        : 0;
+                      return t('subscription_plan.trial_active', { days: trialDays });
+                    })()}
                   </Text>
                 </View>
               )}
-              {isCancelled && billing?.currentPeriodEnd && (
+              {isCancelled && access?.currentPeriodEnd && (
                 <View style={[styles.heroBadge, { backgroundColor: 'rgba(239,68,68,0.25)' }]}>
                   <Ionicons name="close-circle-outline" size={12} color="#FCA5A5" />
                   <Text style={styles.heroBadgeText}>
                     {t('subscription_plan.cancelled_until', {
-                      date: new Date(billing.currentPeriodEnd).toLocaleDateString(),
-                      defaultValue: `Отменено · до ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`,
+                      date: access.currentPeriodEnd.toLocaleDateString(),
+                      defaultValue: `Отменено · до ${access.currentPeriodEnd.toLocaleDateString()}`,
                     })}
                   </Text>
                 </View>
               )}
-              {isCancelled && !billing?.currentPeriodEnd && (
+              {isCancelled && !access?.currentPeriodEnd && (
                 <View style={[styles.heroBadge, { backgroundColor: 'rgba(239,68,68,0.25)' }]}>
                   <Ionicons name="close-circle-outline" size={12} color="#FCA5A5" />
                   <Text style={styles.heroBadgeText}>{t('subscription_plan.cancelled_badge', 'Отменено')}</Text>
@@ -352,13 +360,13 @@ export default function SubscriptionPlanScreen() {
               </TouchableOpacity>
             )}
 
-            {isCancelled && billing?.currentPeriodEnd && (
+            {isCancelled && access?.currentPeriodEnd && (
               <View style={[styles.cancelledNotice, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
                 <Ionicons name="information-circle-outline" size={18} color={colors.textMuted} />
                 <Text style={[styles.cancelledNoticeText, { color: colors.textMuted }]}>
                   {t('subscription_plan.access_until', {
-                    date: new Date(billing.currentPeriodEnd).toLocaleDateString(),
-                    defaultValue: `Доступ сохраняется до ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`,
+                    date: access.currentPeriodEnd.toLocaleDateString(),
+                    defaultValue: `Доступ сохраняется до ${access.currentPeriodEnd.toLocaleDateString()}`,
                   })}
                 </Text>
               </View>
@@ -388,7 +396,7 @@ export default function SubscriptionPlanScreen() {
         visible={cancelModalVisible}
         onClose={() => setCancelModalVisible(false)}
         onConfirmCancel={handleConfirmCancel as any}
-        context={isTrialing ? 'trial' : (billing?.billingPeriod === 'yearly' ? 'yearly' : 'monthly')}
+        context={isTrialing ? 'trial' : (access?.billingPeriod === 'yearly' ? 'yearly' : 'monthly')}
         yearlySavings={yearlySavings}
         currencySymbol={currencySymbol}
       />

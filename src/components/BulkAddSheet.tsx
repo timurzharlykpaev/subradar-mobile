@@ -23,7 +23,7 @@ import { subscriptionsApi } from '../api/subscriptions';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useSettingsStore } from '../stores/settingsStore';
-import { usePlanLimits } from '../hooks/usePlanLimits';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useRouter } from 'expo-router';
 import { prefetchImage } from '../utils/imagePrefetch';
 
@@ -215,7 +215,13 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const { t, i18n } = useTranslation();
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
   const currency = useSettingsStore((s) => s.currency) ?? 'USD';
-  const { subsLimitReached, activeCount, maxSubscriptions, isPro } = usePlanLimits();
+  const access = useEffectiveAccess();
+  const isPro = access?.isPro ?? false;
+  const activeCount = access?.limits.subscriptions.used ?? 0;
+  const maxSubscriptions =
+    access && access.limits.subscriptions.limit !== null
+      ? access.limits.subscriptions.limit
+      : Infinity;
   const router = useRouter();
 
   const [mode, setMode] = useState<Mode>('select');

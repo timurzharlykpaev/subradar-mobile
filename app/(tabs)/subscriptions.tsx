@@ -23,8 +23,6 @@ import { SubscriptionCard } from '../../src/components/SubscriptionCard';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
-import { usePlanLimits } from '../../src/hooks/usePlanLimits';
-import { useBillingStatus } from '../../src/hooks/useBilling';
 import { analytics } from '../../src/services/analytics';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
@@ -40,7 +38,13 @@ type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 export default function SubscriptionsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { subsLimitReached, activeCount, maxSubscriptions, slotsLeft, isPro } = usePlanLimits();
+  const access = useEffectiveAccess();
+  const isPro = access?.isPro ?? false;
+  const activeCount = access?.limits.subscriptions.used ?? 0;
+  const subsLimit = access?.limits.subscriptions.limit ?? null;
+  const maxSubscriptions = subsLimit ?? Infinity;
+  const subsLimitReached = subsLimit !== null && activeCount >= subsLimit;
+  const slotsLeft = subsLimit === null ? Infinity : Math.max(0, subsLimit - activeCount);
   const { colors, isDark } = useTheme();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const [refreshing, setRefreshing] = useState(false);
@@ -126,10 +130,8 @@ export default function SubscriptionsScreen() {
   const setSubscriptions = useSubscriptionsStore((s) => s.setSubscriptions);
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
-  const { data: billingStatus } = useBillingStatus();
-  const isProBilling = billingStatus?.plan === 'pro';
-  const isTeam = billingStatus?.plan === 'organization';
-  const access = useEffectiveAccess();
+  const isProBilling = access?.plan === 'pro';
+  const isTeam = access?.plan === 'organization';
 
   const duplicateCategoriesArr = React.useMemo(() => {
     const counts = subscriptions.reduce((acc, s) => {
@@ -162,7 +164,9 @@ export default function SubscriptionsScreen() {
     );
   }, [subscriptions]);
 
-  const visibleSubs = access.isInDegradedMode ? sortedByCreated.slice(0, 3) : sortedByCreated;
+  const isDegraded = access?.flags.degradedMode ?? false;
+  const hiddenSubsCount = access?.flags.hiddenSubscriptionsCount ?? 0;
+  const visibleSubs = isDegraded ? sortedByCreated.slice(0, 3) : sortedByCreated;
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
@@ -351,7 +355,7 @@ export default function SubscriptionsScreen() {
         </ScrollView>
 
         {/* ── Locked subs banner ──────────────────────────────── */}
-        {access.isInDegradedMode && access.hiddenSubsCount > 0 && (
+        {isDegraded && hiddenSubsCount > 0 && (
           <TouchableOpacity
             style={[styles.lockedBanner, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF640' }]}
             onPress={() => {
@@ -362,7 +366,7 @@ export default function SubscriptionsScreen() {
           >
             <Ionicons name="lock-closed" size={18} color="#8B5CF6" />
             <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: colors.text }}>
-              {t('team_logic.locked_subs_banner', { count: access.hiddenSubsCount })}
+              {t('team_logic.locked_subs_banner', { count: hiddenSubsCount })}
             </Text>
             <Ionicons name="chevron-forward" size={16} color="#8B5CF6" />
           </TouchableOpacity>
@@ -425,10 +429,10 @@ export default function SubscriptionsScreen() {
             )
           }
           ListFooterComponent={
-            access.isInDegradedMode ? (
+            isDegraded ? (
               <View>
-                {Array.from({ length: access.hiddenSubsCount }).map((_, i) => (
-                  <LockedSubscriptionCard key={`locked-${i}`} hiddenCount={access.hiddenSubsCount} />
+                {Array.from({ length: hiddenSubsCount }).map((_, i) => (
+                  <LockedSubscriptionCard key={`locked-${i}`} hiddenCount={hiddenSubsCount} />
                 ))}
               </View>
             ) : null

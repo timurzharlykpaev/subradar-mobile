@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useBillingStatus } from '../hooks/useBilling';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useTheme } from '../theme';
 import { analytics } from '../services/analytics';
 
@@ -20,7 +20,7 @@ export default function AnnualUpgradeBanner({ location }: Props) {
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { data: billing } = useBillingStatus();
+  const access = useEffectiveAccess();
 
   const [dismissedUntil, setDismissedUntil] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -36,13 +36,15 @@ export default function AnnualUpgradeBanner({ location }: Props) {
     });
   }, []);
 
+  // Show only for monthly Pro users in an active, non-cancelled state —
+  // matches backend's `banner.priority === 'annual_upgrade'` logic.
   const shouldShow =
     loaded &&
     !dismissedUntil &&
-    billing?.plan === 'pro' &&
-    billing?.billingPeriod === 'monthly' &&
-    billing?.status !== 'trialing' &&
-    billing?.status !== 'cancelled';
+    !!access &&
+    access.plan === 'pro' &&
+    access.billingPeriod === 'monthly' &&
+    access.state === 'active';
 
   useEffect(() => {
     if (shouldShow && !shownLogged) {

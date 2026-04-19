@@ -9,7 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { workspaceApi } from '../../src/api/workspace';
-import { useBillingStatus } from '../../src/hooks/useBilling';
 import { useTheme } from '../../src/theme';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -31,11 +30,13 @@ export default function WorkspaceScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: billing } = useBillingStatus();
-  const isTeam = billing?.plan === 'organization';
-  const isPro = billing?.plan === 'pro' || isTeam;
-  const currentUser = useAuthStore((s) => s.user);
   const access = useEffectiveAccess();
+  const isTeam = access?.plan === 'organization';
+  const isPro = access?.isPro ?? false;
+  // Workspace currency isn't exposed via billing anymore; fall back to USD.
+  // (Team analytics responses include their own currency per member.)
+  const billingCurrency = 'USD';
+  const currentUser = useAuthStore((s) => s.user);
 
   const [showCreate, setShowCreate] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState(false);
@@ -379,21 +380,10 @@ export default function WorkspaceScreen() {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
         keyboardShouldPersistTaps="handled"
       >
-        {access.shouldShowOwnerExpiredAlert && (
-          <View style={[styles.expiredAlert, { backgroundColor: '#EF444415', borderColor: '#EF444440' }]}>
-            <Ionicons name="warning" size={20} color="#EF4444" />
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.expiredText, { color: colors.text }]}>
-                {t('team_logic.expired_owner_alert', { days: access.workspaceExpiringDays })}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push('/paywall' as any)}>
-              <Text style={[styles.expiredCta, { color: '#EF4444' }]}>{t('team_logic.expired_owner_cta')}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {access.shouldShowGraceBanner && access.graceReason === 'team_expired' && (
-          <GraceBanner daysLeft={access.graceDaysLeft!} reason="team_expired" />
+        {/* Owner-expired alert is now folded into the grace banner — backend
+            sets state='grace_team' with days-left for expired team owners. */}
+        {access?.state === 'grace_team' && access.graceDaysLeft !== null && (
+          <GraceBanner daysLeft={access.graceDaysLeft} reason="team_expired" />
         )}
 
         {/* ── Header ── */}
@@ -604,7 +594,7 @@ export default function WorkspaceScreen() {
         {/* ── Subscription Overlaps ── */}
         {overlaps.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-            <TeamOverlaps overlaps={overlaps} currency={billing?.currency || 'USD'} />
+            <TeamOverlaps overlaps={overlaps} currency={billingCurrency} />
           </View>
         )}
 
@@ -613,7 +603,7 @@ export default function WorkspaceScreen() {
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
             <TeamSpendChart
               members={analytics.members.map((m: any) => ({ name: m.name || m.email, amount: m.monthlySpend ?? m.totalMonthly ?? 0 }))}
-              currency={billing?.currency || 'USD'}
+              currency={billingCurrency}
             />
           </View>
         )}
@@ -820,7 +810,7 @@ export default function WorkspaceScreen() {
         member={selectedMember}
         workspaceId={workspace?.id}
         analytics={selectedMember ? analytics?.members?.find((am: any) => am.userId === selectedMember.userId || am.name === (selectedMember.user?.name || selectedMember.email)) : null}
-        currency={billing?.currency || 'USD'}
+        currency={billingCurrency}
         canManage={canManage}
         onRemove={() => selectedMember && removeMutation.mutate(selectedMember.id)}
         onClose={() => setSelectedMember(null)}
@@ -830,8 +820,5 @@ export default function WorkspaceScreen() {
 }
 
 const styles = StyleSheet.create({
-  expiredAlert: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginTop: 12, padding: 12, borderRadius: 12, borderWidth: 1 },
-  expiredText: { fontSize: 13, fontWeight: '600' },
-  expiredCta: { fontSize: 12, fontWeight: '700' },
   memberStatus: { fontSize: 10, fontWeight: '600', marginTop: 2 },
 });

@@ -51,7 +51,7 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
     if (!canJoin) return;
     const trimmedCode = code.trim();
     if (trimmedCode.length < 6) return;
-    if (access.hasOwnPro) {
+    if (access?.hasOwnPaidPlan) {
       analytics.track('join_warn_shown' as any);
       Alert.alert(
         t('team_logic.join_warn_title'),

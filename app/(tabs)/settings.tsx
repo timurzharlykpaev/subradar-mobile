@@ -89,14 +89,14 @@ export default function SettingsScreen() {
         const activeKeys = Object.keys(info?.entitlements?.active ?? {});
         const hasProEntitlement = activeKeys.some((k: string) => /^(pro|team)$/i.test(k));
         // If user no longer has Pro entitlement, sync cancellation to backend
-        if (!hasProEntitlement && billing?.plan && billing.plan !== 'free') {
+        if (!hasProEntitlement && billing && billing.effective.plan !== 'free') {
           await billingApi.cancel().catch(() => {});
         }
       }
     } catch {}
     // Always refetch billing data to pick up any changes
     await queryClient.invalidateQueries({ queryKey: ['billing'] });
-  }, [billing?.plan, queryClient]);
+  }, [billing?.effective.plan, queryClient]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -113,14 +113,16 @@ export default function SettingsScreen() {
     }).catch(() => {});
   }, []);
 
-  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
-  const isPro = (billing?.plan === 'pro' || billing?.plan === 'organization') && !isCancelled;
-  const isTeam = billing?.plan === 'organization' && !isCancelled;
-  const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd;
-  const canTrial = !isPro && !isTrialing;
+  // `access` (useEffectiveAccess) is the source of truth — all derived flags
+  // below are computed from the backend response, no local invariants.
+  const isPro = access?.isPro ?? false;
+  const isTeam = access?.plan === 'organization';
+  const isTrialing = access?.source === 'trial';
+  const isCancelled = access?.state === 'cancel_at_period_end';
+  const canTrial = access?.actions.canStartTrial ?? false;
 
   // Show annual upgrade nudge for monthly Pro/Team subscribers (not yearly, not trialing)
-  const isMonthlyPro = isPro && !isTrialing && billing?.billingPeriod !== 'yearly' && billing?.billingPeriod !== 'year';
+  const isMonthlyPro = !!access && isPro && !isTrialing && access.billingPeriod === 'monthly';
   const [annualNudgeDismissed, setAnnualNudgeDismissed] = useState(false);
   const showAnnualNudge = isMonthlyPro && !isTeam && !annualNudgeDismissed;
 
@@ -251,21 +253,23 @@ export default function SettingsScreen() {
     </>
   );
 
-  // Plan badge text
+  // Plan badge text — derived strictly from backend state.
   const planBadgeData = useMemo(() => {
-    if (access.shouldShowGraceBanner) {
-      return { label: t('settings.plan_grace', 'GRACE'), color: '#F59E0B', sub: `${access.graceDaysLeft}d` };
+    if (!access) return { label: t('settings.plan_free', 'FREE'), color: '#6B7280', sub: undefined as string | undefined };
+    // Grace states: `grace_pro` / `grace_team` carry days-left in dates.
+    if (access.state === 'grace_pro' || access.state === 'grace_team') {
+      return { label: t('settings.plan_grace', 'GRACE'), color: '#F59E0B', sub: `${access.graceDaysLeft ?? 0}d` };
     }
     if (access.isTeamOwner) return { label: t('settings.plan_team', 'TEAM'), color: '#06B6D4', sub: undefined };
-    if (access.hasOwnPro && access.isTeamMember) return { label: t('settings.plan_pro_team', 'PRO+TEAM'), color: '#06B6D4', sub: undefined };
+    if (access.hasOwnPaidPlan && access.isTeamMember) return { label: t('settings.plan_pro_team', 'PRO+TEAM'), color: '#06B6D4', sub: undefined };
     if (access.isTeamMember) return { label: t('settings.plan_team_member', 'TEAM'), color: '#06B6D4', sub: undefined };
     if (access.isPro) return { label: t('settings.plan_pro', 'PRO'), color: '#8B5CF6', sub: undefined };
-    if (access.isInDegradedMode) return { label: t('settings.plan_free', 'FREE'), color: '#6B7280', sub: t('team_logic.badge_was_pro', 'was Pro') };
+    if (access.flags.degradedMode) return { label: t('settings.plan_free', 'FREE'), color: '#6B7280', sub: t('team_logic.badge_was_pro', 'was Pro') };
     return { label: t('settings.plan_free', 'FREE'), color: '#6B7280', sub: undefined };
   }, [access, t]);
   const planBadgeText = planBadgeData.label;
   const planBadgeColor = planBadgeData.color;
-  const statusText = isTrialing ? t('settings.pro_trial') : billing?.status === 'active' ? t('settings.active', 'Active') : '';
+  const statusText = isTrialing ? t('settings.pro_trial') : access?.state === 'active' ? t('settings.active', 'Active') : '';
 
   return (
     <SafeAreaView testID="settings-screen" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
@@ -281,8 +285,8 @@ export default function SettingsScreen() {
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
 
-        {access.shouldShowBillingIssue && <BillingIssueBanner />}
-        {access.shouldShowDoublePay && <DoublePayBanner />}
+        {access?.flags.hasBillingIssue && <BillingIssueBanner />}
+        {access?.flags.shouldShowDoublePay && <DoublePayBanner />}
 
         {/* ═══ 1. Profile Card ═══ */}
         <View style={[card, { padding: 16, marginTop: 12, overflow: 'hidden' }]}>
@@ -302,9 +306,9 @@ export default function SettingsScreen() {
                 {planBadgeData.sub ? <Text style={{ fontSize: 10, color: colors.textMuted }}>{planBadgeData.sub}</Text> : null}
                 {statusText ? <Text style={{ fontSize: 12, color: colors.textSecondary }}>{statusText}</Text> : null}
               </View>
-              {billing && (
+              {access && (
                 <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 3 }}>
-                  {billing.subscriptionCount} {t('settings.subs_count', 'subs')} · {billing.aiRequestsUsed}/{billing.aiRequestsLimit ?? '∞'} AI
+                  {access.limits.subscriptions.used} {t('settings.subs_count', 'subs')} · {access.limits.aiRequests.used}/{access.limits.aiRequests.limit ?? '∞'} AI
                 </Text>
               )}
             </View>
@@ -327,9 +331,14 @@ export default function SettingsScreen() {
             isPro ? colors.primary : '#64748B',
             t('settings.plan_details', 'Plan Details'),
             isPro
-              ? (isTrialing && billing?.trialDaysLeft != null
-                ? t('settings.days_remaining', { count: billing.trialDaysLeft })
-                : isTeam ? t('settings.subradar_team', 'SubRadar Team') : t('settings.subradar_pro'))
+              ? (() => {
+                  // For trial, surface "N days remaining" from backend-computed trialEndsAt.
+                  if (isTrialing && access?.trialEndsAt) {
+                    const days = Math.max(0, Math.ceil((access.trialEndsAt.getTime() - Date.now()) / 86_400_000));
+                    return t('settings.days_remaining', { count: days });
+                  }
+                  return isTeam ? t('settings.subradar_team', 'SubRadar Team') : t('settings.subradar_pro');
+                })()
               : t('settings.subradar_free'),
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
             () => router.push('/subscription-plan' as any),
@@ -443,8 +452,8 @@ export default function SettingsScreen() {
         </View>
 
         {/* Expiration Banner */}
-        {billing?.cancelAtPeriodEnd && billing?.currentPeriodEnd && (
-          <ExpirationBanner currentPeriodEnd={billing.currentPeriodEnd} variant="full" />
+        {access?.flags.cancelAtPeriodEnd && access.currentPeriodEnd && (
+          <ExpirationBanner currentPeriodEnd={access.currentPeriodEnd.toISOString()} variant="full" />
         )}
 
         {/* ═══ 3. Preferences ═══ */}

@@ -12,7 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
-import { useBillingStatus, useStartTrial } from '../hooks/useBilling';
+import { useStartTrial } from '../hooks/useBilling';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface Props {
@@ -37,15 +38,14 @@ export default function ProFeatureModal({ visible, onClose, feature }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: billing } = useBillingStatus();
+  const access = useEffectiveAccess();
   const startTrialMutation = useStartTrial();
 
   const scaleAnim = useRef(new Animated.Value(0.85)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
-  const isCancelled = billing?.status === 'cancelled' || billing?.cancelAtPeriodEnd === true;
-  const effectivePlan = isCancelled ? 'free' : (billing?.plan ?? 'free');
-  const canTrial = billing && !billing.trialUsed && effectivePlan === 'free';
+  // `flags.trialEligible` is the backend-computed signal for "can start trial".
+  const canTrial = access?.flags.trialEligible === true;
   const info = FEATURE_INFO[feature] ?? FEATURE_INFO.forecast;
 
   useEffect(() => {

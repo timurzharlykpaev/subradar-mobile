@@ -23,7 +23,7 @@ import { aiApi } from '../api/ai';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Pressable } from 'react-native';
-import { usePlanLimits } from '../hooks/usePlanLimits';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { cardsApi } from '../api/cards';
@@ -348,7 +348,14 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const { t, i18n } = useTranslation();
   const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
   const userCountry = require('../stores/settingsStore').useSettingsStore((s: any) => s.country) ?? '';
-  const { isPro, activeCount, maxSubscriptions, cards: planCards, maxCards, cardsLimitReached } = usePlanLimits();
+  const access = useEffectiveAccess();
+  const isPro = access?.isPro ?? false;
+  const activeCount = access?.limits.subscriptions.used ?? 0;
+  // `null` limit == unlimited. Use Infinity so arithmetic comparisons stay simple.
+  const maxSubscriptions =
+    access && access.limits.subscriptions.limit !== null
+      ? access.limits.subscriptions.limit
+      : Infinity;
   const { cards, addCard } = usePaymentCardsStore();
   const [addingCard, setAddingCard] = useState(false);
   const router = useRouter();

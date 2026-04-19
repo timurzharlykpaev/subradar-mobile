@@ -3,19 +3,17 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
-import { usePlanLimits } from '../hooks/usePlanLimits';
-import { useBillingStatus } from '../hooks/useBilling';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 
 export function AICreditsBadge() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { isPro } = usePlanLimits();
-  const { data: billing } = useBillingStatus();
+  const access = useEffectiveAccess();
 
-  if (isPro) return null;
+  if (!access || access.isPro) return null;
 
-  const used = billing?.aiRequestsUsed ?? 0;
-  const limit = billing?.aiRequestsLimit ?? 5;
+  const used = access.limits.aiRequests.used;
+  const limit = access.limits.aiRequests.limit;
   const remaining = Math.max(0, limit - used);
   const isLow = remaining <= 2;
 
