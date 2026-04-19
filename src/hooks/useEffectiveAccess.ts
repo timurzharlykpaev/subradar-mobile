@@ -1,71 +1,88 @@
 import { useBillingStatus } from './useBilling';
-import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import type {
+  BillingActions,
+  BillingBanner,
+  BillingEffective,
+  BillingFlags,
+  BillingLimits,
+  BillingProducts,
+  GraceReason,
+} from '../types/billing';
 
+/**
+ * Thin wrapper over `/billing/me`.
+ *
+ * All fields are derived directly from the backend response — no local
+ * grace / flag / date computations. Date strings are parsed into `Date`
+ * instances here for ergonomic consumption.
+ *
+ * Returns `null` while the query has no data (initial load or after logout).
+ */
 export interface EffectiveAccess {
-  plan: 'free' | 'pro' | 'organization';
+  plan: BillingEffective['plan'];
+  source: BillingEffective['source'];
+  state: BillingEffective['state'];
+  billingPeriod: BillingEffective['billingPeriod'];
+
   isPro: boolean;
-  isTeam: boolean;
   isTeamOwner: boolean;
   isTeamMember: boolean;
-  hasOwnPro: boolean;
-  source: 'own' | 'team' | 'grace_team' | 'grace_pro' | 'free';
+  hasOwnPaidPlan: boolean;
+
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  nextPaymentDate: Date | null;
+  graceExpiresAt: Date | null;
   graceDaysLeft: number | null;
-  graceReason: 'team_expired' | 'pro_expired' | null;
-  workspaceExpiringDays: number | null;
-  // UI helpers
-  shouldShowDoublePay: boolean;
-  shouldShowGraceBanner: boolean;
-  shouldShowOwnerExpiredAlert: boolean;
-  shouldShowBillingIssue: boolean;
-  isInDegradedMode: boolean;
-  visibleSubsCount: number;
-  hiddenSubsCount: number;
+  graceReason: GraceReason;
+  trialEndsAt: Date | null;
+  billingIssueStartedAt: Date | null;
+
+  flags: BillingFlags;
+  limits: BillingLimits;
+  actions: BillingActions;
+  banner: BillingBanner;
+  products: BillingProducts;
+
+  isLoading: boolean;
 }
 
-export function useEffectiveAccess(): EffectiveAccess {
-  const { data: billing } = useBillingStatus();
-  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+function toDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
-  const plan = (billing?.plan ?? 'free') as 'free' | 'pro' | 'organization';
-  const isPro = plan === 'pro' || plan === 'organization';
-  const isTeam = plan === 'organization';
-  const isTeamOwner = billing?.isTeamOwner ?? false;
-  const isTeamMember = billing?.isTeamMember ?? false;
-  const hasOwnPro = billing?.hasOwnPro ?? false;
-  const source = (billing?.source ?? 'free') as EffectiveAccess['source'];
-  const graceDaysLeft = billing?.graceDaysLeft ?? null;
-  const graceReason: EffectiveAccess['graceReason'] =
-    source === 'grace_team' ? 'team_expired' : source === 'grace_pro' ? 'pro_expired' : null;
-
-  const workspaceExpiringDays = billing?.workspaceExpiringAt
-    ? Math.max(0, 30 - Math.floor((Date.now() - new Date(billing.workspaceExpiringAt).getTime()) / (24 * 60 * 60 * 1000)))
-    : null;
-
-  const activeSubsCount = subscriptions.filter(
-    (s) => s.status === 'ACTIVE' || s.status === 'TRIAL'
-  ).length;
-
-  const isInDegradedMode = plan === 'free' && activeSubsCount > 3;
-  const visibleSubsCount = isInDegradedMode ? 3 : activeSubsCount;
-  const hiddenSubsCount = isInDegradedMode ? activeSubsCount - 3 : 0;
+export function useEffectiveAccess(): EffectiveAccess | null {
+  const { data: b, isLoading } = useBillingStatus();
+  if (!b) return null;
 
   return {
-    plan,
-    isPro,
-    isTeam,
-    isTeamOwner,
-    isTeamMember,
-    hasOwnPro,
-    source,
-    graceDaysLeft,
-    graceReason,
-    workspaceExpiringDays,
-    shouldShowDoublePay: hasOwnPro && isTeamMember && !isTeamOwner,
-    shouldShowGraceBanner: graceDaysLeft !== null && graceDaysLeft > 0,
-    shouldShowOwnerExpiredAlert: isTeamOwner && workspaceExpiringDays !== null && workspaceExpiringDays > 0,
-    shouldShowBillingIssue: !!billing?.hasBillingIssue,
-    isInDegradedMode,
-    visibleSubsCount,
-    hiddenSubsCount,
+    plan: b.effective.plan,
+    source: b.effective.source,
+    state: b.effective.state,
+    billingPeriod: b.effective.billingPeriod,
+
+    isPro: b.effective.plan !== 'free',
+    isTeamOwner: b.ownership.isTeamOwner,
+    isTeamMember: b.ownership.isTeamMember,
+    hasOwnPaidPlan: b.ownership.hasOwnPaidPlan,
+
+    currentPeriodStart: toDate(b.dates.currentPeriodStart),
+    currentPeriodEnd: toDate(b.dates.currentPeriodEnd),
+    nextPaymentDate: toDate(b.dates.nextPaymentDate),
+    graceExpiresAt: toDate(b.dates.graceExpiresAt),
+    graceDaysLeft: b.dates.graceDaysLeft,
+    graceReason: b.flags.graceReason,
+    trialEndsAt: toDate(b.dates.trialEndsAt),
+    billingIssueStartedAt: toDate(b.dates.billingIssueStartedAt),
+
+    flags: b.flags,
+    limits: b.limits,
+    actions: b.actions,
+    banner: b.banner,
+    products: b.products,
+
+    isLoading,
   };
 }
