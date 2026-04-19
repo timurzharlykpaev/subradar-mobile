@@ -14,6 +14,10 @@ export function AICreditsBadge() {
 
   const used = access.limits.aiRequests.used;
   const limit = access.limits.aiRequests.limit;
+  // Free plan is gated above by `isPro` — all free tiers carry a numeric
+  // limit. Any plan with `limit === null` is unlimited and the badge
+  // shouldn't render anyway (those users are Pro/Team → `isPro === true`).
+  if (limit === null) return null;
   const remaining = Math.max(0, limit - used);
   const isLow = remaining <= 2;
 
