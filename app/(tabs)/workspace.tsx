@@ -22,7 +22,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
-import { GraceBanner } from '../../src/components/GraceBanner';
+import { BannerRenderer } from '../../src/components/BannerRenderer';
 import TeamExplainerModal from '../../src/components/TeamExplainerModal';
 
 export default function WorkspaceScreen() {
@@ -380,11 +380,9 @@ export default function WorkspaceScreen() {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Owner-expired alert is now folded into the grace banner — backend
-            sets state='grace_team' with days-left for expired team owners. */}
-        {access?.state === 'grace_team' && access.graceDaysLeft !== null && (
-          <GraceBanner daysLeft={access.graceDaysLeft} reason="team_expired" />
-        )}
+        {/* Single banner chosen by backend-resolved priority — includes
+            the grace_team state for expired team owners. */}
+        <BannerRenderer />
 
         {/* ── Header ── */}
         <View style={{

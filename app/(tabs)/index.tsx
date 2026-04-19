@@ -36,15 +36,10 @@ import { SubIcon } from '../../src/components/SubIcon';
 import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
-import ExpirationBanner from '../../src/components/ExpirationBanner';
-import WinBackBanner from '../../src/components/WinBackBanner';
-import AnnualUpgradeBanner from '../../src/components/AnnualUpgradeBanner';
+import { BannerRenderer } from '../../src/components/BannerRenderer';
 import { analytics } from '../../src/services/analytics';
 import { parseBackendDate, daysUntilDate } from '../../src/utils/formatters';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
-import { DoublePayBanner } from '../../src/components/DoublePayBanner';
-import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
-import { GraceBanner } from '../../src/components/GraceBanner';
 import { formatMoney } from '../../src/utils/formatMoney';
 
 export default function DashboardScreen() {
@@ -275,24 +270,8 @@ export default function DashboardScreen() {
 
         <TeamSavingsBadge />
 
-        {access?.flags.hasBillingIssue && <BillingIssueBanner />}
-        {access?.flags.shouldShowDoublePay && <DoublePayBanner />}
-        {!!access && access.graceDaysLeft !== null && access.graceDaysLeft > 0 && access.graceReason && (
-          <GraceBanner daysLeft={access.graceDaysLeft} reason={access.graceReason} />
-        )}
-
-        {/* ── Expiration Banner ────────────────────────────────── */}
-        {access?.flags.cancelAtPeriodEnd && access.currentPeriodEnd && (
-          <ExpirationBanner currentPeriodEnd={access.currentPeriodEnd.toISOString()} variant="full" />
-        )}
-
-        {/* ── Win-Back Banner (for downgraded free users) ──────── */}
-        {!isPro && (
-          <WinBackBanner downgradedAt={null} />
-        )}
-
-        {/* ── Annual Upgrade Nudge (for monthly Pro users) ─────── */}
-        <AnnualUpgradeBanner location="dashboard" />
+        {/* Single banner chosen by backend-resolved priority. */}
+        <BannerRenderer />
 
         {/* ── AI Insights Widget ────────────────────────────────── */}
         {aiResult && isPro && (

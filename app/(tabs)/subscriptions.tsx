@@ -31,6 +31,7 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { formatMoney } from '../../src/utils/formatMoney';
 import { translateBackendError } from '../../src/utils/translateBackendError';
 import { SubscriptionSkeleton } from '../../src/components/SubscriptionSkeleton';
+import { BannerRenderer } from '../../src/components/BannerRenderer';
 import i18n from '../../src/i18n';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
@@ -221,6 +222,9 @@ export default function SubscriptionsScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Single banner chosen by backend-resolved priority. */}
+        <BannerRenderer />
 
         {/* ── Summary strip ──────────────────────────────────── */}
         <View testID="subscriptions-summary" style={styles.summaryStrip}>

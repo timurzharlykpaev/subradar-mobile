@@ -12,7 +12,7 @@ import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { billingApi } from '../src/api/billing';
 import { useTheme } from '../src/theme';
 import CancellationInterceptModal from '../src/components/CancellationInterceptModal';
-import AnnualUpgradeBanner from '../src/components/AnnualUpgradeBanner';
+import { BannerRenderer } from '../src/components/BannerRenderer';
 import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
 import { analytics } from '../src/services/analytics';
@@ -209,7 +209,7 @@ export default function SubscriptionPlanScreen() {
 
         <Animated.View style={{ opacity: fadeAnim }}>
 
-          <AnnualUpgradeBanner location="subscription_plan" />
+          <BannerRenderer />
 
           {/* Plan hero card */}
           <View style={[styles.heroCard, { backgroundColor: display.color }]}>

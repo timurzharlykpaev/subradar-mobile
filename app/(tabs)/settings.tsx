@@ -37,12 +37,10 @@ import { useRevenueCat } from '../../src/hooks/useRevenueCat';
 import { notificationsApi } from '../../src/api/notifications';
 import { billingApi } from '../../src/api/billing';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
-import ExpirationBanner from '../../src/components/ExpirationBanner';
+import { BannerRenderer } from '../../src/components/BannerRenderer';
 import CancellationInterceptModal from '../../src/components/CancellationInterceptModal';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
-import { DoublePayBanner } from '../../src/components/DoublePayBanner';
-import { BillingIssueBanner } from '../../src/components/BillingIssueBanner';
 import { CountryPicker } from '../../src/components/CountryPicker';
 import { CurrencyPicker } from '../../src/components/CurrencyPicker';
 import { COUNTRIES } from '../../src/constants/countries';
@@ -285,8 +283,8 @@ export default function SettingsScreen() {
           <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text }}>{t('settings.title')}</Text>
         </View>
 
-        {access?.flags.hasBillingIssue && <BillingIssueBanner />}
-        {access?.flags.shouldShowDoublePay && <DoublePayBanner />}
+        {/* Single banner chosen by backend-resolved priority. */}
+        <BannerRenderer />
 
         {/* ═══ 1. Profile Card ═══ */}
         <View style={[card, { padding: 16, marginTop: 12, overflow: 'hidden' }]}>
@@ -450,11 +448,6 @@ export default function SettingsScreen() {
             false,
           )}
         </View>
-
-        {/* Expiration Banner */}
-        {access?.flags.cancelAtPeriodEnd && access.currentPeriodEnd && (
-          <ExpirationBanner currentPeriodEnd={access.currentPeriodEnd.toISOString()} variant="full" />
-        )}
 
         {/* ═══ 3. Preferences ═══ */}
         <SectionHeader icon="settings-outline" title={t('settings.preferences')} />
