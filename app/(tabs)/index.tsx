@@ -75,8 +75,18 @@ export default function DashboardScreen() {
     if (!silent) setLoading(true);
     try {
       const res = await subscriptionsApi.getAll({ displayCurrency: currency });
-      setSubscriptions(res.data || []);
-    } catch {} finally {
+      const items = (res.data || []) as Array<{ status: string }>;
+      if (__DEV__) {
+        const statusCounts: Record<string, number> = {};
+        for (const s of items) {
+          statusCounts[s.status] = (statusCounts[s.status] || 0) + 1;
+        }
+        console.log('[Home] /subscriptions →', items.length, 'items', statusCounts);
+      }
+      setSubscriptions(items as any);
+    } catch (err: any) {
+      if (__DEV__) console.warn('[Home] /subscriptions error:', err?.response?.status, err?.message);
+    } finally {
       setLoading(false);
       setRefreshing(false);
     }

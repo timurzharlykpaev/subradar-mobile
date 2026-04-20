@@ -21,6 +21,7 @@ import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
+import type { BillingMeResponse } from '../src/types/billing';
 import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
 import { RestorePurchasesButton } from '../src/components/RestorePurchasesButton';
 import { SyncRetryModal } from '../src/components/SyncRetryModal';
@@ -206,25 +207,52 @@ export default function PaywallScreen() {
 
   /**
    * Attempts to sync a verified Apple receipt with our backend.
-   * Retries up to 3 times with exponential-ish backoff (1.5s / 3s / 4.5s).
-   * Returns true on the first successful sync, false if all attempts fail.
    *
-   * Emits `sync_retry_attempt` on every try, `sync_retry_succeeded` on the
-   * first success, and `sync_retry_exhausted` only when all 3 attempts fail.
+   * Success criterion is NOT "HTTP 200 from /billing/sync-revenuecat" — the
+   * server can answer 200 while `/billing/me` still reflects free (webhook
+   * race, partial save, Sandbox lag). So after every POST we refetch
+   * `/billing/me` and verify `effective.plan !== 'free'` before declaring
+   * victory. Up to 5 attempts with exponential-ish backoff
+   * (1.5s / 3s / 4.5s / 6s / 7.5s ≈ 22.5s total worst case).
    */
   const attemptSync = async (productId: string): Promise<boolean> => {
+    const MAX_ATTEMPTS = 5;
     let lastError: string | undefined;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       analytics.syncRetryAttempt(attempt + 1, productId);
+      let postOk = false;
       try {
         await billingApi.syncRevenueCat(productId);
-        console.log('[Paywall] RC sync done (attempt', attempt + 1, ')');
-        analytics.syncRetrySucceeded(attempt + 1, productId);
-        return true;
+        postOk = true;
+        console.log('[Paywall] RC sync POST ok (attempt', attempt + 1, ')');
       } catch (e: any) {
         lastError = e?.message;
-        console.warn('[Paywall] RC sync failed attempt', attempt + 1, ':', e?.response?.status, e?.message);
-        if (attempt < 2) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+        console.warn(
+          '[Paywall] RC sync POST failed attempt', attempt + 1, ':',
+          e?.response?.status, e?.message,
+        );
+      }
+
+      if (postOk) {
+        try {
+          await queryClient.refetchQueries({ queryKey: ['billing'] });
+          const billing = queryClient.getQueryData<BillingMeResponse>(['billing', 'me']);
+          const plan = billing?.effective?.plan;
+          if (plan && plan !== 'free') {
+            console.log('[Paywall] RC sync confirmed: plan =', plan);
+            analytics.syncRetrySucceeded(attempt + 1, productId);
+            return true;
+          }
+          lastError = `plan=${plan ?? 'null'} after sync`;
+          console.warn('[Paywall] RC sync POST ok but plan still', plan, '— retrying');
+        } catch (e: any) {
+          lastError = e?.message;
+          console.warn('[Paywall] /billing/me refetch failed:', e?.message);
+        }
+      }
+
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       }
     }
     analytics.syncRetryExhausted(productId, lastError);

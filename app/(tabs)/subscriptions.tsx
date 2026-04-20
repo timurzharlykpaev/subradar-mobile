@@ -57,7 +57,15 @@ export default function SubscriptionsScreen() {
     if (!silent) setRefreshing(true);
     try {
       const res = await subscriptionsApi.getAll({ displayCurrency });
-      setSubscriptions(res.data || []);
+      const items = (res.data || []) as Array<{ status: string }>;
+      if (__DEV__) {
+        const statusCounts: Record<string, number> = {};
+        for (const s of items) {
+          statusCounts[s.status] = (statusCounts[s.status] || 0) + 1;
+        }
+        console.log('[Subs] /subscriptions →', items.length, 'items', statusCounts);
+      }
+      setSubscriptions(items as any);
     } catch (err: any) {
       reportError(`subscriptions.fetchSubs: ${err?.message ?? err}`, err?.stack);
     } finally {

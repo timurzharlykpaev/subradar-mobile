@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import { useQueryClient } from '@tanstack/react-query';
 
 let Purchases: any = null;
 let PURCHASES_ERROR_CODE: any = {};
@@ -148,6 +149,8 @@ export function useRevenueCat() {
   const [offerings, setOfferings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const mountedRef = useRef(true);
+  const prevEntitlementsRef = useRef<string>('');
+  const queryClient = useQueryClient();
 
   const loadOfferings = useCallback(async () => {
     if (!isAvailable()) {
@@ -201,7 +204,18 @@ export function useRevenueCat() {
       if (configured && isAvailable() && mountedRef.current) {
         const listener = (info: any) => {
           try {
-            if (mountedRef.current && info) setCustomerInfo(info);
+            if (!mountedRef.current || !info) return;
+            setCustomerInfo(info);
+            // Invalidate /billing/me whenever entitlements change so the UI
+            // reflects Pro/Team instantly after StoreKit.Transaction.updates
+            // fires (e.g. promoted purchase, renewal, restore from another
+            // device). Paywall already handles its own sync loop; this
+            // covers all OTHER paths that bypass paywall.
+            const active = Object.keys(info?.entitlements?.active ?? {}).sort().join('|');
+            if (active !== prevEntitlementsRef.current) {
+              prevEntitlementsRef.current = active;
+              queryClient.invalidateQueries({ queryKey: ['billing'] });
+            }
           } catch {}
         };
         try {
@@ -223,13 +237,16 @@ export function useRevenueCat() {
     };
   }, [loadOfferings]);
 
-  // Check entitlements case-insensitively (RC dashboard may use Pro/pro/PRO).
-  // NOTE: we deliberately do NOT treat "any entitlement key present" as Pro — that
-  // caused false positives when RC returned stale / unrelated entitlements.
+  // Check entitlements by substring (case-insensitive). RC dashboard ships
+  // human-readable names like "SubRadar Pro" / "SubRadar Team", so a strict
+  // /^(pro|team)$/i check returned false on every real purchase. Substring is
+  // safe: entitlement keys are controlled by our RC configuration, no third
+  // party writes them. We still ignore trial/etc by only reading the `active`
+  // bucket (RC filters inactive for us).
   const activeEntitlements = customerInfo?.entitlements?.active ?? {};
   const activeKeys = Object.keys(activeEntitlements);
-  const isPro = activeKeys.some((k: string) => /^(pro|team)$/i.test(k));
-  const isTeam = activeKeys.some((k: string) => /^team$/i.test(k));
+  const isTeam = activeKeys.some((k: string) => /team|org/i.test(k));
+  const isPro = isTeam || activeKeys.some((k: string) => /pro|premium/i.test(k));
 
   if (__DEV__ && customerInfo) {
     console.log('[RevenueCat] Active entitlements:', activeKeys, 'isPro:', isPro);
@@ -288,12 +305,13 @@ export function useRevenueCat() {
       const activeEntitlements = info?.entitlements?.active ?? {};
       const entitlementKeys = Object.keys(activeEntitlements);
       console.log('[RevenueCat] Purchase done, active entitlements:', entitlementKeys);
-      // Check for any active entitlement (pro, team, Pro, Team, etc.)
+      // RC dashboard uses human-readable names ("SubRadar Pro"), so match by
+      // substring — identical rule to the top-level isPro/isTeam above.
       const hasProOrTeam = entitlementKeys.some(
-        (k: string) => /^(pro|team)$/i.test(k)
+        (k: string) => /pro|team|premium|org/i.test(k),
       );
-      // If product was purchased but entitlement not recognized, still treat as success
-      // since the transaction went through (receipt was posted successfully)
+      // If the transaction posted but no entitlement key appeared yet, treat
+      // it as success — paywall will poll /billing/me to confirm anyway.
       if (!hasProOrTeam && entitlementKeys.length === 0) {
         console.log('[RevenueCat] No entitlements found but purchase succeeded, treating as success');
         return true;
