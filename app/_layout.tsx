@@ -3,6 +3,15 @@
 import { initSentry } from '../src/services/sentry';
 initSentry();
 
+// Hide LogBox overlay when running under Maestro E2E (set via
+// EXPO_PUBLIC_E2E_MODE=1 at build time). Overlays otherwise intercept taps
+// and make E2E flows flaky — Metro console still shows all warnings.
+if (__DEV__ && process.env.EXPO_PUBLIC_E2E_MODE === '1') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { LogBox } = require('react-native');
+  LogBox.ignoreAllLogs(true);
+}
+
 import { useEffect, useRef, useState } from 'react';
 import { AppState, BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
 import type { AppStateStatus } from 'react-native';

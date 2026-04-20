@@ -9,6 +9,8 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
       id: "btn-get-started"
     timeout: 30000
 
+- runFlow: ./_dismiss_logbox.yaml
+
 # Step 0: Money hook + Quick-add showcase
 - tapOn:
     id: "btn-get-started"
@@ -24,6 +26,8 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-next"
 
+- runFlow: ./_dismiss_logbox.yaml
+
 # Step 2: Currency (step-welcome + step-features merged out in v1.4.0)
 - extendedWaitUntil:
     visible:
@@ -31,6 +35,8 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
     timeout: 5000
 - tapOn:
     id: "btn-next"
+
+- runFlow: ./_dismiss_logbox.yaml
 
 # Step 3: Auth
 - extendedWaitUntil:
@@ -47,23 +53,35 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
     timeout: 5000
 - tapOn:
     id: "email-input"
-- inputText: "demo@subradar.ai"
+- inputText: "review@subradar.ai"
 - tapOn:
     id: "btn-send-code"
 
-# OTP — enter digits one by one
+# OTP — the review account accepts bypass code 000000.
+# Tap each field separately because the OTP input auto-advances focus
+# per keystroke and bulk inputText can drop tail digits on the simulator.
 - extendedWaitUntil:
     visible:
       id: "otp-input-0"
     timeout: 15000
 - tapOn:
     id: "otp-input-0"
-- inputText: "1"
-- inputText: "2"
-- inputText: "3"
-- inputText: "4"
-- inputText: "5"
-- inputText: "6"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-1"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-2"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-3"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-4"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-5"
+- inputText: "0"
 
 # Verify
 - extendedWaitUntil:
