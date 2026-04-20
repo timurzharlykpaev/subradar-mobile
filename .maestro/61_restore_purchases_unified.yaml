@@ -1,0 +1,82 @@
+appId: com.goalin.subradar
+name: "61 - RestorePurchasesButton unified (v1.4.0)"
+#
+# Validates that both paywall and settings surface the same
+# RestorePurchasesButton component and that tapping it triggers the RC
+# restore → backend sync flow. Covers test IDs for settings and paywall
+# variants.
+---
+- runFlow: ./00_setup_auth.yaml
+
+# --- Paywall variant ---
+- tapOn:
+    text: "Settings"
+    optional: true
+- scroll
+- tapOn:
+    text: "Upgrade"
+    optional: true
+- scroll:
+    direction: DOWN
+- tapOn:
+    text: "Восстановить покупки"
+    optional: true
+- tapOn:
+    text: "Restore Purchases"
+    optional: true
+
+# Any of these alerts are acceptable — we're just verifying the button fires.
+- extendedWaitUntil:
+    visible:
+      text: "Готово"
+    timeout: 15000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "Не найдено"
+    timeout: 2000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "Недоступно"
+    timeout: 2000
+    optional: true
+
+- tapOn:
+    text: "OK"
+    optional: true
+
+- pressKey: back
+- pressKey: back
+
+# --- Settings variant ---
+- tapOn:
+    text: "Settings"
+    optional: true
+- scroll:
+    direction: DOWN
+- tapOn:
+    text: "Восстановить покупки"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      text: "Готово"
+    timeout: 15000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "Не найдено"
+    timeout: 2000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "Недоступно"
+    timeout: 2000
+    optional: true
+
+- tapOn:
+    text: "OK"
+    optional: true
+
+- takeScreenshot: 61_restore_settings

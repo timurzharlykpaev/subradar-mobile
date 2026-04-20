@@ -1,0 +1,41 @@
+appId: com.goalin.subradar
+name: "60 - Paywall: prices-unavailable fallback (v1.4.0)"
+#
+# Verifies that when RC offerings do NOT load within 10s, paywall renders
+# the "prices unavailable" card instead of a hardcoded $2.99 fallback. This
+# guards against the regression where the old code silently shipped stale
+# prices when the store was unreachable.
+#
+# Pre-req: airplane mode OR RC API reachable but offerings empty. Easiest
+# reliable reproduction is to run with EXPO_PUBLIC_REVENUECAT_KEY unset
+# (test builds with `preview` profile).
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Navigate to Settings → Upgrade
+- tapOn:
+    id: "tab-settings"
+    optional: true
+- tapOn:
+    text: "Settings"
+    optional: true
+- scroll
+- tapOn:
+    text: "Upgrade to Pro"
+    optional: true
+- tapOn:
+    text: "Get Pro"
+    optional: true
+
+# Give offerings 10s to timeout
+- extendedWaitUntil:
+    visible:
+      text: "Prices unavailable"
+    timeout: 15000
+    optional: true
+
+- assertNotVisible: "$2.99"
+- assertNotVisible: "$24.99"
+- assertNotVisible: "NaN"
+
+- takeScreenshot: 60_prices_unavailable

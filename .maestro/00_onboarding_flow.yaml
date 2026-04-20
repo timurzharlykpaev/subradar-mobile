@@ -1,5 +1,5 @@
 appId: com.goalin.subradar
-name: "00 - Onboarding + Auth flow"
+name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
 ---
 # Clean start
 - clearState
@@ -9,7 +9,7 @@ name: "00 - Onboarding + Auth flow"
       id: "btn-get-started"
     timeout: 30000
 
-# Step 0: Showcase
+# Step 0: Money hook + Quick-add showcase
 - tapOn:
     id: "btn-get-started"
 
@@ -24,23 +24,7 @@ name: "00 - Onboarding + Auth flow"
 - tapOn:
     id: "btn-next"
 
-# Step 2: Welcome
-- extendedWaitUntil:
-    visible:
-      id: "step-welcome"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
-
-# Step 3: Features
-- extendedWaitUntil:
-    visible:
-      id: "step-features"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
-
-# Step 4: Currency
+# Step 2: Currency (step-welcome + step-features merged out in v1.4.0)
 - extendedWaitUntil:
     visible:
       id: "step-currency"
@@ -48,7 +32,7 @@ name: "00 - Onboarding + Auth flow"
 - tapOn:
     id: "btn-next"
 
-# Step 5: Auth
+# Step 3: Auth
 - extendedWaitUntil:
     visible:
       id: "step-auth"
@@ -89,26 +73,37 @@ name: "00 - Onboarding + Auth flow"
 - tapOn:
     id: "btn-verify"
 
-# Wait for auth to complete — Step 6: "Add first subscription"
+# Wait for auth to complete
 - extendedWaitUntil:
     notVisible:
       id: "btn-verify"
     timeout: 15000
 
-# Handle notification permission screen
+# Step 4: Notifications permission (native iOS system dialog may also appear)
 - tapOn:
     text: "Maybe later"
     optional: true
 - tapOn:
-    text: "Skip for now"
+    text: "Don't Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
     optional: true
 
-# Handle WelcomeSheet / TrialOffer
+# Step 5: First-sub showcase
 - tapOn:
     text: "Skip for now"
     optional: true
 - tapOn:
+    text: "Пропустить"
+    optional: true
+
+# Handle any lingering modals (TrialOffer, WelcomeSheet)
+- tapOn:
     text: "Maybe Later"
+    optional: true
+- tapOn:
+    text: "Skip"
     optional: true
 
 # Close Expo dev debugger banner if present

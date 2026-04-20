@@ -62,7 +62,13 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         // Clear per-user flags so new account gets fresh experience
         AsyncStorage.multiRemove(['trial_offered', 'welcome_shown']).catch(() => {});
-        set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
+        set({
+          user: null,
+          token: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          isOnboarded: false,
+        });
       },
       setOnboarded: () => set({ isOnboarded: true }),
     }),

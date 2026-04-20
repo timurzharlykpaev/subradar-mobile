@@ -1174,7 +1174,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 4: Enable notifications
-    <View key="notifications" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
+    <View key="notifications" testID="step-notifications" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
       <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: '#F59E0B20', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
         <Ionicons name="notifications" size={56} color="#F59E0B" />
       </View>
@@ -1204,7 +1204,7 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 5: Add first subscription
-    <View key="first_sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
+    <View key="first_sub" testID="step-first-sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
       {/* Icon */}
       <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
         <Ionicons name="add-circle" size={56} color={colors.primary} />

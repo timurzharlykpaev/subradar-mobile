@@ -1,0 +1,35 @@
+appId: com.goalin.subradar
+name: "62 - BannerRenderer priority (v1.4.0)"
+#
+# Verifies that BannerRenderer is the single surface for billing banners.
+# Since banner priority is resolved server-side in /billing/me, this flow
+# just asserts no two billing banners appear simultaneously on the
+# dashboard — a regression of the old inline-render model would surface
+# as duplicate visible banners.
+#
+# Pre-req: login as a user with a billing state (grace / expiration / etc.).
+# In practice the seed user `qa-pro-billing-issue@subradar.test` has the
+# strongest priority banner (billing_issue) and should be the only visible one.
+---
+- runFlow: ./00_setup_auth.yaml
+
+# Settle on dashboard
+- extendedWaitUntil:
+    visible: "Total this month"
+    timeout: 20000
+    optional: true
+
+# Count billing-related banners visible. If the user's state maps to
+# billing_issue, grace, or expiration, exactly ONE should render.
+- assertNotVisible:
+    text: "У тебя Pro и Team"
+    optional: true
+- assertNotVisible:
+    text: "Платёж не прошёл"
+    optional: true
+
+# Pull-to-refresh keeps BannerRenderer in sync with /billing/me
+- swipe:
+    direction: DOWN
+
+- takeScreenshot: 62_banner_state

@@ -1,0 +1,17 @@
+appId: com.goalin.subradar
+name: "smoke - app launches cleanly (v1.4.0)"
+#
+# Bare-minimum smoke: clean state + app reaches the money-hook onboarding
+# screen without errors. If this fails the build itself is broken and no
+# later flow has a chance of passing.
+---
+- clearState
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
+- assertNotVisible: "Something went wrong"
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: smoke_launch
