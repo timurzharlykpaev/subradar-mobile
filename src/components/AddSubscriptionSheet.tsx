@@ -501,7 +501,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setFlowState('loading');
       try {
         // Try bulk parse via AI
-        const res = await aiApi.parseBulkText(input, i18n.language ?? 'en', currency);
+        const res = await aiApi.parseBulkText(input, i18n.language ?? 'en', displayCurrency, region);
         const data = res.data;
         let subs: ParsedSub[] = [];
         if (Array.isArray(data)) subs = data;
@@ -541,7 +541,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
     // Step 2: AI lookup (1 credit)
     try {
-      const result = await lookupServiceWithAI(input, i18n.language ?? 'en', currency);
+      const result = await lookupServiceWithAI(input, i18n.language ?? 'en', displayCurrency, region);
       if (result.found && result.entry) {
         setConfirmData(catalogToConfirmData(result.entry));
         setFlowState('confirm');
@@ -567,7 +567,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
     // Nothing found — show wizard as fallback
     setFlowState('wizard');
-  }, [smartInput, i18n.language, currency, t]);
+  }, [smartInput, i18n.language, displayCurrency, region, t]);
 
   // ── Quick chip tap ──────────────────────────────────────────────────────
   const handleQuickChip = useCallback((chip: typeof QUICK_CHIPS[number]) => {
@@ -611,7 +611,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setFlowState('loading');
     try {
       const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
-      const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
+      const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en', currency: displayCurrency, country: region });
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
         setFlowState('idle');
@@ -633,7 +633,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         Alert.alert(t('ai.voice_error_title'), msg || t('ai.voice_error'));
       }
     }
-  }, [i18n.language, t]);
+  }, [i18n.language, displayCurrency, region, t]);
 
   const handleVoiceError = useCallback((reason: 'no_uri' | 'start_failed' | 'stop_failed') => {
     reportError(`Voice recorder error: ${reason}`);
@@ -674,7 +674,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         name: 'screenshot.jpg',
       } as any);
       if (__DEV__) console.log('[Screenshot] Sending to API, uri:', uri?.slice(0, 80));
-      const res = await aiApi.parseScreenshot(formData);
+      const res = await aiApi.parseScreenshot(formData, { locale: i18n.language ?? 'en', currency: displayCurrency, country: region });
       if (__DEV__) console.log('[Screenshot] API response:', JSON.stringify(res.data).slice(0, 300));
       const data = res.data;
       const subs = Array.isArray(data) ? data : (data.subscriptions ?? [data]);

@@ -36,8 +36,10 @@ export function useAnalysisStatus(jobId: string | null) {
 export function useRunAnalysis() {
   const queryClient = useQueryClient();
   const language = useSettingsStore((s) => s.language);
+  const currency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const region = useSettingsStore((s) => s.region || s.country || 'US');
   return useMutation({
-    mutationFn: () => analysisApi.run(language),
+    mutationFn: () => analysisApi.run({ locale: language, currency, region }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.usage });

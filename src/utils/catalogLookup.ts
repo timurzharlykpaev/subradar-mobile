@@ -173,9 +173,17 @@ export async function lookupServiceWithAI(
   name: string,
   locale: string,
   currency?: string,
+  country?: string,
 ): Promise<{ found: boolean; entry?: CatalogEntry; question?: string; field?: string }> {
   try {
-    const res = await aiApi.wizard(name, { preferredCurrency: currency || 'USD' }, locale);
+    const res = await aiApi.wizard(
+      name,
+      {
+        preferredCurrency: (currency || 'USD').toUpperCase(),
+        userCountry: (country || 'US').toUpperCase(),
+      },
+      locale,
+    );
     const data = res.data;
 
     if (data.done && data.subscription) {

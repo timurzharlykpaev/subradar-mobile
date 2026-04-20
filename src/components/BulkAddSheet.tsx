@@ -214,7 +214,8 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const { subscriptions, setSubscriptions } = useSubscriptionsStore();
-  const currency = useSettingsStore((s) => s.currency) ?? 'USD';
+  const currency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const country = useSettingsStore((s) => s.region || s.country || 'US');
   const access = useEffectiveAccess();
   const isPro = access?.isPro ?? false;
   const activeCount = access?.limits.subscriptions.used ?? 0;
@@ -302,7 +303,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     Keyboard.dismiss();
     setLoading(true);
     try {
-      const res = await aiApi.parseBulkText(text, i18n.language || 'ru');
+      const res = await aiApi.parseBulkText(text, i18n.language || 'ru', currency, country);
       const data = res.data;
       const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
       showReview(subs);
@@ -318,7 +319,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     setLoading(true);
     try {
       const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
-      const res = await aiApi.parseBulkVoice({ audioBase64, locale: i18n.language || 'ru' });
+      const res = await aiApi.parseBulkVoice({ audioBase64, locale: i18n.language || 'ru', currency, country });
       const data = res.data;
       const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
       showReview(subs);
@@ -335,7 +336,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
       const formData = new FormData();
       formData.append('image', base64);
-      const res = await aiApi.parseScreenshot(formData);
+      const res = await aiApi.parseScreenshot(formData, { locale: i18n.language || 'ru', currency, country });
       const data = res.data;
       // screenshot endpoint returns single or array
       const subs: BulkSub[] = Array.isArray(data)

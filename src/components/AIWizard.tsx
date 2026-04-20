@@ -346,8 +346,8 @@ type UIState =
 export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
-  const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.currency) ?? 'USD';
-  const userCountry = require('../stores/settingsStore').useSettingsStore((s: any) => s.country) ?? '';
+  const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.displayCurrency || s.currency || 'USD');
+  const userCountry = require('../stores/settingsStore').useSettingsStore((s: any) => s.region || s.country || 'US');
   const access = useEffectiveAccess();
   const isPro = access?.isPro ?? false;
   const activeCount = access?.limits.subscriptions.used ?? 0;
@@ -471,7 +471,11 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     setHistory(newHistory);
     try {
       setLoadingStage('preparing');
-      const contextWithCurrency = { ...context, preferredCurrency: userCurrency };
+      const contextWithCurrency = {
+        ...context,
+        preferredCurrency: userCurrency,
+        userCountry,
+      };
       const res = await aiApi.wizard(message, contextWithCurrency, i18n.language ?? 'en', newHistory);
       const data = res.data;
       // If wizard returned plans but input looks like multiple services — retry as bulk with explicit instruction
@@ -555,7 +559,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     setLoadingStage('transcribing');
     try {
       const audioBase64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
-      const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en' });
+      const transcribeRes = await aiApi.parseAudio({ audioBase64, locale: i18n.language ?? 'en', currency: userCurrency, country: userCountry });
       const text: string = transcribeRes.data?.text ?? '';
       if (!text.trim()) {
         Alert.alert(t('ai.voice_error_title'), t('ai.voice_empty'));
