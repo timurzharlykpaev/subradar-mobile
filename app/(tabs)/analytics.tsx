@@ -571,37 +571,38 @@ export default function AnalyticsScreen() {
         </View>
 
         {/* ── Team Upsell Card ────────────────────────────────── */}
-        {access?.plan === 'pro' && totalMonthly >= 20 && (
-          <TouchableOpacity
-            style={[styles.teamCard, { backgroundColor: colors.card, borderColor: '#06B6D440' }]}
-            onPress={() => {
-              analytics.track('team_upsell_analytics_card_tapped');
-              router.push('/paywall' as any);
-            }}
-            activeOpacity={0.85}
-          >
-            <View style={styles.teamCardHeader}>
-              <View style={[styles.teamCardIcon, { backgroundColor: '#06B6D420' }]}>
-                <Ionicons name="people" size={20} color="#06B6D4" />
+        {access?.plan === 'pro' && totalMonthly >= 20 && (() => {
+          const dupeMonthly = Number(savings?.estimatedMonthlySavings) || 0;
+          const dupeCount = Array.isArray(savings?.duplicates) ? savings.duplicates.length : 0;
+          const hasDupes = dupeMonthly > 0 || dupeCount > 0;
+          return (
+            <TouchableOpacity
+              style={[styles.teamCard, { backgroundColor: colors.card, borderColor: '#06B6D440' }]}
+              onPress={() => {
+                analytics.track('team_upsell_analytics_card_tapped', { variant: hasDupes ? 'dupes' : 'coord' });
+                router.push('/paywall' as any);
+              }}
+              activeOpacity={0.85}
+            >
+              <View style={styles.teamCardHeader}>
+                <View style={[styles.teamCardIcon, { backgroundColor: '#06B6D420' }]}>
+                  <Ionicons name={hasDupes ? 'copy-outline' : 'people'} size={20} color="#06B6D4" />
+                </View>
+                <Text style={[styles.teamCardTitle, { color: colors.text }]}>
+                  {hasDupes ? t('team_upsell.analytics_dupes_title') : t('team_upsell.analytics_coord_title')}
+                </Text>
               </View>
-              <Text style={[styles.teamCardTitle, { color: colors.text }]}>
-                {t('team_upsell.analytics_title')}
+              <Text style={[styles.teamCardDesc, { color: colors.textMuted }]}>
+                {hasDupes ? t('team_upsell.analytics_dupes_desc') : t('team_upsell.analytics_coord_desc')}
               </Text>
-            </View>
-            <View style={styles.teamCardRow}>
-              <Text style={[styles.teamCardLabel, { color: colors.textMuted, flex: 1 }]}>
-                {t('team_upsell.analytics_current', { amount: money(totalMonthly) })}
-              </Text>
-              <Ionicons name="arrow-forward" size={16} color={colors.textMuted} />
-              <Text style={[styles.teamCardValue, { color: '#06B6D4', flex: 1 }]}>
-                {t('team_upsell.analytics_with_team', { amount: money(totalMonthly / 4) })}
-              </Text>
-            </View>
-            <Text style={[styles.teamCardSavings, { color: '#22C55E' }]}>
-              {t('team_upsell.analytics_yearly', { amount: money(totalMonthly * 12 * 0.75) })}
-            </Text>
-          </TouchableOpacity>
-        )}
+              {hasDupes && dupeMonthly > 0 && (
+                <Text style={[styles.teamCardSavings, { color: '#22C55E' }]}>
+                  {t('team_upsell.analytics_dupes_savings', { amount: money(dupeMonthly * 12) })}
+                </Text>
+              )}
+            </TouchableOpacity>
+          );
+        })()}
 
         {/* ── 2. Category Donut Chart ────────────────────────────── */}
         <View style={styles.section}>
@@ -1228,8 +1229,6 @@ const styles = StyleSheet.create({
   teamCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   teamCardIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   teamCardTitle: { fontSize: 15, fontWeight: '700' },
-  teamCardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, gap: 8 },
-  teamCardLabel: { fontSize: 13, fontWeight: '600' },
-  teamCardValue: { fontSize: 14, fontWeight: '700', textAlign: 'right' },
-  teamCardSavings: { fontSize: 12, fontWeight: '700', textAlign: 'center', marginTop: 4 },
+  teamCardDesc: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
+  teamCardSavings: { fontSize: 12, fontWeight: '700', marginTop: 10 },
 });
