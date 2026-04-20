@@ -54,6 +54,7 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: t('tabs.home'),
+            tabBarButtonTestID: 'tab-home',
             tabBarIcon: ({ focused }) => (
               <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} />
             ),
@@ -63,6 +64,7 @@ export default function TabsLayout() {
           name="subscriptions"
           options={{
             title: t('tabs.subs'),
+            tabBarButtonTestID: 'tab-subs',
             tabBarIcon: ({ focused }) => (
               <TabIcon name={focused ? 'layers' : 'layers-outline'} focused={focused} />
             ),
@@ -74,6 +76,7 @@ export default function TabsLayout() {
             title: '',
             tabBarButton: () => (
               <TouchableOpacity
+                testID="tab-add"
                 onPress={() => openAddSheet()}
                 style={styles.addBtnWrapper}
               >
@@ -88,6 +91,7 @@ export default function TabsLayout() {
           name="analytics"
           options={{
             title: t('tabs.analytics'),
+            tabBarButtonTestID: 'tab-analytics',
             tabBarIcon: ({ focused }) => (
               <TabIcon name={focused ? 'bar-chart' : 'bar-chart-outline'} focused={focused} />
             ),
@@ -97,6 +101,7 @@ export default function TabsLayout() {
           name="workspace"
           options={{
             title: t('tabs.workspace', 'Команда'),
+            tabBarButtonTestID: 'tab-workspace',
             tabBarIcon: ({ focused }) => (
               <TabIcon name={focused ? 'people' : 'people-outline'} focused={focused} />
             ),
@@ -106,6 +111,7 @@ export default function TabsLayout() {
           name="settings"
           options={{
             title: t('tabs.settings'),
+            tabBarButtonTestID: 'tab-settings',
             tabBarIcon: ({ focused }) => (
               <TabIcon name={focused ? 'settings' : 'settings-outline'} focused={focused} />
             ),

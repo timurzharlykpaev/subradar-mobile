@@ -16,8 +16,9 @@ name: "61 - RestorePurchasesButton unified (v1.4.0)"
 - tapOn:
     text: "Upgrade"
     optional: true
-- scroll:
-    direction: DOWN
+- swipe:
+    start: "50%,70%"
+    end: "50%,30%"
 - tapOn:
     text: "Восстановить покупки"
     optional: true
@@ -53,8 +54,9 @@ name: "61 - RestorePurchasesButton unified (v1.4.0)"
 - tapOn:
     text: "Settings"
     optional: true
-- scroll:
-    direction: DOWN
+- swipe:
+    start: "50%,70%"
+    end: "50%,30%"
 - tapOn:
     text: "Восстановить покупки"
     optional: true

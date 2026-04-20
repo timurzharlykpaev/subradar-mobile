@@ -229,9 +229,11 @@ export default function SettingsScreen() {
     right: React.ReactNode,
     onPress?: () => void,
     showDivider = true,
+    testID?: string,
   ) => (
     <>
       <TouchableOpacity
+        testID={testID}
         activeOpacity={onPress ? 0.6 : 1}
         onPress={onPress}
         style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 }}
@@ -421,6 +423,7 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
             () => router.push('/cards' as any),
             false,
+            'row-cards',
           )}
         </View>
 

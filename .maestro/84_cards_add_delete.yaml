@@ -1,0 +1,51 @@
+appId: com.goalin.subradar
+name: "84 - Cards: add + delete payment card (v1.4.0)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+
+# Scroll to find Cards row, tap
+- tapOn:
+    id: "row-cards"
+
+- extendedWaitUntil:
+    visible:
+      id: "cards-screen"
+    timeout: 10000
+
+- tapOn:
+    id: "btn-add-card"
+
+- extendedWaitUntil:
+    visible:
+      id: "add-card-modal"
+    timeout: 5000
+
+- tapOn:
+    id: "card-nickname-input"
+- inputText: "QA Visa"
+- tapOn:
+    id: "card-last4-input"
+- inputText: "4242"
+
+- tapOn:
+    id: "btn-save-card"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "add-card-modal"
+    timeout: 5000
+
+- assertVisible: "QA Visa"
+- takeScreenshot: 84_card_added
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

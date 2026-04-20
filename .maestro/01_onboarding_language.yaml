@@ -1,44 +1,40 @@
 appId: com.goalin.subradar
-name: "01 - Onboarding Language Selection"
+name: "01 - Onboarding Language Selection (v1.4.0)"
 ---
 # Clean start
 - clearState
 - launchApp
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "btn-get-started"
     timeout: 30000
 
-# Feature Showcase
+# Step 0: Money hook showcase
 - assertVisible: "SubRadar"
 - takeScreenshot: 01_feature_showcase
-
-# Tap Get Started
 - tapOn:
     id: "btn-get-started"
 
-# Language selection screen
+# Step 1: Language selection
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "step-language"
-    timeout: 5000
-- assertVisible: "Choose your language"
+    timeout: 10000
 - takeScreenshot: 01_language_select
-
-# Select English
 - tapOn:
     id: "lang-en"
     optional: true
-
-# Tap Next
 - tapOn:
     id: "btn-next"
 
-# Welcome step should appear
+# v1.4.0 has NO step-welcome; next step is step-currency
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
-      id: "step-welcome"
-    timeout: 5000
+      id: "step-currency"
+    timeout: 10000
 - takeScreenshot: 01_after_language
 
 # Sanity checks

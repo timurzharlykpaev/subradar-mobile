@@ -30,6 +30,7 @@ name: "62 - BannerRenderer priority (v1.4.0)"
 
 # Pull-to-refresh keeps BannerRenderer in sync with /billing/me
 - swipe:
-    direction: DOWN
+    start: "50%,25%"
+    end: "50%,85%"
 
 - takeScreenshot: 62_banner_state

@@ -60,29 +60,29 @@ export default function CardsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="cards-screen" style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity testID="btn-back" onPress={() => router.back()}>
           <Text style={[styles.back, { color: colors.primary }]}>← {t('common.back')}</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>{t('cards.title')}</Text>
-        <TouchableOpacity onPress={() => setShowAdd(true)}>
+        <TouchableOpacity testID="btn-add-card" onPress={() => setShowAdd(true)}>
           <Text style={[styles.addBtn, { color: colors.primary }]}>{t('cards.add')}</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView testID="cards-list" contentContainerStyle={styles.content}>
         {cards.length === 0 && (
-          <View style={styles.empty}>
+          <View testID="cards-empty" style={styles.empty}>
             <CreditCardIcon size={48} color={colors.textMuted} />
             <Text style={[styles.emptyText, { color: colors.text }]}>{t('cards.empty')}</Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>{t('cards.empty_desc')}</Text>
           </View>
         )}
         {cards.map((card) => (
-          <View key={card.id} style={styles.cardContainer}>
+          <View key={card.id} testID={`card-${card.id}`} style={styles.cardContainer}>
             <CardVisual card={card} />
-            <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(card.id)}>
+            <TouchableOpacity testID={`btn-delete-card-${card.id}`} style={styles.deleteBtn} onPress={() => handleDelete(card.id)}>
               <Text style={styles.deleteBtnText}>{t('common.delete')}</Text>
             </TouchableOpacity>
           </View>
@@ -90,11 +90,12 @@ export default function CardsScreen() {
       </ScrollView>
 
       <Modal visible={showAdd} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+        <View testID="add-card-modal" style={styles.modalOverlay}>
           <View style={[styles.modal, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>{t('cards.add_card')}</Text>
 
             <TextInput
+              testID="card-nickname-input"
               style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface2 }]}
               placeholder={t('cards.nickname_placeholder')}
               placeholderTextColor={colors.textMuted}
@@ -102,6 +103,7 @@ export default function CardsScreen() {
               onChangeText={(v) => setForm((f) => ({ ...f, nickname: v }))}
             />
             <TextInput
+              testID="card-last4-input"
               style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface2 }]}
               placeholder={t('cards.last4_placeholder')}
               placeholderTextColor={colors.textMuted}
@@ -136,10 +138,10 @@ export default function CardsScreen() {
             </View>
 
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={() => setShowAdd(false)}>
+              <TouchableOpacity testID="btn-cancel-card" style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={() => setShowAdd(false)}>
                 <Text style={[styles.cancelBtnText, { color: colors.text }]}>{t('common.cancel')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleAdd}>
+              <TouchableOpacity testID="btn-save-card" style={styles.saveBtn} onPress={handleAdd}>
                 <Text style={styles.saveBtnText}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>

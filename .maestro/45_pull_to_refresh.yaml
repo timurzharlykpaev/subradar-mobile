@@ -1,31 +1,44 @@
 appId: com.goalin.subradar
-name: "45 - Pull to Refresh: All Screens"
+name: "45 - Pull to Refresh: All Screens (v1.4.0)"
+#
+# Uses `swipe` with absolute from/to — the old `scroll: direction: DOWN`
+# syntax was removed in recent Maestro releases.
 ---
 - runFlow: ./00_setup_auth.yaml
 
-# Dashboard pull to refresh
-- scroll:
-    direction: DOWN
-    from:
-      top: 200
-      left: 50%
+- extendedWaitUntil:
+    visible: "Total"
+    timeout: 20000
+    optional: true
 
-# Subscriptions pull to refresh
-- tapOn: "Subs"
-- scroll:
-    direction: DOWN
-    from:
-      top: 200
-      left: 50%
+# Dashboard pull-to-refresh
+- swipe:
+    start: "50%,25%"
+    end: "50%,85%"
 
-# Analytics pull to refresh
-- tapOn: "Analytics"
-- scroll:
-    direction: DOWN
-    from:
-      top: 200
-      left: 50%
+# Subscriptions tab
+- tapOn:
+    text: "Subs"
+    optional: true
+- tapOn:
+    text: "Подписки"
+    optional: true
+- swipe:
+    start: "50%,25%"
+    end: "50%,85%"
+
+# Analytics tab
+- tapOn:
+    text: "Analytics"
+    optional: true
+- tapOn:
+    text: "Аналитика"
+    optional: true
+- swipe:
+    start: "50%,25%"
+    end: "50%,85%"
 
 # No crashes
 - assertNotVisible: "NaN"
 - assertNotVisible: "undefined"
+- assertNotVisible: "Render Error"

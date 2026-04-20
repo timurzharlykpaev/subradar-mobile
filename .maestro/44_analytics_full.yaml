@@ -18,8 +18,9 @@ name: "44 - Analytics: Full Screen Verification"
 - assertNotVisible: "null"
 
 # Scroll to charts
-- scroll:
-    direction: DOWN
+- swipe:
+    start: "50%,70%"
+    end: "50%,30%"
 
 # Check for chart sections
 - assertVisible:
@@ -27,8 +28,9 @@ name: "44 - Analytics: Full Screen Verification"
     optional: true
 
 # Scroll more
-- scroll:
-    direction: DOWN
+- swipe:
+    start: "50%,70%"
+    end: "50%,30%"
 
 # Check for categories
 - assertVisible:

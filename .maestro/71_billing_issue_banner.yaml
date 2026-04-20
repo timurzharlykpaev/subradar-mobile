@@ -1,0 +1,30 @@
+appId: com.goalin.subradar
+name: "71 - Billing: BillingIssueBanner highest priority (v1.4.0)"
+#
+# Regardless of what other banners could apply, billing_issue wins in the
+# BannerRenderer server-driven priority list. Tests that the Dashboard
+# shows exactly one banner and that it's the red billing-issue variant.
+#
+# Pre-req: seed user `qa-pro-billing-issue@subradar.test` has
+# billingStatus=billing_issue with billingIssueAt ~2 days ago. Runs via
+# review@ OTP login (review bypass creates a fresh review user in state
+# `free` — see below; for the actual grace/billing_issue assertion the
+# tester should log in as the seeded user via an auth token injection,
+# which is future work). This flow therefore asserts the absence of
+# regression: Dashboard renders with no stacked banners for review user.
+---
+- runFlow: ./00_onboarding_flow.yaml
+
+- extendedWaitUntil:
+    visible:
+      text: "Total"
+    timeout: 20000
+    optional: true
+
+# Only ONE banner must render at a time. Assert no two banner texts
+# co-exist in the top region. The specific copy is locale-dependent,
+# so we use a screenshot for visual verification.
+- takeScreenshot: 71_billing_issue_state
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"

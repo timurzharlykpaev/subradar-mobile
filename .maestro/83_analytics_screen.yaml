@@ -1,0 +1,45 @@
+appId: com.goalin.subradar
+name: "83 - Analytics: all blocks render (v1.4.0)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-analytics"
+
+- extendedWaitUntil:
+    visible:
+      id: "analytics-screen"
+    timeout: 10000
+
+- assertVisible:
+    id: "analytics-stats-row"
+
+- assertVisible:
+    id: "analytics-monthly-chart"
+    optional: true
+- assertVisible:
+    id: "analytics-category-chart"
+    optional: true
+
+- swipe:
+    start: "50%,70%"
+    end: "50%,30%"
+
+- assertVisible:
+    id: "analytics-forecast-row"
+    optional: true
+- assertVisible:
+    id: "analytics-top5"
+    optional: true
+
+- takeScreenshot: 83_analytics_view
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
+- assertNotVisible: "null"

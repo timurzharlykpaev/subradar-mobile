@@ -1187,6 +1187,7 @@ export default function OnboardingScreen() {
       </Text>
 
       <TouchableOpacity
+        testID="btn-notifications-enable"
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: '#F59E0B', flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
         onPress={async () => {
           const { status } = await Notifications.requestPermissionsAsync();
@@ -1198,7 +1199,7 @@ export default function OnboardingScreen() {
         <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.enable_notifications', 'Enable notifications')}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => { analytics.notificationPermission(false); setStep(step + 1); }} style={{ paddingVertical: 12 }}>
+      <TouchableOpacity testID="btn-notifications-skip" onPress={() => { analytics.notificationPermission(false); setStep(step + 1); }} style={{ paddingVertical: 12 }}>
         <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.maybe_later', 'Maybe later')}</Text>
       </TouchableOpacity>
     </View>,
@@ -1219,6 +1220,7 @@ export default function OnboardingScreen() {
 
       {/* Buttons */}
       <TouchableOpacity
+        testID="btn-first-sub-ai"
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
         onPress={() => {
           useUIStore.getState().openAddSheet();
@@ -1230,6 +1232,7 @@ export default function OnboardingScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity
+        testID="btn-first-sub-manual"
         style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
         onPress={() => {
           useUIStore.getState().openAddSheet();
@@ -1240,7 +1243,7 @@ export default function OnboardingScreen() {
         <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_manually')}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigateToApp()} style={{ paddingVertical: 12 }}>
+      <TouchableOpacity testID="btn-first-sub-skip" onPress={() => navigateToApp()} style={{ paddingVertical: 12 }}>
         <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
       </TouchableOpacity>
     </View>,

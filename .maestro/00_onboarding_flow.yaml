@@ -1,65 +1,60 @@
 appId: com.goalin.subradar
-name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
+name: "00 - Onboarding + Auth (v1.4.0, 6 slides, restart-safe)"
+#
+# Robust against partial state (isOnboarded=true from a prior run). When
+# the app is already past the money-hook step, we skip ahead. The only
+# hard gate is reaching step-auth and logging in via review bypass.
 ---
-# Clean start
 - clearState
 - launchApp
-- extendedWaitUntil:
-    visible:
-      id: "btn-get-started"
-    timeout: 30000
+
+# Dismiss any LogBox overlay
+- runFlow: ./_dismiss_logbox.yaml
+
+# Either step 0 (fresh install) OR step 3 (returning-but-logged-out).
+# Both paths land on step-auth eventually.
+- tapOn:
+    id: "btn-get-started"
+    optional: true
 
 - runFlow: ./_dismiss_logbox.yaml
 
-# Step 0: Money hook + Quick-add showcase
-- tapOn:
-    id: "btn-get-started"
-
-# Step 1: Language
-- extendedWaitUntil:
-    visible:
-      id: "step-language"
-    timeout: 5000
+# Step 1: Language — only visible on fresh install
 - tapOn:
     id: "lang-en"
     optional: true
 - tapOn:
     id: "btn-next"
+    optional: true
 
 - runFlow: ./_dismiss_logbox.yaml
 
-# Step 2: Currency (step-welcome + step-features merged out in v1.4.0)
-- extendedWaitUntil:
-    visible:
-      id: "step-currency"
-    timeout: 5000
+# Step 2: Currency — same, optional tap
 - tapOn:
     id: "btn-next"
+    optional: true
 
 - runFlow: ./_dismiss_logbox.yaml
 
-# Step 3: Auth
+# Step 3: Auth — HARD gate
 - extendedWaitUntil:
     visible:
       id: "step-auth"
-    timeout: 5000
+    timeout: 15000
 - tapOn:
     id: "btn-email"
 
-# Email input
 - extendedWaitUntil:
     visible:
       id: "email-input"
-    timeout: 5000
+    timeout: 10000
 - tapOn:
     id: "email-input"
 - inputText: "review@subradar.ai"
 - tapOn:
     id: "btn-send-code"
 
-# OTP — the review account accepts bypass code 000000.
-# Tap each field separately because the OTP input auto-advances focus
-# per keystroke and bulk inputText can drop tail digits on the simulator.
+# OTP — per-field (bulk inputText drops tail digits on simulator)
 - extendedWaitUntil:
     visible:
       id: "otp-input-0"
@@ -82,25 +77,10 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
 - tapOn:
     id: "otp-input-5"
 - inputText: "0"
-
-# Verify
-- extendedWaitUntil:
-    visible:
-      id: "btn-verify"
-    timeout: 5000
 - tapOn:
     id: "btn-verify"
 
-# Wait for auth to complete
-- extendedWaitUntil:
-    notVisible:
-      id: "btn-verify"
-    timeout: 15000
-
-# Step 4: Notifications permission (native iOS system dialog may also appear)
-- tapOn:
-    text: "Maybe later"
-    optional: true
+# iOS native permission dialog — truly conditional
 - tapOn:
     text: "Don't Allow"
     optional: true
@@ -108,15 +88,29 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
     text: "Allow"
     optional: true
 
-# Step 5: First-sub showcase
+# Step 4: Notifications — testID-based skip (only shown if step-by-step)
 - tapOn:
-    text: "Skip for now"
-    optional: true
-- tapOn:
-    text: "Пропустить"
+    id: "btn-notifications-skip"
     optional: true
 
-# Handle any lingering modals (TrialOffer, WelcomeSheet)
+# Step 5: First-sub — testID-based skip
+- tapOn:
+    id: "btn-first-sub-skip"
+    optional: true
+
+# Dismiss WelcomeSheet modal if it appears
+- tapOn:
+    id: "welcome-skip"
+    optional: true
+
+# Ensure the Modal is actually gone — waitForAnimationToEnd misses RN Modal
+# transitions, so we wait for the testID to disappear from the hierarchy.
+- extendedWaitUntil:
+    notVisible:
+      id: "welcome-sheet"
+    timeout: 5000
+
+# Dismiss TrialOfferModal if it appears (Free user after first sub)
 - tapOn:
     text: "Maybe Later"
     optional: true
@@ -124,13 +118,12 @@ name: "00 - Onboarding + Auth flow (v1.4.0, 6 slides)"
     text: "Skip"
     optional: true
 
-# Close Expo dev debugger banner if present
-- tapOn:
-    point: "95%,98%"
-    optional: true
-
-# Wait for dashboard content
+# Final gate: Dashboard must render
 - extendedWaitUntil:
-    visible: "Total this month"
-    timeout: 20000
-    optional: true
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

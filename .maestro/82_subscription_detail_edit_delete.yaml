@@ -1,0 +1,95 @@
+appId: com.goalin.subradar
+name: "82 - Subscription detail: view + edit + delete (v1.4.0)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# Add a throwaway subscription first
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "btn-manual-toggle"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Detail"
+- tapOn:
+    id: "amount-input"
+- inputText: "9.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+
+# Open the newly-added subscription
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Detail"
+
+# Detail screen asserts
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+- assertVisible:
+    id: "subscription-name"
+- assertVisible:
+    id: "status-badge-active"
+- assertVisible:
+    id: "btn-edit-sub"
+- assertVisible:
+    id: "btn-delete-sub"
+
+# Open Edit sheet, cancel
+- tapOn:
+    id: "btn-edit-sub"
+- extendedWaitUntil:
+    visible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "btn-cancel-edit"
+- extendedWaitUntil:
+    notVisible:
+      id: "edit-sub-sheet"
+    timeout: 5000
+
+# Delete
+- tapOn:
+    id: "btn-delete-sub"
+- tapOn:
+    text: "Delete"
+    optional: true
+- tapOn:
+    text: "Удалить"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

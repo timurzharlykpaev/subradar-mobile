@@ -133,25 +133,25 @@ export default function SubscriptionDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView testID="subscription-detail-screen" style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity testID="btn-back" style={styles.backBtn} onPress={() => router.back()}>
             <Text style={[styles.backBtnText, { color: colors.primary }]}>←</Text>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={[styles.editBtn, { backgroundColor: colors.primary + '14' }]} onPress={() => setEditVisible(true)} accessibilityLabel={t('common.edit')}>
+            <TouchableOpacity testID="btn-edit-sub" style={[styles.editBtn, { backgroundColor: colors.primary + '14' }]} onPress={() => setEditVisible(true)} accessibilityLabel={t('common.edit')}>
               <PencilIcon size={22} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.deleteBtn, { backgroundColor: colors.error + '14' }]} onPress={handleDelete} accessibilityLabel={t('common.delete')}>
+            <TouchableOpacity testID="btn-delete-sub" style={[styles.deleteBtn, { backgroundColor: colors.error + '14' }]} onPress={handleDelete} accessibilityLabel={t('common.delete')}>
               <TrashIcon size={22} color={colors.error} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Service Info */}
-        <View style={styles.serviceCard}>
+        <View testID="subscription-service-card" style={styles.serviceCard}>
           {subscription.iconUrl && !iconError ? (
             <Image source={{ uri: subscription.iconUrl }} style={styles.logo} onError={() => setIconError(true)} />
           ) : (
@@ -160,13 +160,13 @@ export default function SubscriptionDetailScreen() {
             </View>
           )}
 
-          <Text style={[styles.serviceName, { color: colors.text }]}>{subscription.name}</Text>
+          <Text testID="subscription-name" style={[styles.serviceName, { color: colors.text }]}>{subscription.name}</Text>
 
           {subscription.currentPlan && (
             <Text style={[styles.plan, { color: colors.textSecondary }]}>{subscription.currentPlan}</Text>
           )}
 
-          <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+          <View testID={`status-badge-${subscription.status.toLowerCase()}`} style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>
               {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
             </Text>
@@ -316,6 +316,7 @@ export default function SubscriptionDetailScreen() {
           )}
           {subscription.status !== 'CANCELLED' && (
             <TouchableOpacity
+              testID="btn-cancel-sub"
               style={[styles.cancelBtn, { backgroundColor: isDark ? '#2A1520' : '#FFF0F0', borderColor: colors.error + '40' }]}
               onPress={handleCancelSubscription}
             >

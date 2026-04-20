@@ -26,27 +26,12 @@ name: "99 - Full User Journey: onboarding → all features → logout"
 - tapOn:
     id: "btn-next"
 
-# Welcome
-- extendedWaitUntil:
-    visible:
-        id: "step-welcome"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
-
-# Features
-- extendedWaitUntil:
-    visible:
-        id: "step-features"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
-
-# Currency
+# Currency (v1.4.0 removed step-welcome + step-features)
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
         id: "step-currency"
-    timeout: 5000
+    timeout: 10000
 - tapOn:
     id: "btn-next"
 

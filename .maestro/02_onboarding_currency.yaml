@@ -1,9 +1,10 @@
 appId: com.goalin.subradar
-name: "02 - Onboarding Currency Selection"
+name: "02 - Onboarding Currency Selection (v1.4.0)"
 ---
-# Clean start — tests onboarding itself
+# Clean start — tests onboarding itself (6-slide v1.4.0 layout)
 - clearState
 - launchApp
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "btn-get-started"
@@ -14,40 +15,26 @@ name: "02 - Onboarding Currency Selection"
     id: "btn-get-started"
 
 # Step 1: Language
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "step-language"
-    timeout: 5000
+    timeout: 10000
 - tapOn:
     id: "lang-en"
     optional: true
 - tapOn:
     id: "btn-next"
 
-# Step 2: Welcome
-- extendedWaitUntil:
-    visible:
-      id: "step-welcome"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
-
-# Step 3: Features
-- extendedWaitUntil:
-    visible:
-      id: "step-features"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
-
-# Step 4: Currency
+# Step 2: Currency (step-welcome + step-features removed in v1.4.0)
+- runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "step-currency"
-    timeout: 5000
+    timeout: 10000
 - takeScreenshot: 02_currency_screen
 
-# Select EUR then back to USD
+# Pick EUR then switch back to USD — verifies toggle behavior
 - tapOn:
     text: "EUR"
     optional: true
@@ -57,12 +44,17 @@ name: "02 - Onboarding Currency Selection"
     optional: true
 - takeScreenshot: 02_currency_usd
 
-# Tap Next
+# Advance to step 3 (auth)
 - tapOn:
     id: "btn-next"
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-auth"
+    timeout: 10000
 - takeScreenshot: 02_after_currency
 
-# Sanity checks
+# Sanity
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
 - assertNotVisible: "Render Error"

@@ -870,6 +870,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
       {/* "or enter manually" collapsible */}
       <TouchableOpacity
+        testID="btn-manual-toggle"
         onPress={() => {
           setManualExpanded(!manualExpanded);
           if (!manualExpanded) setFlowState('manual');

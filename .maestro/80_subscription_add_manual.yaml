@@ -1,0 +1,62 @@
+appId: com.goalin.subradar
+name: "80 - Add Subscription (Manual) — HARD asserts (v1.4.0)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# Open Add Sheet via tab "+" button
+- tapOn:
+    id: "tab-add"
+
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+
+# Expand manual form
+- tapOn:
+    id: "btn-manual-toggle"
+
+# Fill essential fields
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Netflix"
+
+- tapOn:
+    id: "amount-input"
+- inputText: "14.99"
+
+# Dismiss numeric keyboard — Save button is below it
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+
+- takeScreenshot: 80_form_filled
+
+# Save
+- tapOn:
+    id: "btn-save-sub"
+
+# Sheet closes
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 10000
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

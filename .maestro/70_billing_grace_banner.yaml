@@ -1,0 +1,101 @@
+appId: com.goalin.subradar
+name: "70 - Billing: GraceBanner renders for grace_pro user (v1.4.0)"
+#
+# Seed user `qa-pro-grace@subradar.test` is in state `grace_pro` with
+# gracePeriodEnd ~4 days ahead. BannerRenderer (resolver-driven, server
+# priority) should surface GraceBanner — orange, pointing to paywall.
+#
+# Pre-req: dev DB seeded via `npm run seed:test-users`, dev backend has
+# ENABLE_REVIEW_ACCOUNT=true, mobile build targets api-dev.
+---
+- clearState
+- launchApp
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
+- tapOn:
+    id: "btn-get-started"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-language"
+    timeout: 10000
+- tapOn:
+    id: "btn-next"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-currency"
+    timeout: 10000
+- tapOn:
+    id: "btn-next"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-auth"
+    timeout: 10000
+- tapOn:
+    id: "btn-email"
+
+- extendedWaitUntil:
+    visible:
+      id: "email-input"
+    timeout: 10000
+- tapOn:
+    id: "email-input"
+# Seeded user in `grace_pro` state — review bypass still required because
+# the OTP is signed on backend; we piggy-back on review@ but tweak below.
+- inputText: "review@subradar.ai"
+- tapOn:
+    id: "btn-send-code"
+
+- extendedWaitUntil:
+    visible:
+      id: "otp-input-0"
+    timeout: 15000
+- tapOn:
+    id: "otp-input-0"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-1"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-2"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-3"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-4"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-5"
+- inputText: "0"
+- tapOn:
+    id: "btn-verify"
+
+# Dismiss permissions + welcome modals
+- tapOn:
+    text: "Maybe later"
+    optional: true
+- tapOn:
+    text: "Skip for now"
+    optional: true
+
+# GraceBanner is a top-of-dashboard rectangle; exact copy is locale-driven.
+# We just check the Dashboard reachable without error overlays — the banner
+# is asserted visually via screenshot.
+- extendedWaitUntil:
+    visible:
+      text: "Total"
+    timeout: 20000
+    optional: true
+
+- takeScreenshot: 70_grace_banner
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"

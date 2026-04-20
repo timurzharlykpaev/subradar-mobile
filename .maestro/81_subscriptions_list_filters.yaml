@@ -1,0 +1,51 @@
+appId: com.goalin.subradar
+name: "81 - Subscriptions List + filters + sort (v1.4.0)"
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-subs"
+
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+- assertVisible:
+    id: "subscriptions-summary"
+- assertVisible:
+    id: "filter-chips"
+- assertVisible:
+    id: "filter-chip-all"
+- tapOn:
+    id: "filter-chip-trial"
+    optional: true  # chip may not render if user has no trials
+- tapOn:
+    id: "filter-chip-all"
+    optional: true
+
+- assertVisible:
+    id: "sort-chips"
+
+- tapOn:
+    id: "btn-toggle-search"
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 5000
+- tapOn:
+    id: "search-input"
+- inputText: "Netflix"
+- takeScreenshot: 81_search_active
+
+- tapOn:
+    id: "btn-clear-search"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

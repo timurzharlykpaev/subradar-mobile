@@ -100,6 +100,7 @@ export function WelcomeSheet({ visible, onAddWithAI, onSkip }: Props) {
         <TouchableOpacity style={styles.backdropTouch} activeOpacity={1} onPress={onSkip} />
       </Animated.View>
       <Animated.View
+        testID="welcome-sheet"
         style={[
           styles.sheet,
           {
@@ -121,6 +122,7 @@ export function WelcomeSheet({ visible, onAddWithAI, onSkip }: Props) {
         </Text>
 
         <TouchableOpacity
+          testID="welcome-add-ai"
           style={[styles.primaryButton, { backgroundColor: colors.primary }]}
           onPress={onAddWithAI}
           activeOpacity={0.85}
@@ -130,7 +132,7 @@ export function WelcomeSheet({ visible, onAddWithAI, onSkip }: Props) {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onSkip} activeOpacity={0.7}>
+        <TouchableOpacity testID="welcome-skip" onPress={onSkip} activeOpacity={0.7}>
           <Text style={[styles.skipText, { color: colors.textMuted }]}>
             {t('onboarding.skip_for_now')}
           </Text>

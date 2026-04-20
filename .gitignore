@@ -56,3 +56,6 @@ smoke_*.png
 *.maestro.png
 .maestro/screenshots/
 
+
+# Maestro screenshot artifacts
+.maestro/*.png
