@@ -10,7 +10,7 @@ export const subscriptionsApi = {
     apiClient.get('/subscriptions', {
       params: {
         limit: SUBSCRIPTIONS_DEFAULT_LIMIT,
-        orderBy: 'amount',
+        sort: 'amount',
         order: 'DESC',
         ...params,
       },
