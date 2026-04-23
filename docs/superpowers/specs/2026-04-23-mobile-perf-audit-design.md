@@ -179,3 +179,65 @@ Commits are small and self-contained per file group, no giant final commit. Comm
 - Migration to `@gorhom/bottom-sheet` for native gestures.
 - Virtualization beyond current `FlatList` usage.
 - Skeleton reveal on initial modal mount.
+
+---
+
+## Implementation Results (2026-04-23)
+
+Delivered across 33 commits on `main`. All six parts of the plan completed.
+
+### Line-count outcome
+
+| File | Before | After | Delta |
+|---|---:|---:|---:|
+| `src/components/AddSubscriptionSheet.tsx` | 2165 | 1126 | −48 % |
+| `src/components/AIWizard.tsx` | 1192 | 739 | −38 % |
+| `src/components/BulkAddSheet.tsx` | 829 | 553 | −33 % |
+| `src/components/EditSubscriptionSheet.tsx` | 550 | 565 | +3 % (TextInput → DoneAccessoryInput migration only) |
+| **Monster total** | **4736** | **2983** | **−37 %** |
+
+27 new focused files were created (~4440 LoC) — total code volume grew while per-component re-render scope shrank dramatically.
+
+### Files created
+
+**Primitives** — `src/components/primitives/`: `DoneAccessoryInput.tsx` (88), `KeyboardAwareModal.tsx` (87), `Chip.tsx` (53).
+
+**Hooks** — `src/hooks/useDebouncedValue.ts` (17) + its unit tests.
+
+**add-subscription/** (10 files, 2072 LoC): `types.ts`, `useAddSubscriptionForm.ts`, `IdleView`, `LoadingView`, `TranscriptionView`, `ConfirmView`, `BulkConfirmView`, `ManualFormView`, `WizardView`, `BulkEditModal`.
+
+**ai-wizard/** (7 files, 1578 LoC): `types.ts`, `VoiceInputStage`, `QuestionStage`, `ConfirmStage`, `PlansStage`, `BulkListStage`, `BulkEditStage`.
+
+**bulk-add/** (6 files, 664 LoC): `types.ts`, `SelectMode`, `VoiceMode`, `TextInputMode`, `ScreenshotMode`, `ReviewMode`.
+
+### Bug fixes landed along the way
+
+- **AIWizard bulk-edit keyboard bug** — the reported "keyboard covers the input" is now fixed by wrapping `BulkEditStage` in `KeyboardAvoidingView` with `automaticallyAdjustKeyboardInsets`.
+- **`DoneAccessoryInput` shared-accessory race** — caught in A1 review; `onPress={() => Keyboard.dismiss()}` replaces the per-instance ref blur that could silently no-op on screens with multiple inputs.
+- **`JoinTeamSheet` Done bar contrast** — `colors.surface` → `colors.background` for consistent darker toolbar.
+- **B1 transcription loss regression** — caught in B1 review; `seedSmartInput` + remount key restores the retry-on-AI-fallback UX.
+- **B3 mid-array remove desync** — caught in B3 review; `bulkChecked` lifted back to orchestrator so it shifts in lockstep with `bulkItems`.
+
+### Verification
+
+- `npx tsc --noEmit` — clean.
+- `npm test` — 16 suites, 146 tests passing (was 142; new useDebouncedValue tests added).
+- Modal ScrollView audit: 16 of 41 ScrollViews updated to include the full 4-prop keyboard set.
+- Search debounced to 300ms (`subscriptions.tsx`).
+- `SubscriptionCard` memoized, row callbacks stabilized.
+
+### Manual QA required (not runnable from this workflow)
+
+Remaining items for the user to verify on device/simulator:
+
+1. Open Add sheet → type in manual form's name → CPU ≤ 20 % in Xcode Instruments Time Profiler.
+2. Open AIWizard bulk-edit → tap an input → verify keyboard does not cover input, Done accessory visible.
+3. Smoke test on Android emulator — `KeyboardAvoidingView behavior="height"` under modals where Android's separate modal window does not receive `adjustResize`.
+4. Complete happy-path + edge cases for Add / Edit / BulkAdd / AIWizard flows.
+
+### Follow-ups parked
+
+- `QUICK` catalog + SVG icons still live in `AIWizard.tsx` (~75 lines); could move to `ai-wizard/quickServices.tsx` to hit the aspirational ≤500-line orchestrator target.
+- Inline bulk-item edit modal in `BulkAddSheet.tsx` (~100 lines, uses `BulkSub` shape, separate from `add-subscription/BulkEditModal`) is a clean extraction candidate.
+- `handleEditFromConfirm` removed as orphan; `manualExpanded` removed as dead state.
+- Refactor tests to use `@testing-library/react-native`'s `renderHook` when a pure-jest-expo env is introduced (would silence the `react-test-renderer` deprecation warning emitted twice per run).
