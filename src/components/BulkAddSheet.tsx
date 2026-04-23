@@ -6,7 +6,7 @@
  *
  * After parsing → shows checklist of detected subscriptions → user confirms → batch save.
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   TextInput, ActivityIndicator, Alert, Modal, Animated,
@@ -26,6 +26,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useRouter } from 'expo-router';
 import { prefetchImage } from '../utils/imagePrefetch';
+import { TextInputMode } from './bulk-add/TextInputMode';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -200,14 +201,6 @@ const cStyles = StyleSheet.create({
   checkbox:    { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
 });
 
-// ── TEXT EXAMPLES ─────────────────────────────────────────────────────────────
-const TEXT_EXAMPLES = [
-  'Netflix $15/mo, Spotify $10, iCloud+ $3',
-  'ChatGPT Plus 20 USD monthly, Notion 16 USD/year',
-  'Adobe Creative Cloud 600 rubles per month',
-  'YouTube Premium 169₽, Apple Music 169₽, 2GIS Pro 99₽',
-];
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function BulkAddSheet({ visible, onClose, onDone }: Props) {
@@ -228,7 +221,6 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   const [mode, setMode] = useState<Mode>('select');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [textInput, setTextInput] = useState('');
   const [parsedSubs, setParsedSubs] = useState<BulkSub[]>([]);
   const [checked, setChecked] = useState<boolean[]>([]);
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
@@ -260,7 +252,6 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   React.useEffect(() => {
     if (visible) {
       setMode('select');
-      setTextInput('');
       setParsedSubs([]);
       setChecked([]);
       setScreenshotUri(null);
@@ -297,13 +288,12 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     setMode('review');
   };
 
-  const parseText = async () => {
-    const text = textInput.trim();
-    if (!text) return;
-    Keyboard.dismiss();
+  const parseText = useCallback(async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
     setLoading(true);
     try {
-      const res = await aiApi.parseBulkText(text, i18n.language || 'ru', currency, country);
+      const res = await aiApi.parseBulkText(trimmed, i18n.language || 'ru', currency, country);
       const data = res.data;
       const subs: BulkSub[] = Array.isArray(data) ? data : (data.subscriptions ?? []);
       showReview(subs);
@@ -312,7 +302,11 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+    // showReview/Alert/t are stable enough; intentionally narrow deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, country, i18n.language]);
+
+  const handleBackToSelect = useCallback(() => setMode('select'), []);
 
   const parseVoice = async (uri: string) => {
     if (!uri) return;
@@ -541,51 +535,11 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
 
             {/* ── Mode: text ───────────────────────────────────────────── */}
             {mode === 'text' && (
-              <View>
-                <Text style={[styles.modeTitle, { color: colors.text }]}>
-                  {t('add.bulk_text_hint', 'Список подписок текстом')}
-                </Text>
-
-                {/* Examples */}
-                <View style={[styles.examplesBox, { backgroundColor: isDark ? '#1C1C2E' : '#F0EFF8', borderColor: colors.border }]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <Ionicons name="bulb-outline" size={14} color={colors.primary} />
-                    <Text style={[styles.examplesLabel, { color: colors.primary }]}>
-                      {t('add.bulk_examples', 'Примеры')}
-                    </Text>
-                  </View>
-                  {TEXT_EXAMPLES.map((ex, i) => (
-                    <TouchableOpacity key={i} onPress={() => setTextInput(ex)} style={styles.exampleRow}>
-                      <Text style={[styles.exampleText, { color: colors.textSecondary }]}>• {ex}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                <TextInput
-                  style={[styles.textArea, { backgroundColor: bg, color: colors.text, borderColor: colors.border }]}
-                  value={textInput}
-                  onChangeText={setTextInput}
-                  placeholder={t('add.bulk_text_placeholder', 'Netflix $15/mo, Spotify $10, iCloud $3...')}
-                  placeholderTextColor={colors.textMuted}
-                  multiline
-                  numberOfLines={5}
-                  textAlignVertical="top"
-                />
-
-                <TouchableOpacity
-                  style={[styles.actionBtn, { backgroundColor: colors.primary, opacity: (!textInput.trim() || loading) ? 0.5 : 1 }]}
-                  onPress={parseText}
-                  disabled={!textInput.trim() || loading}
-                >
-                  {loading
-                    ? <ActivityIndicator color="#fff" />
-                    : <Text style={styles.actionTxt}>{t('add.bulk_parse', 'Распознать →')}</Text>}
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => setMode('select')} style={{ alignItems: 'center', marginTop: 12 }}>
-                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('common.back', 'Назад')}</Text>
-                </TouchableOpacity>
-              </View>
+              <TextInputMode
+                loading={loading}
+                onSubmit={parseText}
+                onBack={handleBackToSelect}
+              />
             )}
 
             {/* ── Mode: screenshot (parsing) ───────────────────────────── */}
