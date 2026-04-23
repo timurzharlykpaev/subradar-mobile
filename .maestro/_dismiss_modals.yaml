@@ -1,0 +1,22 @@
+appId: com.goalin.subradar
+name: "shared - dismiss any modal that intercepts the dashboard"
+#
+# Run after a state change that may trigger a modal (first sub added →
+# TrialOfferModal, login → WelcomeSheet). All taps optional so the helper
+# is safe to include unconditionally.
+---
+- runFlow: ./_dismiss_logbox.yaml
+- tapOn:
+    id: "trial-offer-skip"
+    optional: true
+- tapOn:
+    id: "welcome-skip"
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: "trial-offer-modal"
+    timeout: 3000
+- extendedWaitUntil:
+    notVisible:
+      id: "welcome-sheet"
+    timeout: 3000

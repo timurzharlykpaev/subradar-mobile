@@ -406,8 +406,8 @@ export default function PaywallScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
+    <SafeAreaView testID="paywall-screen" style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView testID="paywall-scroll" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
 
         {/* Close button — delayed 3s to reduce impulsive dismissals */}
         {showClose && (
@@ -554,6 +554,7 @@ export default function PaywallScreen() {
               style={{ opacity: cardAnims[index], transform: [{ translateY: cardAnims[index].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}
             >
               <TouchableOpacity
+                testID={`plan-card-${plan.id}${isCurrent ? '-current' : ''}`}
                 style={[
                   styles.planCard,
                   {

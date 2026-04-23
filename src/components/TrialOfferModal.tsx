@@ -65,7 +65,7 @@ export function TrialOfferModal({ visible, onStartTrial, onSkip, isPending }: Pr
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Animated.View style={[styles.backdrop, { opacity }]}>
+      <Animated.View testID="trial-offer-modal" style={[styles.backdrop, { opacity }]}>
         <View style={styles.center}>
           <Animated.View
             style={[
@@ -95,6 +95,7 @@ export function TrialOfferModal({ visible, onStartTrial, onSkip, isPending }: Pr
             )}
 
             <TouchableOpacity
+              testID="trial-offer-start"
               style={[styles.trialButton, { backgroundColor: colors.success }]}
               onPress={onStartTrial}
               activeOpacity={0.85}
@@ -109,7 +110,7 @@ export function TrialOfferModal({ visible, onStartTrial, onSkip, isPending }: Pr
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={onSkip} activeOpacity={0.7} disabled={isPending}>
+            <TouchableOpacity testID="trial-offer-skip" onPress={onSkip} activeOpacity={0.7} disabled={isPending}>
               <Text style={[styles.skipText, { color: colors.textMuted }]}>
                 {t('onboarding.trial_skip')}
               </Text>

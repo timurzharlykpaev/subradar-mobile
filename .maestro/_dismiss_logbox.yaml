@@ -1,23 +1,15 @@
 appId: com.goalin.subradar
 name: "shared - dismiss RN LogBox overlays"
 #
-# Taps any visible LogBox-style dev overlay (Console Error / Console Warning
-# from React Native). All optional — safe to include between any two Maestro
-# steps on a debug build.
-#
-# Three phases:
-#   1. Full-screen error overlay → "Dismiss" button
-#   2. Minimized warning banner → tap the "x" close icon at bottom-right
-#   3. If banner still visible, swipe it away
+# In E2E builds LogBox is globally muted (see app/_layout.tsx with
+# EXPO_PUBLIC_E2E_MODE=1). This helper stays as a safety net for legacy
+# builds or edge cases where a modal leaks through. We only tap text-based
+# Dismiss / Minimize buttons — no point taps (they used to hit btn-next
+# hidden at the same viewport coordinates, skipping steps).
 ---
 - tapOn:
     text: "Dismiss"
     optional: true
 - tapOn:
     text: "Minimize"
-    optional: true
-# Minimized banner — "x" is at bottom-right. Use point tap so we don't rely
-# on a platform-specific accessibility label.
-- tapOn:
-    point: "92%,93%"
     optional: true

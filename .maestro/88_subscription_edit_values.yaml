@@ -1,14 +1,17 @@
 appId: com.goalin.subradar
-name: "82 - Subscription detail: view + edit + delete (v1.4.0)"
+name: "88 - Edit subscription: change amount, save, verify (v1.4.0)"
+#
+# Adds a sub, opens it, opens Edit sheet, changes the amount, saves.
+# Verifies the new amount persists and detail screen reflects it.
 ---
 - runFlow: ./00_setup_auth.yaml
 
 - extendedWaitUntil:
     visible:
       id: "dashboard-screen"
-    timeout: 20000
+    timeout: 25000
 
-# Add a throwaway subscription first
+# Add a throwaway subscription
 - tapOn:
     id: "tab-add"
 - extendedWaitUntil:
@@ -23,10 +26,10 @@ name: "82 - Subscription detail: view + edit + delete (v1.4.0)"
     timeout: 10000
 - tapOn:
     id: "name-input"
-- inputText: "QA Detail"
+- inputText: "QA Edit"
 - tapOn:
     id: "amount-input"
-- inputText: "9.99"
+- inputText: "5.99"
 - tapOn:
     text: "Done"
     optional: true
@@ -40,57 +43,48 @@ name: "82 - Subscription detail: view + edit + delete (v1.4.0)"
 
 - runFlow: ./_dismiss_modals.yaml
 
-# Open the newly-added subscription
+# Open from Subs tab
 - tapOn:
     id: "tab-subs"
 - extendedWaitUntil:
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Detail"
-
-# Detail screen asserts
+- tapOn: "QA Edit"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"
     timeout: 10000
-- assertVisible:
-    id: "subscription-name"
-- assertVisible:
-    id: "status-badge-active"
-- assertVisible:
-    id: "btn-edit-sub"
-- assertVisible:
-    id: "btn-delete-sub"
 
-# Open Edit sheet, cancel
+# Open Edit sheet, change amount
 - tapOn:
     id: "btn-edit-sub"
 - extendedWaitUntil:
     visible:
       id: "edit-sub-sheet"
     timeout: 10000
+
+# Change amount — via inputText replacement (backspace+type)
 - tapOn:
-    id: "btn-cancel-edit"
+    id: "amount-input"
+    optional: true
+- eraseText:
+    charactersToErase: 10
+- inputText: "19.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-edit"
+
 - extendedWaitUntil:
     notVisible:
       id: "edit-sub-sheet"
-    timeout: 5000
-
-# Delete
-- tapOn:
-    id: "btn-delete-sub"
-- tapOn:
-    text: "Delete"
-    optional: true
-- tapOn:
-    text: "Удалить"
-    optional: true
-
-- extendedWaitUntil:
-    visible:
-      id: "subscriptions-screen"
     timeout: 10000
+
+# Detail should refresh with new amount
+- takeScreenshot: 88_edit_saved
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

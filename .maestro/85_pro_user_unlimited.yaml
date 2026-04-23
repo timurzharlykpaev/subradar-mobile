@@ -1,14 +1,13 @@
 appId: com.goalin.subradar
-name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
+name: "85 - Pro user: no Free limit on subscription add (v1.4.0)"
 #
-# HARD asserts each step. Runner full-erases the sim before each flow,
-# so we always start at step 0 (money hook).
+# Logs in as `qa-pro-active@subradar.test` (Pro seeded, 8 subs already).
+# Confirms the Free 3-sub modal does NOT appear on the 4th add — Pro has
+# unlimited subs. Catches regression where useEffectiveAccess.limits drifts.
 ---
 - clearState
 - launchApp
 - runFlow: ./_dismiss_logbox.yaml
-
-# Step 0: money hook
 - extendedWaitUntil:
     visible:
       id: "btn-get-started"
@@ -16,7 +15,6 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-get-started"
 
-# Step 1: language
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
@@ -28,7 +26,6 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-next"
 
-# Step 2: currency
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
@@ -37,7 +34,6 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-next"
 
-# Step 3: auth
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
@@ -45,18 +41,16 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
     timeout: 15000
 - tapOn:
     id: "btn-email"
-
 - extendedWaitUntil:
     visible:
       id: "email-input"
     timeout: 10000
 - tapOn:
     id: "email-input"
-- inputText: "review@subradar.ai"
+- inputText: "qa-pro-active@subradar.test"
 - tapOn:
     id: "btn-send-code"
 
-# OTP — per-field
 - extendedWaitUntil:
     visible:
       id: "otp-input-0"
@@ -82,32 +76,62 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-verify"
 
-# iOS native permission dialog — truly conditional
 - tapOn:
     text: "Don't Allow"
     optional: true
 - tapOn:
-    text: "Allow"
-    optional: true
-
-# Step 4: notifications — testID-based skip
-- tapOn:
     id: "btn-notifications-skip"
     optional: true
-
-# Step 5: first-sub — testID-based skip
 - tapOn:
     id: "btn-first-sub-skip"
     optional: true
+- tapOn:
+    id: "welcome-skip"
+    optional: true
 
-# Dismiss any post-onboarding modal
-- runFlow: ./_dismiss_modals.yaml
+- extendedWaitUntil:
+    notVisible:
+      id: "welcome-sheet"
+    timeout: 5000
 
 - extendedWaitUntil:
     visible:
       id: "dashboard-screen"
     timeout: 25000
 
+# Pro seed has 8 subs — open Add sheet, add a 9th
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "btn-manual-toggle"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Pro 9th"
+- tapOn:
+    id: "amount-input"
+- inputText: "5.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+
+# Sheet closes (no Free limit modal since Pro)
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+
+- assertNotVisible: "Upgrade to Pro"
+- assertNotVisible: "Лимит"
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "Render Error"

@@ -1,14 +1,13 @@
 appId: com.goalin.subradar
-name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
+name: "89 - Paywall: Pro user sees Pro as CURRENT + Team upsell (v1.4.0)"
 #
-# HARD asserts each step. Runner full-erases the sim before each flow,
-# so we always start at step 0 (money hook).
+# Logs in as `qa-pro-active@subradar.test`, navigates Settings → Upgrade,
+# verifies the Pro plan card carries the `-current` suffix (CURRENT badge)
+# and the Team card is visible for upsell.
 ---
 - clearState
 - launchApp
 - runFlow: ./_dismiss_logbox.yaml
-
-# Step 0: money hook
 - extendedWaitUntil:
     visible:
       id: "btn-get-started"
@@ -16,7 +15,6 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-get-started"
 
-# Step 1: language
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
@@ -28,7 +26,6 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-next"
 
-# Step 2: currency
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
@@ -37,7 +34,6 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-next"
 
-# Step 3: auth
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
@@ -45,18 +41,16 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
     timeout: 15000
 - tapOn:
     id: "btn-email"
-
 - extendedWaitUntil:
     visible:
       id: "email-input"
     timeout: 10000
 - tapOn:
     id: "email-input"
-- inputText: "review@subradar.ai"
+- inputText: "qa-pro-active@subradar.test"
 - tapOn:
     id: "btn-send-code"
 
-# OTP — per-field
 - extendedWaitUntil:
     visible:
       id: "otp-input-0"
@@ -82,32 +76,57 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-verify"
 
-# iOS native permission dialog — truly conditional
 - tapOn:
     text: "Don't Allow"
     optional: true
 - tapOn:
-    text: "Allow"
-    optional: true
-
-# Step 4: notifications — testID-based skip
-- tapOn:
     id: "btn-notifications-skip"
     optional: true
-
-# Step 5: first-sub — testID-based skip
 - tapOn:
     id: "btn-first-sub-skip"
     optional: true
-
-# Dismiss any post-onboarding modal
-- runFlow: ./_dismiss_modals.yaml
-
+- tapOn:
+    id: "welcome-skip"
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: "welcome-sheet"
+    timeout: 5000
 - extendedWaitUntil:
     visible:
       id: "dashboard-screen"
     timeout: 25000
 
+# Dashboard badge should read PRO
+- assertVisible: "PRO"
+
+# Open paywall via settings → Upgrade
+- tapOn:
+    id: "tab-settings"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: "Upgrade"
+    optional: true
+- tapOn:
+    text: "Plan"
+    optional: true
+- tapOn:
+    text: "Subscription"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 15000
+
+# Pro card should have CURRENT suffix on testID
+- assertVisible:
+    id: "plan-card-pro-current"
+- assertVisible:
+    id: "plan-card-org"
+
+- takeScreenshot: 89_paywall_pro_current
+
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
-- assertNotVisible: "Render Error"

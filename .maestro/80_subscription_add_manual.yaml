@@ -52,6 +52,9 @@ name: "80 - Add Subscription (Manual) — HARD asserts (v1.4.0)"
       id: "add-sub-sheet"
     timeout: 15000
 
+# First-sub add triggers TrialOfferModal for free users — dismiss
+- runFlow: ./_dismiss_modals.yaml
+
 - extendedWaitUntil:
     visible:
       id: "dashboard-screen"
