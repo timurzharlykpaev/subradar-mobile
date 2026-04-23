@@ -9,6 +9,7 @@ import {
   StyleSheet,
   type TextInputProps,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 
 const ACCESSORY_ID = 'numeric-input-done';
@@ -24,6 +25,7 @@ interface Props extends TextInputProps {
  */
 export function NumericInput({ accessoryId, style, ...props }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const inputRef = useRef<TextInput>(null);
   const id = accessoryId || ACCESSORY_ID;
 
@@ -37,13 +39,13 @@ export function NumericInput({ accessoryId, style, ...props }: Props) {
       />
       {Platform.OS === 'ios' && (
         <InputAccessoryView nativeID={id}>
-          <View style={[styles.toolbar, { backgroundColor: colors.surface2, borderTopColor: colors.border }]}>
+          <View style={[styles.toolbar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
             <View style={{ flex: 1 }} />
             <TouchableOpacity
               style={styles.doneButton}
               onPress={() => inputRef.current?.blur()}
             >
-              <Text style={[styles.doneText, { color: colors.primary }]}>Done</Text>
+              <Text style={[styles.doneText, { color: colors.primary }]}>{t('common.done', 'Done')}</Text>
             </TouchableOpacity>
           </View>
         </InputAccessoryView>

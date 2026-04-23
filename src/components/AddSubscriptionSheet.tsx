@@ -1816,7 +1816,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="always" keyboardDismissMode="interactive">
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="interactive"
+            automaticallyAdjustKeyboardInsets
+            contentInsetAdjustmentBehavior="automatic"
+          >
             {flowState === 'idle' && renderIdle()}
             {flowState === 'loading' && renderLoading()}
             {flowState === 'transcription' && renderTranscription()}
@@ -1870,7 +1877,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+            <ScrollView
+              contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }}
+              keyboardShouldPersistTaps="handled"
+              automaticallyAdjustKeyboardInsets
+              contentInsetAdjustmentBehavior="automatic"
+            >
               {/* Name */}
               <View style={{ gap: 6 }}>
                 <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.service_name', 'Name')}</Text>

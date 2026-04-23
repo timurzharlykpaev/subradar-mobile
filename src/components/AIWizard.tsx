@@ -703,7 +703,13 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                 <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('add.bulk_deselect_all', 'Снять все')}</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <ScrollView
+              style={{ flex: 1 }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              automaticallyAdjustKeyboardInsets
+              contentInsetAdjustmentBehavior="automatic"
+            >
               {ui.subs.map((sub, i) => {
                 const isChecked = ui.checked[i] ?? true;
                 const isEditing = editingIndex === i;
@@ -816,7 +822,12 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                 <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>{t('common.back', 'Назад к списку')}</Text>
               </TouchableOpacity>
 
-              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                automaticallyAdjustKeyboardInsets
+                contentInsetAdjustmentBehavior="automatic"
+              >
                 {/* Service name with icon */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                   {sub.iconUrl

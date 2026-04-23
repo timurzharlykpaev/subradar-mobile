@@ -228,7 +228,13 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.content}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              automaticallyAdjustKeyboardInsets
+              contentInsetAdjustmentBehavior="automatic"
+            >
               <View style={styles.form}>
                 {/* Name */}
                 <View style={styles.field}>
