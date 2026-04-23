@@ -88,6 +88,12 @@ interface Props {
   onStopRecording: () => void;
   onCamera: () => void;
   onManualToggle: () => void;
+  /**
+   * Initial value for the smart input. Parent should pair this with a
+   * remount `key` when it needs to reset or replace the value — state
+   * re-initializes on each mount, so no useEffect is required here.
+   */
+  seedSmartInput?: string;
 }
 
 function IdleViewImpl({
@@ -101,10 +107,11 @@ function IdleViewImpl({
   onStopRecording,
   onCamera,
   onManualToggle,
+  seedSmartInput,
 }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const [smartInput, setSmartInput] = useState('');
+  const [smartInput, setSmartInput] = useState(seedSmartInput ?? '');
   const [showAllChips, setShowAllChips] = useState(false);
 
   const handleSubmit = useCallback(() => {

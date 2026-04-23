@@ -147,6 +147,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [successName, setSuccessName] = useState('');
   const [showBulk, setShowBulk] = useState(false);
 
+  // ── IdleView seed + remount key ─────────────────────────────────────────
+  // Lets the orchestrator seed IdleView's local `smartInput` (e.g., after
+  // voice transcription that falls back to idle) and reset it on close.
+  // Remount nonce re-initializes IdleView state when key changes.
+  const [idleSeed, setIdleSeed] = useState<string>('');
+  const [idleKey, setIdleKey] = useState(0);
+
   // ── Screenshot state ────────────────────────────────────────────────────
   const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
   const [parsingScreenshot, setParsingScreenshot] = useState(false);
@@ -191,6 +198,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setMoreExpanded(false);
     setAddedViaSource('MANUAL');
     setFoundService(null);
+    // IdleView stays mounted across open/close (sheet uses pointerEvents +
+    // translate, not conditional mount). Remount it with an empty seed so
+    // its local `smartInput` resets.
+    setIdleSeed('');
+    setIdleKey((k) => k + 1);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -773,6 +785,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     <TranscriptionConfirm
       text={transcribedText}
       onConfirm={(text) => {
+        // Seed IdleView's smart input with the transcribed text BEFORE
+        // kicking off the AI lookup — if handleSmartSubmit falls back to
+        // `idle` (credit limit, empty bulk-parse, etc.), the user returns
+        // to IdleView with their text preserved and can edit & retry.
+        setIdleSeed(text);
+        setIdleKey((k) => k + 1);
         handleSmartSubmit(text);
       }}
       onCancel={() => setFlowState('idle')}
@@ -1628,6 +1646,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           >
             {flowState === 'idle' && (
               <IdleView
+                key={idleKey}
+                seedSmartInput={idleSeed}
                 catalogServices={catalogServices}
                 isRecording={isRecording}
                 durationFmt={durationFmt}
