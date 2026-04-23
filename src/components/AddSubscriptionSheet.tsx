@@ -16,8 +16,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  ActivityIndicator,
-  Switch,
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
@@ -34,11 +32,9 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { reportError } from '../utils/errorReporter';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { CATEGORIES, CURRENCIES, BILLING_PERIODS } from '../constants';
 import { subscriptionsApi } from '../api/subscriptions';
 import { aiApi } from '../api/ai';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
-import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { AIWizard, ParsedSub } from './AIWizard';
 import { SuccessOverlay } from './SuccessOverlay';
@@ -51,7 +47,6 @@ import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useIsMounted } from '../hooks/useIsMounted';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
 import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
-import { GiftIcon } from './icons';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { convertAmount } from '../services/fxCache';
 import { DatePickerField } from './DatePickerField';
@@ -63,6 +58,8 @@ import { LoadingView } from './add-subscription/LoadingView';
 import { TranscriptionView } from './add-subscription/TranscriptionView';
 import { ConfirmView } from './add-subscription/ConfirmView';
 import { BulkConfirmView } from './add-subscription/BulkConfirmView';
+import { ManualFormView } from './add-subscription/ManualFormView';
+import { useAddSubscriptionForm, emptyForm } from './add-subscription/useAddSubscriptionForm';
 import type { LoadingStage } from './add-subscription/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -84,28 +81,6 @@ type FlowState =
   | 'manual'
   | 'success';
 
-const emptyForm = {
-  name: '',
-  category: 'STREAMING',
-  amount: '',
-  currency: 'USD' as string,
-  billingPeriod: 'MONTHLY' as const,
-  billingDay: '1',
-  paymentCardId: '',
-  currentPlan: '',
-  serviceUrl: '',
-  cancelUrl: '',
-  notes: '',
-  iconUrl: '',
-  isTrial: false,
-  trialEndDate: '',
-  startDate: new Date().toISOString().split('T')[0],
-  nextPaymentDate: (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString().split('T')[0]; })(),
-  reminderDaysBefore: [3] as number[],
-  color: '' as string,
-  tags: [] as string[],
-};
-
 export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
@@ -125,8 +100,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
 
   // ── Form state (kept for manual mode) ───────────────────────────────────
-  const [form, setForm] = useState(emptyForm);
-  const [moreExpanded, setMoreExpanded] = useState(false);
+  // Form slice lives in a dedicated hook so keystrokes in ManualFormView
+  // don't re-render the orchestrator's other flow views. `formRef` below
+  // lets handleSave read the latest form without a useCallback dep,
+  // keeping handleSave's identity stable across keystrokes.
+  const formCtx = useAddSubscriptionForm();
+  const formRef = useRef(formCtx.form);
+  formRef.current = formCtx.form;
   const [saving, setSaving] = useState(false);
   const [addedViaSource, setAddedViaSource] = useState<'MANUAL' | 'AI_TEXT' | 'AI_SCREENSHOT'>('MANUAL');
 
@@ -147,7 +127,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // `bulkChecked` lives alongside `bulkItems` so it shifts in lockstep when
   // rows are removed mid-array. See handleBulkRemove + the edit-modal delete.
   const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
-  const [manualExpanded, setManualExpanded] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState('');
   const [showBulk, setShowBulk] = useState(false);
@@ -170,7 +149,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const backdropOpacity = useSharedValue(0);
 
   const { addSubscription } = useSubscriptionsStore();
-  const { cards } = usePaymentCardsStore();
   const { currency } = useSettingsStore();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const region = useSettingsStore((s) => s.region || 'US');
@@ -192,16 +170,22 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
   }, [visible]);
 
+  // Destructure stable setters so effects/callbacks don't re-fire just
+  // because `formCtx` returns a fresh object identity each render.
+  const { setForm, setF, setMoreExpanded, setManualExpanded } = formCtx;
+
   const resetAll = useCallback(() => {
     setFlowState('idle');
     setTranscribedText('');
     setConfirmData(null);
     setBulkItems([]);
     setBulkChecked([]);
-    setManualExpanded(false);
+    // Seed form currency from the user's display currency on each reset so
+    // manual-mode defaults feel right.
     setForm({ ...emptyForm, currency: displayCurrency });
-    setScreenshotUri(null);
     setMoreExpanded(false);
+    setManualExpanded(false);
+    setScreenshotUri(null);
     setAddedViaSource('MANUAL');
     setFoundService(null);
     // IdleView stays mounted across open/close (sheet uses pointerEvents +
@@ -209,7 +193,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     // its local `smartInput` resets.
     setIdleSeed('');
     setIdleKey((k) => k + 1);
-  }, []);
+  }, [displayCurrency, setForm, setMoreExpanded, setManualExpanded]);
 
   const handleClose = useCallback(() => {
     translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
@@ -259,11 +243,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     pointerEvents: backdropOpacity.value > 0 ? 'auto' as const : 'none' as const,
   }));
 
-  const setF = useCallback((key: string, value: any) => {
-    setForm((f) => ({ ...f, [key]: value }));
-  }, []);
-
-  // ── handleSave (manual form) — KEPT AS-IS ──────────────────────────────
+  // ── handleSave (manual form) — reads form via ref for stable identity ──
   const handleSave = useCallback(async () => {
     if (saving) return;
     if (subsLimitReached) {
@@ -271,6 +251,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setProGate('unlimited_subs');
       return;
     }
+    // Read latest form from the ref so this callback doesn't need `form` in
+    // deps — ManualFormView's memo then survives every keystroke.
+    const form = formRef.current;
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
     }
@@ -347,7 +330,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [form, handleClose, subsLimitReached, onClose, router, t, addSubscription, saving, addedViaSource]);
+  }, [subsLimitReached, t, addSubscription, saving, addedViaSource]);
 
   // ── Save from InlineConfirmCard ─────────────────────────────────────────
   const handleConfirmSave = useCallback(async (data: any) => {
@@ -678,7 +661,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // Перенеси ВСЁ что AI мог заполнить (включая tags/notes/card/dates) — иначе
   // в Edit эти поля выглядят пустыми по сравнению с ручной формой.
   const handleEditFromConfirm = useCallback((data: any) => {
-    setForm(f => ({
+    setForm((f) => ({
       ...f,
       name: data.name?.value ?? data.name ?? f.name,
       amount: data.amount?.value != null ? String(data.amount.value) : (data.amount != null ? String(data.amount) : f.amount),
@@ -702,26 +685,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }));
     setManualExpanded(true);
     setFlowState('manual');
-  }, []);
-
-  // Shared input style
-  const inputStyle = {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 15,
-    letterSpacing: 0,
-    color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginTop: 6,
-  };
+  }, [setForm, setManualExpanded]);
 
   // Handler: toggle manual form from idle
   const handleManualToggle = useCallback(() => {
     setManualExpanded(true);
     setFlowState('manual');
-  }, []);
+  }, [setManualExpanded]);
 
   // Voice transcription sentinel for LoadingView — lets the "transcribing"
   // step stay visible with a checkmark after we advance to "thinking".
@@ -941,453 +911,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           setManualExpanded(true);
           setFlowState('manual');
         }}
+
       />
-    </View>
-  );
-
-  // ── Render: manual form ─────────────────────────────────────────────────
-  const renderManual = () => (
-    <View style={{ paddingBottom: 40 }}>
-      {/* Back to main */}
-      <TouchableOpacity
-        onPress={() => { setManualExpanded(false); setFlowState('idle'); }}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 12 }}
-      >
-        <Ionicons name="arrow-back" size={18} color={colors.textSecondary} />
-        <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
-      </TouchableOpacity>
-
-      {/* Essential fields */}
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-          {t('add.name')} *
-        </Text>
-        <TextInput
-          testID="name-input"
-          style={inputStyle}
-          value={form.name}
-          onChangeText={(v) => setF('name', v)}
-          placeholder={t('add.name_placeholder')}
-          placeholderTextColor={colors.textMuted}
-        />
-      </View>
-
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-          {t('add.amount')} *
-        </Text>
-        <NumericInput
-          testID="amount-input"
-          style={inputStyle}
-          value={form.amount}
-          onChangeText={(v) => setF('amount', v)}
-          placeholder="9.99"
-          keyboardType="decimal-pad"
-          placeholderTextColor={colors.textMuted}
-          accessoryId="manual-amount"
-        />
-      </View>
-
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-          {t('add.billing_cycle')}
-        </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
-            {BILLING_PERIODS.map((p) => (
-              <TouchableOpacity
-                key={p}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 20,
-                  backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
-                  borderWidth: 1,
-                  borderColor: form.billingPeriod === p ? colors.primary : colors.border,
-                }}
-                onPress={() => setF('billingPeriod', p)}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
-                  {t(`billing.${p.toLowerCase()}`, p)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-
-      <DatePickerField
-        label={t('add.start_date', 'Start date')}
-        value={form.startDate}
-        onChange={(v) => setF('startDate', v)}
-      />
-      <DatePickerField
-        label={t('add.next_payment', 'Next payment date')}
-        value={form.nextPaymentDate}
-        onChange={(v) => setF('nextPaymentDate', v)}
-      />
-
-      {/* "More" toggle */}
-      <TouchableOpacity
-        onPress={() => setMoreExpanded(!moreExpanded)}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 6,
-          paddingVertical: 14,
-          marginTop: 4,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        }}
-      >
-        <Ionicons
-          name={moreExpanded ? 'chevron-up' : 'chevron-down'}
-          size={16}
-          color={colors.textSecondary}
-        />
-        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
-          {moreExpanded ? t('add.show_less', 'Less') : t('add.show_more', 'More options')}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Optional fields */}
-      {moreExpanded && (
-        <View style={{ marginTop: 8 }}>
-          {/* Category */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-              {t('add.category')}
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
-                {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 6,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
-                      borderWidth: 1,
-                      borderColor: form.category === cat.id ? colors.primary : colors.border,
-                    }}
-                    onPress={() => setF('category', cat.id)}
-                  >
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
-                      {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          {/* Payment Card */}
-          {cards.length > 0 && (
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-                {t('add.card')}
-              </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  <TouchableOpacity
-                    style={{
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
-                      borderWidth: 1,
-                      borderColor: !form.paymentCardId ? colors.primary : colors.border,
-                    }}
-                    onPress={() => setF('paymentCardId', '')}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
-                      {t('add.no_card')}
-                    </Text>
-                  </TouchableOpacity>
-                  {cards.map((card) => (
-                    <TouchableOpacity
-                      key={card.id}
-                      style={{
-                        paddingHorizontal: 10,
-                        paddingVertical: 6,
-                        borderRadius: 20,
-                        backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
-                        borderWidth: 1,
-                        borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
-                      }}
-                      onPress={() => setF('paymentCardId', card.id)}
-                    >
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
-                        ••••{card.last4} ({card.brand})
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Plan name */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-              {t('add.plan')}
-            </Text>
-            <TextInput
-              style={inputStyle}
-              value={form.currentPlan}
-              onChangeText={(v) => setF('currentPlan', v)}
-              placeholder={t('add.plan_placeholder')}
-              placeholderTextColor={colors.textMuted}
-            />
-          </View>
-
-          {/* Service URL */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-              {t('add.website')}
-            </Text>
-            <TextInput
-              style={inputStyle}
-              value={form.serviceUrl}
-              onChangeText={(v) => setF('serviceUrl', v)}
-              placeholder="https://netflix.com"
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              keyboardType="url"
-              autoCorrect={false}
-            />
-          </View>
-
-          {/* Cancel URL */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-              {t('add.cancel_url', 'Cancel URL')}
-            </Text>
-            <TextInput
-              style={inputStyle}
-              value={form.cancelUrl}
-              onChangeText={(v) => setF('cancelUrl', v)}
-              placeholder="https://netflix.com/cancelplan"
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              keyboardType="url"
-              autoCorrect={false}
-            />
-          </View>
-
-          {/* Billing Day */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-              {t('add.billing_day', 'Billing day')}
-            </Text>
-            <NumericInput
-              style={inputStyle}
-              value={form.billingDay}
-              onChangeText={(v) => {
-                const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                if (!v || isNaN(num)) { setF('billingDay', ''); return; }
-                setF('billingDay', String(Math.min(Math.max(num, 1), 31)));
-              }}
-              placeholder="1"
-              placeholderTextColor={colors.textMuted}
-              keyboardType="number-pad"
-              maxLength={2}
-              accessoryId="manual-billing-day"
-            />
-          </View>
-
-          {/* Notes */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-              {t('add.notes')}
-            </Text>
-            <TextInput
-              style={[inputStyle, { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }]}
-              value={form.notes}
-              onChangeText={(v) => setF('notes', v)}
-              placeholder={t('add.notes_placeholder')}
-              placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={3}
-            />
-          </View>
-
-          {/* Reminder */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-              {t('add.reminder', 'Reminder')}
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 6 }}>
-              {[
-                { label: t('add.reminder_off', 'Off'), value: [] as number[] },
-                { label: t('add.reminder_1d', '1d'), value: [1] },
-                { label: t('add.reminder_3d', '3d'), value: [3] },
-                { label: t('add.reminder_7d', '7d'), value: [7] },
-              ].map((opt) => {
-                const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
-                return (
-                  <TouchableOpacity
-                    key={opt.label}
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: isSelected ? colors.primary : colors.background,
-                      borderWidth: 1,
-                      borderColor: isSelected ? colors.primary : colors.border,
-                    }}
-                    onPress={() => setF('reminderDaysBefore', opt.value)}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Card color */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-              {t('add.card_color', 'Card color')}
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-              {[
-                { label: t('add.color_auto', 'Auto'), value: '', hex: colors.primary },
-                { value: '#3B82F6', hex: '#3B82F6' },
-                { value: '#10B981', hex: '#10B981' },
-                { value: '#EF4444', hex: '#EF4444' },
-                { value: '#F59E0B', hex: '#F59E0B' },
-                { value: '#EC4899', hex: '#EC4899' },
-                { value: '#06B6D4', hex: '#06B6D4' },
-                { value: '#6B7280', hex: '#6B7280' },
-              ].map((c) => (
-                <TouchableOpacity
-                  key={c.value || 'auto'}
-                  onPress={() => setF('color', c.value)}
-                  style={{
-                    width: 44, height: 44, borderRadius: 22,
-                    backgroundColor: c.hex,
-                    borderWidth: 2.5,
-                    borderColor: form.color === c.value ? colors.text : 'transparent',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  {'label' in c && c.label && (
-                    <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>{c.label}</Text>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Tags */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
-              {t('add.tags', 'Tags')}
-            </Text>
-            {form.tags.length > 0 && (
-              <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                {form.tags.map((tag, idx) => (
-                  <View key={idx} style={{
-                    flexDirection: 'row', alignItems: 'center', gap: 4,
-                    backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
-                  }}>
-                    <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
-                    <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_: string, i: number) => i !== idx))}>
-                      <Ionicons name="close" size={14} color={colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            )}
-            <TextInput
-              style={inputStyle}
-              placeholder={t('add.tags_placeholder', 'Type and press comma...')}
-              placeholderTextColor={colors.textMuted}
-              onChangeText={(v) => {
-                if (v.includes(',')) {
-                  const tag = v.replace(',', '').trim();
-                  if (tag && !form.tags.includes(tag)) {
-                    setF('tags', [...form.tags, tag]);
-                  }
-                }
-              }}
-              onSubmitEditing={(e) => {
-                const tag = e.nativeEvent.text.trim();
-                if (tag && !form.tags.includes(tag)) {
-                  setF('tags', [...form.tags, tag]);
-                }
-              }}
-              returnKeyType="done"
-            />
-          </View>
-
-          {/* Trial toggle + date */}
-          <View style={{ marginBottom: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <GiftIcon size={16} color={colors.text} />
-                  <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                    {t('add.trial_period')}
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
-                  {t('add.trial_desc')}
-                </Text>
-              </View>
-              <Switch
-                value={form.isTrial}
-                onValueChange={(v) => setForm((f) => ({
-                  ...f,
-                  isTrial: v,
-                  trialEndDate: v
-                    ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-                    : '',
-                }))}
-                trackColor={{ false: colors.border, true: '#F59E0B' }}
-                thumbColor={form.isTrial ? '#FFF' : '#999'}
-              />
-            </View>
-
-            {form.isTrial && (
-              <>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
-                  {t('add.trial_end_date')}
-                </Text>
-                <TextInput
-                  style={inputStyle}
-                  value={form.trialEndDate}
-                  onChangeText={(v) => setF('trialEndDate', v)}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={colors.textMuted}
-                />
-              </>
-            )}
-          </View>
-        </View>
-      )}
-
-      <TouchableOpacity
-        testID="btn-save-sub"
-        style={[{ backgroundColor: (form.name.trim() !== '' && parseFloat(form.amount) > 0) ? colors.primary : colors.border, borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 }, (saving || !(form.name.trim() !== '' && parseFloat(form.amount) > 0)) && { opacity: 0.5 }]}
-        onPress={handleSave}
-        disabled={saving || !(form.name.trim() !== '' && parseFloat(form.amount) > 0)}
-      >
-        {saving ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.add_subscription')}</Text>
-        )}
-      </TouchableOpacity>
     </View>
   );
 
@@ -1482,7 +1007,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
               />
             )}
             {flowState === 'wizard' && renderWizard()}
-            {flowState === 'manual' && renderManual()}
+            {flowState === 'manual' && (
+              <ManualFormView
+                form={formCtx.form}
+                setF={setF}
+                setForm={setForm}
+                moreExpanded={formCtx.moreExpanded}
+                setMoreExpanded={setMoreExpanded}
+                saving={saving}
+                onSave={handleSave}
+                onCancel={handleBackToIdle}
+              />
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
         <SuccessOverlay
