@@ -58,7 +58,14 @@ export function TeamUpsellModal({ visible, monthlySpend, currency, onCreateTeam,
             { backgroundColor: colors.surface, transform: [{ translateY: slideAnim }] },
           ]}
         >
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            automaticallyAdjustKeyboardInsets
+            contentInsetAdjustmentBehavior="automatic"
+          >
             <TouchableOpacity style={styles.closeBtn} onPress={onLater}>
               <Ionicons name="close" size={20} color={colors.textSecondary} />
             </TouchableOpacity>

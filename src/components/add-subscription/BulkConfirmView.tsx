@@ -214,7 +214,14 @@ function BulkConfirmViewImpl({ items, checked, saving, onToggle, onSave, onEdit,
         {t('add.bulk_review_sub', { count: items.length, defaultValue: 'Found: {{count}}' })}
       </Text>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="automatic"
+      >
         {items.map((sub, idx) => (
           <BulkRow
             key={idx}

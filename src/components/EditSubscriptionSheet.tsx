@@ -231,6 +231,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
             <ScrollView
               style={styles.content}
               keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
               showsVerticalScrollIndicator={false}
               automaticallyAdjustKeyboardInsets
               contentInsetAdjustmentBehavior="automatic"
@@ -284,7 +285,14 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Category */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.category')}</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="interactive"
+                    automaticallyAdjustKeyboardInsets
+                    contentInsetAdjustmentBehavior="automatic"
+                  >
                     <View style={styles.chips}>
                       {CATEGORIES.map((cat) => (
                         <TouchableOpacity
@@ -327,7 +335,14 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Payment Card */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.card')}</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="interactive"
+                    automaticallyAdjustKeyboardInsets
+                    contentInsetAdjustmentBehavior="automatic"
+                  >
                     <View style={styles.chips}>
                       <TouchableOpacity
                         style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },

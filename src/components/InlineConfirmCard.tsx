@@ -222,7 +222,15 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       {/* Period chips */}
       <View style={styles.fieldRow}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.period', 'Period')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.chipScroll}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="automatic"
+        >
           {PERIODS.map(p => (
             <TouchableOpacity
               key={p}
@@ -238,7 +246,15 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       {/* Category chips */}
       <View style={styles.fieldRow}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.category', 'Category')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.chipScroll}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="automatic"
+        >
           {CATEGORIES.slice(0, 6).map(c => (
             <TouchableOpacity
               key={c}
@@ -324,7 +340,15 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               <Text style={[styles.label, { color: colors.textSecondary }]}>
                 {t('add.card', 'Payment Card')}
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.chipScroll}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="interactive"
+                automaticallyAdjustKeyboardInsets
+                contentInsetAdjustmentBehavior="automatic"
+              >
                 <TouchableOpacity
                   style={[styles.chip, !selectedCard && styles.chipActive, { borderColor: colors.border }]}
                   onPress={() => setSelectedCard(null)}
@@ -353,7 +377,15 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
             <Text style={[styles.label, { color: colors.textSecondary }]}>
               {t('add.reminder', 'Reminder')}
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.chipScroll}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+              automaticallyAdjustKeyboardInsets
+              contentInsetAdjustmentBehavior="automatic"
+            >
               {REMINDER_OPTIONS.map((opt) => {
                 const isActive = opt.value === null
                   ? reminderDays.length === 0

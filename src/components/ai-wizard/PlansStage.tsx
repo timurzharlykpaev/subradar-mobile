@@ -138,7 +138,14 @@ function PlansStageImpl({
         </Text>
 
         {/* Plan cards */}
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="automatic"
+        >
           {plans.map((plan, idx) => (
             <PlanRow
               key={idx}

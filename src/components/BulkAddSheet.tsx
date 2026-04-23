@@ -365,6 +365,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
             style={{ flex: 1 }}
             contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
             automaticallyAdjustKeyboardInsets
             contentInsetAdjustmentBehavior="automatic"
           >
@@ -451,6 +452,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
             <ScrollView
               contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }}
               keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
               automaticallyAdjustKeyboardInsets
               contentInsetAdjustmentBehavior="automatic"
             >

@@ -125,7 +125,15 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} bounces={false} contentContainerStyle={{ paddingBottom: 20 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="automatic"
+        >
           {/* Profile */}
           <View style={styles.profileHeader}>
             {avatar ? (

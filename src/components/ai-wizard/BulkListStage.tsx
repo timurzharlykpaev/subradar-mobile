@@ -194,6 +194,7 @@ function BulkListStageImpl({
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="automatic"
       >

@@ -133,7 +133,14 @@ function ManualFormViewImpl({
         <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
           {t('add.billing_cycle')}
         </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="automatic"
+        >
           <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
             {BILLING_PERIODS.map((p) => (
               <TouchableOpacity
@@ -200,7 +207,14 @@ function ManualFormViewImpl({
             <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
               {t('add.category')}
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+              automaticallyAdjustKeyboardInsets
+              contentInsetAdjustmentBehavior="automatic"
+            >
               <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
                 {CATEGORIES.map((cat) => (
                   <TouchableOpacity
@@ -234,7 +248,14 @@ function ManualFormViewImpl({
               <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
                 {t('add.card')}
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="interactive"
+                automaticallyAdjustKeyboardInsets
+                contentInsetAdjustmentBehavior="automatic"
+              >
                 <View style={{ flexDirection: 'row', gap: 6 }}>
                   <TouchableOpacity
                     style={{

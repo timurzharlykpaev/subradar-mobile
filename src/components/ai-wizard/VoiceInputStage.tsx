@@ -389,7 +389,14 @@ function VoiceInputStageImpl({
           <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>
             {t('ai.popular_services')}
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            automaticallyAdjustKeyboardInsets
+            contentInsetAdjustmentBehavior="automatic"
+          >
             {quickServices.map((svc) => (
               <TouchableOpacity
                 key={svc.name}
