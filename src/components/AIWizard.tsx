@@ -8,10 +8,10 @@
  *
  * Quick chips for popular services bypass dialog entirely (1 tap).
  */
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, Easing, Keyboard, TouchableWithoutFeedback, Alert,
+  Animated, StyleSheet, Keyboard, TouchableWithoutFeedback, Alert,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,9 +21,6 @@ import { useTranslation } from 'react-i18next';
 import { aiApi } from '../api/ai';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
-import { useSubscriptionsStore } from '../stores/subscriptionsStore';
-import { usePaymentCardsStore } from '../stores/paymentCardsStore';
-import { cardsApi } from '../api/cards';
 import { useRouter } from 'expo-router';
 
 // ParsedSub is the canonical draft shape for the AI-driven add-subscription
@@ -47,6 +44,11 @@ interface Props {
 }
 
 // ── SVG иконки ──────────────────────────────────────────────────────────────
+// TODO(perf): extract the 8 inline SVG icon components + the QUICK[] catalog
+// into `ai-wizard/quickServices.tsx`. They account for ~70 lines of this
+// file, never change per-render, and are only consumed by QUICK.find(...)
+// in PlansStage/ConfirmStage and by `quickServices` on VoiceInputStage.
+// Left in-place for this cleanup pass per the C5 scope (cleanup-only).
 
 function NetflixIcon({ size = 32 }: { size?: number }) {
   return (
@@ -138,7 +140,7 @@ type UIState =
   | { kind: 'plans'; plans: PlanOption[]; serviceName: string; iconUrl?: string; serviceUrl?: string; cancelUrl?: string; category?: string };
 
 export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const userCurrency = require('../stores/settingsStore').useSettingsStore((s: any) => s.displayCurrency || s.currency || 'USD');
   const userCountry = require('../stores/settingsStore').useSettingsStore((s: any) => s.region || s.country || 'US');
@@ -150,10 +152,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     access && access.limits.subscriptions.limit !== null
       ? access.limits.subscriptions.limit
       : Infinity;
-  const { cards, addCard } = usePaymentCardsStore();
-  const [addingCard, setAddingCard] = useState(false);
   const router = useRouter();
-  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
   const [ui, setUi] = useState<UIState>({ kind: 'idle' });
   const [input, setInput] = useState('');
@@ -164,18 +163,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   const [saving, setSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const fadeAnim  = useRef(new Animated.Value(1)).current;
-
-  // Pulse loop for mic button
-  useEffect(() => {
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(pulseAnim, { toValue: 1.12, duration: 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
-      Animated.timing(pulseAnim, { toValue: 1,    duration: 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
-    ]));
-    loop.start();
-    return () => loop.stop();
-  }, []);
+  // Cross-stage fade (plans → confirm, bulk → bulk-edit, etc.).
+  // The mic pulse animation now lives inside `VoiceInputStage`.
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const fade = (fn: () => void) => {
     Animated.sequence([
@@ -453,6 +443,29 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     });
   }, []);
 
+  // ── BulkEditStage callbacks ──────────────────────────────────────────────
+  // `BulkEditStage` is `React.memo` — inline closures would defeat it.
+  // `onUpdate` applies a partial patch to the currently-edited sub;
+  // `exitBulkEdit` fades back to the `bulk` list (used by both Done and
+  // Cancel — the distinction lives inside the stage).
+  const handleBulkEditUpdate = useCallback((patch: Partial<ParsedSub>) => {
+    setUi((prev) => {
+      if (prev.kind !== 'bulk-edit') return prev;
+      const nextSubs = [...prev.subs];
+      nextSubs[prev.editIdx] = { ...nextSubs[prev.editIdx], ...patch };
+      return { ...prev, subs: nextSubs };
+    });
+  }, []);
+
+  const exitBulkEdit = useCallback(() => {
+    fade(() =>
+      setUi((prev) => {
+        if (prev.kind !== 'bulk-edit') return prev;
+        return { kind: 'bulk', subs: prev.subs, checked: prev.checked };
+      }),
+    );
+  }, []);
+
   // ── Stable stage callbacks ───────────────────────────────────────────────
   // `callWizard`, `onEdit`, `onSave`, `handleVoice`, `handleQuick` are
   // recreated on each render. We stash the latest refs in `latestRef` so
@@ -598,16 +611,9 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
           <BulkEditStage
             sub={ui.subs[ui.editIdx]}
             index={ui.editIdx}
-            onUpdate={(patch) => {
-              setUi((prev) => {
-                if (prev.kind !== 'bulk-edit') return prev;
-                const nextSubs = [...prev.subs];
-                nextSubs[prev.editIdx] = { ...nextSubs[prev.editIdx], ...patch };
-                return { ...prev, subs: nextSubs };
-              });
-            }}
-            onDone={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
-            onCancel={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
+            onUpdate={handleBulkEditUpdate}
+            onDone={exitBulkEdit}
+            onCancel={exitBulkEdit}
           />
         )}
 
@@ -727,37 +733,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
 }
 
 const styles = StyleSheet.create({
-  question:     { fontSize: 24, fontWeight: '800', lineHeight: 30, marginBottom: 2 },
-  hint:         { fontSize: 14, marginBottom: 8 },
-  micArea:      { alignItems: 'center', marginVertical: 18, position: 'relative' },
-  micRing:      { position: 'absolute', width: 96, height: 96, borderRadius: 48 },
-  micBtn:       { width: 74, height: 74, borderRadius: 37, alignItems: 'center', justifyContent: 'center', shadowColor: '#6C3BDB', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 },
-  micHint:      { marginTop: 10, fontSize: 13 },
-  orRow:        { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
-  line:         { flex: 1, height: 1 },
-  orText:       { fontSize: 13 },
-  textInput:    { borderRadius: 14, padding: 16, fontSize: 17, borderWidth: 1.5, marginBottom: 12 },
-  quickLabel:   { fontSize: 12, fontWeight: '600', marginBottom: 8 },
-  chip:         { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 30, borderWidth: 1, marginRight: 8 },
-  chipText:     { fontSize: 13, fontWeight: '600' },
-  confirmCard:  { borderRadius: 20, borderWidth: 1, padding: 24, alignItems: 'center', gap: 10, marginTop: 8 },
-  confirmIcon:  { marginBottom: 2 },
-  fallbackIcon: { width: 52, height: 52, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  fallbackLetter: { color: '#fff', fontSize: 24, fontWeight: '800' },
-  confirmName:  { fontSize: 22, fontWeight: '800' },
-  confirmAmount:{ fontSize: 26, fontWeight: '800' },
-  confirmPer:   { fontSize: 15, fontWeight: '400' },
-  confirmMeta:  { fontSize: 12, maxWidth: 260 },
-  plansHeader:  { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
-  plansLogo:    { width: 44, height: 44, borderRadius: 11 },
-  plansTitle:   { fontSize: 24, fontWeight: '800' },
-  plansSubtitle:{ fontSize: 14, marginBottom: 12 },
-  planCard:     { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
-  planName:     { fontSize: 16, fontWeight: '700' },
-  planPeriod:   { fontSize: 13, marginTop: 2 },
-  planPrice:    { fontSize: 18, fontWeight: '800', marginRight: 8 },
-  editLink:     { alignItems: 'center', marginTop: 14, padding: 8 },
-  footer:       { paddingTop: 12 },
-  actionBtn:    { borderRadius: 18, padding: 18, alignItems: 'center' },
-  actionTxt:    { color: '#fff', fontSize: 17, fontWeight: '800' },
+  footer:    { paddingTop: 12 },
+  actionBtn: { borderRadius: 18, padding: 18, alignItems: 'center' },
+  actionTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
 });
