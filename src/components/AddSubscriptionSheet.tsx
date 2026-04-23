@@ -8,8 +8,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  Image,
-  Animated,
   BackHandler,
   Dimensions,
   KeyboardAvoidingView,
@@ -44,9 +42,8 @@ import { useTheme } from '../theme';
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import { useIsMounted } from '../hooks/useIsMounted';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
-import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
+import { isBulkInput } from '../utils/clientParser';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
-import { convertAmount } from '../services/fxCache';
 import { prefetchImage } from '../utils/imagePrefetch';
 import { translateBackendError } from '../utils/translateBackendError';
 import { IdleView, type QuickChipItem } from './add-subscription/IdleView';
@@ -84,18 +81,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const router = useRouter();
   const { colors } = useTheme();
   const access = useEffectiveAccess();
-  const isPro = access?.isPro ?? false;
-  const isProUser = access?.plan === 'pro';
-  const activeCount = access?.limits.subscriptions.used ?? 0;
-  const maxSubscriptions =
-    access && access.limits.subscriptions.limit !== null
-      ? access.limits.subscriptions.limit
-      : Infinity;
   const subsLimitReached =
     !!access &&
     access.limits.subscriptions.limit !== null &&
     access.limits.subscriptions.used >= access.limits.subscriptions.limit;
-  if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
+  if (__DEV__) {
+    const isPro = access?.isPro ?? false;
+    const activeCount = access?.limits.subscriptions.used ?? 0;
+    const maxSubscriptions =
+      access && access.limits.subscriptions.limit !== null
+        ? access.limits.subscriptions.limit
+        : Infinity;
+    console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
+  }
 
   // Read displayCurrency early so the form hook can seed `currency` with it
   // on first mount (before resetAll has a chance to run).
@@ -119,7 +117,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const formRef = useRef(formCtx.form);
   formRef.current = formCtx.form;
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(saving);
+  savingRef.current = saving;
   const [addedViaSource, setAddedViaSource] = useState<'MANUAL' | 'AI_TEXT' | 'AI_SCREENSHOT'>('MANUAL');
+  // Keep frequently-changing values in refs so handlers passed to memoized
+  // children (BulkConfirmView, ConfirmView, ManualFormView, BulkEditModal)
+  // don't get a new identity every save / toggle / keystroke and defeat
+  // their React.memo.
+  const addedViaSourceRef = useRef(addedViaSource);
+  addedViaSourceRef.current = addedViaSource;
 
   // ── Unified flow state ──────────────────────────────────────────────────
   const [flowState, _setFlowState] = useState<FlowState>('idle');
@@ -135,9 +141,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [transcribedText, setTranscribedText] = useState('');
   const [confirmData, setConfirmData] = useState<ConfirmCardData | null>(null);
   const [bulkItems, setBulkItems] = useState<ParsedSub[]>([]);
+  const bulkItemsRef = useRef(bulkItems);
+  bulkItemsRef.current = bulkItems;
   // `bulkChecked` lives alongside `bulkItems` so it shifts in lockstep when
   // rows are removed mid-array. See handleBulkRemove + the edit-modal delete.
   const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
+  const bulkCheckedRef = useRef(bulkChecked);
+  bulkCheckedRef.current = bulkChecked;
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState('');
   const [showBulk, setShowBulk] = useState(false);
@@ -148,13 +158,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // Remount nonce re-initializes IdleView state when key changes.
   const [idleSeed, setIdleSeed] = useState<string>('');
   const [idleKey, setIdleKey] = useState(0);
-
-  // ── Screenshot state ────────────────────────────────────────────────────
-  const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
-  const [parsingScreenshot, setParsingScreenshot] = useState(false);
-
-  // ── Legacy states kept for AIWizard integration ─────────────────────────
-  const [foundService, setFoundService] = useState<any>(null);
 
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const backdropOpacity = useSharedValue(0);
@@ -182,7 +185,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // Destructure stable setters so effects/callbacks don't re-fire just
   // because `formCtx` returns a fresh object identity each render.
-  const { setForm, setF, setMoreExpanded, setManualExpanded } = formCtx;
+  const { setForm, setF, setMoreExpanded } = formCtx;
 
   const resetAll = useCallback(() => {
     setFlowState('idle');
@@ -194,16 +197,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     // manual-mode defaults feel right.
     setForm({ ...emptyForm, currency: displayCurrency });
     setMoreExpanded(false);
-    setManualExpanded(false);
-    setScreenshotUri(null);
     setAddedViaSource('MANUAL');
-    setFoundService(null);
     // IdleView stays mounted across open/close (sheet uses pointerEvents +
     // translate, not conditional mount). Remount it with an empty seed so
     // its local `smartInput` resets.
     setIdleSeed('');
     setIdleKey((k) => k + 1);
-  }, [displayCurrency, setForm, setMoreExpanded, setManualExpanded]);
+  }, [displayCurrency, setForm, setMoreExpanded]);
 
   const handleClose = useCallback(() => {
     translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
@@ -255,15 +255,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── handleSave (manual form) — reads form via ref for stable identity ──
   const handleSave = useCallback(async () => {
-    if (saving) return;
+    if (savingRef.current) return;
     if (subsLimitReached) {
       analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'manual_save' });
       setProGate('unlimited_subs');
       return;
     }
-    // Read latest form from the ref so this callback doesn't need `form` in
-    // deps — keeps handleSave's identity stable across unrelated re-renders.
+    // Read latest form / source from refs so this callback doesn't need
+    // `form` / `saving` / `addedViaSource` in deps — keeps handleSave's
+    // identity stable across unrelated re-renders so ManualFormView stays
+    // memoized.
     const form = formRef.current;
+    const source = addedViaSourceRef.current;
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
     }
@@ -306,7 +309,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
         color: form.color || undefined,
         tags: form.tags.length > 0 ? form.tags : undefined,
-        addedVia: addedViaSource,
+        addedVia: source,
       });
       addSubscription(res.data);
       const allSubs = useSubscriptionsStore.getState().subscriptions;
@@ -340,11 +343,13 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [subsLimitReached, t, addSubscription, saving, addedViaSource]);
+  }, [subsLimitReached, t, addSubscription]);
 
   // ── Save from InlineConfirmCard ─────────────────────────────────────────
+  // Reads `saving` / `addedViaSource` via refs so the callback identity stays
+  // stable across save lifecycle — ConfirmView stays memoized.
   const handleConfirmSave = useCallback(async (data: any) => {
-    if (saving) return;
+    if (savingRef.current) return;
     if (subsLimitReached) {
       analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'confirm_save' });
       setProGate('unlimited_subs');
@@ -352,6 +357,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
     setSaving(true);
     setLoadingStage('saving');
+    const source = addedViaSourceRef.current;
 
     try {
     const iconUrl = data.iconUrl || (data.serviceUrl
@@ -385,7 +391,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       paymentCardId: data.paymentCardId || undefined,
       startDate: data.startDate || new Date().toISOString().split('T')[0],
       nextPaymentDate: data.nextPaymentDate || undefined,
-      addedVia: addedViaSource,
+      addedVia: source,
       reminderEnabled: data.reminderEnabled ?? true,
       reminderDaysBefore: data.reminderDaysBefore ?? [3],
     });
@@ -398,7 +404,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       data.currency || currency || 'USD',
       (data.billingPeriod || 'MONTHLY').toLowerCase(),
       allSubs.length === 0,
-      addedViaSource === 'AI_SCREENSHOT' ? 'screenshot' : addedViaSource === 'AI_TEXT' ? 'ai_lookup' : 'manual',
+      source === 'AI_SCREENSHOT' ? 'screenshot' : source === 'AI_TEXT' ? 'ai_lookup' : 'manual',
     );
     setSuccessName(data.name || '');
     setShowSuccess(true);
@@ -419,7 +425,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [saving, subsLimitReached, onClose, router, currency, addSubscription, addedViaSource, t]);
+  }, [subsLimitReached, currency, addSubscription, t]);
 
   // ── Convert CatalogEntry to ConfirmCardData ─────────────────────────────
   const catalogToConfirmData = (entry: CatalogEntry): ConfirmCardData => ({
@@ -608,7 +614,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
 
     const uri = result.assets[0].uri;
-    setScreenshotUri(uri);
     setAddedViaSource('AI_SCREENSHOT');
     setLoadingStage('analyzing');
     setFlowState('loading');
@@ -667,41 +672,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
   }, [t]);
 
-  // ── Edit from confirm → manual ──────────────────────────────────────────
-  // Перенеси ВСЁ что AI мог заполнить (включая tags/notes/card/dates) — иначе
-  // в Edit эти поля выглядят пустыми по сравнению с ручной формой.
-  const handleEditFromConfirm = useCallback((data: any) => {
-    setForm((f) => ({
-      ...f,
-      name: data.name?.value ?? data.name ?? f.name,
-      amount: data.amount?.value != null ? String(data.amount.value) : (data.amount != null ? String(data.amount) : f.amount),
-      currency: data.currency?.value ?? data.currency ?? f.currency,
-      billingPeriod: (data.billingPeriod?.value ?? data.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
-      category: (data.category?.value ?? data.category ?? f.category).toUpperCase(),
-      serviceUrl: data.serviceUrl ?? f.serviceUrl,
-      cancelUrl: data.cancelUrl ?? f.cancelUrl,
-      iconUrl: data.iconUrl ?? f.iconUrl,
-      currentPlan: data.currentPlan ?? f.currentPlan,
-      notes: data.notes ?? f.notes,
-      tags: Array.isArray(data.tags) && data.tags.length > 0 ? data.tags : f.tags,
-      paymentCardId: data.paymentCardId ?? f.paymentCardId,
-      startDate: data.startDate ?? f.startDate,
-      nextPaymentDate: data.nextPaymentDate ?? f.nextPaymentDate,
-      billingDay: data.billingDay != null ? String(data.billingDay) : f.billingDay,
-      reminderDaysBefore: Array.isArray(data.reminderDaysBefore) ? data.reminderDaysBefore : f.reminderDaysBefore,
-      color: data.color ?? f.color,
-      isTrial: data.status === 'TRIAL' ? true : f.isTrial,
-      trialEndDate: data.trialEndDate ?? f.trialEndDate,
-    }));
-    setManualExpanded(true);
-    setFlowState('manual');
-  }, [setForm, setManualExpanded]);
-
   // Handler: toggle manual form from idle
   const handleManualToggle = useCallback(() => {
-    setManualExpanded(true);
     setFlowState('manual');
-  }, [setManualExpanded]);
+  }, []);
 
   // Voice transcription sentinel for LoadingView — lets the "transcribing"
   // step stay visible with a checkmark after we advance to "thinking".
@@ -756,8 +730,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setBulkMoreExpanded(false);
   }, [bulkEditIdx]);
 
+  // Reads `bulkItems` / `bulkChecked` / `addedViaSource` via refs — identity
+  // stays stable across every row toggle / edit keystroke so BulkConfirmView
+  // skips those re-renders.
   const handleBulkSaveAll = useCallback(async () => {
-    const selected = bulkItems.filter((_, i) => bulkChecked[i]);
+    const items = bulkItemsRef.current;
+    const checked = bulkCheckedRef.current;
+    const source = addedViaSourceRef.current;
+    const selected = items.filter((_, i) => checked[i]);
     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
     const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
     if (selected.length === 0) return;
@@ -787,7 +767,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           notes: sub.notes || undefined,
           reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
           reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,
-          addedVia: addedViaSource,
+          addedVia: source,
         });
         addSubscription(res.data);
         saved++;
@@ -817,7 +797,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         );
       }, saved > 0 ? 2500 : 100);
     }
-  }, [bulkItems, bulkChecked, addSubscription, addedViaSource, currency, t]);
+  }, [addSubscription, currency, t]);
 
   const handleBulkEdit = useCallback((index: number) => {
     setBulkEditIdx(index);
@@ -936,9 +916,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       cancelUrl: sub.cancelUrl ?? f.cancelUrl,
       iconUrl: sub.iconUrl ?? f.iconUrl,
     }));
-    setManualExpanded(true);
     setFlowState('manual');
-  }, [setForm, setManualExpanded]);
+  }, [setForm]);
 
   const handleWizardBack = useCallback(() => {
     setFlowState('idle');

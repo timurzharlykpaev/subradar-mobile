@@ -2,6 +2,13 @@ import { useCallback, useState } from 'react';
 import type { BillingPeriod } from '../../types';
 
 /**
+ * NOTE: `manualExpanded` / `reset` were removed in B7 — both were dead code
+ * (set but never read, and no caller invoked `reset`). If you need a
+ * programmatic reset, call `setForm(initial)` + `setMoreExpanded(false)`
+ * from the orchestrator (that's what `resetAll` already does).
+ */
+
+/**
  * Default manual-form values for AddSubscriptionSheet.
  *
  * Exported so the orchestrator can spread-override fields (e.g., seed
@@ -68,8 +75,6 @@ export const emptyForm: AddSubscriptionForm = {
 export function useAddSubscriptionForm(initial: AddSubscriptionForm = emptyForm) {
   const [form, setForm] = useState<AddSubscriptionForm>(initial);
   const [moreExpanded, setMoreExpanded] = useState(false);
-  // Pre-existing dead state kept for API parity (may be dropped in B7).
-  const [manualExpanded, setManualExpanded] = useState(false);
 
   const setF = useCallback(<K extends keyof AddSubscriptionForm>(
     key: K,
@@ -78,21 +83,12 @@ export function useAddSubscriptionForm(initial: AddSubscriptionForm = emptyForm)
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const reset = useCallback(() => {
-    setForm(initial);
-    setMoreExpanded(false);
-    setManualExpanded(false);
-  }, [initial]);
-
   return {
     form,
     setForm,
     setF,
     moreExpanded,
     setMoreExpanded,
-    manualExpanded,
-    setManualExpanded,
-    reset,
   };
 }
 
