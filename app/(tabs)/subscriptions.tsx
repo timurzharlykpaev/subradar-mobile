@@ -187,7 +187,7 @@ export default function SubscriptionsScreen() {
   const hiddenSubsCount = access?.flags.hiddenSubscriptionsCount ?? 0;
   const visibleSubs = isDegraded ? sortedByCreated.slice(0, 3) : sortedByCreated;
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = useCallback((id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
@@ -199,7 +199,14 @@ export default function SubscriptionsScreen() {
         }
       }},
     ]);
-  };
+  }, [t, removeSubscription]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => (
+      <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
+    ),
+    [handleDelete],
+  );
 
   // Stats
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
@@ -465,9 +472,7 @@ export default function SubscriptionsScreen() {
           removeClippedSubviews={true}
           windowSize={10}
           getItemLayout={(_data, index) => ({ length: 88, offset: 88 * index, index })}
-          renderItem={({ item }) => (
-            <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
-          )}
+          renderItem={renderItem}
           ListEmptyComponent={
             initialLoading ? (
               <View style={{ paddingTop: 8 }}>
