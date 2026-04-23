@@ -35,6 +35,7 @@ import { useRouter } from 'expo-router';
 // 1200-line component. Re-exported here for backward compatibility.
 export type { ParsedSub } from './add-subscription/types';
 import type { ParsedSub } from './add-subscription/types';
+import { BulkEditStage } from './ai-wizard/BulkEditStage';
 
 interface Props {
   onSave: (sub: ParsedSub) => Promise<void>;
@@ -783,114 +784,26 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
           </View>
         )}
 
-        {/* ── Bulk-edit detail screen ────────────────────────────────────── */}
-        {ui.kind === 'bulk-edit' && (() => {
-          const sub = ui.subs[ui.editIdx];
-          if (!sub) return null;
-          const updateSub = (patch: Partial<ParsedSub>) => {
-            const next = [...ui.subs];
-            next[ui.editIdx] = { ...next[ui.editIdx], ...patch };
-            setUi({ ...ui, subs: next });
-          };
-          const inputStyle = {
-            borderRadius: 10, borderWidth: 1.5, paddingHorizontal: 12,
-            paddingVertical: Platform.OS === 'ios' ? 10 : 6,
-            fontSize: 15, fontWeight: '500' as const,
-            color: colors.text, borderColor: colors.border,
-            backgroundColor: colors.background,
-          };
-          const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const;
-          const periodLabel = (p: string) => ({ MONTHLY: '/мес', YEARLY: '/год', WEEKLY: '/нед', QUARTERLY: '/квар' }[p] ?? p);
-          return (
-            <View style={{ flex: 1 }}>
-              {/* Back button */}
-              <TouchableOpacity
-                onPress={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}
-              >
-                <Ionicons name="arrow-back" size={20} color={colors.primary} />
-                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>{t('common.back', 'Назад к списку')}</Text>
-              </TouchableOpacity>
-
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                automaticallyAdjustKeyboardInsets
-                contentInsetAdjustmentBehavior="automatic"
-              >
-                {/* Service name with icon */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                  {sub.iconUrl
-                    ? <Image source={{ uri: sub.iconUrl }} style={{ width: 36, height: 36, borderRadius: 9 }} />
-                    : <View style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>{(sub.name || '?')[0].toUpperCase()}</Text>
-                      </View>
-                  }
-                  <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>{sub.name}</Text>
-                </View>
-
-                {/* Name */}
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.name', 'Название')}</Text>
-                <TextInput style={[inputStyle, { marginBottom: 12 }]} value={sub.name ?? ''} onChangeText={(v) => updateSub({ name: v })} placeholder={t('add.name_placeholder', 'Название')} placeholderTextColor={colors.textMuted} />
-
-                {/* Amount + Currency */}
-                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-                  <View style={{ flex: 2 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.amount', 'Сумма')}</Text>
-                    <TextInput style={inputStyle} value={String(sub.amount ?? '')} keyboardType="decimal-pad" onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.currency', 'Валюта')}</Text>
-                    <TextInput style={inputStyle} value={sub.currency ?? 'USD'} autoCapitalize="characters" maxLength={3} onChangeText={(v) => updateSub({ currency: v.toUpperCase() })} />
-                  </View>
-                </View>
-
-                {/* Period */}
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{t('add.billing_cycle', 'Период')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-                  {PERIODS.map((p) => (
-                    <TouchableOpacity key={p} onPress={() => updateSub({ billingPeriod: p })}
-                      style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1.5,
-                        backgroundColor: sub.billingPeriod === p ? colors.primary : colors.surface2,
-                        borderColor: sub.billingPeriod === p ? colors.primary : colors.border }}>
-                      <Text style={{ fontSize: 13, fontWeight: '700', color: sub.billingPeriod === p ? '#fff' : colors.textSecondary }}>{periodLabel(p)}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                {/* Category */}
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{t('add.category', 'Категория')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-                  {['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DEVELOPER', 'EDUCATION', 'HEALTH', 'OTHER'].map((cat) => (
-                    <TouchableOpacity key={cat} onPress={() => updateSub({ category: cat })}
-                      style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1,
-                        backgroundColor: sub.category === cat ? colors.primary : colors.surface2,
-                        borderColor: sub.category === cat ? colors.primary : colors.border }}>
-                      <Text style={{ fontSize: 11, fontWeight: '600', color: sub.category === cat ? '#fff' : colors.textMuted }}>{cat.replace('_', ' ').toLowerCase()}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                {/* Service URL */}
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.service_url', 'Сайт сервиса')}</Text>
-                <TextInput style={[inputStyle, { marginBottom: 12 }]} value={sub.serviceUrl ?? ''} onChangeText={(v) => updateSub({ serviceUrl: v })} placeholder="https://..." placeholderTextColor={colors.textMuted} autoCapitalize="none" keyboardType="url" />
-
-                {/* Cancel URL */}
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{t('add.cancel_url', 'Ссылка для отмены')}</Text>
-                <TextInput style={[inputStyle, { marginBottom: 16 }]} value={sub.cancelUrl ?? ''} onChangeText={(v) => updateSub({ cancelUrl: v })} placeholder="https://..." placeholderTextColor={colors.textMuted} autoCapitalize="none" keyboardType="url" />
-
-                {/* Done → back to list */}
-                <TouchableOpacity
-                  onPress={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
-                  style={{ backgroundColor: colors.primary, borderRadius: 14, padding: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: 20 }}
-                >
-                  <Ionicons name="checkmark" size={16} color="#fff" />
-                  <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>{t('common.done', 'Готово')}</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </View>
-          );
-        })()}
+        {/* ── Bulk-edit detail screen ─────────────────────────────────────
+            Extracted to `ai-wizard/BulkEditStage` and wrapped in
+            KeyboardAvoidingView — fixes the bug where the keyboard
+            covered the input on iOS. */}
+        {ui.kind === 'bulk-edit' && ui.subs[ui.editIdx] && (
+          <BulkEditStage
+            sub={ui.subs[ui.editIdx]}
+            index={ui.editIdx}
+            onUpdate={(patch) => {
+              setUi((prev) => {
+                if (prev.kind !== 'bulk-edit') return prev;
+                const nextSubs = [...prev.subs];
+                nextSubs[prev.editIdx] = { ...nextSubs[prev.editIdx], ...patch };
+                return { ...prev, subs: nextSubs };
+              });
+            }}
+            onDone={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
+            onCancel={() => fade(() => setUi({ kind: 'bulk', subs: ui.subs, checked: ui.checked }))}
+          />
+        )}
 
         {/* ── Confirm screen ───────────────────────────────────────────── */}
         {ui.kind === 'confirm' && (() => {
