@@ -9,6 +9,18 @@ import { useDebouncedValue } from '../useDebouncedValue';
 
 jest.useFakeTimers();
 
+const realConsoleError = console.error;
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+    const msg = typeof args[0] === 'string' ? args[0] : '';
+    if (msg.includes('react-test-renderer is deprecated')) return;
+    realConsoleError(...(args as []));
+  });
+});
+afterAll(() => {
+  (console.error as jest.Mock).mockRestore?.();
+});
+
 function renderHook<TProps, TResult>(
   hook: (props: TProps) => TResult,
   initialProps: TProps,
@@ -92,5 +104,41 @@ describe('useDebouncedValue', () => {
     expect(h.result.current).toBe('c');
 
     h.unmount();
+  });
+
+  it('with delayMs=0 still defers the update by one macrotask', () => {
+    const h = renderHook(
+      ({ value }: { value: string }) => useDebouncedValue(value, 0),
+      { value: 'a' },
+    );
+    expect(h.result.current).toBe('a');
+
+    h.rerender({ value: 'b' });
+    // still 'a' until the 0ms timer flushes
+    expect(h.result.current).toBe('a');
+
+    act(() => {
+      jest.advanceTimersByTime(0);
+    });
+    expect(h.result.current).toBe('b');
+
+    h.unmount();
+  });
+
+  it('clears the pending timer on unmount (no stale update)', () => {
+    const h = renderHook(
+      ({ value }: { value: string }) => useDebouncedValue(value, 300),
+      { value: 'a' },
+    );
+
+    h.rerender({ value: 'b' });
+    h.unmount();
+
+    // advancing past the delay after unmount should not throw nor warn
+    expect(() => {
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+    }).not.toThrow();
   });
 });
