@@ -43,7 +43,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { AIWizard, ParsedSub } from './AIWizard';
 import { SuccessOverlay } from './SuccessOverlay';
 import { BulkAddSheet } from './BulkAddSheet';
-import { InlineConfirmCard, ConfirmCardData } from './InlineConfirmCard';
+import type { ConfirmCardData } from './InlineConfirmCard';
 import ProFeatureModal from './ProFeatureModal';
 import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useTheme } from '../theme';
@@ -52,7 +52,6 @@ import { useIsMounted } from '../hooks/useIsMounted';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
 import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
 import { GiftIcon } from './icons';
-import { formatMoney } from '../utils/formatMoney';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { convertAmount } from '../services/fxCache';
 import { DatePickerField } from './DatePickerField';
@@ -62,6 +61,8 @@ import { translateBackendError } from '../utils/translateBackendError';
 import { IdleView, type QuickChipItem } from './add-subscription/IdleView';
 import { LoadingView } from './add-subscription/LoadingView';
 import { TranscriptionView } from './add-subscription/TranscriptionView';
+import { ConfirmView } from './add-subscription/ConfirmView';
+import { BulkConfirmView } from './add-subscription/BulkConfirmView';
 import type { LoadingStage } from './add-subscription/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -732,33 +733,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const handleBackToIdle = useCallback(() => setFlowState('idle'), []);
 
-  // ── Render: inline confirm card ─────────────────────────────────────────
-  const renderConfirm = () => {
-    if (!confirmData) return null;
-    return (
-      <InlineConfirmCard
-        data={confirmData}
-        onSave={handleConfirmSave}
-        onCancel={() => setFlowState('idle')}
-        saving={saving}
-      />
-    );
-  };
-
-  // ── Render: bulk confirm (screenshot parsed multiple subscriptions) ─
-  const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
+  // ── Bulk confirm state (screenshot parsed multiple subscriptions) ────────
+  // `bulkChecked` now lives in BulkConfirmView (presentational). The
+  // orchestrator keeps ownership of `bulkItems` + `bulkEditIdx` because
+  // they're read by the full-screen edit modal rendered below.
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
   const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
 
-  useEffect(() => {
-    if (bulkItems.length > 0) setBulkChecked(bulkItems.map(() => true));
-  }, [bulkItems]);
-
-  const handleBulkSaveAll = async () => {
+  const handleBulkSaveAll = useCallback(async (selected: ParsedSub[]) => {
     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
     const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
-    const selected = bulkItems.filter((_, i) => bulkChecked[i]);
     if (selected.length === 0) return;
 
     setBulkSaving(true);
@@ -816,162 +801,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         );
       }, saved > 0 ? 2500 : 100);
     }
-  };
+  }, [addSubscription, addedViaSource, currency, t]);
 
-  const renderBulkConfirm = () => (
-    <View style={{ flex: 1 }}>
-      <TouchableOpacity
-        onPress={() => setFlowState('idle')}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, paddingVertical: 8, paddingHorizontal: 4 }}
-        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-      >
-        <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
-        <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
-      </TouchableOpacity>
+  const handleBulkEdit = useCallback((index: number) => {
+    setBulkEditIdx(index);
+  }, []);
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <Ionicons name="sparkles" size={22} color={colors.primary} />
-        <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text }}>
-          {t('add.bulk_review_title', 'Found subscriptions')}
-        </Text>
-      </View>
-      <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 16 }}>
-        {t('add.bulk_review_sub', { count: bulkItems.length, defaultValue: 'Found: {{count}}' })}
-      </Text>
-
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {bulkItems.map((sub, idx) => {
-          // Known service → real domain mapping
-          const DOMAIN_MAP: Record<string, string> = {
-            'chatgpt': 'openai.com', 'chatgpt plus': 'openai.com', 'openai': 'openai.com',
-            'youtube': 'youtube.com', 'youtube premium': 'youtube.com', 'youtube music': 'music.youtube.com',
-            'netflix': 'netflix.com', 'netflix premium': 'netflix.com', 'netflix standard': 'netflix.com',
-            'spotify': 'spotify.com', 'spotify premium': 'spotify.com',
-            'playstation plus': 'playstation.com', 'playstation': 'playstation.com', 'ps plus': 'playstation.com',
-            'xbox game pass': 'xbox.com', 'xbox': 'xbox.com',
-            'apple tv+': 'tv.apple.com', 'apple tv': 'tv.apple.com',
-            'apple music': 'music.apple.com', 'apple arcade': 'apple.com',
-            'icloud': 'icloud.com', 'icloud+': 'icloud.com', 'icloud plus': 'icloud.com',
-            'disney+': 'disneyplus.com', 'disney plus': 'disneyplus.com',
-            'hbo max': 'hbomax.com', 'hbo': 'hbomax.com',
-            'amazon prime': 'amazon.com', 'prime video': 'amazon.com',
-            'github': 'github.com', 'github copilot': 'github.com',
-            'figma': 'figma.com', 'notion': 'notion.so', 'slack': 'slack.com',
-            'adobe': 'adobe.com', 'adobe creative cloud': 'adobe.com',
-            'midjourney': 'midjourney.com', 'claude': 'claude.ai',
-            'nordvpn': 'nordvpn.com', '1password': '1password.com',
-            'strava': 'strava.com', 'duolingo': 'duolingo.com',
-          };
-          const nameLower = (sub.name || '').toLowerCase().trim();
-          const domain = sub.serviceUrl
-            ? (() => { try { return new URL(sub.serviceUrl).hostname.replace(/^www\./, ''); } catch { return ''; } })()
-            : DOMAIN_MAP[nameLower] || '';
-          const iconUrl = sub.iconUrl || (domain ? `https://icon.horse/icon/${domain}` : null);
-
-          // Translate category
-          const categoryKey = `categories.${(sub.category || 'OTHER').toLowerCase()}`;
-          const categoryLabel = t(categoryKey, (sub.category || 'OTHER').replace(/_/g, ' '));
-
-          // Translate billing period
-          const periodMap: Record<string, string> = {
-            'MONTHLY': t('subscription.monthly', 'monthly'),
-            'YEARLY': t('subscription.yearly', 'yearly'),
-            'WEEKLY': t('subscription.weekly', 'weekly'),
-            'QUARTERLY': t('subscription.quarterly', 'quarterly'),
-            'LIFETIME': t('subscription.lifetime', 'lifetime'),
-            'ONE_TIME': t('subscription.one_time', 'one-time'),
-          };
-          const periodLabel = periodMap[(sub.billingPeriod || 'MONTHLY').toUpperCase()] || sub.billingPeriod;
-
-          return (
-            <View key={idx} style={{
-              flexDirection: 'row', alignItems: 'center', gap: 12,
-              padding: 16, marginBottom: 10, borderRadius: 16,
-              backgroundColor: colors.card, borderWidth: 1.5,
-              borderColor: bulkChecked[idx] ? colors.primary : colors.border,
-              opacity: bulkChecked[idx] ? 1 : 0.4,
-            }}>
-              {/* Checkbox */}
-              <TouchableOpacity
-                onPress={() => setBulkChecked(prev => { const n = [...prev]; n[idx] = !n[idx]; return n; })}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={bulkChecked[idx] ? 'checkbox' : 'square-outline'}
-                  size={26}
-                  color={bulkChecked[idx] ? colors.primary : colors.textMuted}
-                />
-              </TouchableOpacity>
-
-              {/* Icon */}
-              {iconUrl ? (
-                <Image
-                  source={{ uri: iconUrl }}
-                  style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.surface2 }}
-                />
-              ) : (
-                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name="cube-outline" size={22} color={colors.primary} />
-                </View>
-              )}
-
-              {/* Info */}
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }} numberOfLines={1}>{sub.name}</Text>
-                <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 3 }}>
-                  {categoryLabel} · {periodLabel}
-                </Text>
-              </View>
-
-              {/* Price + Actions */}
-              <View style={{ alignItems: 'flex-end', gap: 8 }}>
-                <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
-                  {formatMoney(sub.amount || 0, sub.currency || displayCurrency, i18n.language)}
-                </Text>
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <TouchableOpacity
-                    onPress={() => setBulkEditIdx(idx)}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Ionicons name="create-outline" size={22} color={colors.primary} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setBulkItems(prev => prev.filter((_, i) => i !== idx));
-                      setBulkChecked(prev => prev.filter((_, i) => i !== idx));
-                    }}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Ionicons name="trash-outline" size={22} color={colors.error || '#EF4444'} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-        })}
-      </ScrollView>
-
-      {/* Save button */}
-      <TouchableOpacity
-        onPress={handleBulkSaveAll}
-        disabled={bulkSaving || bulkChecked.every(c => !c)}
-        style={{
-          backgroundColor: bulkChecked.some(c => c) ? colors.primary : colors.surface2,
-          borderRadius: 16, padding: 18, alignItems: 'center', marginTop: 14,
-          shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
-        }}
-      >
-        {bulkSaving ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={{ color: '#FFF', fontSize: 17, fontWeight: '800' }}>
-            {t('add.bulk_save', { count: bulkChecked.filter(Boolean).length, defaultValue: 'Add {{count}}' })}
-          </Text>
-        )}
-      </TouchableOpacity>
-    </View>
-  );
+  const handleBulkRemove = useCallback((index: number) => {
+    setBulkItems(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
   // ── Render: wizard ─────────────────────────────────────────────────────
   const renderWizard = () => (
@@ -1610,8 +1448,24 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 onCancel={handleBackToIdle}
               />
             )}
-            {flowState === 'confirm' && renderConfirm()}
-            {flowState === 'bulk-confirm' && renderBulkConfirm()}
+            {flowState === 'confirm' && confirmData && (
+              <ConfirmView
+                data={confirmData}
+                onSave={handleConfirmSave}
+                onCancel={handleBackToIdle}
+                saving={saving}
+              />
+            )}
+            {flowState === 'bulk-confirm' && (
+              <BulkConfirmView
+                items={bulkItems}
+                saving={bulkSaving}
+                onSave={handleBulkSaveAll}
+                onEdit={handleBulkEdit}
+                onRemove={handleBulkRemove}
+                onCancel={handleBackToIdle}
+              />
+            )}
             {flowState === 'wizard' && renderWizard()}
             {flowState === 'manual' && renderManual()}
           </ScrollView>
@@ -1827,7 +1681,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
                 onPress={() => {
                   setBulkItems(prev => prev.filter((_, j) => j !== bulkEditIdx));
-                  setBulkChecked(prev => prev.filter((_, j) => j !== bulkEditIdx));
                   setBulkEditIdx(null);
                   setBulkMoreExpanded(false);
                 }}
