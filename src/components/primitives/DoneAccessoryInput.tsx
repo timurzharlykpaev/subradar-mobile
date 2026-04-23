@@ -7,6 +7,7 @@ import {
   Text,
   Platform,
   StyleSheet,
+  Keyboard,
   type TextInputProps,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +35,7 @@ export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>
   const innerRef = useRef<TextInput>(null);
   useImperativeHandle(ref, () => innerRef.current!, []);
 
-  const id = accessoryId || DEFAULT_ACCESSORY_ID;
+  const id = accessoryId ?? DEFAULT_ACCESSORY_ID;
   const shouldAttach = Platform.OS === 'ios' && showDoneAccessory;
 
   return (
@@ -50,7 +51,8 @@ export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>
             <View style={{ flex: 1 }} />
             <TouchableOpacity
               style={styles.doneButton}
-              onPress={() => innerRef.current?.blur()}
+              onPress={() => Keyboard.dismiss()}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               accessibilityRole="button"
               accessibilityLabel={t('common.done', 'Done')}
             >
