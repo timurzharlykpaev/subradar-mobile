@@ -1,73 +1,22 @@
-import React, { useRef } from 'react';
-import {
-  TextInput,
-  InputAccessoryView,
-  View,
-  TouchableOpacity,
-  Text,
-  Platform,
-  StyleSheet,
-  type TextInputProps,
-} from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '../theme';
-
-const ACCESSORY_ID = 'numeric-input-done';
-
-interface Props extends TextInputProps {
-  /** Unique ID for InputAccessoryView (defaults to shared ID) */
-  accessoryId?: string;
-}
-
 /**
- * TextInput with "Done" toolbar on iOS for numeric keyboards
- * (decimal-pad, number-pad don't have a return/done key)
+ * @deprecated Use DoneAccessoryInput directly.
+ *
+ * Kept as a compatibility shim during migration. Defaults to the decimal-pad
+ * keyboard so existing call sites do not need to pass keyboardType.
  */
-export function NumericInput({ accessoryId, style, ...props }: Props) {
-  const { colors } = useTheme();
-  const { t } = useTranslation();
-  const inputRef = useRef<TextInput>(null);
-  const id = accessoryId || ACCESSORY_ID;
+import React from 'react';
+import type { TextInput } from 'react-native';
+import { DoneAccessoryInput, type DoneAccessoryInputProps } from './primitives/DoneAccessoryInput';
 
+export const NumericInput = React.forwardRef<TextInput, DoneAccessoryInputProps>(function NumericInput(
+  props,
+  ref,
+) {
   return (
-    <>
-      <TextInput
-        ref={inputRef}
-        style={style}
-        inputAccessoryViewID={Platform.OS === 'ios' ? id : undefined}
-        {...props}
-      />
-      {Platform.OS === 'ios' && (
-        <InputAccessoryView nativeID={id}>
-          <View style={[styles.toolbar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-            <View style={{ flex: 1 }} />
-            <TouchableOpacity
-              style={styles.doneButton}
-              onPress={() => inputRef.current?.blur()}
-            >
-              <Text style={[styles.doneText, { color: colors.primary }]}>{t('common.done', 'Done')}</Text>
-            </TouchableOpacity>
-          </View>
-        </InputAccessoryView>
-      )}
-    </>
+    <DoneAccessoryInput
+      ref={ref}
+      keyboardType={props.keyboardType ?? 'decimal-pad'}
+      {...props}
+    />
   );
-}
-
-const styles = StyleSheet.create({
-  toolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  doneButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  doneText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
 });
