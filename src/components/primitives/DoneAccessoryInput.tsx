@@ -24,7 +24,9 @@ export interface DoneAccessoryInputProps extends TextInputProps {
 
 /**
  * TextInput that always ships a high-contrast iOS "Done" keyboard accessory.
- * Supersedes NumericInput (which is kept as a thin re-export during migration).
+ *
+ * NumericInput is a compatibility shim around this component; prefer this
+ * primitive directly in new code.
  */
 export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>(function DoneAccessoryInput(
   { accessoryId, showDoneAccessory = true, ...props },

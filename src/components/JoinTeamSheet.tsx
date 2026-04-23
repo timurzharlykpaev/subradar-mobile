@@ -116,7 +116,7 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
         {/* iOS keyboard toolbar with Done button */}
         {Platform.OS === 'ios' && (
           <InputAccessoryView nativeID={INPUT_ACCESSORY_ID}>
-            <View style={[styles.keyboardBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+            <View style={[styles.keyboardBar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
               <View style={{ flex: 1 }} />
               <TouchableOpacity
                 onPress={() => { Keyboard.dismiss(); if (canJoin) handleJoin(); }}
