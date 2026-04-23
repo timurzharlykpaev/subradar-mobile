@@ -27,6 +27,7 @@ import { useRouter } from 'expo-router';
 import { prefetchImage } from '../utils/imagePrefetch';
 import { TextInputMode } from './bulk-add/TextInputMode';
 import { VoiceMode } from './bulk-add/VoiceMode';
+import { ScreenshotMode } from './bulk-add/ScreenshotMode';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -462,22 +463,11 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
 
             {/* ── Mode: screenshot (parsing) ───────────────────────────── */}
             {mode === 'screenshot' && (
-              <View style={{ alignItems: 'center', gap: 16 }}>
-                {screenshotUri && (
-                  <Image source={{ uri: screenshotUri }} style={styles.screenshotPreview} resizeMode="contain" />
-                )}
-                {loading ? (
-                  <>
-                    <ActivityIndicator color={colors.primary} size="large" />
-                    <Text style={{ color: colors.textSecondary }}>
-                      {t('add.bulk_parsing', 'AI распознаёт подписки...')}
-                    </Text>
-                  </>
-                ) : null}
-                <TouchableOpacity onPress={() => setMode('select')} style={{ marginTop: 4 }}>
-                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('common.back', 'Назад')}</Text>
-                </TouchableOpacity>
-              </View>
+              <ScreenshotMode
+                screenshotUri={screenshotUri}
+                loading={loading}
+                onBack={handleBackToSelect}
+              />
             )}
 
             {/* ── Mode: review ─────────────────────────────────────────── */}
