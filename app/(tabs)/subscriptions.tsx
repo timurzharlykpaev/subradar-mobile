@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   ScrollView,
   FlatList,
   TouchableOpacity,
@@ -32,6 +31,8 @@ import { formatMoney } from '../../src/utils/formatMoney';
 import { translateBackendError } from '../../src/utils/translateBackendError';
 import { SubscriptionSkeleton } from '../../src/components/SubscriptionSkeleton';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
+import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
+import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
 import i18n from '../../src/i18n';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
@@ -138,6 +139,15 @@ export default function SubscriptionsScreen() {
   const setSelectedCategory = useSubscriptionsStore((s) => s.setSelectedCategory);
   const setSubscriptions = useSubscriptionsStore((s) => s.setSubscriptions);
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+
+  // Local search input state — keystrokes only update local state,
+  // the debounced value is pushed to the store so the expensive
+  // FlatList filter runs at most once per 300ms.
+  const [localQuery, setLocalQuery] = useState(() => useSubscriptionsStore.getState().searchQuery);
+  const debouncedQuery = useDebouncedValue(localQuery, 300);
+  useEffect(() => {
+    setSearchQuery(debouncedQuery);
+  }, [debouncedQuery, setSearchQuery]);
 
   const isProBilling = access?.plan === 'pro';
   const isTeam = access?.plan === 'organization';
@@ -330,17 +340,17 @@ export default function SubscriptionsScreen() {
         {showSearch && (
           <View style={[styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
             <Ionicons name="search" size={16} color={colors.textMuted} />
-            <TextInput
+            <DoneAccessoryInput
               testID="search-input"
               style={[styles.searchInput, { color: colors.text }]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
+              value={localQuery}
+              onChangeText={setLocalQuery}
               placeholder={t('subscriptions.search')}
               placeholderTextColor={colors.textMuted}
               autoFocus
             />
-            {searchQuery ? (
-              <TouchableOpacity testID="btn-clear-search" onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            {localQuery ? (
+              <TouchableOpacity testID="btn-clear-search" onPress={() => setLocalQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons name="close-circle" size={18} color={colors.textMuted} />
               </TouchableOpacity>
             ) : null}
