@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 
 interface Props {
@@ -18,10 +19,11 @@ interface Props {
   placeholder?: string;
 }
 
-const MONTHS = [
-  'Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн',
-  'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек',
+const FALLBACK_MONTHS_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
+const FALLBACK_WEEKDAYS_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 function daysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
@@ -33,7 +35,18 @@ function pad(n: number): string {
 
 export function DatePickerField({ label, value, onChange, placeholder }: Props) {
   const { colors } = useTheme();
+  const { t, i18n } = useTranslation();
   const [show, setShow] = useState(false);
+
+  const monthsShort = useMemo(() => {
+    const v = t('date_picker.months_short', { returnObjects: true, defaultValue: FALLBACK_MONTHS_SHORT });
+    return Array.isArray(v) && v.length === 12 ? (v as string[]) : FALLBACK_MONTHS_SHORT;
+  }, [t, i18n.language]);
+
+  const weekdaysShort = useMemo(() => {
+    const v = t('date_picker.weekdays_short', { returnObjects: true, defaultValue: FALLBACK_WEEKDAYS_SHORT });
+    return Array.isArray(v) && v.length === 7 ? (v as string[]) : FALLBACK_WEEKDAYS_SHORT;
+  }, [t, i18n.language]);
 
   const parsed = useMemo(() => {
     if (!value) return null;
@@ -45,8 +58,8 @@ export function DatePickerField({ label, value, onChange, placeholder }: Props) 
   const [viewMonth, setViewMonth] = useState(() => (parsed ?? new Date()).getMonth());
 
   const displayText = parsed
-    ? parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-    : placeholder || 'Select date';
+    ? parsed.toLocaleDateString(i18n.language || undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    : placeholder || t('date_picker.select_date', 'Select date');
 
   const days = useMemo(() => {
     const count = daysInMonth(viewYear, viewMonth);
@@ -126,7 +139,7 @@ export function DatePickerField({ label, value, onChange, placeholder }: Props) 
                 <Ionicons name="chevron-back" size={22} color={colors.text} />
               </TouchableOpacity>
               <Text style={[styles.monthLabel, { color: colors.text }]}>
-                {MONTHS[viewMonth]} {viewYear}
+                {monthsShort[viewMonth]} {viewYear}
               </Text>
               <TouchableOpacity onPress={nextMonth} hitSlop={12}>
                 <Ionicons name="chevron-forward" size={22} color={colors.text} />
@@ -135,8 +148,8 @@ export function DatePickerField({ label, value, onChange, placeholder }: Props) 
 
             {/* Weekday headers */}
             <View style={styles.weekRow}>
-              {['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].map((d) => (
-                <Text key={d} style={[styles.weekDay, { color: colors.textMuted }]}>{d}</Text>
+              {weekdaysShort.map((d, i) => (
+                <Text key={`${d}-${i}`} style={[styles.weekDay, { color: colors.textMuted }]}>{d}</Text>
               ))}
             </View>
 
@@ -175,7 +188,7 @@ export function DatePickerField({ label, value, onChange, placeholder }: Props) 
                 setViewMonth(now.getMonth());
               }}
             >
-              <Text style={[styles.todayText, { color: colors.primary }]}>Сегодня</Text>
+              <Text style={[styles.todayText, { color: colors.primary }]}>{t('date_picker.today', 'Today')}</Text>
             </TouchableOpacity>
           </View>
         </View>

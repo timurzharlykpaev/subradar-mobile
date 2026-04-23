@@ -300,7 +300,8 @@ export default function SubscriptionsScreen() {
               activeOpacity={0.85}
               style={{
                 marginHorizontal: 20,
-                marginTop: 10,
+                marginTop: 4,
+                marginBottom: 14,
                 padding: 14,
                 borderRadius: 14,
                 flexDirection: 'row',

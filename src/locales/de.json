@@ -1156,5 +1156,32 @@
     "savings_vs_separate": "Spare bis zu",
     "cta_start": "Team-Plan starten",
     "cta_later": "Nur ich, danke"
+  },
+  "date_picker": {
+    "select_date": "Datum wählen",
+    "today": "Heute",
+    "months_short": [
+      "Jan",
+      "Feb",
+      "Mär",
+      "Apr",
+      "Mai",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Dez"
+    ],
+    "weekdays_short": [
+      "So",
+      "Mo",
+      "Di",
+      "Mi",
+      "Do",
+      "Fr",
+      "Sa"
+    ]
   }
 }

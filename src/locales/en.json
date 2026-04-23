@@ -1156,5 +1156,32 @@
     "restore_purchases": "Restore purchases",
     "save": "Save",
     "close": "Close"
+  },
+  "date_picker": {
+    "select_date": "Select date",
+    "today": "Today",
+    "months_short": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "weekdays_short": [
+      "Su",
+      "Mo",
+      "Tu",
+      "We",
+      "Th",
+      "Fr",
+      "Sa"
+    ]
   }
 }

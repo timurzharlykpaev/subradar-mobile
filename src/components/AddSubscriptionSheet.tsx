@@ -720,6 +720,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   }, [t]);
 
   // ── Edit from confirm → manual ──────────────────────────────────────────
+  // Перенеси ВСЁ что AI мог заполнить (включая tags/notes/card/dates) — иначе
+  // в Edit эти поля выглядят пустыми по сравнению с ручной формой.
   const handleEditFromConfirm = useCallback((data: any) => {
     setForm(f => ({
       ...f,
@@ -732,6 +734,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       cancelUrl: data.cancelUrl ?? f.cancelUrl,
       iconUrl: data.iconUrl ?? f.iconUrl,
       currentPlan: data.currentPlan ?? f.currentPlan,
+      notes: data.notes ?? f.notes,
+      tags: Array.isArray(data.tags) && data.tags.length > 0 ? data.tags : f.tags,
+      paymentCardId: data.paymentCardId ?? f.paymentCardId,
+      startDate: data.startDate ?? f.startDate,
+      nextPaymentDate: data.nextPaymentDate ?? f.nextPaymentDate,
+      billingDay: data.billingDay != null ? String(data.billingDay) : f.billingDay,
+      reminderDaysBefore: Array.isArray(data.reminderDaysBefore) ? data.reminderDaysBefore : f.reminderDaysBefore,
+      color: data.color ?? f.color,
+      isTrial: data.status === 'TRIAL' ? true : f.isTrial,
+      trialEndDate: data.trialEndDate ?? f.trialEndDate,
     }));
     setManualExpanded(true);
     setFlowState('manual');
