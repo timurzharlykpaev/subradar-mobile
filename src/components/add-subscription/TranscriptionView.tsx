@@ -1,19 +1,38 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { memo, useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../theme/ThemeContext';
+import { useTheme } from '../../theme';
+import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 
 interface Props {
   text: string;
   onConfirm: (text: string) => void;
   onCancel: () => void;
+  /**
+   * Called on every edit of the transcription buffer. Optional — most callers
+   * only care about the final confirmed text, but exposing it lets the
+   * orchestrator keep a live copy if needed.
+   */
+  onEdit?: (text: string) => void;
 }
 
-export function TranscriptionConfirm({ text, onConfirm, onCancel }: Props) {
-  const [editedText, setEditedText] = useState(text);
+function TranscriptionViewImpl({ text, onConfirm, onCancel, onEdit }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const [editedText, setEditedText] = useState(text);
+
+  const handleChange = useCallback(
+    (next: string) => {
+      setEditedText(next);
+      onEdit?.(next);
+    },
+    [onEdit],
+  );
+
+  const handleConfirm = useCallback(() => {
+    onConfirm(editedText.trim());
+  }, [editedText, onConfirm]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -24,10 +43,10 @@ export function TranscriptionConfirm({ text, onConfirm, onCancel }: Props) {
         </Text>
       </View>
 
-      <TextInput
+      <DoneAccessoryInput
         style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
         value={editedText}
-        onChangeText={setEditedText}
+        onChangeText={handleChange}
         multiline
         autoFocus={false}
         placeholderTextColor={colors.textSecondary}
@@ -40,10 +59,7 @@ export function TranscriptionConfirm({ text, onConfirm, onCancel }: Props) {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.confirmBtn}
-          onPress={() => onConfirm(editedText.trim())}
-        >
+        <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm}>
           <Ionicons name="checkmark" size={18} color="#fff" />
           <Text style={styles.confirmText}>
             {t('add_flow.looks_good', 'Looks good')}
@@ -53,6 +69,8 @@ export function TranscriptionConfirm({ text, onConfirm, onCancel }: Props) {
     </View>
   );
 }
+
+export const TranscriptionView = memo(TranscriptionViewImpl);
 
 const styles = StyleSheet.create({
   container: { borderRadius: 16, padding: 20, marginTop: 12, borderWidth: 1 },

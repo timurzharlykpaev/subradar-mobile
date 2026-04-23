@@ -43,7 +43,6 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { AIWizard, ParsedSub } from './AIWizard';
 import { SuccessOverlay } from './SuccessOverlay';
 import { BulkAddSheet } from './BulkAddSheet';
-import { TranscriptionConfirm } from './TranscriptionConfirm';
 import { InlineConfirmCard, ConfirmCardData } from './InlineConfirmCard';
 import ProFeatureModal from './ProFeatureModal';
 import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
@@ -61,6 +60,9 @@ import { NumericInput } from './NumericInput';
 import { prefetchImage } from '../utils/imagePrefetch';
 import { translateBackendError } from '../utils/translateBackendError';
 import { IdleView, type QuickChipItem } from './add-subscription/IdleView';
+import { LoadingView } from './add-subscription/LoadingView';
+import { TranscriptionView } from './add-subscription/TranscriptionView';
+import type { LoadingStage } from './add-subscription/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -135,7 +137,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     flowStateRef.current = state;
     _setFlowState(state);
   };
-  type LoadingStage = 'transcribing' | 'analyzing' | 'thinking' | 'saving';
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('thinking');
   // Modal gate for Pro-only limits (replaces blocking Alert.alert dialogs)
   const [proGate, setProGate] = useState<string | null>(null);
@@ -715,87 +716,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setFlowState('manual');
   }, []);
 
-  // ── Render: loading with progressive stages ─────────────────────────────
-  // Stage order — based on source, so once voice transcription is complete the
-  // user still sees "transcribed ✓" when we return to "thinking" after their
-  // edit-and-confirm step.
-  const voiceHadTranscribe = addedViaSource === 'AI_TEXT' && (loadingStage === 'transcribing' || transcribedText);
-  const stageOrder: LoadingStage[] = voiceHadTranscribe
-    ? ['transcribing', 'thinking', 'saving']
-    : addedViaSource === 'AI_SCREENSHOT'
-    ? ['analyzing', 'thinking', 'saving']
-    : ['thinking', 'saving'];
-  const currentIdx = Math.max(stageOrder.indexOf(loadingStage), 0);
-  const stageLabel = (s: LoadingStage) => ({
-    transcribing: t('add.stage_transcribing', 'Transcribing voice'),
-    analyzing:    t('add.stage_analyzing', 'Analyzing image'),
-    thinking:     t('add.stage_thinking', 'AI looking up service'),
-    saving:       t('add.stage_saving', 'Saving subscription'),
-  }[s]);
+  // Voice transcription sentinel for LoadingView — lets the "transcribing"
+  // step stay visible with a checkmark after we advance to "thinking".
+  const hasTranscribedText = transcribedText.length > 0;
 
-  const renderLoading = () => (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
-      <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-      <Text style={{ color: colors.text, fontSize: 17, fontWeight: '700', marginBottom: 4 }}>
-        {stageLabel(loadingStage)}
-      </Text>
-      <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', paddingHorizontal: 40, marginBottom: 24 }}>
-        {t('add.loading_hint', 'AI is processing your request. This usually takes a few seconds.')}
-      </Text>
+  // Transcription confirm handler — seeds IdleView's smart input with the
+  // transcribed text BEFORE kicking off the AI lookup, so if handleSmartSubmit
+  // falls back to `idle` (credit limit, empty bulk-parse, etc.) the user
+  // returns to IdleView with their text preserved and can edit & retry.
+  const handleTranscriptionConfirm = useCallback((text: string) => {
+    setIdleSeed(text);
+    setIdleKey((k) => k + 1);
+    handleSmartSubmit(text);
+  }, [handleSmartSubmit]);
 
-      {/* Progressive steps — shows all stages, ticks off completed ones */}
-      <View style={{ gap: 10, alignSelf: 'stretch', paddingHorizontal: 32 }}>
-        {stageOrder.map((s, idx) => {
-          const done = idx < currentIdx;
-          const active = idx === currentIdx;
-          const pending = idx > currentIdx;
-          const iconName = done ? 'checkmark-circle' : active ? 'ellipsis-horizontal-circle' : 'ellipse-outline';
-          const iconColor = done ? '#22C55E' : active ? colors.primary : colors.textMuted;
-          return (
-            <View key={s} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Ionicons name={iconName as any} size={20} color={iconColor} />
-              <Text style={{
-                color: active ? colors.text : pending ? colors.textMuted : colors.textSecondary,
-                fontSize: 14,
-                fontWeight: active ? '700' : '500',
-              }}>
-                {stageLabel(s)}
-              </Text>
-              {active && <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 4 }} />}
-            </View>
-          );
-        })}
-      </View>
-
-      <TouchableOpacity
-        onPress={() => setFlowState('idle')}
-        style={{ marginTop: 28, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, backgroundColor: colors.surface2 }}
-      >
-        <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
-          {t('common.cancel', 'Cancel')}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  // ── Render: transcription confirm ───────────────────────────────────────
-  const renderTranscription = () => (
-    <TranscriptionConfirm
-      text={transcribedText}
-      onConfirm={(text) => {
-        // Seed IdleView's smart input with the transcribed text BEFORE
-        // kicking off the AI lookup — if handleSmartSubmit falls back to
-        // `idle` (credit limit, empty bulk-parse, etc.), the user returns
-        // to IdleView with their text preserved and can edit & retry.
-        setIdleSeed(text);
-        setIdleKey((k) => k + 1);
-        handleSmartSubmit(text);
-      }}
-      onCancel={() => setFlowState('idle')}
-    />
-  );
+  const handleBackToIdle = useCallback(() => setFlowState('idle'), []);
 
   // ── Render: inline confirm card ─────────────────────────────────────────
   const renderConfirm = () => {
@@ -1660,8 +1595,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 onManualToggle={handleManualToggle}
               />
             )}
-            {flowState === 'loading' && renderLoading()}
-            {flowState === 'transcription' && renderTranscription()}
+            {flowState === 'loading' && (
+              <LoadingView
+                stage={loadingStage}
+                source={addedViaSource}
+                hasTranscribedText={hasTranscribedText}
+                onCancel={handleBackToIdle}
+              />
+            )}
+            {flowState === 'transcription' && (
+              <TranscriptionView
+                text={transcribedText}
+                onConfirm={handleTranscriptionConfirm}
+                onCancel={handleBackToIdle}
+              />
+            )}
             {flowState === 'confirm' && renderConfirm()}
             {flowState === 'bulk-confirm' && renderBulkConfirm()}
             {flowState === 'wizard' && renderWizard()}
