@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import type { BillingPeriod } from '../../types';
 
 /**
  * Default manual-form values for AddSubscriptionSheet.
@@ -10,14 +11,6 @@ import { useCallback, useState } from 'react';
  * Getters for `startDate` / `nextPaymentDate` are intentionally evaluated at
  * module load — good enough for a form that's always remounted per sheet open.
  */
-export type BillingPeriod =
-  | 'WEEKLY'
-  | 'MONTHLY'
-  | 'QUARTERLY'
-  | 'YEARLY'
-  | 'LIFETIME'
-  | 'ONE_TIME';
-
 export interface AddSubscriptionForm {
   name: string;
   category: string;
@@ -65,10 +58,12 @@ export const emptyForm: AddSubscriptionForm = {
 /**
  * Form state hook for the manual "Add subscription" flow.
  *
- * Lifts form + disclosure state out of AddSubscriptionSheet so a keystroke
- * in `name`/`amount`/etc. re-renders ManualFormView only — the orchestrator
- * stays stable because child flow views (Idle/Loading/Confirm/Wizard) are
- * memoized and don't depend on form state.
+ * `React.memo(ManualFormView)` does NOT save work per keystroke — `form`
+ * changes every keystroke so the memo is invalidated. Its actual benefit:
+ * when the orchestrator re-renders for reasons unrelated to the form
+ * (`visible` toggling, `useBilling` limits refresh, theme, router), the
+ * setters/flags/handlers passed to ManualFormView stay stable and it skips
+ * that re-render. `formRef` keeps `handleSave`'s identity stable too.
  */
 export function useAddSubscriptionForm(initial: AddSubscriptionForm = emptyForm) {
   const [form, setForm] = useState<AddSubscriptionForm>(initial);

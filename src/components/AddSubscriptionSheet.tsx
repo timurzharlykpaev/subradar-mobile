@@ -99,12 +99,25 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     access.limits.subscriptions.used >= access.limits.subscriptions.limit;
   if (__DEV__) console.log('[AddSheet] isPro:', isPro, 'subsLimitReached:', subsLimitReached, 'active:', activeCount, '/', maxSubscriptions);
 
+  // Read displayCurrency early so the form hook can seed `currency` with it
+  // on first mount (before resetAll has a chance to run).
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+
   // ── Form state (kept for manual mode) ───────────────────────────────────
-  // Form slice lives in a dedicated hook so keystrokes in ManualFormView
-  // don't re-render the orchestrator's other flow views. `formRef` below
-  // lets handleSave read the latest form without a useCallback dep,
-  // keeping handleSave's identity stable across keystrokes.
-  const formCtx = useAddSubscriptionForm();
+  // Form slice lives in a dedicated hook. `React.memo(ManualFormView)` does
+  // NOT skip per-keystroke renders — `form` changes every keystroke and
+  // invalidates the memo. What the memo DOES buy: when the orchestrator
+  // re-renders for non-form reasons (visible toggling, useBilling limits
+  // refresh, theme, router events), ManualFormView skips its re-render
+  // because its setters/saving flag/handlers are stable. `formRef` below
+  // keeps `handleSave`'s identity stable too — handleSave doesn't need
+  // `form` in its deps, so non-form-related state changes don't churn the
+  // save handler prop.
+  //
+  // `displayCurrency` is captured in useState ONLY on first render — later
+  // currency changes don't re-seed. That's fine: first sheet open shows the
+  // user's preferred currency, and `resetAll` re-seeds on subsequent opens.
+  const formCtx = useAddSubscriptionForm({ ...emptyForm, currency: displayCurrency });
   const formRef = useRef(formCtx.form);
   formRef.current = formCtx.form;
   const [saving, setSaving] = useState(false);
@@ -150,7 +163,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const { addSubscription } = useSubscriptionsStore();
   const { currency } = useSettingsStore();
-  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const region = useSettingsStore((s) => s.region || 'US');
   const [catalogServices, setCatalogServices] = useState<CatalogService[]>([]);
   const isMounted = useIsMounted();
@@ -252,7 +264,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       return;
     }
     // Read latest form from the ref so this callback doesn't need `form` in
-    // deps — ManualFormView's memo then survives every keystroke.
+    // deps — keeps handleSave's identity stable across unrelated re-renders.
     const form = formRef.current;
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
