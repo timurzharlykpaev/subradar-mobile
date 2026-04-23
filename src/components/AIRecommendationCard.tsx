@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useTheme } from '../theme';
+import { formatMoney } from '../utils/formatMoney';
 import type { Recommendation, RecommendationPriority, RecommendationType } from '../types';
 
 interface Props {
@@ -93,7 +95,7 @@ export default function AIRecommendationCard({ recommendation, currency }: Props
         </View>
         {recommendation.estimatedSavingsMonthly > 0 && (
           <Text style={[styles.savings, { color: colors.success }]}>
-            {`-${recommendation.estimatedSavingsMonthly.toFixed(2)} ${currency}/mo`}
+            {`-${formatMoney(recommendation.estimatedSavingsMonthly, currency, i18n.language || 'en')}/${t('period_short.MONTHLY', 'mo')}`}
           </Text>
         )}
       </View>

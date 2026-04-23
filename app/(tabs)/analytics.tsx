@@ -860,7 +860,11 @@ export default function AnalyticsScreen() {
                       <Text style={[styles.top5Name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                         <CategoryIcon category={sub.category} size={12} />
-                        <Text style={{ fontSize: 11, color: colors.textMuted }}>{catInfo?.label || sub.category}</Text>
+                        <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                          {catInfo
+                            ? String(t(`categories.${catInfo.id.toLowerCase()}`, catInfo.label))
+                            : sub.category}
+                        </Text>
                       </View>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
@@ -904,7 +908,10 @@ export default function AnalyticsScreen() {
                   <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                   <Text style={[styles.subCategory, { color: colors.textSecondary }]} numberOfLines={1}>
                     <CategoryIcon category={CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.id || 'OTHER'} size={14} />{' '}
-                    {CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.label || sub.category}
+                    {(() => {
+                      const cat = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
+                      return cat ? String(t(`categories.${cat.id.toLowerCase()}`, cat.label)) : sub.category;
+                    })()}
                   </Text>
                 </View>
                 <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
@@ -958,9 +965,16 @@ function ForecastCard({ icon, label, value, sub, color, accent }: {
       <View style={[styles.forecastIconCircle, { backgroundColor: color + '18' }]}>
         <Ionicons name={icon as any} size={16} color={color} />
       </View>
-      <Text style={[{ fontSize: accent ? 20 : 16, fontWeight: '900', color: colors.text }]}>{value}</Text>
-      <Text style={[styles.forecastLabel, { color: colors.textMuted }]}>{label}</Text>
-      <Text style={[styles.forecastSub, { color: colors.textMuted }]}>{sub}</Text>
+      <Text
+        style={{ fontSize: accent ? 16 : 15, fontWeight: '900', color: colors.text, textAlign: 'center' }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
+        {value}
+      </Text>
+      <Text style={[styles.forecastLabel, { color: colors.textMuted }]} numberOfLines={1}>{label}</Text>
+      <Text style={[styles.forecastSub, { color: colors.textMuted }]} numberOfLines={1}>{sub}</Text>
     </View>
   );
 }
@@ -971,10 +985,13 @@ const forecastStyles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: 16,
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
     borderWidth: 1,
+    minWidth: 0,
   },
   iconCircle: {
     width: 32,
@@ -1098,7 +1115,7 @@ const styles = StyleSheet.create({
   barFill: { height: 6, borderRadius: 3 },
 
   // Forecast
-  forecastRow: { flexDirection: 'row', gap: 10 },
+  forecastRow: { flexDirection: 'row', gap: 8 },
 
   // Locked / Pro gate
   lockedContainer: {

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
+import i18n from '../i18n';
 import { analysisApi } from '../api/analysis';
 import { useSettingsStore } from '../stores/settingsStore';
 import type { AnalysisStatusResponse } from '../types';
@@ -35,11 +36,14 @@ export function useAnalysisStatus(jobId: string | null) {
 
 export function useRunAnalysis() {
   const queryClient = useQueryClient();
-  const language = useSettingsStore((s) => s.language);
+  const storeLanguage = useSettingsStore((s) => s.language);
   const currency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const region = useSettingsStore((s) => s.region || s.country || 'US');
+  // i18n.language is the actual active UI locale; store value may be stale if
+  // language was changed elsewhere (system detect, onboarding) without setLanguage.
+  const locale = (i18n.language || storeLanguage || 'en').split('-')[0];
   return useMutation({
-    mutationFn: () => analysisApi.run({ locale: language, currency, region }),
+    mutationFn: () => analysisApi.run({ locale, currency, region }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.usage });
