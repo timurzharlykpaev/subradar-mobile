@@ -36,7 +36,7 @@ import { subscriptionsApi } from '../api/subscriptions';
 import { aiApi } from '../api/ai';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { AIWizard, ParsedSub } from './AIWizard';
+import type { ParsedSub } from './AIWizard';
 import { SuccessOverlay } from './SuccessOverlay';
 import { BulkAddSheet } from './BulkAddSheet';
 import type { ConfirmCardData } from './InlineConfirmCard';
@@ -59,6 +59,7 @@ import { TranscriptionView } from './add-subscription/TranscriptionView';
 import { ConfirmView } from './add-subscription/ConfirmView';
 import { BulkConfirmView } from './add-subscription/BulkConfirmView';
 import { ManualFormView } from './add-subscription/ManualFormView';
+import { WizardView } from './add-subscription/WizardView';
 import { useAddSubscriptionForm, emptyForm } from './add-subscription/useAddSubscriptionForm';
 import type { LoadingStage } from './add-subscription/types';
 
@@ -806,127 +807,117 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setBulkChecked(prev => prev.map((v, i) => (i === index ? !v : v)));
   }, []);
 
-  // ── Render: wizard ─────────────────────────────────────────────────────
-  const renderWizard = () => (
-    <View style={{ flex: 1, paddingHorizontal: 4, paddingBottom: 16 }}>
-      <TouchableOpacity
-        onPress={() => setFlowState('idle')}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, paddingVertical: 8, paddingHorizontal: 4 }}
-        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-      >
-        <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
-        <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
-      </TouchableOpacity>
-      <AIWizard
-        onSave={async (sub) => {
-          const iconUrl = sub.iconUrl || (sub.serviceUrl
-            ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
-            : sub.name
-              ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
-              : undefined);
+  // ── Wizard: AI-clarification fallback handlers ──────────────────────────
+  const handleWizardSave = useCallback(async (sub: ParsedSub) => {
+    const iconUrl = sub.iconUrl || (sub.serviceUrl
+      ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
+      : sub.name
+        ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
+        : undefined);
 
-          const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
-          const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
-          const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
+    const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
+    const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
+    const safeCategory = VALID_CATEGORIES.includes(rawCategory) ? rawCategory : 'OTHER';
 
-          const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
-          const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-          const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
+    const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+    const rawBillingPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+    const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
 
-          const res = await subscriptionsApi.create({
-            name: sub.name || 'Subscription',
-            category: safeCategory,
-            amount: sub.amount || 0,
-            currency: sub.currency || currency || 'USD',
-            billingPeriod: safeBillingPeriod,
-            billingDay: 1,
-            status: 'ACTIVE',
-            serviceUrl: sub.serviceUrl || undefined,
-            cancelUrl: sub.cancelUrl || undefined,
-            iconUrl: iconUrl || undefined,
-            startDate: new Date().toISOString().split('T')[0],
-            addedVia: 'AI_TEXT',
-          });
-          addSubscription(res.data);
-          if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
-          setSuccessName(sub.name || '');
-          setShowSuccess(true);
-          subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
-            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-          }).catch(() => {});
-        }}
-        onSaveBulk={async (subs) => {
-          // Same bulk save logic
-          const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
-          const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
-          let saved = 0;
-          const failed: string[] = [];
-          for (const sub of subs) {
-            try {
-              const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
-              const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-              const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
-              const todayStr2 = new Date().toISOString().split('T')[0];
-              const res = await subscriptionsApi.create({
-                name: sub.name || 'Subscription',
-                category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
-                amount: sub.amount || 0,
-                currency: sub.currency || currency || 'USD',
-                billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
-                billingDay: sub.billingDay ?? 1,
-                status: 'ACTIVE',
-                serviceUrl: sub.serviceUrl || undefined,
-                cancelUrl: sub.cancelUrl || undefined,
-                iconUrl: iconUrl || undefined,
-                startDate: sub.startDate || todayStr2,
-                nextPaymentDate: sub.nextPaymentDate || undefined,
-                notes: sub.notes || undefined,
-                reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
-                reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,
-                addedVia: 'AI_TEXT',
-              });
-              addSubscription(res.data);
-              saved++;
-            } catch (err: any) {
-              const code = err?.response?.data?.error?.code;
-              if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
-                failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
-                break;
-              }
-              failed.push(sub.name || '?');
-            }
-          }
-          subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
-            useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-          }).catch(() => {});
-          if (saved > 0) {
-            setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
-            setShowSuccess(true);
-          }
-          if (failed.length > 0 && saved === 0) {
-            handleClose();
-            router.push('/paywall');
-          }
-        }}
-        onEdit={(sub) => {
-          setForm((f) => ({
-            ...f,
-            name: sub.name ?? f.name,
-            amount: sub.amount != null ? String(sub.amount) : f.amount,
-            currency: sub.currency ?? f.currency,
-            billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
-            category: sub.category?.toUpperCase() ?? f.category,
-            serviceUrl: sub.serviceUrl ?? f.serviceUrl,
-            cancelUrl: sub.cancelUrl ?? f.cancelUrl,
-            iconUrl: sub.iconUrl ?? f.iconUrl,
-          }));
-          setManualExpanded(true);
-          setFlowState('manual');
-        }}
+    const res = await subscriptionsApi.create({
+      name: sub.name || 'Subscription',
+      category: safeCategory,
+      amount: sub.amount || 0,
+      currency: sub.currency || currency || 'USD',
+      billingPeriod: safeBillingPeriod,
+      billingDay: 1,
+      status: 'ACTIVE',
+      serviceUrl: sub.serviceUrl || undefined,
+      cancelUrl: sub.cancelUrl || undefined,
+      iconUrl: iconUrl || undefined,
+      startDate: new Date().toISOString().split('T')[0],
+      addedVia: 'AI_TEXT',
+    });
+    addSubscription(res.data);
+    if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
+    setSuccessName(sub.name || '');
+    setShowSuccess(true);
+    subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
+      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+    }).catch(() => {});
+  }, [addSubscription, currency]);
 
-      />
-    </View>
-  );
+  const handleWizardSaveBulk = useCallback(async (subs: ParsedSub[]) => {
+    const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
+    const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
+    let saved = 0;
+    const failed: string[] = [];
+    for (const sub of subs) {
+      try {
+        const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
+        const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+        const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+        const todayStr2 = new Date().toISOString().split('T')[0];
+        const res = await subscriptionsApi.create({
+          name: sub.name || 'Subscription',
+          category: VALID_CATEGORIES.includes(rawCat) ? rawCat : 'OTHER',
+          amount: sub.amount || 0,
+          currency: sub.currency || currency || 'USD',
+          billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
+          billingDay: sub.billingDay ?? 1,
+          status: 'ACTIVE',
+          serviceUrl: sub.serviceUrl || undefined,
+          cancelUrl: sub.cancelUrl || undefined,
+          iconUrl: iconUrl || undefined,
+          startDate: sub.startDate || todayStr2,
+          nextPaymentDate: sub.nextPaymentDate || undefined,
+          notes: sub.notes || undefined,
+          reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
+          reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,
+          addedVia: 'AI_TEXT',
+        });
+        addSubscription(res.data);
+        saved++;
+      } catch (err: any) {
+        const code = err?.response?.data?.error?.code;
+        if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
+          failed.push(...subs.slice(subs.indexOf(sub)).map(s => s.name || '?'));
+          break;
+        }
+        failed.push(sub.name || '?');
+      }
+    }
+    subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
+      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+    }).catch(() => {});
+    if (saved > 0) {
+      setSuccessName(`${saved} ${t('add.bulk_saved','subscriptions')}`);
+      setShowSuccess(true);
+    }
+    if (failed.length > 0 && saved === 0) {
+      handleClose();
+      router.push('/paywall');
+    }
+  }, [addSubscription, currency, t, handleClose, router]);
+
+  const handleWizardEdit = useCallback((sub: ParsedSub) => {
+    setForm((f) => ({
+      ...f,
+      name: sub.name ?? f.name,
+      amount: sub.amount != null ? String(sub.amount) : f.amount,
+      currency: sub.currency ?? f.currency,
+      billingPeriod: (sub.billingPeriod ?? f.billingPeriod) as typeof f.billingPeriod,
+      category: sub.category?.toUpperCase() ?? f.category,
+      serviceUrl: sub.serviceUrl ?? f.serviceUrl,
+      cancelUrl: sub.cancelUrl ?? f.cancelUrl,
+      iconUrl: sub.iconUrl ?? f.iconUrl,
+    }));
+    setManualExpanded(true);
+    setFlowState('manual');
+  }, [setForm, setManualExpanded]);
+
+  const handleWizardBack = useCallback(() => {
+    setFlowState('idle');
+  }, []);
 
   // ── Main render ─────────────────────────────────────────────────────────
   return (
@@ -1018,7 +1009,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 onCancel={handleBackToIdle}
               />
             )}
-            {flowState === 'wizard' && renderWizard()}
+            {flowState === 'wizard' && (
+              <WizardView
+                onSave={handleWizardSave}
+                onSaveBulk={handleWizardSaveBulk}
+                onEdit={handleWizardEdit}
+                onBack={handleWizardBack}
+              />
+            )}
             {flowState === 'manual' && (
               <ManualFormView
                 form={formCtx.form}
