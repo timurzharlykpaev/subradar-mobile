@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
+import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 
 interface Props {
   onConfirm: () => Promise<void>;
@@ -44,7 +45,7 @@ export function DeleteAccountConfirm({ onConfirm, onCancel }: Props) {
         {t('settings.type_delete', 'Type DELETE to confirm:')}
       </Text>
 
-      <TextInput
+      <DoneAccessoryInput
         style={[styles.input, { color: colors.text, borderColor: canDelete ? '#ef4444' : colors.border }]}
         value={input}
         onChangeText={setInput}

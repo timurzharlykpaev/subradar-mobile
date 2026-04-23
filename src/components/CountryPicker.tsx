@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   FlatList,
   TouchableOpacity,
   Modal,
@@ -12,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { COUNTRIES } from '../constants/countries';
+import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 
 interface Props {
   visible: boolean;
@@ -50,7 +50,7 @@ export function CountryPicker({
           <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
           <View style={{ width: 28 }} />
         </View>
-        <TextInput
+        <DoneAccessoryInput
           style={[
             styles.search,
             {

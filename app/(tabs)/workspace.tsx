@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput, Image,
+  View, Text, ScrollView, TouchableOpacity, Image,
   Alert, ActivityIndicator, RefreshControl, StyleSheet,
   KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard,
 } from 'react-native';
+import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -258,7 +259,7 @@ export default function WorkspaceScreen() {
                 <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 10 }}>
                   {t('workspace.team_name_label')}
                 </Text>
-                <TextInput
+                <DoneAccessoryInput
                   testID="input-workspace-name"
                   style={{
                     borderWidth: 1,

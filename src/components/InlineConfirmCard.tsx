@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
@@ -10,6 +10,7 @@ import { formatMoney } from '../utils/formatMoney';
 import i18n from '../i18n';
 import { DatePickerField } from './DatePickerField';
 import { NumericInput } from './NumericInput';
+import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -152,7 +153,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
           </View>
         )}
         <View style={{ flex: 1 }}>
-          <TextInput
+          <DoneAccessoryInput
             style={[styles.nameInput, { color: colors.text }]}
             value={name}
             onChangeText={setName}
@@ -403,7 +404,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
             <Text style={[styles.label, { color: colors.textSecondary }]}>
               {t('add.notes', 'Notes')}
             </Text>
-            <TextInput
+            <DoneAccessoryInput
               style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, minHeight: 60, textAlignVertical: 'top' }]}
               value={notes}
               onChangeText={setNotes}
@@ -418,7 +419,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
             <Text style={[styles.label, { color: colors.textSecondary }]}>
               {t('add.tags', 'Tags')}
             </Text>
-            <TextInput
+            <DoneAccessoryInput
               style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
               value={tags}
               onChangeText={setTags}

@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { DoneAccessoryInput } from '../src/components/primitives/DoneAccessoryInput';
 import * as WebBrowser from 'expo-web-browser';
 // expo-auth-session/providers/google removed (requires native build)
 let AppleAuthentication: any = null;
@@ -1087,7 +1088,7 @@ export default function OnboardingScreen() {
 
           <View style={styles.otpInputRow}>
             {[0, 1, 2, 3, 4, 5].map((index) => (
-              <TextInput
+              <DoneAccessoryInput
                 key={index}
                 ref={(ref) => { otpInputRefs.current[index] = ref; }}
                 testID={`otp-input-${index}`}
@@ -1135,7 +1136,7 @@ export default function OnboardingScreen() {
         </View>
       ) : (
         <View style={styles.otpContainer}>
-          <TextInput
+          <DoneAccessoryInput
             testID="email-input"
             style={[styles.emailInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
             value={email}

@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
   Modal,
-  TextInput,
   FlatList,
   TouchableOpacity,
   View,
@@ -11,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 
 const PRIMARY = ['USD', 'EUR', 'GBP', 'KZT', 'RUB', 'UAH', 'TRY'];
 const ADDITIONAL = [
@@ -58,7 +58,7 @@ export function CurrencyPicker({
           <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
           <View style={{ width: 28 }} />
         </View>
-        <TextInput
+        <DoneAccessoryInput
           style={[
             styles.search,
             {

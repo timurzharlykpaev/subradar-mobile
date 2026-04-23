@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
@@ -17,6 +16,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { authApi } from '../src/api/auth';
 import { useTheme } from '../src/theme';
 import { useTranslation } from 'react-i18next';
+import { DoneAccessoryInput } from '../src/components/primitives/DoneAccessoryInput';
 
 export default function EditProfileScreen() {
   const { t } = useTranslation();
@@ -92,7 +92,7 @@ export default function EditProfileScreen() {
           <View style={styles.form}>
             <View style={styles.field}>
               <Text style={[styles.label, { color: colors.textSecondary }]}>{t('edit_profile.name')}</Text>
-              <TextInput
+              <DoneAccessoryInput
                 style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.text }]}
                 value={name}
                 onChangeText={handleChangeName}

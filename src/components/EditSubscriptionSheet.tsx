@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Alert,
@@ -28,6 +27,7 @@ import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { CardBrand } from '../types';
 import { useTheme } from '../theme';
 import { NumericInput } from './NumericInput';
+import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 
 interface Props {
   visible: boolean;
@@ -239,7 +239,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Name */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.name')}</Text>
-                  <TextInput
+                  <DoneAccessoryInput
                     style={inputStyle}
                     value={form.name}
                     onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
@@ -365,7 +365,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   <View style={[styles.addCardBox, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
                     <View style={styles.field}>
                       <Text style={fieldLabel}>{t('subscription.card_nickname')}</Text>
-                      <TextInput
+                      <DoneAccessoryInput
                         style={inputStyle}
                         value={newCard.nickname}
                         onChangeText={(v) => setNewCard((c) => ({ ...c, nickname: v }))}
@@ -418,7 +418,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Tags */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.tags', 'Tags')}</Text>
-                  <TextInput
+                  <DoneAccessoryInput
                     style={inputStyle}
                     value={form.tags}
                     onChangeText={(v) => setForm((f) => ({ ...f, tags: v }))}
@@ -430,7 +430,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 {/* Notes */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.notes')}</Text>
-                  <TextInput
+                  <DoneAccessoryInput
                     style={[inputStyle, { height: 80, textAlignVertical: 'top', paddingTop: 12 }]}
                     value={form.notes}
                     onChangeText={(v) => setForm((f) => ({ ...f, notes: v }))}

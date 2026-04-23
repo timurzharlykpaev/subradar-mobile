@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Alert,
   Modal,
 } from 'react-native';
@@ -13,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { cardsApi } from '../../src/api/cards';
+import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { PaymentCard } from '../../src/types';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
@@ -94,7 +94,7 @@ export default function CardsScreen() {
           <View style={[styles.modal, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>{t('cards.add_card')}</Text>
 
-            <TextInput
+            <DoneAccessoryInput
               testID="card-nickname-input"
               style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface2 }]}
               placeholder={t('cards.nickname_placeholder')}
@@ -102,7 +102,7 @@ export default function CardsScreen() {
               value={form.nickname}
               onChangeText={(v) => setForm((f) => ({ ...f, nickname: v }))}
             />
-            <TextInput
+            <DoneAccessoryInput
               testID="card-last4-input"
               style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.surface2 }]}
               placeholder={t('cards.last4_placeholder')}
