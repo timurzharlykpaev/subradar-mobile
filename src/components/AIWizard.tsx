@@ -10,19 +10,16 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert, Image,
+  View, Text, TouchableOpacity, ActivityIndicator,
+  Animated, StyleSheet, Easing, Keyboard, TouchableWithoutFeedback, Alert,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { reportError } from '../utils/errorReporter';
 import { useTranslation } from 'react-i18next';
-import { ExternalLinkIcon, PencilIcon } from './icons';
 import { aiApi } from '../api/ai';
-import { useVoiceRecorder } from '../hooks/useVoiceRecorder';
 import * as FileSystem from 'expo-file-system/legacy';
-import { Pressable } from 'react-native';
 import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
@@ -40,7 +37,8 @@ import { BulkListStage } from './ai-wizard/BulkListStage';
 import { QuestionStage } from './ai-wizard/QuestionStage';
 import { ConfirmStage } from './ai-wizard/ConfirmStage';
 import { PlansStage } from './ai-wizard/PlansStage';
-import type { PlanOption as SharedPlanOption } from './ai-wizard/types';
+import { VoiceInputStage, type QuickServiceRow } from './ai-wizard/VoiceInputStage';
+import type { PlanOption as SharedPlanOption, LoadingStage } from './ai-wizard/types';
 
 interface Props {
   onSave: (sub: ParsedSub) => Promise<void>;
@@ -116,16 +114,6 @@ function DisneyIcon({ size = 32 }: { size?: number }) {
     </Svg>
   );
 }
-function MicSvg({ size = 28, color = 'white' }: { size?: number; color?: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect x="9" y="2" width="6" height="11" rx="3" fill={color} />
-      <Path d="M5 11a7 7 0 0014 0" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
-      <Path d="M12 18v4M9 22h6" stroke={color} strokeWidth="2" strokeLinecap="round" />
-    </Svg>
-  );
-}
-
 const QUICK = [
   { name: 'Netflix',   Icon: NetflixIcon,  amount: 15.99, currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://www.netflix.com/cancelplan',   serviceUrl: 'https://netflix.com',    iconUrl: 'https://icon.horse/icon/netflix.com' },
   { name: 'Spotify',   Icon: SpotifyIcon,  amount: 9.99,  currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://www.spotify.com/account/subscription/cancel', serviceUrl: 'https://spotify.com', iconUrl: 'https://icon.horse/icon/spotify.com' },
@@ -136,191 +124,6 @@ const QUICK = [
   { name: 'Apple TV+', Icon: AppleTVIcon,  amount: 9.99,  currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://support.apple.com/billing',   serviceUrl: 'https://tv.apple.com',   iconUrl: 'https://icon.horse/icon/apple.com' },
   { name: 'Disney+',   Icon: DisneyIcon,   amount: 13.99, currency: 'USD', billingPeriod: 'MONTHLY', cancelUrl: 'https://www.disneyplus.com/account/subscription', serviceUrl: 'https://disneyplus.com', iconUrl: 'https://icon.horse/icon/disneyplus.com' },
 ] as const;
-
-// ── Loading stages ───────────────────────────────────────────────────────────
-
-type LoadingStage = 'transcribing' | 'analyzing' | 'searching' | 'preparing' | null;
-
-const STAGE_LABELS: Record<string, Record<string, string>> = {
-  transcribing: { en: 'Transcribing audio...', ru: 'Распознаю речь...' },
-  analyzing:    { en: 'Analyzing request...', ru: 'Анализирую запрос...' },
-  searching:    { en: 'Searching services...', ru: 'Ищу сервисы...' },
-  preparing:    { en: 'Preparing options...', ru: 'Подбираю варианты...' },
-};
-
-function LoadingIndicator({ stage, colors, lang }: { stage: LoadingStage; colors: any; lang: string }) {
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const dotAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    progressAnim.setValue(0);
-    const stages: LoadingStage[] = ['transcribing', 'analyzing', 'searching', 'preparing'];
-    const idx = stages.indexOf(stage ?? 'transcribing');
-    Animated.timing(progressAnim, {
-      toValue: Math.min((idx + 1) / stages.length, 0.95),
-      duration: 600,
-      useNativeDriver: false,
-    }).start();
-  }, [stage]);
-
-  useEffect(() => {
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(dotAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.timing(dotAnim, { toValue: 0.3, duration: 500, useNativeDriver: true }),
-    ]));
-    loop.start();
-    return () => loop.stop();
-  }, []);
-
-  const label = STAGE_LABELS[stage ?? 'transcribing']?.[lang] ?? STAGE_LABELS[stage ?? 'transcribing']?.en ?? '';
-
-  return (
-    <View style={loadStyles.wrap}>
-      {/* Pulsing icon */}
-      <Animated.View style={{ opacity: dotAnim, marginBottom: 16 }}>
-        <View style={[loadStyles.iconCircle, { backgroundColor: colors.primary + '20' }]}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </Animated.View>
-      {/* Stage label */}
-      <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 12 }}>{label}</Text>
-      {/* Progress bar */}
-      <View style={[loadStyles.track, { backgroundColor: colors.border }]}>
-        <Animated.View style={[loadStyles.fill, {
-          backgroundColor: colors.primary,
-          width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-        }]} />
-      </View>
-    </View>
-  );
-}
-
-const loadStyles = StyleSheet.create({
-  wrap:       { alignItems: 'center', justifyContent: 'center', paddingVertical: 32, flex: 1 },
-  iconCircle: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
-  track:      { width: '60%', height: 4, borderRadius: 2, overflow: 'hidden' },
-  fill:       { height: '100%', borderRadius: 2 },
-});
-
-// ── MicButton ────────────────────────────────────────────────────────────────
-
-function MicButton({ onVoice, loadingStage, colors, t, lang }: { onVoice: (uri: string) => void; loadingStage: LoadingStage; colors: any; t: any; lang: string }) {
-  const { isRecording, duration, maxDuration, durationFmt, start, stop } = useVoiceRecorder(onVoice);
-  const ring1 = useRef(new Animated.Value(1)).current;
-  const loading = !!loadingStage;
-
-  React.useEffect(() => {
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(ring1, { toValue: isRecording ? 1.3 : 1.15, duration: isRecording ? 500 : 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
-      Animated.timing(ring1, { toValue: 1, duration: isRecording ? 500 : 900, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
-    ]));
-    loop.start();
-    return () => loop.stop();
-  }, [isRecording]);
-
-  const bg = isRecording ? '#EF4444' : colors.primary;
-  const progress = duration / maxDuration;
-
-  const toggle = () => {
-    if (loading) return;
-    if (isRecording) stop();
-    else start();
-  };
-
-  if (loading) {
-    return <LoadingIndicator stage={loadingStage} colors={colors} lang={lang} />;
-  }
-
-  return (
-    <View style={micStyles.container}>
-      {/* Button + ring together, perfectly centered */}
-      <View style={micStyles.btnArea}>
-        {/* Pulsing glow ring — same center as button */}
-        <Animated.View style={[
-          micStyles.ring,
-          {
-            backgroundColor: bg + (isRecording ? '28' : '20'),
-            transform: [{ scale: ring1 }],
-          },
-        ]} />
-        {/* Button */}
-        <Pressable onPress={toggle} style={micStyles.pressable}>
-          <View style={[micStyles.btn, { backgroundColor: bg, shadowColor: bg }]}>
-            {isRecording ? <StopSvg /> : <MicSvg size={34} />}
-          </View>
-        </Pressable>
-      </View>
-
-      {/* Label / Timer — always centered below button */}
-      <View style={micStyles.labelWrap}>
-        {isRecording ? (
-          <>
-            <Text style={[micStyles.timer, { color: '#EF4444' }]}>{durationFmt}</Text>
-            <View style={micStyles.progressTrack}>
-              <View style={[micStyles.progressFill, {
-                width: `${progress * 100}%`,
-                backgroundColor: progress > 0.8 ? '#EF4444' : colors.primary,
-              }]} />
-            </View>
-            <Text style={[micStyles.limit, { color: colors.textMuted }]}>
-              {t('add.max_recording', { sec: maxDuration, defaultValue: 'max {{sec}}s' })}
-            </Text>
-          </>
-        ) : (
-          <Text style={[micStyles.label, { color: colors.textSecondary }]}>
-            {t('add.tap_to_record', 'Нажмите для записи')}
-          </Text>
-        )}
-      </View>
-    </View>
-  );
-}
-
-function StopSvg() {
-  return (
-    <Svg width={28} height={28} viewBox="0 0 24 24">
-      <Rect x="6" y="6" width="12" height="12" rx="2" fill="white" />
-    </Svg>
-  );
-}
-
-const BTN_SIZE = 84;
-const RING_SIZE = 128;
-
-const micStyles = StyleSheet.create({
-  container:     { alignItems: 'center', marginVertical: 8, gap: 14 },
-  // btnArea is sized to the ring — button sits perfectly in the center
-  btnArea:       {
-    width: RING_SIZE,
-    height: RING_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ring:          {
-    position: 'absolute',
-    width: RING_SIZE,
-    height: RING_SIZE,
-    borderRadius: RING_SIZE / 2,
-  },
-  pressable:     { zIndex: 2 },
-  btn:           {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-    borderRadius: BTN_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  labelWrap:     { alignItems: 'center', minHeight: 44 },
-  label:         { fontSize: 14, fontWeight: '600', letterSpacing: 0.1 },
-  timer:         { fontSize: 20, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  progressTrack: { width: 150, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(128,128,128,0.2)', marginTop: 8, overflow: 'hidden' },
-  progressFill:  { height: '100%', borderRadius: 1.5 },
-  limit:         { fontSize: 11, fontWeight: '500', marginTop: 4, opacity: 0.6 },
-});
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -651,12 +454,13 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
   }, []);
 
   // ── Stable stage callbacks ───────────────────────────────────────────────
-  // `callWizard`, `onEdit`, `onSave` are recreated on each render. We stash
-  // the latest refs in `latestRef` so the useCallback wrappers below stay
-  // stable across renders — critical for `React.memo` on the extracted
-  // QuestionStage / ConfirmStage / PlansStage to actually skip re-renders.
-  const latestRef = useRef({ callWizard, onSave, onEdit });
-  latestRef.current = { callWizard, onSave, onEdit };
+  // `callWizard`, `onEdit`, `onSave`, `handleVoice`, `handleQuick` are
+  // recreated on each render. We stash the latest refs in `latestRef` so
+  // the useCallback wrappers below stay stable across renders — critical
+  // for `React.memo` on the extracted VoiceInputStage / QuestionStage /
+  // ConfirmStage / PlansStage to actually skip re-renders.
+  const latestRef = useRef({ callWizard, onSave, onEdit, handleVoice, handleQuick });
+  latestRef.current = { callWizard, onSave, onEdit, handleVoice, handleQuick };
 
   const handleAnswer = useCallback((value: string) => {
     latestRef.current.callWizard(value);
@@ -725,14 +529,23 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     });
   }, []);
 
-  const bg   = isDark ? '#1C1C2E' : '#F5F5F7';
-  const card = isDark ? '#252538' : '#FFFFFF';
+  // ── VoiceInputStage callbacks ────────────────────────────────────────────
+  // Stable identities so the memoized stage doesn't thrash on parent
+  // re-renders (e.g. while `loading` toggles between `false` and `true`).
+  const handleVoiceStable = useCallback((uri: string) => {
+    latestRef.current.handleVoice(uri);
+  }, []);
 
-  // ── Idle prompt labels ───────────────────────────────────────────────────
-  // Question-kind UI is handled by <QuestionStage/>, so these texts only
-  // describe the initial idle prompt.
-  const questionText = t('add.ai_q_name', 'Что за подписка?');
-  const hintText = t('add.ai_q_name_hint', 'Скажи или напечатай название сервиса');
+  const handleSubmitStable = useCallback((value: string) => {
+    latestRef.current.callWizard(value);
+  }, []);
+
+  const handleQuickStable = useCallback((svc: QuickServiceRow) => {
+    // VoiceInputStage widens the row type; cast back to the concrete
+    // QUICK entry shape (narrow literal `billingPeriod`, `amount`, etc.)
+    // since the parent knows it only renders chips built from QUICK.
+    latestRef.current.handleQuick(svc as typeof QUICK[number]);
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -827,71 +640,21 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
           />
         )}
 
-        {/* ── Idle input screen — mic, chips, text input ───────────────── */}
+        {/* ── Idle input screen — mic, chips, text input ─────────────────
+            Extracted to `ai-wizard/VoiceInputStage`. The stage owns the
+            mic pulse animation, `useVoiceRecorder`, and the loading
+            indicator; we feed it the controlled text input and stable
+            callbacks so `React.memo` can skip unrelated parent re-renders. */}
         {ui.kind === 'idle' && (
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.question, { color: colors.text }]}>{questionText}</Text>
-            {!!hintText && !loadingStage && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
-
-            {/* Loading stages indicator — shown for both voice and text */}
-            {loadingStage ? (
-              <LoadingIndicator stage={loadingStage} colors={colors} lang={i18n.language ?? 'en'} />
-            ) : (
-              <>
-                {/* Big mic */}
-                <MicButton onVoice={handleVoice} loadingStage={null} colors={colors} t={t} lang={i18n.language ?? 'en'} />
-
-                {/* OR divider */}
-                <View style={styles.orRow}>
-                  <View style={[styles.line, { backgroundColor: colors.border }]} />
-                  <Text style={[styles.orText, { color: colors.textMuted }]}>{t('common.or')}</Text>
-                  <View style={[styles.line, { backgroundColor: colors.border }]} />
-                </View>
-              </>
-            )}
-
-            {/* Text input + chips — hidden during loading */}
-            {!loadingStage && (
-              <>
-                <TextInput
-                  testID="ai-wizard-input"
-                  style={[styles.textInput, {
-                    backgroundColor: bg,
-                    color: colors.text,
-                    borderColor: colors.border,
-                    minHeight: 56,
-                    maxHeight: 120,
-                    textAlignVertical: 'top',
-                    paddingTop: 14,
-                  }]}
-                  value={input}
-                  onChangeText={setInput}
-                  placeholder="Netflix, Spotify, ChatGPT..."
-                  placeholderTextColor={colors.textMuted}
-                  multiline
-                  numberOfLines={2}
-                  blurOnSubmit={true}
-                  returnKeyType="send"
-                  onSubmitEditing={() => { if (input.trim()) { Keyboard.dismiss(); callWizard(input.trim()); } }}
-                />
-
-                {/* Quick chips — popular services bypass the AI wizard entirely. */}
-                <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>{t('ai.popular_services')}</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {QUICK.map(svc => (
-                    <TouchableOpacity
-                      key={svc.name}
-                      style={[styles.chip, { backgroundColor: card, borderColor: colors.border }]}
-                      onPress={() => handleQuick(svc)}
-                    >
-                      <svc.Icon size={20} />
-                      <Text style={[styles.chipText, { color: colors.text }]}>{svc.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            )}
-          </View>
+          <VoiceInputStage
+            loadingStage={loadingStage}
+            onVoice={handleVoiceStable}
+            input={input}
+            onChangeInput={setInput}
+            onSubmit={handleSubmitStable}
+            onQuickSelect={handleQuickStable}
+            quickServices={QUICK}
+          />
         )}
 
       </Animated.View>
