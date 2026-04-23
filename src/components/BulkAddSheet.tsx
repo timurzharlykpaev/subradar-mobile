@@ -9,9 +9,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  TextInput, ActivityIndicator, Alert, Modal, Animated,
-  Dimensions, KeyboardAvoidingView, Platform, Image,
-  TouchableWithoutFeedback, Keyboard, PanResponder,
+  TextInput, Alert, Modal, Animated,
+  Dimensions, KeyboardAvoidingView, Platform,
+  TouchableWithoutFeedback, PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -28,22 +28,16 @@ import { prefetchImage } from '../utils/imagePrefetch';
 import { TextInputMode } from './bulk-add/TextInputMode';
 import { VoiceMode } from './bulk-add/VoiceMode';
 import { ScreenshotMode } from './bulk-add/ScreenshotMode';
+import { SelectMode } from './bulk-add/SelectMode';
+import { ReviewMode } from './bulk-add/ReviewMode';
+import type { BulkSub } from './bulk-add/types';
+
+// Re-export so existing imports of `BulkSub` from this module keep working.
+export type { BulkSub };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-export interface BulkSub {
-  name: string;
-  amount: number;
-  currency: string;
-  billingPeriod: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY';
-  category?: string;
-  iconUrl?: string;
-  serviceUrl?: string;
-  cancelUrl?: string;
-  isDuplicate?: boolean;
-}
 
 type Mode = 'select' | 'voice' | 'text' | 'screenshot' | 'review';
 
@@ -68,63 +62,6 @@ function normalizeBilling(b?: string) {
   const up = (b || 'MONTHLY').toUpperCase();
   return VALID_BILLING.includes(up) ? up : 'MONTHLY';
 }
-
-// ── SubCard ──────────────────────────────────────────────────────────────────
-
-function SubCard({ sub, checked, onToggle, onEdit, colors }: { sub: BulkSub; checked: boolean; onToggle: () => void; onEdit: () => void; colors: any }) {
-  const { t } = useTranslation();
-  const periodLabels: Record<string, string> = {
-    MONTHLY: t('add.monthly', 'monthly'),
-    YEARLY: t('add.yearly', 'yearly'),
-    WEEKLY: t('add.weekly', 'weekly'),
-    QUARTERLY: t('add.quarterly', 'quarterly'),
-  };
-
-  return (
-    <View style={[cStyles.card, {
-      backgroundColor: checked ? colors.primary + '12' : colors.surface2,
-      borderColor: checked ? colors.primary : colors.border,
-    }]}>
-      <TouchableOpacity onPress={onToggle} style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} activeOpacity={0.75}>
-        {sub.iconUrl ? (
-          <Image source={{ uri: sub.iconUrl }} style={cStyles.icon} />
-        ) : (
-          <View style={[cStyles.iconFallback, { backgroundColor: colors.primary + '22' }]}>
-            <Text style={[cStyles.iconLetter, { color: colors.primary }]}>{(sub.name || '?')[0].toUpperCase()}</Text>
-          </View>
-        )}
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={[cStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-          <Text style={[cStyles.meta, { color: colors.textMuted }]}>
-            {sub.currency} {sub.amount.toFixed(2)} / {periodLabels[sub.billingPeriod] ?? sub.billingPeriod.toLowerCase()}
-            {sub.category ? ` · ${sub.category}` : ''}
-          </Text>
-          {sub.isDuplicate && (
-            <Text style={{ fontSize: 10, color: '#FBBF24', marginTop: 2 }}>{t('add.already_exists', 'Already added')}</Text>
-          )}
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ padding: 6 }}>
-        <Ionicons name="create-outline" size={18} color={colors.textSecondary} />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onToggle}>
-        <View style={[cStyles.checkbox, { borderColor: checked ? colors.primary : colors.border, backgroundColor: checked ? colors.primary : 'transparent' }]}>
-          {checked && <Ionicons name="checkmark" size={14} color="#fff" />}
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-const cStyles = StyleSheet.create({
-  card:        { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1.5, padding: 14, marginBottom: 10 },
-  icon:        { width: 44, height: 44, borderRadius: 11 },
-  iconFallback:{ width: 44, height: 44, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  iconLetter:  { fontSize: 20, fontWeight: '800' },
-  name:        { fontSize: 16, fontWeight: '700' },
-  meta:        { fontSize: 13, marginTop: 2 },
-  checkbox:    { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
-});
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -232,6 +169,24 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   }, [currency, country, i18n.language]);
 
   const handleBackToSelect = useCallback(() => setMode('select'), []);
+  const handlePickVoice = useCallback(() => setMode('voice'), []);
+  const handlePickText = useCallback(() => setMode('text'), []);
+
+  const toggleChecked = useCallback((index: number) => {
+    setChecked((prev) => {
+      const next = [...prev];
+      next[index] = !next[index];
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setChecked((prev) => prev.map(() => true));
+  }, []);
+
+  const deselectAll = useCallback(() => {
+    setChecked((prev) => prev.map(() => false));
+  }, []);
 
   const parseVoice = useCallback(async (uri: string) => {
     if (!uri) return;
@@ -250,7 +205,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currency, country, i18n.language]);
 
-  const parseScreenshot = async (uri: string) => {
+  const parseScreenshot = useCallback(async (uri: string) => {
     setLoading(true);
     try {
       const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as const });
@@ -272,9 +227,10 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, country, i18n.language]);
 
-  const pickScreenshot = async () => {
+  const pickScreenshot = useCallback(async () => {
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
     if (!res.canceled && res.assets[0]) {
       const uri = res.assets[0].uri;
@@ -282,7 +238,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       setMode('screenshot');
       parseScreenshot(uri);
     }
-  };
+  }, [parseScreenshot]);
 
   // ── Save selected ────────────────────────────────────────────────────────
 
@@ -415,32 +371,11 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
 
             {/* ── Mode: select ─────────────────────────────────────────── */}
             {mode === 'select' && (
-              <View style={{ gap: 12 }}>
-                <ModeCard
-                  icon="mic"
-                  color="#8B5CF6"
-                  title={t('add.bulk_voice', 'Голосом')}
-                  desc={t('add.bulk_voice_desc', '"Netflix 15 долларов, Spotify 10, iCloud 3"')}
-                  onPress={() => setMode('voice')}
-                  colors={colors}
-                />
-                <ModeCard
-                  icon="text"
-                  color="#06B6D4"
-                  title={t('add.bulk_text', 'Текстом')}
-                  desc={t('add.bulk_text_desc', 'Напиши список — AI распознает всё сразу')}
-                  onPress={() => setMode('text')}
-                  colors={colors}
-                />
-                <ModeCard
-                  icon="camera"
-                  color="#10B981"
-                  title={t('add.bulk_screenshot', 'Скриншот')}
-                  desc={t('add.bulk_screenshot_desc', 'Скриншот Apple/Google подписок — распознаем автоматически')}
-                  onPress={pickScreenshot}
-                  colors={colors}
-                />
-              </View>
+              <SelectMode
+                onPickVoice={handlePickVoice}
+                onPickText={handlePickText}
+                onPickScreenshot={pickScreenshot}
+              />
             )}
 
             {/* ── Mode: voice ──────────────────────────────────────────── */}
@@ -472,51 +407,17 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
 
             {/* ── Mode: review ─────────────────────────────────────────── */}
             {mode === 'review' && (
-              <View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <TouchableOpacity onPress={() => setChecked(parsedSubs.map(() => true))}>
-                    <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>
-                      {t('add.bulk_select_all', 'Выбрать все')}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setChecked(parsedSubs.map(() => false))}>
-                    <Text style={{ color: colors.textMuted, fontSize: 14 }}>
-                      {t('add.bulk_deselect_all', 'Снять все')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {parsedSubs.map((sub, i) => (
-                  <SubCard
-                    key={i}
-                    sub={sub}
-                    checked={checked[i] ?? true}
-                    onToggle={() => setChecked((prev) => {
-                      const next = [...prev];
-                      next[i] = !next[i];
-                      return next;
-                    })}
-                    onEdit={() => setEditingIndex(i)}
-                    colors={colors}
-                  />
-                ))}
-
-                <TouchableOpacity
-                  style={[styles.actionBtn, { backgroundColor: '#10B981', marginTop: 8, opacity: saving ? 0.6 : 1 }]}
-                  onPress={saveSelected}
-                  disabled={saving}
-                >
-                  {saving ? <ActivityIndicator color="#fff" /> : (
-                    <Text style={styles.actionTxt}>
-                      {t('add.bulk_save', `Добавить ${checked.filter(Boolean).length}`)}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => setMode('select')} style={{ alignItems: 'center', marginTop: 12 }}>
-                  <Text style={{ color: colors.textMuted, fontSize: 14 }}>← {t('add.bulk_retry', 'Попробовать снова')}</Text>
-                </TouchableOpacity>
-              </View>
+              <ReviewMode
+                parsedSubs={parsedSubs}
+                checked={checked}
+                saving={saving}
+                onToggle={toggleChecked}
+                onEdit={setEditingIndex}
+                onSelectAll={selectAll}
+                onDeselectAll={deselectAll}
+                onSave={saveSelected}
+                onRetry={handleBackToSelect}
+              />
             )}
 
           </ScrollView>
@@ -638,54 +539,13 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
   );
 }
 
-// ── ModeCard ──────────────────────────────────────────────────────────────────
-
-function ModeCard({ icon, color, title, desc, onPress, colors }: {
-  icon: string; color: string; title: string; desc: string; onPress: () => void; colors: any;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[mStyles.card, { backgroundColor: colors.surface2, borderColor: colors.border }]}
-      activeOpacity={0.75}
-    >
-      <View style={[mStyles.iconBox, { backgroundColor: color + '18' }]}>
-        <Ionicons name={icon as any} size={26} color={color} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[mStyles.title, { color: colors.text }]}>{title}</Text>
-        <Text style={[mStyles.desc, { color: colors.textMuted }]} numberOfLines={2}>{desc}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-    </TouchableOpacity>
-  );
-}
-
-const mStyles = StyleSheet.create({
-  card:    { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, borderWidth: 1, padding: 16 },
-  iconBox: { width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  title:   { fontSize: 16, fontWeight: '800', marginBottom: 2 },
-  desc:    { fontSize: 13, lineHeight: 18 },
-});
-
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  backdrop:    { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet:       { position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT * 0.88, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' },
-  handle:      { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginTop: 10, marginBottom: 4 },
-  header:      { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 },
-  title:       { fontSize: 22, fontWeight: '900' },
-  subtitle:    { fontSize: 13, marginTop: 2 },
-  closeBtn:    { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
-  modeTitle:   { fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 6 },
-  modeExample: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 20, paddingHorizontal: 16 },
-  examplesBox: { borderRadius: 14, borderWidth: 1, padding: 14, marginBottom: 14 },
-  examplesLabel:{ fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  exampleRow:  { paddingVertical: 4 },
-  exampleText: { fontSize: 13, lineHeight: 18 },
-  textArea:    { borderRadius: 14, padding: 14, fontSize: 15, borderWidth: 1.5, minHeight: 120, marginBottom: 14 },
-  actionBtn:   { borderRadius: 16, paddingVertical: 17, alignItems: 'center' },
-  actionTxt:   { color: '#fff', fontSize: 16, fontWeight: '800' },
-  screenshotPreview: { width: '100%', height: 220, borderRadius: 16 },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet: { position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT * 0.88, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' },
+  header: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 },
+  title: { fontSize: 22, fontWeight: '900' },
+  subtitle: { fontSize: 13, marginTop: 2 },
+  closeBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
 });
