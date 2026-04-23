@@ -5,7 +5,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Alert,
@@ -14,7 +13,6 @@ import {
   BackHandler,
   Dimensions,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
@@ -36,7 +34,7 @@ import { subscriptionsApi } from '../api/subscriptions';
 import { aiApi } from '../api/ai';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import type { ParsedSub } from './AIWizard';
+import type { ParsedSub } from './add-subscription/types';
 import { SuccessOverlay } from './SuccessOverlay';
 import { BulkAddSheet } from './BulkAddSheet';
 import type { ConfirmCardData } from './InlineConfirmCard';
@@ -49,8 +47,6 @@ import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catal
 import { isBulkInput, splitBulkInput, extractPrice } from '../utils/clientParser';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { convertAmount } from '../services/fxCache';
-import { DatePickerField } from './DatePickerField';
-import { NumericInput } from './NumericInput';
 import { prefetchImage } from '../utils/imagePrefetch';
 import { translateBackendError } from '../utils/translateBackendError';
 import { IdleView, type QuickChipItem } from './add-subscription/IdleView';
@@ -58,6 +54,7 @@ import { LoadingView } from './add-subscription/LoadingView';
 import { TranscriptionView } from './add-subscription/TranscriptionView';
 import { ConfirmView } from './add-subscription/ConfirmView';
 import { BulkConfirmView } from './add-subscription/BulkConfirmView';
+import { BulkEditModal } from './add-subscription/BulkEditModal';
 import { ManualFormView } from './add-subscription/ManualFormView';
 import { WizardView } from './add-subscription/WizardView';
 import { useAddSubscriptionForm, emptyForm } from './add-subscription/useAddSubscriptionForm';
@@ -731,6 +728,34 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
   const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
 
+  // Handlers for BulkEditModal — kept at the orchestrator level because
+  // the modal only owns its own presentation state, while `bulkItems`
+  // and `bulkChecked` need to stay in lockstep across edit / delete.
+  const handleBulkEditClose = useCallback(() => {
+    setBulkEditIdx(null);
+    setBulkMoreExpanded(false);
+  }, []);
+
+  const updateBulkSub = useCallback((patch: Partial<ParsedSub>) => {
+    setBulkItems((prev) => {
+      // Read `bulkEditIdx` from the latest state via functional updater +
+      // closure; if the user hit Close mid-edit the idx is null → bail.
+      if (bulkEditIdx === null) return prev;
+      const next = [...prev];
+      next[bulkEditIdx] = { ...next[bulkEditIdx], ...patch };
+      return next;
+    });
+  }, [bulkEditIdx]);
+
+  const deleteBulkSub = useCallback(() => {
+    if (bulkEditIdx === null) return;
+    const idx = bulkEditIdx;
+    setBulkItems((prev) => prev.filter((_, j) => j !== idx));
+    setBulkChecked((prev) => prev.filter((_, j) => j !== idx));
+    setBulkEditIdx(null);
+    setBulkMoreExpanded(false);
+  }, [bulkEditIdx]);
+
   const handleBulkSaveAll = useCallback(async () => {
     const selected = bulkItems.filter((_, i) => bulkChecked[i]);
     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
@@ -1055,206 +1080,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     />
 
     {/* ── Full-screen edit modal for bulk items ─────────────────────────── */}
-    {bulkEditIdx !== null && bulkItems[bulkEditIdx] && (() => {
-      const sub = bulkItems[bulkEditIdx];
-      const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const;
-      const ALL_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DESIGN', 'EDUCATION', 'FINANCE', 'INFRASTRUCTURE', 'SECURITY', 'HEALTH', 'SPORT', 'DEVELOPER', 'NEWS', 'BUSINESS', 'OTHER'];
-      const updateSub = (patch: Partial<typeof sub>) => setBulkItems(prev => { const n = [...prev]; n[bulkEditIdx] = { ...n[bulkEditIdx], ...patch }; return n; });
-      return (
-        <Modal visible transparent animationType="slide" onRequestClose={() => { setBulkEditIdx(null); setBulkMoreExpanded(false); }}>
-          <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12, gap: 12 }}>
-              <TouchableOpacity onPress={() => { setBulkEditIdx(null); setBulkMoreExpanded(false); }}>
-                <Ionicons name="chevron-back" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, flex: 1 }}>{t('common.edit', 'Edit')}</Text>
-              <TouchableOpacity
-                onPress={() => { setBulkEditIdx(null); setBulkMoreExpanded(false); }}
-                style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.primary }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }}
-              keyboardShouldPersistTaps="handled"
-              automaticallyAdjustKeyboardInsets
-              contentInsetAdjustmentBehavior="automatic"
-            >
-              {/* Name */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.service_name', 'Name')}</Text>
-                <TextInput
-                  style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                  value={sub.name}
-                  onChangeText={(v) => updateSub({ name: v })}
-                />
-              </View>
-              {/* Amount */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
-                <NumericInput
-                  style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                  value={String(sub.amount || '')}
-                  onChangeText={(v) => updateSub({ amount: parseFloat(v) || 0 })}
-                  keyboardType="decimal-pad"
-                  accessoryId="bulk-amount"
-                />
-              </View>
-              {/* Billing Period */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_period', 'Billing Period')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {PERIODS.map((p) => (
-                    <TouchableOpacity
-                      key={p}
-                      style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary : colors.border, backgroundColor: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary + '12' : colors.card }}
-                      onPress={() => updateSub({ billingPeriod: p })}
-                    >
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: (sub.billingPeriod || 'MONTHLY').toUpperCase() === p ? colors.primary : colors.textSecondary }}>
-                        {String(t(`add.${p.toLowerCase()}`, p.toLowerCase()))}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              {/* Category */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.category', 'Category')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                  {ALL_CATEGORIES.map((c) => (
-                    <TouchableOpacity
-                      key={c}
-                      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.border, backgroundColor: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary + '12' : colors.card }}
-                      onPress={() => updateSub({ category: c })}
-                    >
-                      <Text style={{ fontSize: 11, fontWeight: '600', color: (sub.category || 'OTHER').toUpperCase() === c ? colors.primary : colors.textSecondary }}>{String(t(`categories.${c.toLowerCase()}`, c))}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              {/* More options toggle */}
-              <TouchableOpacity
-                onPress={() => setBulkMoreExpanded(!bulkMoreExpanded)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  paddingVertical: 14,
-                  marginTop: 4,
-                  borderTopWidth: 1,
-                  borderTopColor: colors.border,
-                }}
-              >
-                <Ionicons
-                  name={bulkMoreExpanded ? 'chevron-up' : 'chevron-down'}
-                  size={16}
-                  color={colors.textSecondary}
-                />
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
-                  {bulkMoreExpanded ? t('add_flow.less_options', 'Less') : t('add_flow.more_options', 'More options')}
-                </Text>
-              </TouchableOpacity>
-
-              {bulkMoreExpanded && (
-                <View style={{ gap: 16 }}>
-                  {/* Start Date */}
-                  <DatePickerField
-                    label={t('add.start_date', 'Start date')}
-                    value={sub.startDate || new Date().toISOString().split('T')[0]}
-                    onChange={(v) => updateSub({ startDate: v })}
-                  />
-                  {/* Next Payment Date */}
-                  <DatePickerField
-                    label={t('add.next_payment', 'Next payment date')}
-                    value={sub.nextPaymentDate || ''}
-                    onChange={(v) => updateSub({ nextPaymentDate: v })}
-                  />
-                  {/* Billing Day */}
-                  <View style={{ gap: 6 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_day', 'Billing day')}</Text>
-                    <NumericInput
-                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, width: 80 }}
-                      value={sub.billingDay != null ? String(sub.billingDay) : ''}
-                      onChangeText={(v) => {
-                        const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                        updateSub({ billingDay: isNaN(num) ? undefined : Math.min(Math.max(num, 1), 31) });
-                      }}
-                      placeholder="1"
-                      placeholderTextColor={colors.textMuted}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                      accessoryId="bulk-billing-day"
-                    />
-                  </View>
-                  {/* Notes */}
-                  <View style={{ gap: 6 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.notes', 'Notes')}</Text>
-                    <TextInput
-                      style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, minHeight: 80, textAlignVertical: 'top', paddingTop: 14 }}
-                      value={sub.notes || ''}
-                      onChangeText={(v) => updateSub({ notes: v })}
-                      placeholder={t('add.notes_placeholder', 'Additional notes...')}
-                      placeholderTextColor={colors.textMuted}
-                      multiline
-                      numberOfLines={3}
-                    />
-                  </View>
-                  {/* Reminder Days */}
-                  <View style={{ gap: 6 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.reminder', 'Reminder')}</Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                      {[
-                        { label: t('add.reminder_off', 'Off'), value: [] as number[] },
-                        { label: t('add.reminder_1d', '1d'), value: [1] },
-                        { label: t('add.reminder_3d', '3d'), value: [3] },
-                        { label: t('add.reminder_7d', '7d'), value: [7] },
-                      ].map((opt) => {
-                        const current = sub.reminderDaysBefore ?? [3];
-                        const isSelected = JSON.stringify(current) === JSON.stringify(opt.value);
-                        return (
-                          <TouchableOpacity
-                            key={opt.label}
-                            style={{
-                              paddingHorizontal: 14,
-                              paddingVertical: 10,
-                              borderRadius: 10,
-                              borderWidth: 1.5,
-                              borderColor: isSelected ? colors.primary : colors.border,
-                              backgroundColor: isSelected ? colors.primary + '12' : colors.card,
-                            }}
-                            onPress={() => updateSub({ reminderDaysBefore: opt.value })}
-                          >
-                            <Text style={{ fontSize: 13, fontWeight: '600', color: isSelected ? colors.primary : colors.textSecondary }}>
-                              {opt.label}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  </View>
-                </View>
-              )}
-
-              {/* Delete */}
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
-                onPress={() => {
-                  setBulkItems(prev => prev.filter((_, j) => j !== bulkEditIdx));
-                  setBulkChecked(prev => prev.filter((_, j) => j !== bulkEditIdx));
-                  setBulkEditIdx(null);
-                  setBulkMoreExpanded(false);
-                }}
-              >
-                <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#EF4444' }}>{t('common.delete', 'Delete')}</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </Modal>
-      );
-    })()}
+    <BulkEditModal
+      visible={bulkEditIdx !== null}
+      sub={bulkEditIdx !== null ? bulkItems[bulkEditIdx] ?? null : null}
+      onClose={handleBulkEditClose}
+      onUpdate={updateBulkSub}
+      onDelete={deleteBulkSub}
+      moreExpanded={bulkMoreExpanded}
+      setMoreExpanded={setBulkMoreExpanded}
+      saving={bulkSaving}
+    />
 
     {/* Pro gate modal — replaces Alert.alert for AI quota / subs limit. */}
     <ProFeatureModal

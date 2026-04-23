@@ -29,22 +29,12 @@ import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { cardsApi } from '../api/cards';
 import { useRouter } from 'expo-router';
 
-export interface ParsedSub {
-  name?: string;
-  amount?: number;
-  currency?: string;
-  billingPeriod?: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY';
-  category?: string;
-  serviceUrl?: string;
-  cancelUrl?: string;
-  iconUrl?: string;
-  paymentCardId?: string;
-  startDate?: string;
-  nextPaymentDate?: string;
-  billingDay?: number;
-  notes?: string;
-  reminderDaysBefore?: number[];
-}
+// ParsedSub is the canonical draft shape for the AI-driven add-subscription
+// pipeline. Definition lives in `add-subscription/types` so all participants
+// (wizard, confirm, bulk list, bulk edit) can import without pulling in this
+// 1200-line component. Re-exported here for backward compatibility.
+export type { ParsedSub } from './add-subscription/types';
+import type { ParsedSub } from './add-subscription/types';
 
 interface Props {
   onSave: (sub: ParsedSub) => Promise<void>;
