@@ -144,6 +144,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [transcribedText, setTranscribedText] = useState('');
   const [confirmData, setConfirmData] = useState<ConfirmCardData | null>(null);
   const [bulkItems, setBulkItems] = useState<ParsedSub[]>([]);
+  // `bulkChecked` lives alongside `bulkItems` so it shifts in lockstep when
+  // rows are removed mid-array. See handleBulkRemove + the edit-modal delete.
+  const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
   const [manualExpanded, setManualExpanded] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState('');
@@ -194,6 +197,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setTranscribedText('');
     setConfirmData(null);
     setBulkItems([]);
+    setBulkChecked([]);
     setManualExpanded(false);
     setForm({ ...emptyForm, currency: displayCurrency });
     setScreenshotUri(null);
@@ -461,6 +465,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
         if (subs.length > 0) {
           setBulkItems(subs);
+          setBulkChecked(subs.map(() => true));
           setFlowState('bulk-confirm');
           return;
         }
@@ -651,6 +656,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       } else {
         if (__DEV__) console.log('[Screenshot] Multiple subs found:', validSubs.length, 'setting bulk-confirm');
         setBulkItems(validSubs);
+        setBulkChecked(validSubs.map(() => true));
         setFlowState('bulk-confirm');
       }
     } catch (err: any) {
@@ -734,14 +740,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const handleBackToIdle = useCallback(() => setFlowState('idle'), []);
 
   // ── Bulk confirm state (screenshot parsed multiple subscriptions) ────────
-  // `bulkChecked` now lives in BulkConfirmView (presentational). The
-  // orchestrator keeps ownership of `bulkItems` + `bulkEditIdx` because
-  // they're read by the full-screen edit modal rendered below.
+  // `bulkChecked` is owned alongside `bulkItems` so removal at index N
+  // shifts both arrays in lockstep. Previously the child resynced `checked`
+  // by position, which caused the row after the removed one to inherit its
+  // slot's checked-state.
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
   const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
 
-  const handleBulkSaveAll = useCallback(async (selected: ParsedSub[]) => {
+  const handleBulkSaveAll = useCallback(async () => {
+    const selected = bulkItems.filter((_, i) => bulkChecked[i]);
     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
     const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
     if (selected.length === 0) return;
@@ -801,7 +809,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         );
       }, saved > 0 ? 2500 : 100);
     }
-  }, [addSubscription, addedViaSource, currency, t]);
+  }, [bulkItems, bulkChecked, addSubscription, addedViaSource, currency, t]);
 
   const handleBulkEdit = useCallback((index: number) => {
     setBulkEditIdx(index);
@@ -809,6 +817,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   const handleBulkRemove = useCallback((index: number) => {
     setBulkItems(prev => prev.filter((_, i) => i !== index));
+    setBulkChecked(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleBulkToggle = useCallback((index: number) => {
+    setBulkChecked(prev => prev.map((v, i) => (i === index ? !v : v)));
   }, []);
 
   // ── Render: wizard ─────────────────────────────────────────────────────
@@ -1459,7 +1472,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             {flowState === 'bulk-confirm' && (
               <BulkConfirmView
                 items={bulkItems}
+                checked={bulkChecked}
                 saving={bulkSaving}
+                onToggle={handleBulkToggle}
                 onSave={handleBulkSaveAll}
                 onEdit={handleBulkEdit}
                 onRemove={handleBulkRemove}
@@ -1681,6 +1696,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
                 onPress={() => {
                   setBulkItems(prev => prev.filter((_, j) => j !== bulkEditIdx));
+                  setBulkChecked(prev => prev.filter((_, j) => j !== bulkEditIdx));
                   setBulkEditIdx(null);
                   setBulkMoreExpanded(false);
                 }}

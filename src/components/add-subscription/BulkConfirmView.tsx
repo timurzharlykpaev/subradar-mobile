@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -164,46 +164,23 @@ const BulkRow = memo(BulkRowImpl);
 
 interface Props {
   items: ParsedSub[];
+  checked: boolean[];
   saving: boolean;
-  onSave: (selected: ParsedSub[]) => Promise<void> | void;
+  onToggle: (index: number) => void;
+  onSave: () => Promise<void> | void;
   onEdit: (index: number) => void;
   onRemove: (index: number) => void;
   onCancel: () => void;
 }
 
-function BulkConfirmViewImpl({ items, saving, onSave, onEdit, onRemove, onCancel }: Props) {
+function BulkConfirmViewImpl({ items, checked, saving, onToggle, onSave, onEdit, onRemove, onCancel }: Props) {
   const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
 
-  // Per-row selection is presentational (reset to "all checked" whenever the
-  // orchestrator replaces `items`). Keeping it local avoids N re-renders of the
-  // parent on every toggle and keeps orchestrator state minimal.
-  const [checked, setChecked] = useState<boolean[]>(() => items.map(() => true));
-
-  useEffect(() => {
-    // Re-align length on orchestrator-driven add/remove. Preserve existing
-    // booleans by index; default new rows to true.
-    setChecked((prev) => {
-      if (prev.length === items.length) return prev;
-      return items.map((_, i) => (i < prev.length ? prev[i] : true));
-    });
-  }, [items]);
-
-  const handleToggle = useCallback((index: number) => {
-    setChecked((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
-    });
-  }, []);
-
-  const handleSave = useCallback(() => {
-    const selected = items.filter((_, i) => checked[i]);
-    if (selected.length === 0) return;
-    onSave(selected);
-  }, [items, checked, onSave]);
-
+  // Per-row selection now lives in the orchestrator (`bulkChecked`), kept in
+  // lockstep with `bulkItems` so that removals shift both arrays together.
+  // This view is purely presentational.
   const selectedCount = useMemo(() => checked.filter(Boolean).length, [checked]);
   const anySelected = selectedCount > 0;
 
@@ -246,7 +223,7 @@ function BulkConfirmViewImpl({ items, saving, onSave, onEdit, onRemove, onCancel
             checked={!!checked[idx]}
             lang={i18n.language}
             displayCurrency={displayCurrency}
-            onToggle={handleToggle}
+            onToggle={onToggle}
             onEdit={onEdit}
             onRemove={onRemove}
           />
@@ -255,7 +232,7 @@ function BulkConfirmViewImpl({ items, saving, onSave, onEdit, onRemove, onCancel
 
       {/* Save button */}
       <TouchableOpacity
-        onPress={handleSave}
+        onPress={onSave}
         disabled={saving || !anySelected}
         style={{
           backgroundColor: anySelected ? colors.primary : colors.surface2,
