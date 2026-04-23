@@ -14,11 +14,22 @@ import {
 
 export interface KeyboardAwareModalProps extends Omit<ModalProps, 'children'> {
   children: React.ReactNode;
-  /** Wrap content in a ScrollView. Default true. Set false for screens with their own FlatList. */
+  /**
+   * Wrap content in a ScrollView. Default true.
+   * Set false if your content has its own FlatList/ScrollView — remember to
+   * set `keyboardShouldPersistTaps="handled"` on it, otherwise buttons need
+   * two taps while the keyboard is up.
+   */
   scrollable?: boolean;
   /** Dismiss keyboard on tap outside inputs. Default true. */
   dismissOnTapOutside?: boolean;
-  /** iOS keyboardVerticalOffset. Default 0. */
+  /**
+   * keyboardVerticalOffset passed to KeyboardAvoidingView (both platforms).
+   * Pass the height of any fixed chrome above the scrollable area (header,
+   * drag handle). Wrong value = last input clipped by keyboard. Rule of
+   * thumb: pageSheet modal + 56pt header → offset ~56. Fullscreen no
+   * header → 0.
+   */
   keyboardVerticalOffset?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
