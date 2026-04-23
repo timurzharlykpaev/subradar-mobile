@@ -8,10 +8,10 @@
  *
  * Quick chips for popular services bypass dialog entirely (1 tap).
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert, Image, Platform,
+  Animated, StyleSheet, ScrollView, Easing, Keyboard, TouchableWithoutFeedback, Alert, Image,
 } from 'react-native';
 import Svg, { Rect, Path, Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,6 +36,7 @@ import { useRouter } from 'expo-router';
 export type { ParsedSub } from './add-subscription/types';
 import type { ParsedSub } from './add-subscription/types';
 import { BulkEditStage } from './ai-wizard/BulkEditStage';
+import { BulkListStage } from './ai-wizard/BulkListStage';
 
 interface Props {
   onSave: (sub: ParsedSub) => Promise<void>;
@@ -595,6 +596,61 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     setContext({});
   };
 
+  // ── Bulk-list row callbacks ──────────────────────────────────────────────
+  // Stable (i: number) => void handlers passed down to each memoized
+  // BulkRow. Toggling row i now only re-renders that row — the other
+  // rows see the same props and bail out at React.memo.
+  const handleBulkToggle = useCallback((i: number) => {
+    setUi((prev) => {
+      if (prev.kind !== 'bulk') return prev;
+      const nextChecked = [...prev.checked];
+      nextChecked[i] = !nextChecked[i];
+      return { ...prev, checked: nextChecked };
+    });
+  }, []);
+
+  const handleBulkEdit = useCallback((i: number) => {
+    // Preserve the cross-stage fade animation (bulk → bulk-edit).
+    // `setUi` inside `fade` runs on the next tick so the new tree
+    // fades in together with the state transition.
+    fade(() =>
+      setUi((prev) => {
+        if (prev.kind !== 'bulk') return prev;
+        return { kind: 'bulk-edit', subs: prev.subs, checked: prev.checked, editIdx: i };
+      }),
+    );
+  }, []);
+
+  const handleBulkRemove = useCallback((i: number) => {
+    setUi((prev) => {
+      if (prev.kind !== 'bulk') return prev;
+      const newSubs = prev.subs.filter((_, j) => j !== i);
+      const newChecked = prev.checked.filter((_, j) => j !== i);
+      if (newSubs.length === 0) {
+        // Last item removed — bounce back to the idle input stage.
+        setInput('');
+        setContext({});
+        return { kind: 'idle' };
+      }
+      return { ...prev, subs: newSubs, checked: newChecked };
+    });
+    setEditingIndex((cur) => (cur === i ? null : cur));
+  }, []);
+
+  const handleBulkSelectAll = useCallback(() => {
+    setUi((prev) => {
+      if (prev.kind !== 'bulk') return prev;
+      return { ...prev, checked: prev.subs.map(() => true) };
+    });
+  }, []);
+
+  const handleBulkDeselectAll = useCallback(() => {
+    setUi((prev) => {
+      if (prev.kind !== 'bulk') return prev;
+      return { ...prev, checked: prev.subs.map(() => false) };
+    });
+  }, []);
+
   const bg   = isDark ? '#1C1C2E' : '#F5F5F7';
   const card = isDark ? '#252538' : '#FFFFFF';
 
@@ -677,111 +733,21 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
           );
         })()}
 
-        {/* ── Bulk confirm screen ─────────────────────────────────────── */}
+        {/* ── Bulk confirm screen ───────────────────────────────────────
+            Extracted to `ai-wizard/BulkListStage`. Rows are individually
+            memoized so toggling one checkbox in a 20-item list doesn't
+            cascade re-renders across the whole tree. */}
         {ui.kind === 'bulk' && (
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.question, { color: colors.text }]}>
-              {t('add.bulk_review', 'Выбери подписки')}
-            </Text>
-            <Text style={[styles.hint, { color: colors.textSecondary }]}>
-              {t('add.bulk_auto_detected', `Найдено: ${ui.subs.length}`)}
-            </Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 }}>
-              <TouchableOpacity onPress={() => setUi({ ...ui, checked: ui.subs.map(() => true) })}>
-                <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '700' }}>{t('add.bulk_select_all', 'Выбрать все')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setUi({ ...ui, checked: ui.subs.map(() => false) })}>
-                <Text style={{ color: colors.textMuted, fontSize: 13 }}>{t('add.bulk_deselect_all', 'Снять все')}</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              style={{ flex: 1 }}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              automaticallyAdjustKeyboardInsets
-              contentInsetAdjustmentBehavior="automatic"
-            >
-              {ui.subs.map((sub, i) => {
-                const isChecked = ui.checked[i] ?? true;
-                const isEditing = editingIndex === i;
-                const periodMap: Record<string, string> = { MONTHLY: '/мес', YEARLY: '/год', WEEKLY: '/нед', QUARTERLY: '/квар' };
-                return (
-                  <View key={i} style={[bulkStyles.card, {
-                    backgroundColor: isChecked ? colors.primary + '12' : (isDark ? '#1C1C2E' : '#F5F5F7'),
-                    borderColor: isEditing ? colors.primary : (isChecked ? colors.primary + '60' : colors.border),
-                  }]}>
-                    {/* Top row: checkbox + icon + name/price */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                      {/* Checkbox */}
-                      <TouchableOpacity onPress={() => {
-                        const next = [...ui.checked]; next[i] = !next[i];
-                        setUi({ ...ui, checked: next });
-                      }}>
-                        <View style={[bulkStyles.check, { borderColor: isChecked ? colors.primary : colors.border, backgroundColor: isChecked ? colors.primary : 'transparent' }]}>
-                          {isChecked && <Ionicons name="checkmark" size={13} color="#fff" />}
-                        </View>
-                      </TouchableOpacity>
-
-                      {/* Icon */}
-                      {sub.iconUrl
-                        ? <Image source={{ uri: sub.iconUrl }} style={{ width: 34, height: 34, borderRadius: 8 }} />
-                        : <View style={[bulkStyles.iconBox, { backgroundColor: colors.primary + '18' }]}>
-                            <Text style={[bulkStyles.iconLetter, { color: colors.primary }]}>
-                              {(sub.name || '?')[0].toUpperCase()}
-                            </Text>
-                          </View>
-                      }
-
-                      {/* Name + price */}
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (ui.kind === 'bulk') {
-                            fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
-                          }
-                        }}
-                        style={{ flex: 1 }}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={[bulkStyles.name, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                        <Text style={[bulkStyles.meta, { color: colors.textMuted }]}>
-                          {sub.currency ?? 'USD'} {(sub.amount ?? 0).toFixed(2)}{periodMap[sub.billingPeriod ?? 'MONTHLY'] ?? ''}
-                          {sub.category ? `  ·  ${sub.category.toLowerCase()}` : ''}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Action buttons row */}
-                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 8, paddingLeft: 34 }}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (ui.kind === 'bulk') {
-                            fade(() => setUi({ kind: 'bulk-edit', subs: ui.subs, checked: ui.checked, editIdx: i }));
-                          }
-                        }}
-                        style={{ padding: 8, borderRadius: 8, backgroundColor: colors.primary + '12' }}
-                      >
-                        <Ionicons name="pencil" size={16} color={colors.primary} />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={() => {
-                          const newSubs = ui.subs.filter((_, j) => j !== i);
-                          const newChecked = ui.checked.filter((_, j) => j !== i);
-                          if (newSubs.length === 0) { reset(); return; }
-                          setUi({ ...ui, subs: newSubs, checked: newChecked });
-                          if (editingIndex === i) setEditingIndex(null);
-                        }}
-                        style={{ padding: 8, borderRadius: 8, backgroundColor: '#EF444412' }}
-                      >
-                        <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                      </TouchableOpacity>
-                    </View>
-
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
+          <BulkListStage
+            subs={ui.subs}
+            checked={ui.checked}
+            editingIndex={editingIndex}
+            onToggle={handleBulkToggle}
+            onEdit={handleBulkEdit}
+            onRemove={handleBulkRemove}
+            onSelectAll={handleBulkSelectAll}
+            onDeselectAll={handleBulkDeselectAll}
+          />
         )}
 
         {/* ── Bulk-edit detail screen ─────────────────────────────────────
@@ -1077,19 +1043,4 @@ const styles = StyleSheet.create({
   footer:       { paddingTop: 12 },
   actionBtn:    { borderRadius: 18, padding: 18, alignItems: 'center' },
   actionTxt:    { color: '#fff', fontSize: 17, fontWeight: '800' },
-});
-
-const bulkStyles = StyleSheet.create({
-  card:        { borderRadius: 14, borderWidth: 1.5, padding: 12, marginBottom: 8, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
-  iconBox:     { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  iconLetter:  { fontSize: 18, fontWeight: '800' },
-  name:        { fontSize: 15, fontWeight: '700' },
-  meta:        { fontSize: 12, marginTop: 2 },
-  check:       { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginLeft: 4 },
-  editPanel:   { width: '100%', marginTop: 10, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(128,128,128,0.15)', gap: 10 },
-  editRow:     { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  editLabel:   { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  editInput:   { borderRadius: 10, borderWidth: 1.5, paddingHorizontal: 12, paddingVertical: Platform.OS === 'ios' ? 10 : 6, fontSize: 15, fontWeight: '500' },
-  periodChip:  { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10, borderWidth: 1.5 },
-  doneBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 12, marginTop: 4 },
 });
