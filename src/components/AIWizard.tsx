@@ -37,6 +37,10 @@ export type { ParsedSub } from './add-subscription/types';
 import type { ParsedSub } from './add-subscription/types';
 import { BulkEditStage } from './ai-wizard/BulkEditStage';
 import { BulkListStage } from './ai-wizard/BulkListStage';
+import { QuestionStage } from './ai-wizard/QuestionStage';
+import { ConfirmStage } from './ai-wizard/ConfirmStage';
+import { PlansStage } from './ai-wizard/PlansStage';
+import type { PlanOption as SharedPlanOption } from './ai-wizard/types';
 
 interface Props {
   onSave: (sub: ParsedSub) => Promise<void>;
@@ -320,12 +324,7 @@ const micStyles = StyleSheet.create({
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-interface PlanOption {
-  name: string;
-  amount: number;
-  billingPeriod: string;
-  currency: string;
-}
+type PlanOption = SharedPlanOption;
 
 type UIState =
   | { kind: 'idle' }
@@ -651,87 +650,115 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
     });
   }, []);
 
+  // ── Stable stage callbacks ───────────────────────────────────────────────
+  // `callWizard`, `onEdit`, `onSave` are recreated on each render. We stash
+  // the latest refs in `latestRef` so the useCallback wrappers below stay
+  // stable across renders — critical for `React.memo` on the extracted
+  // QuestionStage / ConfirmStage / PlansStage to actually skip re-renders.
+  const latestRef = useRef({ callWizard, onSave, onEdit });
+  latestRef.current = { callWizard, onSave, onEdit };
+
+  const handleAnswer = useCallback((value: string) => {
+    latestRef.current.callWizard(value);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setUi({ kind: 'idle' });
+    setInput('');
+    setContext({});
+  }, []);
+
+  const handleConfirmSave = useCallback(async (sub: ParsedSub) => {
+    try {
+      await latestRef.current.onSave(sub);
+    } catch (err: any) {
+      const errorData = err?.response?.data?.error || err?.response?.data;
+      const code = errorData?.code || '';
+      if (code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429) {
+        router.push('/paywall' as any);
+      } else {
+        const msg =
+          typeof errorData === 'string'
+            ? errorData
+            : errorData?.message || errorData?.message_key || err?.message || 'Error';
+        Alert.alert(t('common.error'), String(msg));
+      }
+    }
+  }, [router, t]);
+
+  const handleConfirmEdit = useCallback((sub: ParsedSub) => {
+    latestRef.current.onEdit(sub);
+  }, []);
+
+  // Mirror of `ui` available inside stable-identity callbacks. We could
+  // read `ui` directly if the callback were recreated, but then
+  // `React.memo` wouldn't be able to skip the stage re-render.
+  const uiRef = useRef(ui);
+  uiRef.current = ui;
+
+  const handleSelectPlan = useCallback((plan: PlanOption) => {
+    const current = uiRef.current;
+    if (current.kind !== 'plans') return;
+    const sub: ParsedSub = {
+      name: plan.name,
+      amount: plan.amount,
+      currency: plan.currency,
+      billingPeriod: plan.billingPeriod as ParsedSub['billingPeriod'],
+      category: current.category,
+      serviceUrl: current.serviceUrl,
+      cancelUrl: current.cancelUrl,
+      iconUrl: current.iconUrl,
+    };
+    // Cross-stage fade so the plans list fades out as the confirm card fades in.
+    fade(() => setUi({ kind: 'confirm', subscription: sub }));
+  }, []);
+
+  const handleEditManually = useCallback(() => {
+    const current = uiRef.current;
+    if (current.kind !== 'plans') return;
+    latestRef.current.onEdit({
+      name: current.serviceName,
+      iconUrl: current.iconUrl,
+      serviceUrl: current.serviceUrl,
+      cancelUrl: current.cancelUrl,
+      category: current.category,
+    });
+  }, []);
+
   const bg   = isDark ? '#1C1C2E' : '#F5F5F7';
   const card = isDark ? '#252538' : '#FFFFFF';
 
-  // ── Question label ────────────────────────────────────────────────────────
-  const questionText = ui.kind === 'question'
-    ? ui.text
-    : t('add.ai_q_name', 'Что за подписка?');
-
-  const hintText = ui.kind === 'idle'
-    ? t('add.ai_q_name_hint', 'Скажи или напечатай название сервиса')
-    : '';
+  // ── Idle prompt labels ───────────────────────────────────────────────────
+  // Question-kind UI is handled by <QuestionStage/>, so these texts only
+  // describe the initial idle prompt.
+  const questionText = t('add.ai_q_name', 'Что за подписка?');
+  const hintText = t('add.ai_q_name_hint', 'Скажи или напечатай название сервиса');
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View testID="ai-wizard" style={{ flex: 1 }}>
       <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
-        {/* ── Plans selection screen ────────────────────────────────────── */}
-        {ui.kind === 'plans' && (() => {
-          const quick = QUICK.find(q => q.name.toLowerCase() === (ui.serviceName ?? '').toLowerCase());
-          const periodLabel = (p: string) => {
-            const map: Record<string, string> = { MONTHLY: t('billing.monthly', 'мес'), YEARLY: t('billing.yearly', 'год'), WEEKLY: t('billing.weekly', 'нед'), QUARTERLY: t('billing.quarterly', 'кварт') };
-            return map[p] ?? p.toLowerCase();
-          };
-          const handlePlanTap = (plan: PlanOption) => {
-            const sub: ParsedSub = {
-              name: plan.name,
-              amount: plan.amount,
-              currency: plan.currency,
-              billingPeriod: plan.billingPeriod as ParsedSub['billingPeriod'],
-              category: ui.category,
-              serviceUrl: ui.serviceUrl,
-              cancelUrl: ui.cancelUrl,
-              iconUrl: ui.iconUrl,
-            };
-            fade(() => setUi({ kind: 'confirm', subscription: sub }));
-          };
-          return (
-            <View style={{ flex: 1 }}>
-              {/* Service header */}
-              <View style={styles.plansHeader}>
-                {quick
-                  ? <quick.Icon size={44} />
-                  : ui.iconUrl
-                    ? <Image source={{ uri: ui.iconUrl }} style={styles.plansLogo} />
-                    : (
-                      <View style={[styles.fallbackIcon, { backgroundColor: colors.primary, width: 44, height: 44, borderRadius: 11 }]}>
-                        <Text style={[styles.fallbackLetter, { fontSize: 20 }]}>{(ui.serviceName || '?')[0].toUpperCase()}</Text>
-                      </View>
-                    )}
-                <Text style={[styles.plansTitle, { color: colors.text }]}>{ui.serviceName}</Text>
-              </View>
-              <Text style={[styles.plansSubtitle, { color: colors.textSecondary }]}>
-                {t('add.choose_plan', 'Выбери тариф')}
-              </Text>
-
-              {/* Plan cards */}
-              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {ui.plans.map((plan, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    style={[styles.planCard, { backgroundColor: card, borderColor: colors.border }]}
-                    onPress={() => handlePlanTap(plan)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.planName, { color: colors.text }]}>{plan.name}</Text>
-                      <Text style={[styles.planPeriod, { color: colors.textSecondary }]}>
-                        {periodLabel(plan.billingPeriod)}
-                      </Text>
-                    </View>
-                    <Text style={[styles.planPrice, { color: colors.primary }]}>
-                      {plan.currency} {plan.amount.toFixed(2)}
-                    </Text>
-                    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          );
-        })()}
+        {/* ── Plans selection screen ──────────────────────────────────────
+            Extracted to `ai-wizard/PlansStage`. Each plan row is
+            individually memoized so tapping one doesn't re-render the
+            others. Footer "Enter manually" lives inside the stage. */}
+        {ui.kind === 'plans' && (
+          <PlansStage
+            plans={ui.plans}
+            serviceName={ui.serviceName}
+            iconUrl={ui.iconUrl}
+            serviceUrl={ui.serviceUrl}
+            cancelUrl={ui.cancelUrl}
+            category={ui.category}
+            QuickIcon={
+              QUICK.find((q) => q.name.toLowerCase() === (ui.serviceName ?? '').toLowerCase())
+                ?.Icon
+            }
+            onSelectPlan={handleSelectPlan}
+            onEditManually={handleEditManually}
+          />
+        )}
 
         {/* ── Bulk confirm screen ───────────────────────────────────────
             Extracted to `ai-wizard/BulkListStage`. Rows are individually
@@ -771,49 +798,37 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
           />
         )}
 
-        {/* ── Confirm screen ───────────────────────────────────────────── */}
-        {ui.kind === 'confirm' && (() => {
-          const s = ui.subscription;
-          const quick = QUICK.find(q => q.name.toLowerCase() === (s.name ?? '').toLowerCase());
-          return (
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.question, { color: colors.text }]}>
-                {t('add.ai_q_confirm', 'Всё верно?')}
-              </Text>
-              <View style={[styles.confirmCard, { backgroundColor: card, borderColor: colors.border }]}>
-                <View style={styles.confirmIcon}>
-                  {quick
-                    ? <quick.Icon size={52} />
-                    : s.iconUrl
-                      ? <Image source={{ uri: s.iconUrl }} style={{ width: 52, height: 52, borderRadius: 13 }} />
-                      : (
-                        <View style={[styles.fallbackIcon, { backgroundColor: colors.primary }]}>
-                          <Text style={styles.fallbackLetter}>{(s.name ?? '?')[0].toUpperCase()}</Text>
-                        </View>
-                      )}
-                </View>
-                <Text style={[styles.confirmName,   { color: colors.text }]}>{s.name}</Text>
-                <Text style={[styles.confirmAmount, { color: colors.primary }]}>
-                  {s.currency ?? 'USD'} {(s.amount ?? 0).toFixed(2)}
-                  <Text style={[styles.confirmPer, { color: colors.textSecondary }]}>
-                    {'  ·  '}{(s.billingPeriod ?? 'MONTHLY').toLowerCase()}
-                  </Text>
-                </Text>
-                {!!s.cancelUrl && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <ExternalLinkIcon size={14} color={colors.primary} />
-                    <Text style={[styles.confirmMeta, { color: colors.textMuted }]} numberOfLines={1}>
-                      {s.cancelUrl}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          );
-        })()}
+        {/* ── Confirm screen ─────────────────────────────────────────────
+            Extracted to `ai-wizard/ConfirmStage`. Stage owns its local
+            `saving` flag and renders its own Add / Edit footer.
+            Paywall-redirect on limit errors lives in `handleConfirmSave`. */}
+        {ui.kind === 'confirm' && (
+          <ConfirmStage
+            subscription={ui.subscription}
+            QuickIcon={
+              QUICK.find((q) => q.name.toLowerCase() === (ui.subscription.name ?? '').toLowerCase())
+                ?.Icon
+            }
+            onSave={handleConfirmSave}
+            onEdit={handleConfirmEdit}
+          />
+        )}
 
-        {/* ── Input / Question screen ───────────────────────────────────── */}
-        {ui.kind !== 'confirm' && ui.kind !== 'plans' && ui.kind !== 'bulk' && ui.kind !== 'bulk-edit' && (
+        {/* ── Question screen ─────────────────────────────────────────────
+            Extracted to `ai-wizard/QuestionStage`. Owns its answer buffer
+            locally (was piggybacking on the orchestrator's `input` state)
+            and ships a DoneAccessoryInput + its own Next / Cancel footer. */}
+        {ui.kind === 'question' && (
+          <QuestionStage
+            text={ui.text}
+            field={ui.field}
+            onAnswer={handleAnswer}
+            onCancel={handleCancel}
+          />
+        )}
+
+        {/* ── Idle input screen — mic, chips, text input ───────────────── */}
+        {ui.kind === 'idle' && (
           <View style={{ flex: 1 }}>
             <Text style={[styles.question, { color: colors.text }]}>{questionText}</Text>
             {!!hintText && !loadingStage && <Text style={[styles.hint, { color: colors.textSecondary }]}>{hintText}</Text>}
@@ -851,7 +866,7 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                   }]}
                   value={input}
                   onChangeText={setInput}
-                  placeholder={ui.kind === 'idle' ? 'Netflix, Spotify, ChatGPT...' : ''}
+                  placeholder="Netflix, Spotify, ChatGPT..."
                   placeholderTextColor={colors.textMuted}
                   multiline
                   numberOfLines={2}
@@ -860,24 +875,20 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
                   onSubmitEditing={() => { if (input.trim()) { Keyboard.dismiss(); callWizard(input.trim()); } }}
                 />
 
-                {/* Quick chips — only on idle */}
-                {ui.kind === 'idle' && (
-                  <>
-                    <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>{t('ai.popular_services')}</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                      {QUICK.map(svc => (
-                        <TouchableOpacity
-                          key={svc.name}
-                          style={[styles.chip, { backgroundColor: card, borderColor: colors.border }]}
-                          onPress={() => handleQuick(svc)}
-                        >
-                          <svc.Icon size={20} />
-                          <Text style={[styles.chipText, { color: colors.text }]}>{svc.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </>
-                )}
+                {/* Quick chips — popular services bypass the AI wizard entirely. */}
+                <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>{t('ai.popular_services')}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {QUICK.map(svc => (
+                    <TouchableOpacity
+                      key={svc.name}
+                      style={[styles.chip, { backgroundColor: card, borderColor: colors.border }]}
+                      onPress={() => handleQuick(svc)}
+                    >
+                      <svc.Icon size={20} />
+                      <Text style={[styles.chipText, { color: colors.text }]}>{svc.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </>
             )}
           </View>
@@ -885,125 +896,68 @@ export function AIWizard({ onSave, onSaveBulk, onEdit }: Props) {
 
       </Animated.View>
 
-      {/* ── Footer button ─────────────────────────────────────────────────── */}
-      <View style={styles.footer}>
-        {/* bulk-edit screen has its own Done button — hide footer */}
-        {ui.kind === 'bulk-edit' ? null : ui.kind === 'bulk' ? (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: '#10B981' }, saving && { opacity: 0.6 }]}
-            onPress={async () => {
-              const selected = ui.subs.filter((_, i) => ui.checked[i]);
-              if (!selected.length) {
-                Alert.alert('', t('add.bulk_select_at_least_one', 'Выбери хотя бы одну'));
-                return;
-              }
-              // Check limit for selected count
-              if (!isPro) {
-                const remaining = maxSubscriptions - activeCount;
-                const toAdd = Math.min(selected.length, remaining);
-                if (toAdd < selected.length) {
-                  const trimmed = selected.slice(0, toAdd);
-                  setSaving(true);
-                  try { if (onSaveBulk) await onSaveBulk(trimmed); } catch {}
-                  setSaving(false);
-                  reset();
-                  return;
-                }
-              }
-              setSaving(true);
-              try {
-                if (onSaveBulk) await onSaveBulk(selected);
-              } catch (err: any) {
-                const errorData = err?.response?.data?.error || err?.response?.data;
-                const msg = typeof errorData === 'string' ? errorData : errorData?.message || errorData?.message_key || err?.message || '';
-                Alert.alert(t('common.error'), String(msg));
-              } finally {
-                setSaving(false);
-              }
-              reset();
-            }}
-            disabled={saving}
-          >
-            {saving ? <ActivityIndicator color="#fff" /> : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Ionicons name="checkmark-done" size={18} color="#fff" />
-                <Text style={styles.actionTxt}>
-                  {t('add.bulk_save', { count: ui.checked.filter(Boolean).length, defaultValue: `Добавить ${ui.checked.filter(Boolean).length}` })}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ) : ui.kind === 'plans' ? (
-          <TouchableOpacity
-            style={{ alignItems: 'center', paddingVertical: 14 }}
-            onPress={() => {
-              onEdit({
-                name: ui.serviceName,
-                iconUrl: ui.iconUrl,
-                serviceUrl: ui.serviceUrl,
-                cancelUrl: ui.cancelUrl,
-                category: ui.category,
-              });
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <PencilIcon size={14} color={colors.textSecondary} />
-              <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
-                {t('add.enter_manually', 'Ввести вручную')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ) : ui.kind === 'confirm' ? (
-          <View style={{ gap: 8 }}>
+      {/* ── Footer button ───────────────────────────────────────────────────
+          Only idle and bulk footers live here. The confirm, plans,
+          question, and bulk-edit stages each render their own footer
+          inside the stage (so the button fades with its content). */}
+      {(ui.kind === 'idle' || ui.kind === 'bulk') && (
+        <View style={styles.footer}>
+          {ui.kind === 'bulk' ? (
             <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: '#10B981' }, saving && { opacity: 0.6 }]}
               onPress={async () => {
+                const selected = ui.subs.filter((_, i) => ui.checked[i]);
+                if (!selected.length) {
+                  Alert.alert('', t('add.bulk_select_at_least_one', 'Выбери хотя бы одну'));
+                  return;
+                }
+                // Check limit for selected count
+                if (!isPro) {
+                  const remaining = maxSubscriptions - activeCount;
+                  const toAdd = Math.min(selected.length, remaining);
+                  if (toAdd < selected.length) {
+                    const trimmed = selected.slice(0, toAdd);
+                    setSaving(true);
+                    try { if (onSaveBulk) await onSaveBulk(trimmed); } catch {}
+                    setSaving(false);
+                    reset();
+                    return;
+                  }
+                }
                 setSaving(true);
                 try {
-                  await onSave(ui.subscription);
+                  if (onSaveBulk) await onSaveBulk(selected);
                 } catch (err: any) {
                   const errorData = err?.response?.data?.error || err?.response?.data;
-                  const code = errorData?.code || '';
-                  if (code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429) {
-                    router.push('/paywall' as any);
-                  } else {
-                    const msg = typeof errorData === 'string' ? errorData : errorData?.message || errorData?.message_key || err?.message || 'Error';
-                    Alert.alert(t('common.error'), String(msg));
-                  }
+                  const msg = typeof errorData === 'string' ? errorData : errorData?.message || errorData?.message_key || err?.message || '';
+                  Alert.alert(t('common.error'), String(msg));
                 } finally {
                   setSaving(false);
                 }
+                reset();
               }}
               disabled={saving}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                {saving ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Ionicons name="checkmark" size={16} color="#FFF" />
-                )}
-                <Text style={styles.actionTxt}>{t('add.ai_add', 'Добавить')}</Text>
-              </View>
+              {saving ? <ActivityIndicator color="#fff" /> : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="checkmark-done" size={18} color="#fff" />
+                  <Text style={styles.actionTxt}>
+                    {t('add.bulk_save', { count: ui.checked.filter(Boolean).length, defaultValue: `Добавить ${ui.checked.filter(Boolean).length}` })}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
+          ) : (
             <TouchableOpacity
-              style={{ alignItems: 'center', paddingVertical: 10 }}
-              onPress={() => onEdit(ui.subscription)}
+              style={[styles.actionBtn, { backgroundColor: colors.primary }, (!input.trim() || loading) && { opacity: 0.4 }]}
+              onPress={() => callWizard(input)}
+              disabled={!input.trim() || loading}
             >
-              <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '600' }}>
-                {t('add.edit_details', 'Редактировать детали')}
-              </Text>
+              <Text style={styles.actionTxt}>{t('add.ai_next', 'Далее →')}</Text>
             </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.primary }, (!input.trim() || loading) && { opacity: 0.4 }]}
-            onPress={() => callWizard(input)}
-            disabled={!input.trim() || loading}
-          >
-            <Text style={styles.actionTxt}>{t('add.ai_next', 'Далее →')}</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+          )}
+        </View>
+      )}
     </View>
     </TouchableWithoutFeedback>
   );
