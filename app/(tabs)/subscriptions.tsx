@@ -237,17 +237,53 @@ export default function SubscriptionsScreen() {
         {/* ── Summary strip ──────────────────────────────────── */}
         <View testID="subscriptions-summary" style={styles.summaryStrip}>
           <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>{totalActive}</Text>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('subscriptions.active')}</Text>
+            <View style={styles.summaryIconCircle}>
+              <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+            </View>
+            <Text
+              style={[styles.summaryValue, { color: colors.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
+              {totalActive}
+            </Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+              {t('subscriptions.active')}
+            </Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>{formatMoney(totalMonthly, effectiveCurrency, i18n.language)}</Text>
-            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>/{t('paywall.month', 'mo')}</Text>
+            <View style={styles.summaryIconCircle}>
+              <Ionicons name="wallet" size={18} color={colors.primary} />
+            </View>
+            <Text
+              style={[styles.summaryValue, { color: colors.text }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.55}
+            >
+              {formatMoney(totalMonthly, effectiveCurrency, i18n.language)}
+            </Text>
+            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+              /{t('paywall.month', 'mo')}
+            </Text>
           </View>
           {!isPro && (
             <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.summaryValue, { color: activeCount >= maxSubscriptions ? colors.error : colors.text }]}>{activeCount}/{maxSubscriptions}</Text>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('subscription_plan.subs_used')}</Text>
+              <View style={styles.summaryIconCircle}>
+                <Ionicons name="layers" size={18} color={colors.warning} />
+              </View>
+              <Text
+                style={[styles.summaryValue, { color: activeCount >= maxSubscriptions ? colors.error : colors.text }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
+              >
+                {activeCount}/{maxSubscriptions}
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                {t('subscription_plan.subs_used')}
+              </Text>
             </View>
           )}
         </View>
@@ -345,7 +381,9 @@ export default function SubscriptionsScreen() {
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <CategoryIcon category={cat.id} size={13} />
-                  <Text style={{ fontSize: 13, color: selectedCategory === cat.id ? '#FFF' : colors.text }}>{cat.label}</Text>
+                  <Text style={{ fontSize: 13, color: selectedCategory === cat.id ? '#FFF' : colors.text }}>
+                    {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -467,8 +505,9 @@ const styles = StyleSheet.create({
 
   // Summary
   summaryStrip: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingBottom: 16 },
-  summaryCard: { flex: 1, borderRadius: 14, padding: 10, alignItems: 'center', borderWidth: 1 },
-  summaryValue: { fontSize: 18, fontWeight: '900' },
+  summaryCard: { flex: 1, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 8, alignItems: 'center', borderWidth: 1, minWidth: 0 },
+  summaryIconCircle: { marginBottom: 4 },
+  summaryValue: { fontSize: 16, fontWeight: '900' },
   summaryLabel: { fontSize: 10, fontWeight: '600', marginTop: 2 },
 
   // Search
