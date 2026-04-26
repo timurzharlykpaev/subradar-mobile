@@ -588,11 +588,14 @@ export default function PaywallScreen() {
                     <Ionicons name={plan.icon} size={22} color={plan.color} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <Text style={[styles.planName, { color: colors.text }]}>
-                        {plan.id === 'free' ? 'Free' : plan.id === 'pro' ? 'Pro' : 'Team'}
-                      </Text>
-                      {/* Badge inline — no overlap */}
+                    {/* Plan name — own row so long badges below never compete
+                        with it for horizontal space. */}
+                    <Text style={[styles.planName, { color: colors.text }]}>
+                      {plan.id === 'free' ? 'Free' : plan.id === 'pro' ? 'Pro' : 'Team'}
+                    </Text>
+                    {/* Badges — separate row, wraps if needed. Each badge keeps
+                        its natural width so text never gets truncated with "…". */}
+                    <View style={styles.badgesRow}>
                       {plan.id === 'pro' && accessViaTeam && !hasOwnPro && (
                         <View style={[styles.inlineBadge, { backgroundColor: '#10B981' }]}>
                           <Text style={styles.inlineBadgeText}>{t('paywall.active_via_team', 'ACTIVE VIA TEAM')}</Text>
@@ -600,18 +603,12 @@ export default function PaywallScreen() {
                       )}
                       {plan.id === 'pro' && !isCurrent && !(accessViaTeam && !hasOwnPro) && (
                         <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
-                          <Text style={styles.inlineBadgeText} numberOfLines={1}>{t('paywall.most_popular')}</Text>
+                          <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
                         </View>
                       )}
-                      {/* Real yearly savings: shows for any plan that has both
-                          monthly and yearly RC packages with positive delta. */}
                       {yearlySavingsText && !isCurrent && (
-                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E', flexShrink: 1 }]}>
-                          <Text
-                            style={styles.inlineBadgeText}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
+                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
+                          <Text style={styles.inlineBadgeText}>
                             {t('team_upsell.save_vs_separate', {
                               amount: yearlySavingsText,
                               defaultValue: 'Save {{amount}}/year',
@@ -805,8 +802,9 @@ const styles = StyleSheet.create({
   saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
 
   planCard: { marginHorizontal: 20, marginBottom: 12, borderRadius: 20, padding: 16 },
-  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, maxWidth: '100%' },
-  inlineBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 0.3, flexShrink: 1 },
+  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, alignSelf: 'flex-start' },
+  inlineBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 0.3 },
+  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
 
   planHeader: { flexDirection: 'row', alignItems: 'center' },
   planIconCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
