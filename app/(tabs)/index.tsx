@@ -441,7 +441,10 @@ export default function DashboardScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.upcoming_7')}</Text>
-              <Text style={[styles.sectionCount, { color: colors.primary }]}>{upcomingNext7.length}</Text>
+              {/* Pill badge — matches the trial section style for visual consistency. */}
+              <View style={[styles.sectionCountBadge, { backgroundColor: colors.primary + '20' }]}>
+                <Text style={[styles.sectionCountBadgeText, { color: colors.primary }]}>{upcomingNext7.length}</Text>
+              </View>
             </View>
             <ScrollView testID="dashboard-upcoming-list" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
               {upcomingNext7.map((sub) => {
@@ -461,7 +464,17 @@ export default function DashboardScreen() {
                       {urgent && <View style={[styles.urgentDot, { backgroundColor: colors.warning }]} />}
                     </View>
                     <Text style={[styles.upcomingName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                    <Text style={[styles.upcomingAmount, { color: colors.primary }]}>{formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}</Text>
+                    {/* Auto-shrink for long localized currency strings ("120 000,00 ₸").
+                        Without `numberOfLines={1}` the symbol wrapped to a new
+                        line and the layout looked broken. */}
+                    <Text
+                      style={[styles.upcomingAmount, { color: colors.primary }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.7}
+                    >
+                      {formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? sub.currency, i18n.language)}
+                    </Text>
                     <Text style={[styles.upcomingDays, {
                       fontWeight: days <= 1 ? '700' : '400',
                       color: days === 0 ? '#ef4444' : days === 1 ? '#f59e0b' : colors.textSecondary,
