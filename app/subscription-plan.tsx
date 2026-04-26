@@ -215,7 +215,7 @@ export default function SubscriptionPlanScreen() {
           <View style={[styles.savingsRow, { backgroundColor: isDark ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.12)' }]}>
             <Ionicons name="trending-down" size={14} color="#22C55E" />
             <Text style={styles.savingsText}>
-              {t('subscription_plan.yearly_savings', { amount: formatMoney(savings.amount, savings.currency, i18n.language) })}
+              {t('team_upsell.yearly_savings', { amount: formatMoney(savings.amount, savings.currency, i18n.language) })}
             </Text>
           </View>
         )}
