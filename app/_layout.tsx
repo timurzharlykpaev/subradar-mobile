@@ -251,7 +251,11 @@ function PushSetup() {
     registerForPushNotificationsAsync().then((token) => {
       if (token) {
         const platform = Platform.OS as 'ios' | 'android';
-        notificationsApi.registerPushToken(token, platform).catch(() => {});
+        // Send the active language alongside the token so the server can pick
+        // the correct copy for cron-driven push (reminder/digest/win-back) on
+        // first install, before the user touches Settings.
+        const locale = i18n.language;
+        notificationsApi.registerPushToken(token, platform, locale).catch(() => {});
       }
     });
 

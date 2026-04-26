@@ -2,6 +2,7 @@
 import 'react-native-get-random-values';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import i18n from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { reportError } from '../utils/errorReporter';
 
@@ -21,6 +22,11 @@ apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Forward the active UI language so backend cron-driven push/email content
+  // matches what the user sees in-app. Header-only, never blocks a request.
+  if (i18n.language) {
+    config.headers['Accept-Language'] = i18n.language;
   }
   // Attach a correlation ID so server-side logs and client errors can be cross-referenced.
   try {

@@ -1,4 +1,11 @@
 {
+  "localPush": {
+    "payment": {
+      "title": "💳 {{name}}",
+      "body_tomorrow": "明天付款：{{currency}} {{amount}}",
+      "body_in_days": "{{days}} 天后付款：{{currency}} {{amount}}"
+    }
+  },
   "common": {
     "save": "保存",
     "cancel": "取消",

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../i18n';
+import { usersApi } from '../api/users';
 
 interface SettingsState {
   /** @deprecated — kept for backward compatibility. Use displayCurrency. */
@@ -53,6 +54,9 @@ export const useSettingsStore = create<SettingsState>()(
       setLanguage: (language) => {
         i18n.changeLanguage(language);
         set({ language });
+        // Sync to backend so cron-driven push/email content matches the UI.
+        // Fire-and-forget — auth may be missing on cold-start onboarding.
+        usersApi.updateMe({ locale: language }).catch(() => {});
       },
       setReminderDays: (reminderDays) => set({ reminderDays }),
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),

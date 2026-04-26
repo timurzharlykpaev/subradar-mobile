@@ -1,8 +1,21 @@
 import { apiClient } from './client';
 
 export const notificationsApi = {
-  registerPushToken: (token: string, platform: 'ios' | 'android') =>
-    apiClient.post('/notifications/push-token', { token, platform }),
+  /**
+   * Register Expo/FCM push token. Optional `locale` lets the backend pick the
+   * right language for cron-driven push messages immediately on first install
+   * (without waiting for the user to also call PATCH /users/me).
+   */
+  registerPushToken: (
+    token: string,
+    platform: 'ios' | 'android',
+    locale?: string,
+  ) =>
+    apiClient.post('/notifications/push-token', {
+      token,
+      platform,
+      ...(locale ? { locale } : {}),
+    }),
   getSettings: () => apiClient.get('/notifications/settings'),
   updateSettings: (data: {
     enabled?: boolean;

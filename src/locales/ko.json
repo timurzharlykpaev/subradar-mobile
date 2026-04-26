@@ -1,4 +1,11 @@
 {
+  "localPush": {
+    "payment": {
+      "title": "💳 {{name}}",
+      "body_tomorrow": "내일 결제: {{currency}} {{amount}}",
+      "body_in_days": "{{days}}일 후 결제: {{currency}} {{amount}}"
+    }
+  },
   "common": {
     "save": "저장",
     "cancel": "취소",

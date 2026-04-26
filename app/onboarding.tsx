@@ -598,9 +598,15 @@ export default function OnboardingScreen() {
     setDisplayCurrencyInStore(selectedCurrency);
     setUser(user, token, refreshToken);
     setOnboarded();
-    // Best-effort sync to backend (non-blocking)
+    // Best-effort sync to backend (non-blocking).
+    // Send `locale` here as well so cron-driven push starts in the right language
+    // even if the user never opens Settings.
     usersApi
-      .updateMe({ region: selectedRegion, displayCurrency: selectedCurrency })
+      .updateMe({
+        region: selectedRegion,
+        displayCurrency: selectedCurrency,
+        locale: language,
+      })
       .catch(() => {});
     try {
       analytics.identify(user.id, { plan: (user as any).plan, currency: selectedCurrency });

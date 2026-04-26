@@ -1,4 +1,11 @@
 {
+  "localPush": {
+    "payment": {
+      "title": "💳 {{name}}",
+      "body_tomorrow": "Paiement demain : {{amount}} {{currency}}",
+      "body_in_days": "Paiement dans {{days}} jours : {{amount}} {{currency}}"
+    }
+  },
   "common": {
     "save": "Enregistrer",
     "cancel": "Annuler",

@@ -1,4 +1,11 @@
 {
+  "localPush": {
+    "payment": {
+      "title": "💳 {{name}}",
+      "body_tomorrow": "Ертең төлем: {{amount}} {{currency}}",
+      "body_in_days": "{{days}} күннен кейін төлем: {{amount}} {{currency}}"
+    }
+  },
   "common": {
     "save": "Сақтау",
     "cancel": "Болдырмау",

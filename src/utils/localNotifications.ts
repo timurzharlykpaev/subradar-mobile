@@ -3,6 +3,7 @@
  * Works without internet. Called after subscriptions are loaded/updated.
  */
 import * as Notifications from 'expo-notifications';
+import i18n from '../i18n';
 import { Subscription } from '../types';
 import { parseBackendDate } from './formatters';
 
@@ -39,12 +40,23 @@ export async function schedulePaymentReminders(
 
         if (triggerDate <= now) continue;
 
+        const title = i18n.t('localPush.payment.title', { name: sub.name });
+        const body =
+          daysBefore === 1
+            ? i18n.t('localPush.payment.body_tomorrow', {
+                amount: sub.amount,
+                currency: sub.currency,
+              })
+            : i18n.t('localPush.payment.body_in_days', {
+                days: daysBefore,
+                amount: sub.amount,
+                currency: sub.currency,
+              });
+
         await Notifications.scheduleNotificationAsync({
           content: {
-            title: `💳 ${sub.name}`,
-            body: daysBefore === 1
-              ? `Payment tomorrow: ${sub.amount} ${sub.currency}`
-              : `Payment in ${daysBefore} days: ${sub.amount} ${sub.currency}`,
+            title,
+            body,
             data: { subscriptionId: sub.id },
             sound: true,
           },
