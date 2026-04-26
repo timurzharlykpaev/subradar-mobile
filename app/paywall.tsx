@@ -546,16 +546,22 @@ export default function PaywallScreen() {
           // the user's local currency. Replaces the previous formula that
           // multiplied the user's total subscription spend by 0.75 and showed
           // a hardcoded `$` symbol.
-          const yearlySavings =
-            plan.id === 'free'
-              ? null
-              : calcYearlySavings(
-                  findPackage(plan.id, 'monthly'),
-                  findPackage(plan.id, 'yearly'),
-                );
+          const monthlyPkg = plan.id === 'free' ? null : findPackage(plan.id, 'monthly');
+          const yearlyPkg = plan.id === 'free' ? null : findPackage(plan.id, 'yearly');
+          const yearlySavings = calcYearlySavings(monthlyPkg, yearlyPkg);
           const yearlySavingsText = yearlySavings
             ? formatMoney(yearlySavings.amount, yearlySavings.currency, i18n.language)
             : null;
+          // Fallback: when the offering ships only a yearly package (no monthly
+          // to compare against), there's nothing to "save" by switching — but
+          // we still want a value-prop badge on the upgrade plan. Show a
+          // generic BEST VALUE pill so the green badge slot doesn't disappear
+          // entirely (which is what users reported after v1.3.9).
+          const showBestValue =
+            !yearlySavingsText &&
+            plan.id !== 'free' &&
+            yearlyPkg &&
+            !monthlyPkg;
 
           return (
             <Animated.View
@@ -614,6 +620,11 @@ export default function PaywallScreen() {
                               defaultValue: 'Save {{amount}}/year',
                             })}
                           </Text>
+                        </View>
+                      )}
+                      {showBestValue && !isCurrent && (
+                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
+                          <Text style={styles.inlineBadgeText}>{t('paywall.best_value', 'BEST VALUE')}</Text>
                         </View>
                       )}
                       {isCurrent && (
