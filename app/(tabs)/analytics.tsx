@@ -187,7 +187,20 @@ function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
         ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>{currencySymbol} {formatNum(total)}</Text>
+        {/*
+          Inner hole = 2 * innerRadius (130px). Reserve padding so text never
+          touches the donut edge. `adjustsFontSizeToFit` + `numberOfLines={1}`
+          shrinks long currency totals (e.g. "₸ 1,234,567") to fit instead of
+          clipping or wrapping.
+        */}
+        <Text
+          style={{ fontSize: 22, fontWeight: '900', color: colors.text, maxWidth: innerRadius * 2 - 16, textAlign: 'center' }}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
+        >
+          {currencySymbol} {formatNum(total)}
+        </Text>
         <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('analytics.total')}</Text>
       </View>
     </View>
