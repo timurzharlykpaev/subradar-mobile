@@ -277,6 +277,35 @@ export default function PaywallScreen() {
       if (!proceed) return;
     }
 
+    // Pro→Team upgrade requires App Store Connect subscription group ranks to be
+    // configured (Team levels above Pro). When ranks are misconfigured, Apple
+    // silently renews the existing Pro subscription instead of upgrading to
+    // Team — receipt comes back with `productId: pro.yearly`, RC stores the old
+    // entitlement, backend's `/billing/sync-revenuecat` rejects with 403
+    // because no Team entitlement was ever granted. Block the purchase here
+    // with a clear explanation rather than letting the user pay again for Pro.
+    if (selected === 'org' && access?.plan === 'pro' && access?.hasOwnPaidPlan === true) {
+      Alert.alert(
+        t('paywall.pro_to_team_blocked_title', 'Cancel Pro first'),
+        t(
+          'paywall.pro_to_team_blocked_msg',
+          "Apple won't let you upgrade Pro → Team directly. Cancel your Pro subscription in iOS Settings → Subscriptions, wait for the current period to end, then come back to buy Team.",
+        ),
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          {
+            text: t('paywall.manage_subscription', 'Manage Subscription'),
+            onPress: () => {
+              Linking.openURL('https://apps.apple.com/account/subscriptions').catch(() => {
+                /* Older iOS or no Apple ID linked — silently no-op. */
+              });
+            },
+          },
+        ],
+      );
+      return;
+    }
+
     // Find RC package by product identifier
     const pkg = findPackage(selected, billingPeriod);
     console.log('[Paywall] selected:', selected, 'period:', billingPeriod, 'pkg found:', !!pkg, 'available:', offerings?.current?.availablePackages?.length ?? 0);
