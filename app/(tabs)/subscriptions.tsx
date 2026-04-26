@@ -452,7 +452,19 @@ export default function SubscriptionsScreen() {
           >
             <Ionicons name="people" size={18} color="#06B6D4" />
             <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: colors.text }}>
-              {t('team_upsell.dupe_banner', { count: duplicateCategoriesArr.length, category: duplicateCategoriesArr[0]?.[0] ?? '' })}
+              {(() => {
+                // Localize category enum (e.g. AI_SERVICES → "AI-сервисы") before
+                // injecting into the dupe-banner string. Without this, the badge
+                // showed raw "AI_SERVICES" mid-sentence even on Russian/Spanish.
+                const rawCat = duplicateCategoriesArr[0]?.[0] ?? '';
+                const localizedCat = rawCat
+                  ? t(`categories.${rawCat.toLowerCase()}`, rawCat)
+                  : '';
+                return t('team_upsell.dupe_banner', {
+                  count: duplicateCategoriesArr.length,
+                  category: localizedCat,
+                });
+              })()}
             </Text>
             <Ionicons name="chevron-forward" size={16} color="#06B6D4" />
           </TouchableOpacity>
