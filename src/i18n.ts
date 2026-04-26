@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import * as Localization from 'expo-localization';
 
 import en from './locales/en.json';
 import ru from './locales/ru.json';
@@ -31,11 +30,18 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 /**
  * Pick the best supported language for the device — used only when the user
  * has no saved preference yet (first launch). Once `settingsStore.language`
- * is hydrated, that wins. Falls back to 'en' if expo-localization returns an
- * unsupported tag (e.g. 'ar' before we add Arabic).
+ * is hydrated, that wins.
+ *
+ * Uses a lazy `require` rather than a top-level `import` so the JS bundle
+ * still loads on older native binaries that don't yet ship the
+ * expo-localization module (e.g. an OTA update delivered to a TestFlight build
+ * cut before this dependency was added). Top-level import would throw at
+ * module-load time and crash the entire app.
  */
 export function getDeviceLanguage(): SupportedLanguage {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Localization = require('expo-localization');
     const tags = Localization.getLocales?.() ?? [];
     for (const tag of tags) {
       const code = (tag.languageCode ?? '').toLowerCase();
@@ -44,7 +50,7 @@ export function getDeviceLanguage(): SupportedLanguage {
       }
     }
   } catch {
-    // Native module missing on web/tests — fall through to 'en'.
+    // Native module missing on old binaries / web / tests — fall through to 'en'.
   }
   return 'en';
 }
