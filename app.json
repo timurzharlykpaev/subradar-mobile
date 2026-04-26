@@ -151,6 +151,12 @@
         "projectId": "b6fbf0f2-a22b-4eb7-8fb7-d03856c94551"
       }
     },
-    "owner": "timur98_zkharlyk"
+    "owner": "timur98_zkharlyk",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b6fbf0f2-a22b-4eb7-8fb7-d03856c94551"
+    }
   }
 }
