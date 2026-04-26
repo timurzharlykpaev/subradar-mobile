@@ -31,7 +31,9 @@
     "copy": "Copy",
     "done": "Done",
     "ok": "OK",
-    "share": "Share"
+    "share": "Share",
+    "next": "Next",
+    "something_went_wrong": "Something went wrong"
   },
   "tabs": {
     "home": "Home",
@@ -269,7 +271,11 @@
     "limit_partial_msg": "Saved {{saved}} out of {{total}}. Upgrade for unlimited.",
     "limit_partial_title": "Limit reached",
     "service_url": "Service URL",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests."
+    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_answer_placeholder": "Your answer",
+    "bulk_review_title": "Found subscriptions",
+    "loading_hint": "AI is processing your request. This usually takes a few seconds.",
+    "screenshot_parse_error": "Could not parse the screenshot. Try a clearer image."
   },
   "periods": {
     "WEEKLY": "Weekly",
@@ -382,7 +388,14 @@
     "help_support": "Help & Support",
     "contact_us": "Contact us",
     "faq": "FAQ",
-    "mail_unavailable": "Could not open mail app"
+    "mail_unavailable": "Could not open mail app",
+    "delete_failed": "Failed to delete account. Please try again or contact support.",
+    "display_currency": "Display currency",
+    "region": "Region",
+    "region_change_currency_title": "Change display currency?",
+    "region_change_currency_body": "Show subscriptions in {{currency}}?",
+    "region_change_keep": "Keep {{currency}}",
+    "region_change_switch": "Switch to {{currency}}"
   },
   "auth": {
     "welcome": "Welcome back",
@@ -410,7 +423,9 @@
     "too_many_attempts": "Too many attempts. Please wait a moment.",
     "invalid_credentials": "Invalid email or password.",
     "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "email_already_exists": "This email is already registered.",
+    "apple_no_token": "No identity token received from Apple. Please try again.",
+    "invalid_user": "Invalid account data received. Please try again."
   },
   "errors": {
     "something_went_wrong": "Something went wrong",
@@ -477,7 +492,9 @@
     "hook_tap_yours": "Tap the ones you pay for",
     "hook_monthly_total": "That's ${{amount}}/month already",
     "hook_annual": "= ${{amount}}/year",
-    "hook_cta_selected": "Find the rest →"
+    "hook_cta_selected": "Find the rest →",
+    "region_title": "Where do you buy subscriptions?",
+    "region_subtitle": "So prices stay accurate for you."
   },
   "analytics": {
     "title": "Analytics",
@@ -556,7 +573,14 @@
     "card_last4": "Last 4 digits",
     "card_nickname": "Card name",
     "save_card": "Save card",
-    "cancel_success": "Subscription cancelled"
+    "cancel_success": "Subscription cancelled",
+    "color": "Color",
+    "lifetime": "lifetime",
+    "monthly": "monthly",
+    "one_time": "one-time",
+    "quarterly": "quarterly",
+    "weekly": "weekly",
+    "yearly": "yearly"
   },
   "cards": {
     "title": "Cards",
@@ -780,7 +804,9 @@
     "have_invite_code": "Have an invite code?",
     "leave_btn": "Leave",
     "leave_confirm_msg": "You'll lose access to team analytics.",
-    "leave_confirm_title": "Leave team?"
+    "leave_confirm_title": "Leave team?",
+    "no_subs_data": "No subscription data available",
+    "team_report": "Team Report"
   },
   "paywall": {
     "choose_plan": "Choose a Plan",
@@ -840,7 +866,14 @@
     "testimonial_author": "— Alex M., verified user",
     "auto_renew_notice": "Subscription auto-renews. Cancel anytime in Settings > Subscriptions.",
     "terms": "Terms of Use",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "best_value": "BEST VALUE",
+    "prices_unavailable_title": "Prices temporarily unavailable",
+    "prices_unavailable_msg": "Could not load current prices from the App Store. Please try again.",
+    "start_free_trial": "7 days free — Start Trial",
+    "pro_to_team_blocked_title": "Cancel Pro first",
+    "pro_to_team_blocked_msg": "Apple won't let you upgrade Pro → Team directly. Cancel your Pro subscription in iOS Settings → Subscriptions, wait for the current period to end, then come back to buy Team.",
+    "manage_subscription": "Manage Subscription"
   },
   "pro_modal": {
     "title_default": "Pro Feature",
@@ -865,7 +898,8 @@
     "feat_reports": "PDF reports",
     "start_trial": "Start 7-day Free Trial",
     "upgrade": "Upgrade — $2.99/mo",
-    "unlock": "Unlock"
+    "unlock": "Unlock",
+    "upgrade_no_price": "Upgrade to Pro"
   },
   "ai": {
     "or_type": "or type",
@@ -1136,7 +1170,15 @@
     "winback_d37_title": "{{count}} subscriptions waiting to be tracked",
     "winback_d37_cta": "Unlock unlimited + AI renewal alerts",
     "winback_d830_title": "Come back — 50% off your first month",
-    "winback_d830_cta": "Best offer for returning users"
+    "winback_d830_cta": "Best offer for returning users",
+    "ai_analyses": "AI analyses",
+    "savings_found": "Potential savings",
+    "subs_tracked": "Subscriptions tracked",
+    "unlock_feature": "Unlock this feature with Pro",
+    "upgrade_to_pro": "Upgrade to Pro",
+    "expires_on": "Your Pro plan expires on {{date}}",
+    "pro_ends_in_one": "Pro ends in {{count}} day",
+    "pro_ends_in_other": "Pro ends in {{count}} days"
   },
   "annual_nudge": {
     "title": "Switch to yearly — save $",
@@ -1190,5 +1232,18 @@
       "Fr",
       "Sa"
     ]
+  },
+  "ai_teaser": {
+    "title": "AI Analysis",
+    "description": "Let AI analyze your subscriptions to find duplicates, savings opportunities, and personalized recommendations.",
+    "feat_duplicates": "Detect duplicate subscriptions",
+    "feat_savings": "Find savings opportunities",
+    "feat_recommendations": "Get personalized recommendations",
+    "cta": "Upgrade to Pro"
+  },
+  "priority": {
+    "high": "HIGH",
+    "medium": "MEDIUM",
+    "low": "LOW"
   }
 }

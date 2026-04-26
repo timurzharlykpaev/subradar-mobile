@@ -31,7 +31,9 @@
     "copy": "Copiar",
     "done": "Concluído",
     "ok": "OK",
-    "share": "Compartilhar"
+    "share": "Compartilhar",
+    "next": "Próximo",
+    "something_went_wrong": "Algo deu errado"
   },
   "tabs": {
     "home": "Início",
@@ -265,11 +267,15 @@
     "quarterly": "Trimestral",
     "billing_period": "Período de Cobrança",
     "service_name": "Nome",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_quota_exceeded": "Cota de AI esgotada. Atualize para Pro para mais solicitações.",
     "stage_transcribing": "Transcrevendo voz",
     "stage_analyzing": "Analisando imagem",
     "stage_thinking": "IA procurando serviço",
-    "stage_saving": "Salvando assinatura"
+    "stage_saving": "Salvando assinatura",
+    "ai_answer_placeholder": "Sua resposta",
+    "bulk_review_title": "Assinaturas encontradas",
+    "loading_hint": "AI está processando sua solicitação. Isso geralmente leva alguns segundos.",
+    "screenshot_parse_error": "Não foi possível processar a captura de tela. Tente com uma imagem mais nítida."
   },
   "settings": {
     "title": "Configurações",
@@ -374,7 +380,14 @@
     "help_support": "Ajuda e Suporte",
     "contact_us": "Fale conosco",
     "faq": "Perguntas frequentes",
-    "mail_unavailable": "Não foi possível abrir o app de e-mail"
+    "mail_unavailable": "Não foi possível abrir o app de e-mail",
+    "delete_failed": "Falha ao excluir a conta. Tente novamente ou contate o suporte.",
+    "display_currency": "Moeda de exibição",
+    "region": "Região",
+    "region_change_currency_title": "Alterar a moeda de exibição?",
+    "region_change_currency_body": "Mostrar assinaturas em {{currency}}?",
+    "region_change_keep": "Manter {{currency}}",
+    "region_change_switch": "Mudar para {{currency}}"
   },
   "auth": {
     "welcome": "Bem-vindo de volta",
@@ -400,9 +413,11 @@
     "invalid_code": "Código inválido",
     "failed_send_link": "Não foi possível enviar o link",
     "too_many_attempts": "Muitas tentativas. Aguarde um momento.",
-    "invalid_credentials": "Invalid email or password.",
-    "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "invalid_credentials": "E-mail ou senha inválidos.",
+    "user_not_found": "Usuário não encontrado.",
+    "email_already_exists": "Este e-mail já está registrado.",
+    "apple_no_token": "Nenhum token de identidade recebido da Apple. Tente novamente.",
+    "invalid_user": "Dados de conta inválidos recebidos. Tente novamente."
   },
   "landing": {
     "hero_title": "Saiba exatamente para onde vai seu dinheiro",
@@ -464,7 +479,9 @@
     "icp_solo": "Só eu",
     "icp_family": "Minha família",
     "icp_team": "Nossa equipe",
-    "trial_spend_hook": "Você rastreia {{amount}}/mês — veja o todo"
+    "trial_spend_hook": "Você rastreia {{amount}}/mês — veja o todo",
+    "region_title": "Onde você compra assinaturas?",
+    "region_subtitle": "Para que os preços permaneçam precisos para você."
   },
   "analytics": {
     "title": "Análises",
@@ -543,7 +560,14 @@
     "save_card": "Salvar cartão",
     "cancel_success": "Assinatura cancelada",
     "before_payment": "antes do pagamento",
-    "receipt_upload_failed": "Falha ao enviar recibo"
+    "receipt_upload_failed": "Falha ao enviar recibo",
+    "color": "Cor",
+    "lifetime": "vitalício",
+    "monthly": "mensal",
+    "one_time": "único",
+    "quarterly": "trimestral",
+    "weekly": "semanal",
+    "yearly": "anual"
   },
   "cards": {
     "title": "Cartões",
@@ -596,7 +620,7 @@
     "title": "Editar Perfil",
     "name": "Nome",
     "name_placeholder": "Seu nome",
-    "email": "Email"
+    "email": "E-mail"
   },
   "features": {
     "voice_title": "Adicionar por voz",
@@ -775,7 +799,9 @@
     "leave_btn": "Sair",
     "leave_confirm_msg": "Você perderá acesso às análises da equipe.",
     "leave_confirm_title": "Sair da equipe?",
-    "how_team_works": "Como o Team funciona?"
+    "how_team_works": "Como o Team funciona?",
+    "no_subs_data": "Nenhum dado de assinatura disponível",
+    "team_report": "Relatório da equipe"
   },
   "paywall": {
     "choose_plan": "Escolha um plano",
@@ -820,22 +846,29 @@
     "auto_renew_notice": "Assinatura com renovação automática. Cancele a qualquer momento em Ajustes > Assinaturas.",
     "terms": "Termos de Uso",
     "privacy": "Política de Privacidade",
-    "no_purchases_title": "No active subscriptions",
-    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
-    "restore_unavailable_title": "Restore unavailable",
-    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
-    "active_via_team": "ACTIVE VIA TEAM",
-    "team_access_title": "You already have Pro",
-    "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
-    "buy_anyway": "Buy anyway",
-    "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
-    "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "no_purchases_title": "Sem assinaturas ativas",
+    "no_purchases_help": "Nenhuma assinatura ativa foi encontrada neste Apple ID / conta Google. Contate o suporte se acreditar que é um erro.",
+    "restore_unavailable_title": "Restauração indisponível",
+    "restore_unavailable_msg": "Tente novamente quando estiver conectado à App Store ou Google Play.",
+    "active_via_team": "ATIVO VIA EQUIPE",
+    "team_access_title": "Você já tem Pro",
+    "team_access_msg": "Sua assinatura de equipe já desbloqueia todos os recursos Pro. Comprar seu próprio Pro só é útil se planeja sair da equipe.",
+    "buy_anyway": "Comprar mesmo assim",
+    "purchase_blocked_title": "A compra não foi concluída",
+    "purchase_blocked_team": "A Apple pode ter recusado porque seu Apple ID está vinculado à assinatura de equipe. Tente: 1) sair / entrar novamente na App Store, 2) ou peça ao dono da equipe para removê-lo.",
+    "sync_delayed_title": "Compra recebida",
+    "sync_delayed_msg": "Sua compra Pro está confirmada pela Apple. Nosso servidor concluirá a ativação em alguns minutos.",
     "sync_retry_title": "Sincronização atrasada",
     "sync_retry_message": "Sua compra foi concluída no Apple, mas o servidor ainda não confirmou a ativação. Tentar novamente?",
     "sync_retry_cta": "Tentar novamente",
-    "sync_retry_later": "Mais tarde"
+    "sync_retry_later": "Mais tarde",
+    "best_value": "MELHOR VALOR",
+    "prices_unavailable_title": "Preços temporariamente indisponíveis",
+    "prices_unavailable_msg": "Não foi possível carregar os preços atuais da App Store. Tente novamente.",
+    "start_free_trial": "7 dias grátis — Iniciar teste",
+    "pro_to_team_blocked_title": "Cancele Pro primeiro",
+    "pro_to_team_blocked_msg": "A Apple não permite atualizar Pro → Team diretamente. Cancele sua assinatura Pro em Ajustes do iOS → Assinaturas, aguarde o término do período atual e volte para comprar Team.",
+    "manage_subscription": "Gerenciar assinatura"
   },
   "ai": {
     "or_type": "ou digite",
@@ -870,7 +903,8 @@
     "upgrade": "Upgrade — $2,99/mês",
     "unlock": "Desbloquear",
     "title_ai_limit": "Limite de IA atingido",
-    "desc_ai_limit": "Você usou todas as solicitações de IA gratuitas deste mês. O Pro dá 200 por mês."
+    "desc_ai_limit": "Você usou todas as solicitações de IA gratuitas deste mês. O Pro dá 200 por mês.",
+    "upgrade_no_price": "Passar para Pro"
   },
   "categories": {
     "streaming": "Streaming",
@@ -1136,16 +1170,24 @@
     "winback_d37_title": "{{count}} assinaturas esperando",
     "winback_d37_cta": "Desbloqueie ilimitado + alertas IA",
     "winback_d830_title": "Volte — 50% no primeiro mês",
-    "winback_d830_cta": "Melhor oferta para retornar"
+    "winback_d830_cta": "Melhor oferta para retornar",
+    "ai_analyses": "Análises AI",
+    "savings_found": "Economia potencial",
+    "subs_tracked": "Assinaturas rastreadas",
+    "unlock_feature": "Desbloqueie este recurso com Pro",
+    "upgrade_to_pro": "Passar para Pro",
+    "expires_on": "Seu plano Pro expira em {{date}}",
+    "pro_ends_in_one": "Pro termina em {{count}} dia",
+    "pro_ends_in_other": "Pro termina em {{count}} dias"
   },
   "a11y": {
-    "subscription": "{{name}} subscription",
-    "offline_banner": "Offline banner",
-    "add_subscription": "Add subscription",
-    "subscribe": "Subscribe",
-    "restore_purchases": "Restore purchases",
-    "save": "Save",
-    "close": "Close"
+    "subscription": "Assinatura {{name}}",
+    "offline_banner": "Banner offline",
+    "add_subscription": "Adicionar assinatura",
+    "subscribe": "Assinar",
+    "restore_purchases": "Restaurar compras",
+    "save": "Salvar",
+    "close": "Fechar"
   },
   "annual_nudge": {
     "title": "Mude para anual — economize $",
@@ -1190,5 +1232,18 @@
       "Sex",
       "Sáb"
     ]
+  },
+  "ai_teaser": {
+    "title": "Análise AI",
+    "description": "Deixe a AI analisar suas assinaturas para encontrar duplicatas, oportunidades de economia e recomendações personalizadas.",
+    "feat_duplicates": "Detecta assinaturas duplicadas",
+    "feat_savings": "Encontra oportunidades de economia",
+    "feat_recommendations": "Receba recomendações personalizadas",
+    "cta": "Passar para Pro"
+  },
+  "priority": {
+    "high": "ALTA",
+    "medium": "MÉDIA",
+    "low": "BAIXA"
   }
 }

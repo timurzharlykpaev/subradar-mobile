@@ -31,7 +31,9 @@
     "copy": "コピー",
     "done": "完了",
     "ok": "OK",
-    "share": "共有"
+    "share": "共有",
+    "next": "次へ",
+    "something_went_wrong": "問題が発生しました"
   },
   "tabs": {
     "home": "ホーム",
@@ -177,7 +179,7 @@
     "notes_placeholder": "追加メモ...",
     "search_placeholder": "Netflix, LinkedIn Premium...",
     "plans_count": "{{count}} プラン",
-    "card_nickname_example": "My Visa",
+    "card_nickname_example": "マイ Visa",
     "section_main": "基本情報",
     "section_payment": "支払い",
     "section_extra": "追加",
@@ -226,7 +228,7 @@
     "bulk_parse": "認識する →",
     "bulk_parsing": "AIがサブスクリプションを検出中...",
     "bulk_review": "サブスクリプションを選択",
-    "bulk_review_sub": "{{count}}件見つかりました",
+    "bulk_review_sub": "{{count}} 件見つかりました",
     "bulk_select_all": "すべて選択",
     "bulk_deselect_all": "すべて解除",
     "bulk_save": "{{count}}件追加",
@@ -265,11 +267,15 @@
     "quarterly": "四半期",
     "billing_period": "請求期間",
     "service_name": "サービス名",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_quota_exceeded": "AI クォータを使い切りました。Pro にアップグレードしてリクエストを増やしましょう。",
     "stage_transcribing": "音声を文字起こし中",
     "stage_analyzing": "画像を分析中",
     "stage_thinking": "AIがサービスを検索中",
-    "stage_saving": "サブスクを保存中"
+    "stage_saving": "サブスクを保存中",
+    "ai_answer_placeholder": "あなたの答え",
+    "bulk_review_title": "見つかったサブスク",
+    "loading_hint": "AI がリクエストを処理中です。通常は数秒で完了します。",
+    "screenshot_parse_error": "スクリーンショットを解析できませんでした。より鮮明な画像でお試しください。"
   },
   "settings": {
     "title": "設定",
@@ -374,7 +380,14 @@
     "help_support": "ヘルプとサポート",
     "contact_us": "お問い合わせ",
     "faq": "よくある質問",
-    "mail_unavailable": "メールアプリを開けませんでした"
+    "mail_unavailable": "メールアプリを開けませんでした",
+    "delete_failed": "アカウントの削除に失敗しました。もう一度お試しいただくか、サポートにお問い合わせください。",
+    "display_currency": "表示通貨",
+    "region": "地域",
+    "region_change_currency_title": "表示通貨を変更しますか?",
+    "region_change_currency_body": "{{currency}} でサブスクを表示しますか?",
+    "region_change_keep": "{{currency}} のまま",
+    "region_change_switch": "{{currency}} に切り替え"
   },
   "auth": {
     "welcome": "おかえりなさい",
@@ -400,9 +413,11 @@
     "invalid_code": "無効なコード",
     "failed_send_link": "リンクの送信に失敗しました",
     "too_many_attempts": "試行回数が多すぎます。しばらくお待ちください。",
-    "invalid_credentials": "Invalid email or password.",
-    "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "invalid_credentials": "メールアドレスまたはパスワードが無効です。",
+    "user_not_found": "ユーザーが見つかりません。",
+    "email_already_exists": "このメールアドレスはすでに登録されています。",
+    "apple_no_token": "Apple から ID トークンを受信できませんでした。もう一度お試しください。",
+    "invalid_user": "無効なアカウントデータを受信しました。もう一度お試しください。"
   },
   "landing": {
     "hero_title": "お金がどこへ行くのか正確に把握しましょう",
@@ -464,7 +479,9 @@
     "icp_solo": "私だけ",
     "icp_family": "家族",
     "icp_team": "チーム",
-    "trial_spend_hook": "{{amount}}/月を追跡中 — 全体像を表示"
+    "trial_spend_hook": "{{amount}}/月を追跡中 — 全体像を表示",
+    "region_title": "サブスクをどこで購入しますか?",
+    "region_subtitle": "価格を正確に保つためです。"
   },
   "analytics": {
     "title": "分析",
@@ -543,7 +560,14 @@
     "save_card": "カードを保存",
     "cancel_success": "サブスクリプションをキャンセルしました",
     "before_payment": "支払い前",
-    "receipt_upload_failed": "レシートのアップロードに失敗しました"
+    "receipt_upload_failed": "レシートのアップロードに失敗しました",
+    "color": "色",
+    "lifetime": "永久",
+    "monthly": "毎月",
+    "one_time": "一回限り",
+    "quarterly": "四半期ごと",
+    "weekly": "毎週",
+    "yearly": "毎年"
   },
   "cards": {
     "title": "カード",
@@ -775,7 +799,9 @@
     "leave_btn": "脱退",
     "leave_confirm_msg": "チーム分析へのアクセスを失います。",
     "leave_confirm_title": "チームを脱退しますか？",
-    "how_team_works": "Teamの仕組み"
+    "how_team_works": "Teamの仕組み",
+    "no_subs_data": "サブスクのデータがありません",
+    "team_report": "チームレポート"
   },
   "paywall": {
     "choose_plan": "プランを選択",
@@ -820,22 +846,29 @@
     "auto_renew_notice": "サブスクリプションは自動更新されます。設定 > サブスクリプションからいつでもキャンセル可能。",
     "terms": "利用規約",
     "privacy": "プライバシーポリシー",
-    "no_purchases_title": "No active subscriptions",
-    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
-    "restore_unavailable_title": "Restore unavailable",
-    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
-    "active_via_team": "ACTIVE VIA TEAM",
-    "team_access_title": "You already have Pro",
-    "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
-    "buy_anyway": "Buy anyway",
-    "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
-    "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "no_purchases_title": "有効なサブスクリプションがありません",
+    "no_purchases_help": "この Apple ID / Google アカウントで有効なサブスクリプションが見つかりませんでした。誤りだと思われる場合はサポートにお問い合わせください。",
+    "restore_unavailable_title": "復元できません",
+    "restore_unavailable_msg": "App Store または Google Play に接続してから再度お試しください。",
+    "active_via_team": "チームでアクティブ",
+    "team_access_title": "すでに Pro をご利用中です",
+    "team_access_msg": "チームのサブスクリプションですでにすべての Pro 機能が利用可能です。チームを離れる予定がある場合のみ、個人 Pro の購入が意味を持ちます。",
+    "buy_anyway": "それでも購入",
+    "purchase_blocked_title": "購入が完了しませんでした",
+    "purchase_blocked_team": "Apple ID がチームのサブスクリプションに紐づいているため、Apple が購入を拒否した可能性があります。お試しください:1) App Store からサインアウト / 再サインイン、2) チームのオーナーにメンバー解除を依頼。",
+    "sync_delayed_title": "購入を受け付けました",
+    "sync_delayed_msg": "Pro の購入は Apple 側で確認済みです。当社のサーバーで数分以内に有効化が完了します。",
     "sync_retry_title": "同期が遅延しています",
     "sync_retry_message": "App Storeでは購入が完了しましたが、サーバー側の有効化がまだ確認されていません。もう一度試しますか？",
     "sync_retry_cta": "もう一度試す",
-    "sync_retry_later": "あとで"
+    "sync_retry_later": "あとで",
+    "best_value": "ベストバリュー",
+    "prices_unavailable_title": "価格を一時的に取得できません",
+    "prices_unavailable_msg": "App Store から現在の価格を取得できませんでした。もう一度お試しください。",
+    "start_free_trial": "7日間無料 — トライアル開始",
+    "pro_to_team_blocked_title": "先に Pro を解約してください",
+    "pro_to_team_blocked_msg": "Apple は Pro → Team の直接アップグレードを許可していません。iOS 設定 → サブスクリプション で Pro を解約し、現在の期間が終了するのを待ってから Team を購入してください。",
+    "manage_subscription": "サブスクリプションを管理"
   },
   "ai": {
     "or_type": "または入力",
@@ -870,7 +903,8 @@
     "upgrade": "アップグレード — $2.99/月",
     "unlock": "解放",
     "title_ai_limit": "AIリクエスト上限に達しました",
-    "desc_ai_limit": "今月の無料AIリクエストを使い切りました。Proでは月200回使えます。"
+    "desc_ai_limit": "今月の無料AIリクエストを使い切りました。Proでは月200回使えます。",
+    "upgrade_no_price": "Pro にアップグレード"
   },
   "categories": {
     "streaming": "ストリーミング",
@@ -1134,16 +1168,23 @@
     "winback_d37_title": "{{count}}個のサブスクが待っています",
     "winback_d37_cta": "無制限+AI通知を解除",
     "winback_d830_title": "戻ってきてください — 初月50%オフ",
-    "winback_d830_cta": "復帰者への最高オファー"
+    "winback_d830_cta": "復帰者への最高オファー",
+    "ai_analyses": "AI 分析",
+    "savings_found": "節約の見込み",
+    "subs_tracked": "追跡中のサブスク",
+    "unlock_feature": "Pro でこの機能をアンロック",
+    "upgrade_to_pro": "Pro にアップグレード",
+    "expires_on": "Pro プランは {{date}} に期限切れになります",
+    "pro_ends_in_other": "Pro は {{count}} 日後に終了します"
   },
   "a11y": {
-    "subscription": "{{name}} subscription",
-    "offline_banner": "Offline banner",
-    "add_subscription": "Add subscription",
-    "subscribe": "Subscribe",
-    "restore_purchases": "Restore purchases",
-    "save": "Save",
-    "close": "Close"
+    "subscription": "{{name}} サブスクリプション",
+    "offline_banner": "オフラインバナー",
+    "add_subscription": "サブスクリプションを追加",
+    "subscribe": "登録",
+    "restore_purchases": "購入を復元",
+    "save": "保存",
+    "close": "閉じる"
   },
   "annual_nudge": {
     "title": "年額に切り替え — $節約",
@@ -1188,5 +1229,18 @@
       "金",
       "土"
     ]
+  },
+  "ai_teaser": {
+    "title": "AI 分析",
+    "description": "AI にサブスクを分析させて、重複・節約機会・パーソナライズされた推奨事項を見つけましょう。",
+    "feat_duplicates": "重複したサブスクを検出",
+    "feat_savings": "節約の機会を発見",
+    "feat_recommendations": "パーソナライズされた推奨を取得",
+    "cta": "Pro にアップグレード"
+  },
+  "priority": {
+    "high": "高",
+    "medium": "中",
+    "low": "低"
   }
 }

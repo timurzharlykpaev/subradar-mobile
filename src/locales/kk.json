@@ -31,7 +31,9 @@
     "copy": "Көшіру",
     "done": "Дайын",
     "ok": "OK",
-    "share": "Бөлісу"
+    "share": "Бөлісу",
+    "next": "Келесі",
+    "something_went_wrong": "Бірдеңе дұрыс болмады"
   },
   "tabs": {
     "home": "Басты",
@@ -265,11 +267,15 @@
     "quarterly": "Тоқсан сайын",
     "billing_period": "Төлем кезеңі",
     "service_name": "Атауы",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_quota_exceeded": "AI квотасы таусылды. Көбірек сұраныс үшін Pro-ға жаңартыңыз.",
     "stage_transcribing": "Дауысты мәтінге түрлендіру",
     "stage_analyzing": "Суретті талдау",
     "stage_thinking": "AI қызметті іздеуде",
-    "stage_saving": "Жазылым сақталуда"
+    "stage_saving": "Жазылым сақталуда",
+    "ai_answer_placeholder": "Сіздің жауабыңыз",
+    "bulk_review_title": "Табылған жазылымдар",
+    "loading_hint": "AI сұрауыңызды өңдеп жатыр. Бұл әдетте бірнеше секунд алады.",
+    "screenshot_parse_error": "Скриншотты талдау мүмкін болмады. Анығырақ суретті көріңіз."
   },
   "periods": {
     "WEEKLY": "Апта сайын",
@@ -382,7 +388,14 @@
     "help_support": "Көмек және қолдау",
     "contact_us": "Бізбен байланысу",
     "faq": "Жиі қойылатын сұрақтар",
-    "mail_unavailable": "Пошта қолданбасын ашу мүмкін болмады"
+    "mail_unavailable": "Пошта қолданбасын ашу мүмкін болмады",
+    "delete_failed": "Аккаунтты жою сәтсіз аяқталды. Қайталап көріңіз немесе қолдау қызметіне хабарласыңыз.",
+    "display_currency": "Көрсету валютасы",
+    "region": "Аймақ",
+    "region_change_currency_title": "Көрсету валютасын өзгерту керек пе?",
+    "region_change_currency_body": "Жазылымдарды {{currency}} валютасында көрсету керек пе?",
+    "region_change_keep": "{{currency}}-ні сақтау",
+    "region_change_switch": "{{currency}}-ке ауысу"
   },
   "auth": {
     "welcome": "Қайта оралуыңызбен",
@@ -408,9 +421,11 @@
     "invalid_code": "Жарамсыз код",
     "failed_send_link": "Сілтемені жіберу сәтсіз",
     "too_many_attempts": "Тым көп әрекет. Сәл күте тұрыңыз.",
-    "invalid_credentials": "Invalid email or password.",
-    "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "invalid_credentials": "Email немесе құпиясөз қате.",
+    "user_not_found": "Пайдаланушы табылмады.",
+    "email_already_exists": "Бұл email бұрыннан тіркелген.",
+    "apple_no_token": "Apple-ден сәйкестендіру токені алынбады. Қайталап көріңіз.",
+    "invalid_user": "Дұрыс емес аккаунт деректері алынды. Қайталап көріңіз."
   },
   "landing": {
     "hero_title": "Ақшаңыздың қайда кететінін нақты біліңіз",
@@ -472,7 +487,9 @@
     "icp_solo": "Тек мен",
     "icp_family": "Отбасым",
     "icp_team": "Біздің команда",
-    "trial_spend_hook": "Сіз {{amount}}/ай бақылап жатырсыз — толық суретті ашыңыз"
+    "trial_spend_hook": "Сіз {{amount}}/ай бақылап жатырсыз — толық суретті ашыңыз",
+    "region_title": "Жазылымдарды қайдан сатып аласыз?",
+    "region_subtitle": "Бағалар сізге дәл болуы үшін."
   },
   "analytics": {
     "title": "Аналитика",
@@ -551,7 +568,14 @@
     "save_card": "Картаны сақтау",
     "cancel_success": "Жазылым тоқтатылды",
     "before_payment": "төлемге дейін",
-    "receipt_upload_failed": "Чекті жүктеу сәтсіз аяқталды"
+    "receipt_upload_failed": "Чекті жүктеу сәтсіз аяқталды",
+    "color": "Түс",
+    "lifetime": "мерзімсіз",
+    "monthly": "ай сайын",
+    "one_time": "бір реттік",
+    "quarterly": "тоқсан сайын",
+    "weekly": "апта сайын",
+    "yearly": "жыл сайын"
   },
   "cards": {
     "title": "Карталар",
@@ -775,7 +799,9 @@
     "leave_btn": "Шығу",
     "leave_confirm_msg": "Топтық аналитикаға қолжетімділік жоғалады.",
     "leave_confirm_title": "Топтан шығу керек пе?",
-    "how_team_works": "Team қалай жұмыс істейді?"
+    "how_team_works": "Team қалай жұмыс істейді?",
+    "no_subs_data": "Жазылым деректері жоқ",
+    "team_report": "Команда есебі"
   },
   "paywall": {
     "choose_plan": "Жоспар таңдаңыз",
@@ -820,22 +846,29 @@
     "auto_renew_notice": "Жазылым автоматты жаңартылады. Кез келген уақытта Баптаулар > Жазылымдар арқылы тоқтатуға болады.",
     "terms": "Пайдалану шарттары",
     "privacy": "Құпиялылық саясаты",
-    "no_purchases_title": "No active subscriptions",
-    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
-    "restore_unavailable_title": "Restore unavailable",
-    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
-    "active_via_team": "ACTIVE VIA TEAM",
-    "team_access_title": "You already have Pro",
-    "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
-    "buy_anyway": "Buy anyway",
-    "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
-    "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "no_purchases_title": "Белсенді жазылымдар жоқ",
+    "no_purchases_help": "Бұл Apple ID / Google аккаунтында белсенді жазылымдар табылмады. Қате деп ойласаңыз, қолдау қызметіне хабарласыңыз.",
+    "restore_unavailable_title": "Қалпына келтіру қолжетімсіз",
+    "restore_unavailable_msg": "App Store немесе Google Play-ге қосылғаннан кейін қайталап көріңіз.",
+    "active_via_team": "КОМАНДА АРҚЫЛЫ БЕЛСЕНДІ",
+    "team_access_title": "Сізде қазір Pro бар",
+    "team_access_msg": "Команда жазылымы барлық Pro функцияларын ашады. Жеке Pro сатып алу команданы тастап кеткіңіз келгенде ғана пайдалы.",
+    "buy_anyway": "Бәрібір сатып алу",
+    "purchase_blocked_title": "Сатып алу аяқталмады",
+    "purchase_blocked_team": "Apple ID команда жазылымына байланысты болғандықтан, Apple сатып алуды қабылдамаған болуы мүмкін. Көріңіз: 1) App Store-дан шығып, қайта кіріңіз, 2) немесе команда иесінен сізді шығаруды сұраңыз.",
+    "sync_delayed_title": "Сатып алу қабылданды",
+    "sync_delayed_msg": "Pro сатып алуыңыз Apple жағында расталды. Біздің сервер бірнеше минут ішінде белсендіруді аяқтайды.",
     "sync_retry_title": "Синхрондау кешігіп жатыр",
     "sync_retry_message": "Сатып алу App Store жағында аяқталды, бірақ сервер белсендіруді әлі растаған жоқ. Қайта әрекет етейік пе?",
     "sync_retry_cta": "Қайта әрекет ету",
-    "sync_retry_later": "Кейінірек"
+    "sync_retry_later": "Кейінірек",
+    "best_value": "ҮЗДІК ҰСЫНЫС",
+    "prices_unavailable_title": "Бағалар уақытша қолжетімсіз",
+    "prices_unavailable_msg": "App Store-дан ағымдағы бағаларды жүктеу мүмкін болмады. Қайталап көріңіз.",
+    "start_free_trial": "7 күн тегін — Сынақты бастау",
+    "pro_to_team_blocked_title": "Алдымен Pro-дан бас тартыңыз",
+    "pro_to_team_blocked_msg": "Apple Pro → Team тікелей жаңартуға рұқсат бермейді. iOS Параметрлер → Жазылымдар бөлімінде Pro жазылымыңызды тоқтатыңыз, ағымдағы кезең аяқталғанша күтіңіз де, Team сатып алу үшін қайта оралыңыз.",
+    "manage_subscription": "Жазылымды басқару"
   },
   "pro_modal": {
     "title_default": "Pro мүмкіндік",
@@ -860,7 +893,8 @@
     "upgrade": "Жаңарту — $2.99/ай",
     "unlock": "Ашу",
     "title_ai_limit": "AI сұрау шегі",
-    "desc_ai_limit": "Осы айдағы барлық тегін AI сұрауларыңызды қолдандыңыз. Pro — айына 200."
+    "desc_ai_limit": "Осы айдағы барлық тегін AI сұрауларыңызды қолдандыңыз. Pro — айына 200.",
+    "upgrade_no_price": "Pro-ға жаңарту"
   },
   "ai": {
     "or_type": "немесе жазыңыз",
@@ -1136,16 +1170,24 @@
     "winback_d37_title": "{{count}} жазылым бақылауды күтуде",
     "winback_d37_cta": "Шектеусіз + AI ескертулерін ашу",
     "winback_d830_title": "Қайтыңыз — алғашқы айға 50% жеңілдік",
-    "winback_d830_cta": "Қайтушыларға ең жақсы ұсыныс"
+    "winback_d830_cta": "Қайтушыларға ең жақсы ұсыныс",
+    "ai_analyses": "AI талдаулары",
+    "savings_found": "Ықтимал үнемдеу",
+    "subs_tracked": "Бақылауда жазылымдар",
+    "unlock_feature": "Бұл мүмкіндікті Pro арқылы ашыңыз",
+    "upgrade_to_pro": "Pro-ға жаңарту",
+    "expires_on": "Сіздің Pro жоспарыңыз {{date}} күні аяқталады",
+    "pro_ends_in_one": "Pro {{count}} күннен кейін аяқталады",
+    "pro_ends_in_other": "Pro {{count}} күннен кейін аяқталады"
   },
   "a11y": {
-    "subscription": "{{name}} subscription",
-    "offline_banner": "Offline banner",
-    "add_subscription": "Add subscription",
-    "subscribe": "Subscribe",
-    "restore_purchases": "Restore purchases",
-    "save": "Save",
-    "close": "Close"
+    "subscription": "{{name}} жазылымы",
+    "offline_banner": "Офлайн баннер",
+    "add_subscription": "Жазылым қосу",
+    "subscribe": "Жазылу",
+    "restore_purchases": "Сатып алуларды қалпына келтіру",
+    "save": "Сақтау",
+    "close": "Жабу"
   },
   "annual_nudge": {
     "title": "Жылдық жоспарға — $ үнемдеу",
@@ -1190,5 +1232,18 @@
       "Жм",
       "Сб"
     ]
+  },
+  "ai_teaser": {
+    "title": "AI талдауы",
+    "description": "AI-ге жазылымдарыңызды талдауға беріп, қайталанулар, үнемдеу мүмкіндіктері мен жеке ұсыныстарды табыңыз.",
+    "feat_duplicates": "Қайталанатын жазылымдарды анықтайды",
+    "feat_savings": "Үнемдеу мүмкіндіктерін табады",
+    "feat_recommendations": "Жеке ұсыныстарды алыңыз",
+    "cta": "Pro-ға жаңарту"
+  },
+  "priority": {
+    "high": "ЖОҒАРЫ",
+    "medium": "ОРТАША",
+    "low": "ТӨМЕН"
   }
 }

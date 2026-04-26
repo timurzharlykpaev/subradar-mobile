@@ -31,7 +31,9 @@
     "copy": "Copier",
     "done": "Terminé",
     "ok": "OK",
-    "share": "Partager"
+    "share": "Partager",
+    "next": "Suivant",
+    "something_went_wrong": "Une erreur s'est produite"
   },
   "tabs": {
     "home": "Accueil",
@@ -238,7 +240,7 @@
     "bulk_partial_msg": "N'ont pas pu être ajoutés (limite Free {{max}}) :\n\n{{names}}\n\nPassez à Pro pour tous les ajouter.",
     "bulk_retry": "Réessayer",
     "bulk_hint": "Listez plusieurs abonnements — l'IA les reconnaîtra tous",
-    "max_recording": "max {{sec}}s",
+    "max_recording": "max {{sec}} s",
     "ai_limit_title": "Limite de requêtes IA atteinte",
     "ai_limit_msg": "Vous avez utilisé toutes vos requêtes IA gratuites ce mois. Passez à Pro pour 200 requêtes/mois.",
     "limit_reached_title": "Limite d'abonnements",
@@ -265,11 +267,15 @@
     "quarterly": "Trimestriel",
     "billing_period": "Période de facturation",
     "service_name": "Nom",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_quota_exceeded": "Quota AI épuisé. Passez à Pro pour plus de requêtes.",
     "stage_transcribing": "Transcription vocale",
     "stage_analyzing": "Analyse de l’image",
     "stage_thinking": "IA recherche le service",
-    "stage_saving": "Enregistrement de l’abonnement"
+    "stage_saving": "Enregistrement de l’abonnement",
+    "ai_answer_placeholder": "Votre réponse",
+    "bulk_review_title": "Abonnements trouvés",
+    "loading_hint": "AI traite votre demande. Cela prend généralement quelques secondes.",
+    "screenshot_parse_error": "Impossible d'analyser la capture d'écran. Essayez avec une image plus nette."
   },
   "settings": {
     "title": "Paramètres",
@@ -374,7 +380,14 @@
     "help_support": "Aide & Support",
     "contact_us": "Nous contacter",
     "faq": "Questions fréquentes",
-    "mail_unavailable": "Impossible d'ouvrir l'app Mail"
+    "mail_unavailable": "Impossible d'ouvrir l'app Mail",
+    "delete_failed": "Impossible de supprimer le compte. Veuillez réessayer ou contacter le support.",
+    "display_currency": "Devise d'affichage",
+    "region": "Région",
+    "region_change_currency_title": "Modifier la devise d'affichage ?",
+    "region_change_currency_body": "Afficher les abonnements en {{currency}} ?",
+    "region_change_keep": "Garder {{currency}}",
+    "region_change_switch": "Passer à {{currency}}"
   },
   "auth": {
     "welcome": "Bon retour",
@@ -400,9 +413,11 @@
     "invalid_code": "Code invalide",
     "failed_send_link": "Impossible d'envoyer le lien",
     "too_many_attempts": "Trop de tentatives. Veuillez patienter.",
-    "invalid_credentials": "Invalid email or password.",
-    "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "invalid_credentials": "E-mail ou mot de passe invalide.",
+    "user_not_found": "Utilisateur introuvable.",
+    "email_already_exists": "Cet e-mail est déjà enregistré.",
+    "apple_no_token": "Aucun jeton d'identité reçu d'Apple. Veuillez réessayer.",
+    "invalid_user": "Données de compte non valides. Veuillez réessayer."
   },
   "landing": {
     "hero_title": "Sachez exactement où va votre argent",
@@ -464,7 +479,9 @@
     "icp_solo": "Juste moi",
     "icp_family": "Ma famille",
     "icp_team": "Notre équipe",
-    "trial_spend_hook": "Vous suivez {{amount}}/mois — voyez l'image complète"
+    "trial_spend_hook": "Vous suivez {{amount}}/mois — voyez l'image complète",
+    "region_title": "Où achetez-vous vos abonnements ?",
+    "region_subtitle": "Pour que les prix restent précis pour vous."
   },
   "analytics": {
     "title": "Analytique",
@@ -543,7 +560,14 @@
     "save_card": "Enregistrer la carte",
     "cancel_success": "Abonnement annulé",
     "before_payment": "avant le paiement",
-    "receipt_upload_failed": "Échec du téléchargement du reçu"
+    "receipt_upload_failed": "Échec du téléchargement du reçu",
+    "color": "Couleur",
+    "lifetime": "à vie",
+    "monthly": "mensuel",
+    "one_time": "unique",
+    "quarterly": "trimestriel",
+    "weekly": "hebdomadaire",
+    "yearly": "annuel"
   },
   "cards": {
     "title": "Cartes",
@@ -596,7 +620,7 @@
     "title": "Modifier le profil",
     "name": "Nom",
     "name_placeholder": "Votre nom",
-    "email": "Email"
+    "email": "E-mail"
   },
   "features": {
     "voice_title": "Ajout vocal",
@@ -775,7 +799,9 @@
     "leave_btn": "Quitter",
     "leave_confirm_msg": "Vous perdrez l'accès aux analyses d'équipe.",
     "leave_confirm_title": "Quitter l'équipe ?",
-    "how_team_works": "Comment fonctionne Team ?"
+    "how_team_works": "Comment fonctionne Team ?",
+    "no_subs_data": "Aucune donnée d'abonnement disponible",
+    "team_report": "Rapport d'équipe"
   },
   "paywall": {
     "choose_plan": "Choisir un plan",
@@ -820,22 +846,29 @@
     "auto_renew_notice": "Renouvellement automatique. Annulable à tout moment dans Réglages > Abonnements.",
     "terms": "Conditions d'utilisation",
     "privacy": "Politique de confidentialité",
-    "no_purchases_title": "No active subscriptions",
-    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
-    "restore_unavailable_title": "Restore unavailable",
-    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
-    "active_via_team": "ACTIVE VIA TEAM",
-    "team_access_title": "You already have Pro",
-    "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
-    "buy_anyway": "Buy anyway",
-    "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
-    "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "no_purchases_title": "Aucun abonnement actif",
+    "no_purchases_help": "Aucun abonnement actif n'a été trouvé sur cet Apple ID / compte Google. Contactez le support si vous pensez que c'est une erreur.",
+    "restore_unavailable_title": "Restauration indisponible",
+    "restore_unavailable_msg": "Veuillez réessayer une fois connecté à l'App Store ou Google Play.",
+    "active_via_team": "ACTIF VIA ÉQUIPE",
+    "team_access_title": "Vous avez déjà Pro",
+    "team_access_msg": "Votre abonnement d'équipe débloque déjà toutes les fonctionnalités Pro. Acheter votre propre Pro n'est utile que si vous comptez quitter l'équipe.",
+    "buy_anyway": "Acheter quand même",
+    "purchase_blocked_title": "L'achat n'a pas été finalisé",
+    "purchase_blocked_team": "Apple a peut-être refusé l'achat car votre Apple ID est lié à l'abonnement d'équipe. Essayez : 1) déconnectez-vous / reconnectez-vous à l'App Store, 2) ou demandez au propriétaire de l'équipe de vous retirer.",
+    "sync_delayed_title": "Achat reçu",
+    "sync_delayed_msg": "Votre achat Pro est confirmé du côté d'Apple. Notre serveur finira l'activation dans quelques minutes.",
     "sync_retry_title": "Synchronisation retardée",
     "sync_retry_message": "Votre achat a été effectué côté Apple, mais le serveur n'a pas encore confirmé l'activation. Réessayer ?",
     "sync_retry_cta": "Réessayer",
-    "sync_retry_later": "Plus tard"
+    "sync_retry_later": "Plus tard",
+    "best_value": "MEILLEURE OFFRE",
+    "prices_unavailable_title": "Tarifs temporairement indisponibles",
+    "prices_unavailable_msg": "Impossible de charger les tarifs actuels depuis l'App Store. Veuillez réessayer.",
+    "start_free_trial": "7 jours gratuits — Commencer l'essai",
+    "pro_to_team_blocked_title": "Annulez d'abord Pro",
+    "pro_to_team_blocked_msg": "Apple ne permet pas de passer directement de Pro à Team. Annulez votre abonnement Pro dans Réglages iOS → Abonnements, attendez la fin de la période en cours, puis revenez acheter Team.",
+    "manage_subscription": "Gérer l'abonnement"
   },
   "ai": {
     "or_type": "ou tapez",
@@ -870,7 +903,8 @@
     "upgrade": "Passer à Pro — 2,99 $/mois",
     "unlock": "Débloquer",
     "title_ai_limit": "Limite IA atteinte",
-    "desc_ai_limit": "Vous avez utilisé toutes vos requêtes IA gratuites ce mois-ci. Pro vous en donne 200 par mois."
+    "desc_ai_limit": "Vous avez utilisé toutes vos requêtes IA gratuites ce mois-ci. Pro vous en donne 200 par mois.",
+    "upgrade_no_price": "Passer à Pro"
   },
   "categories": {
     "streaming": "Streaming",
@@ -1136,16 +1170,24 @@
     "winback_d37_title": "{{count}} abonnements à suivre",
     "winback_d37_cta": "Débloquez illimité + alertes IA",
     "winback_d830_title": "Revenez — 50% sur votre premier mois",
-    "winback_d830_cta": "Meilleure offre pour les revenants"
+    "winback_d830_cta": "Meilleure offre pour les revenants",
+    "ai_analyses": "Analyses AI",
+    "savings_found": "Économies potentielles",
+    "subs_tracked": "Abonnements suivis",
+    "unlock_feature": "Débloquez cette fonctionnalité avec Pro",
+    "upgrade_to_pro": "Passer à Pro",
+    "expires_on": "Votre forfait Pro expire le {{date}}",
+    "pro_ends_in_one": "Pro se termine dans {{count}} jour",
+    "pro_ends_in_other": "Pro se termine dans {{count}} jours"
   },
   "a11y": {
-    "subscription": "{{name}} subscription",
-    "offline_banner": "Offline banner",
-    "add_subscription": "Add subscription",
-    "subscribe": "Subscribe",
-    "restore_purchases": "Restore purchases",
-    "save": "Save",
-    "close": "Close"
+    "subscription": "Abonnement {{name}}",
+    "offline_banner": "Bannière hors ligne",
+    "add_subscription": "Ajouter un abonnement",
+    "subscribe": "S'abonner",
+    "restore_purchases": "Restaurer les achats",
+    "save": "Enregistrer",
+    "close": "Fermer"
   },
   "annual_nudge": {
     "title": "Passez à l'annuel — économisez $",
@@ -1190,5 +1232,18 @@
       "Ve",
       "Sa"
     ]
+  },
+  "ai_teaser": {
+    "title": "Analyse AI",
+    "description": "Laissez AI analyser vos abonnements pour trouver les doublons, les opportunités d'économies et des recommandations personnalisées.",
+    "feat_duplicates": "Détecte les abonnements en double",
+    "feat_savings": "Trouve des opportunités d'économies",
+    "feat_recommendations": "Recevez des recommandations personnalisées",
+    "cta": "Passer à Pro"
+  },
+  "priority": {
+    "high": "ÉLEVÉE",
+    "medium": "MOYENNE",
+    "low": "FAIBLE"
   }
 }

@@ -31,7 +31,9 @@
     "copy": "复制",
     "done": "完成",
     "ok": "好",
-    "share": "分享"
+    "share": "分享",
+    "next": "下一步",
+    "something_went_wrong": "出了点问题"
   },
   "tabs": {
     "home": "首页",
@@ -226,7 +228,7 @@
     "bulk_parse": "识别 →",
     "bulk_parsing": "AI 正在识别订阅...",
     "bulk_review": "选择订阅",
-    "bulk_review_sub": "已找到：{{count}}",
+    "bulk_review_sub": "已找到:{{count}}",
     "bulk_select_all": "全选",
     "bulk_deselect_all": "取消全选",
     "bulk_save": "添加 {{count}} 个",
@@ -265,11 +267,15 @@
     "quarterly": "每季度",
     "billing_period": "计费周期",
     "service_name": "名称",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_quota_exceeded": "AI 配额已用尽。升级到 Pro 以获取更多请求。",
     "stage_transcribing": "正在转录语音",
     "stage_analyzing": "正在分析图像",
     "stage_thinking": "AI 正在查找服务",
-    "stage_saving": "正在保存订阅"
+    "stage_saving": "正在保存订阅",
+    "ai_answer_placeholder": "您的回答",
+    "bulk_review_title": "找到的订阅",
+    "loading_hint": "AI 正在处理您的请求,通常需要几秒钟。",
+    "screenshot_parse_error": "无法解析截图。请尝试更清晰的图片。"
   },
   "settings": {
     "title": "设置",
@@ -374,7 +380,14 @@
     "help_support": "帮助与支持",
     "contact_us": "联系我们",
     "faq": "常见问题",
-    "mail_unavailable": "无法打开邮件应用"
+    "mail_unavailable": "无法打开邮件应用",
+    "delete_failed": "删除账户失败。请重试或联系支持。",
+    "display_currency": "显示货币",
+    "region": "地区",
+    "region_change_currency_title": "更改显示货币?",
+    "region_change_currency_body": "以 {{currency}} 显示订阅?",
+    "region_change_keep": "保留 {{currency}}",
+    "region_change_switch": "切换到 {{currency}}"
   },
   "auth": {
     "welcome": "欢迎回来",
@@ -400,9 +413,11 @@
     "invalid_code": "验证码无效",
     "failed_send_link": "发送链接失败",
     "too_many_attempts": "尝试次数过多，请稍后再试。",
-    "invalid_credentials": "Invalid email or password.",
-    "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "invalid_credentials": "邮箱或密码无效。",
+    "user_not_found": "未找到用户。",
+    "email_already_exists": "此邮箱已注册。",
+    "apple_no_token": "未从 Apple 收到身份令牌。请重试。",
+    "invalid_user": "收到的账户数据无效。请重试。"
   },
   "landing": {
     "hero_title": "清楚了解您的资金流向",
@@ -464,7 +479,9 @@
     "icp_solo": "只有我",
     "icp_family": "我的家庭",
     "icp_team": "我们团队",
-    "trial_spend_hook": "您正在追踪{{amount}}/月 — 解锁完整图景"
+    "trial_spend_hook": "您正在追踪{{amount}}/月 — 解锁完整图景",
+    "region_title": "您在哪里购买订阅?",
+    "region_subtitle": "让价格对您保持准确。"
   },
   "analytics": {
     "title": "分析",
@@ -543,7 +560,14 @@
     "save_card": "保存卡片",
     "cancel_success": "订阅已取消",
     "before_payment": "付款前",
-    "receipt_upload_failed": "上传收据失败"
+    "receipt_upload_failed": "上传收据失败",
+    "color": "颜色",
+    "lifetime": "终身",
+    "monthly": "每月",
+    "one_time": "一次性",
+    "quarterly": "每季度",
+    "weekly": "每周",
+    "yearly": "每年"
   },
   "cards": {
     "title": "卡片",
@@ -775,7 +799,9 @@
     "leave_btn": "退出",
     "leave_confirm_msg": "你将无法访问团队分析。",
     "leave_confirm_title": "退出团队？",
-    "how_team_works": "Team如何工作?"
+    "how_team_works": "Team如何工作?",
+    "no_subs_data": "没有订阅数据",
+    "team_report": "团队报告"
   },
   "paywall": {
     "choose_plan": "选择计划",
@@ -820,22 +846,29 @@
     "auto_renew_notice": "订阅自动续费。可随时在「设置 > 订阅」中取消。",
     "terms": "使用条款",
     "privacy": "隐私政策",
-    "no_purchases_title": "No active subscriptions",
-    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
-    "restore_unavailable_title": "Restore unavailable",
-    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
-    "active_via_team": "ACTIVE VIA TEAM",
-    "team_access_title": "You already have Pro",
-    "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
-    "buy_anyway": "Buy anyway",
-    "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
-    "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "no_purchases_title": "没有有效订阅",
+    "no_purchases_help": "在此 Apple ID / Google 账户上未找到有效订阅。如果您认为有误,请联系支持。",
+    "restore_unavailable_title": "无法恢复",
+    "restore_unavailable_msg": "请在连接 App Store 或 Google Play 时重试。",
+    "active_via_team": "团队订阅已激活",
+    "team_access_title": "您已拥有 Pro",
+    "team_access_msg": "您的团队订阅已解锁所有 Pro 功能。仅在您计划离开团队时,购买自己的 Pro 才有意义。",
+    "buy_anyway": "仍要购买",
+    "purchase_blocked_title": "购买未完成",
+    "purchase_blocked_team": "Apple 可能因您的 Apple ID 已绑定团队订阅而拒绝购买。请尝试:1)退出并重新登录 App Store,2)或请团队所有者将您移除。",
+    "sync_delayed_title": "已收到购买",
+    "sync_delayed_msg": "您的 Pro 购买已在 Apple 端确认。我们的服务器将在几分钟内完成激活。",
     "sync_retry_title": "同步延迟",
     "sync_retry_message": "您的购买已在 Apple 端完成，但服务器尚未确认激活。要重试吗？",
     "sync_retry_cta": "重试",
-    "sync_retry_later": "稍后"
+    "sync_retry_later": "稍后",
+    "best_value": "最划算",
+    "prices_unavailable_title": "价格暂时不可用",
+    "prices_unavailable_msg": "无法从 App Store 加载当前价格。请重试。",
+    "start_free_trial": "免费 7 天 — 开始试用",
+    "pro_to_team_blocked_title": "请先取消 Pro",
+    "pro_to_team_blocked_msg": "Apple 不允许直接从 Pro 升级到 Team。请在 iOS 设置 → 订阅 中取消 Pro 订阅,等当前周期结束后回来购买 Team。",
+    "manage_subscription": "管理订阅"
   },
   "ai": {
     "or_type": "或输入",
@@ -870,7 +903,8 @@
     "upgrade": "升级 — $2.99/月",
     "unlock": "解锁",
     "title_ai_limit": "已达到 AI 请求限制",
-    "desc_ai_limit": "本月免费 AI 请求已用完。Pro 每月提供 200 次。"
+    "desc_ai_limit": "本月免费 AI 请求已用完。Pro 每月提供 200 次。",
+    "upgrade_no_price": "升级到 Pro"
   },
   "categories": {
     "streaming": "流媒体",
@@ -1134,16 +1168,23 @@
     "winback_d37_title": "{{count}}个订阅等待追踪",
     "winback_d37_cta": "解锁无限+AI续订提醒",
     "winback_d830_title": "回归 — 首月5折",
-    "winback_d830_cta": "回归用户最佳优惠"
+    "winback_d830_cta": "回归用户最佳优惠",
+    "ai_analyses": "AI 分析",
+    "savings_found": "潜在节省",
+    "subs_tracked": "已追踪订阅",
+    "unlock_feature": "使用 Pro 解锁此功能",
+    "upgrade_to_pro": "升级到 Pro",
+    "expires_on": "您的 Pro 计划将于 {{date}} 到期",
+    "pro_ends_in_other": "Pro 将在 {{count}} 天后结束"
   },
   "a11y": {
-    "subscription": "{{name}} subscription",
-    "offline_banner": "Offline banner",
-    "add_subscription": "Add subscription",
-    "subscribe": "Subscribe",
-    "restore_purchases": "Restore purchases",
-    "save": "Save",
-    "close": "Close"
+    "subscription": "{{name}} 订阅",
+    "offline_banner": "离线横幅",
+    "add_subscription": "添加订阅",
+    "subscribe": "订阅",
+    "restore_purchases": "恢复购买",
+    "save": "保存",
+    "close": "关闭"
   },
   "annual_nudge": {
     "title": "切换到年付 — 节省$",
@@ -1188,5 +1229,18 @@
       "五",
       "六"
     ]
+  },
+  "ai_teaser": {
+    "title": "AI 分析",
+    "description": "让 AI 分析您的订阅,找出重复项、节省机会和个性化推荐。",
+    "feat_duplicates": "检测重复订阅",
+    "feat_savings": "寻找节省机会",
+    "feat_recommendations": "获取个性化推荐",
+    "cta": "升级到 Pro"
+  },
+  "priority": {
+    "high": "高",
+    "medium": "中",
+    "low": "低"
   }
 }

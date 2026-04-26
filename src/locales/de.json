@@ -31,7 +31,9 @@
     "copy": "Kopieren",
     "done": "Fertig",
     "ok": "OK",
-    "share": "Teilen"
+    "share": "Teilen",
+    "next": "Weiter",
+    "something_went_wrong": "Etwas ist schiefgelaufen"
   },
   "tabs": {
     "home": "Start",
@@ -41,7 +43,7 @@
     "workspace": "Team"
   },
   "nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Übersicht",
     "subscriptions": "Abonnements",
     "analytics": "Analytik",
     "cards": "Karten",
@@ -50,7 +52,7 @@
     "settings": "Einstellungen"
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Übersicht",
     "subtitle": "Ihre Abonnement-Übersicht",
     "monthly_spend": "Monatliche Ausgaben",
     "yearly_total": "Jahresgesamtbetrag",
@@ -238,7 +240,7 @@
     "bulk_partial_msg": "Konnten nicht hinzugefügt werden (Free-Limit {{max}}):\n\n{{names}}\n\nUpgrade auf Pro, um alle hinzuzufügen.",
     "bulk_retry": "Erneut versuchen",
     "bulk_hint": "Mehrere Abonnements aufführen — KI erkennt alle",
-    "max_recording": "max {{sec}}s",
+    "max_recording": "max. {{sec}} Sek.",
     "ai_limit_title": "KI-Anfragelimit erreicht",
     "ai_limit_msg": "Sie haben alle kostenlosen KI-Anfragen diesen Monat aufgebraucht. Upgraden Sie auf Pro für 200 Anfragen/Monat.",
     "limit_reached_title": "Abonnement-Limit",
@@ -265,11 +267,15 @@
     "quarterly": "Vierteljährlich",
     "billing_period": "Abrechnungszeitraum",
     "service_name": "Name",
-    "ai_quota_exceeded": "AI quota exceeded. Upgrade to Pro for more requests.",
+    "ai_quota_exceeded": "AI-Kontingent aufgebraucht. Upgrade auf Pro für mehr Anfragen.",
     "stage_transcribing": "Sprache wird transkribiert",
     "stage_analyzing": "Bild wird analysiert",
     "stage_thinking": "KI sucht Dienst",
-    "stage_saving": "Abo wird gespeichert"
+    "stage_saving": "Abo wird gespeichert",
+    "ai_answer_placeholder": "Deine Antwort",
+    "bulk_review_title": "Gefundene Abos",
+    "loading_hint": "AI verarbeitet deine Anfrage. Das dauert normalerweise einige Sekunden.",
+    "screenshot_parse_error": "Der Screenshot konnte nicht ausgelesen werden. Versuche es mit einem klareren Bild."
   },
   "settings": {
     "title": "Einstellungen",
@@ -374,7 +380,14 @@
     "help_support": "Hilfe & Support",
     "contact_us": "Kontakt",
     "faq": "Häufig gestellte Fragen",
-    "mail_unavailable": "Mail-App konnte nicht geöffnet werden"
+    "mail_unavailable": "Mail-App konnte nicht geöffnet werden",
+    "delete_failed": "Konto konnte nicht gelöscht werden. Bitte versuche es erneut oder kontaktiere den Support.",
+    "display_currency": "Anzeigewährung",
+    "region": "Region",
+    "region_change_currency_title": "Anzeigewährung ändern?",
+    "region_change_currency_body": "Abos in {{currency}} anzeigen?",
+    "region_change_keep": "{{currency}} behalten",
+    "region_change_switch": "Zu {{currency}} wechseln"
   },
   "auth": {
     "welcome": "Willkommen zurück",
@@ -400,9 +413,11 @@
     "invalid_code": "Ungültiger Code",
     "failed_send_link": "Link konnte nicht gesendet werden",
     "too_many_attempts": "Zu viele Versuche. Bitte warten Sie einen Moment.",
-    "invalid_credentials": "Invalid email or password.",
-    "user_not_found": "User not found.",
-    "email_already_exists": "This email is already registered."
+    "invalid_credentials": "E-Mail oder Passwort ungültig.",
+    "user_not_found": "Benutzer nicht gefunden.",
+    "email_already_exists": "Diese E-Mail ist bereits registriert.",
+    "apple_no_token": "Kein Identitäts-Token von Apple erhalten. Bitte versuche es erneut.",
+    "invalid_user": "Ungültige Kontodaten erhalten. Bitte versuche es erneut."
   },
   "landing": {
     "hero_title": "Wissen Sie genau, wohin Ihr Geld fließt",
@@ -464,7 +479,9 @@
     "icp_solo": "Nur ich",
     "icp_family": "Meine Familie",
     "icp_team": "Unser Team",
-    "trial_spend_hook": "Du trackst {{amount}}/Mo — sieh das volle Bild"
+    "trial_spend_hook": "Du trackst {{amount}}/Mo — sieh das volle Bild",
+    "region_title": "Wo kaufst du Abos?",
+    "region_subtitle": "Damit die Preise für dich akkurat bleiben."
   },
   "analytics": {
     "title": "Analytik",
@@ -543,7 +560,14 @@
     "save_card": "Karte speichern",
     "cancel_success": "Abo gekündigt",
     "before_payment": "vor Zahlung",
-    "receipt_upload_failed": "Beleg konnte nicht hochgeladen werden"
+    "receipt_upload_failed": "Beleg konnte nicht hochgeladen werden",
+    "color": "Farbe",
+    "lifetime": "lebenslang",
+    "monthly": "monatlich",
+    "one_time": "einmalig",
+    "quarterly": "quartalsweise",
+    "weekly": "wöchentlich",
+    "yearly": "jährlich"
   },
   "cards": {
     "title": "Karten",
@@ -775,7 +799,9 @@
     "leave_btn": "Verlassen",
     "leave_confirm_msg": "Sie verlieren den Zugang zur Team-Analytik.",
     "leave_confirm_title": "Team verlassen?",
-    "how_team_works": "Wie funktioniert Team?"
+    "how_team_works": "Wie funktioniert Team?",
+    "no_subs_data": "Keine Abo-Daten verfügbar",
+    "team_report": "Team-Bericht"
   },
   "paywall": {
     "choose_plan": "Plan wählen",
@@ -820,22 +846,29 @@
     "auto_renew_notice": "Abo verlängert sich automatisch. Jederzeit kündbar unter Einstellungen > Abonnements.",
     "terms": "Nutzungsbedingungen",
     "privacy": "Datenschutzrichtlinie",
-    "no_purchases_title": "No active subscriptions",
-    "no_purchases_help": "No active subscriptions were found on this Apple ID / Google account. Contact support if you believe this is an error.",
-    "restore_unavailable_title": "Restore unavailable",
-    "restore_unavailable_msg": "Please try again when connected to App Store or Google Play.",
-    "active_via_team": "ACTIVE VIA TEAM",
-    "team_access_title": "You already have Pro",
-    "team_access_msg": "Your team subscription already unlocks every Pro feature. Buying your own Pro is only useful if you plan to leave the team. Apple may refuse the purchase while a team subscription is active on this Apple ID.",
-    "buy_anyway": "Buy anyway",
-    "purchase_blocked_title": "Purchase didn't complete",
-    "purchase_blocked_team": "Apple may have refused because your Apple ID is tied to the team subscription. Try: 1) sign out/in of App Store, 2) use a personal Apple ID, or 3) leave the team first (Settings → Workspace).",
-    "sync_delayed_title": "Purchase received",
-    "sync_delayed_msg": "Your Pro purchase is confirmed on Apple's side. Our server will finish activating it within a few minutes — you may need to reopen the app.",
+    "no_purchases_title": "Keine aktiven Abos",
+    "no_purchases_help": "Auf dieser Apple ID / diesem Google-Konto wurden keine aktiven Abos gefunden. Kontaktiere den Support, falls du das für einen Fehler hältst.",
+    "restore_unavailable_title": "Wiederherstellung nicht verfügbar",
+    "restore_unavailable_msg": "Bitte versuche es erneut, wenn du mit App Store oder Google Play verbunden bist.",
+    "active_via_team": "AKTIV ÜBER TEAM",
+    "team_access_title": "Du hast bereits Pro",
+    "team_access_msg": "Dein Team-Abo schaltet bereits alle Pro-Funktionen frei. Ein eigenes Pro lohnt sich nur, falls du das Team verlässt.",
+    "buy_anyway": "Trotzdem kaufen",
+    "purchase_blocked_title": "Kauf nicht abgeschlossen",
+    "purchase_blocked_team": "Apple hat den Kauf möglicherweise abgelehnt, weil deine Apple ID mit dem Team-Abo verknüpft ist. Versuche: 1) im App Store ab- und wieder anmelden, 2) oder den Team-Besitzer bitten, dich aus dem Team zu entfernen.",
+    "sync_delayed_title": "Kauf erhalten",
+    "sync_delayed_msg": "Dein Pro-Kauf ist bei Apple bestätigt. Unser Server schließt die Aktivierung in wenigen Minuten ab.",
     "sync_retry_title": "Synchronisation verzögert",
     "sync_retry_message": "Der Kauf wurde bei Apple abgeschlossen, aber der Server hat die Aktivierung noch nicht bestätigt. Erneut versuchen?",
     "sync_retry_cta": "Erneut versuchen",
-    "sync_retry_later": "Später"
+    "sync_retry_later": "Später",
+    "best_value": "BESTES ANGEBOT",
+    "prices_unavailable_title": "Preise vorübergehend nicht verfügbar",
+    "prices_unavailable_msg": "Aktuelle Preise konnten nicht aus dem App Store geladen werden. Bitte versuche es erneut.",
+    "start_free_trial": "7 Tage kostenlos — Testphase starten",
+    "pro_to_team_blocked_title": "Pro zuerst kündigen",
+    "pro_to_team_blocked_msg": "Apple lässt einen direkten Wechsel von Pro zu Team nicht zu. Kündige dein Pro-Abo unter iOS-Einstellungen → Abos, warte bis zum Ende des aktuellen Zeitraums und kaufe dann Team.",
+    "manage_subscription": "Abo verwalten"
   },
   "ai": {
     "or_type": "oder eingeben",
@@ -870,7 +903,8 @@
     "upgrade": "Upgrade — 2,99 $/Monat",
     "unlock": "Freischalten",
     "title_ai_limit": "KI-Limit erreicht",
-    "desc_ai_limit": "Du hast alle kostenlosen KI-Anfragen diesen Monat verbraucht. Pro gibt dir 200 pro Monat."
+    "desc_ai_limit": "Du hast alle kostenlosen KI-Anfragen diesen Monat verbraucht. Pro gibt dir 200 pro Monat.",
+    "upgrade_no_price": "Auf Pro upgraden"
   },
   "categories": {
     "streaming": "Streaming",
@@ -1060,7 +1094,7 @@
     "or_manual": "oder manuell eingeben",
     "i_heard": "Ich habe verstanden:",
     "looks_good": "Stimmt so",
-    "select_plan": "Plan",
+    "select_plan": "Tarif",
     "amount": "Betrag",
     "currency": "Währung",
     "period": "Zeitraum",
@@ -1136,16 +1170,24 @@
     "winback_d37_title": "{{count}} Abos warten auf Tracking",
     "winback_d37_cta": "Schalte Unlimited + KI-Erinnerungen frei",
     "winback_d830_title": "Komm zurück — 50% auf den ersten Monat",
-    "winback_d830_cta": "Bestes Angebot für Rückkehrer"
+    "winback_d830_cta": "Bestes Angebot für Rückkehrer",
+    "ai_analyses": "AI-Analysen",
+    "savings_found": "Potenzielle Ersparnis",
+    "subs_tracked": "Abos verfolgt",
+    "unlock_feature": "Schalte diese Funktion mit Pro frei",
+    "upgrade_to_pro": "Auf Pro upgraden",
+    "expires_on": "Dein Pro-Plan läuft am {{date}} ab",
+    "pro_ends_in_one": "Pro endet in {{count}} Tag",
+    "pro_ends_in_other": "Pro endet in {{count}} Tagen"
   },
   "a11y": {
-    "subscription": "{{name}} subscription",
-    "offline_banner": "Offline banner",
-    "add_subscription": "Add subscription",
-    "subscribe": "Subscribe",
-    "restore_purchases": "Restore purchases",
-    "save": "Save",
-    "close": "Close"
+    "subscription": "Abo {{name}}",
+    "offline_banner": "Offline-Banner",
+    "add_subscription": "Abo hinzufügen",
+    "subscribe": "Abonnieren",
+    "restore_purchases": "Käufe wiederherstellen",
+    "save": "Speichern",
+    "close": "Schließen"
   },
   "annual_nudge": {
     "title": "Zum Jahresplan — Spare $",
@@ -1190,5 +1232,18 @@
       "Fr",
       "Sa"
     ]
+  },
+  "ai_teaser": {
+    "title": "AI-Analyse",
+    "description": "Lass AI deine Abos analysieren, um Duplikate, Sparmöglichkeiten und personalisierte Empfehlungen zu finden.",
+    "feat_duplicates": "Erkennt doppelte Abos",
+    "feat_savings": "Findet Sparmöglichkeiten",
+    "feat_recommendations": "Erhalte personalisierte Empfehlungen",
+    "cta": "Auf Pro upgraden"
+  },
+  "priority": {
+    "high": "HOCH",
+    "medium": "MITTEL",
+    "low": "NIEDRIG"
   }
 }
