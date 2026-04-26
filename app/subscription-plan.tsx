@@ -160,6 +160,20 @@ export default function SubscriptionPlanScreen() {
     const featKey = planKey === 'organization' ? 'org' : planKey;
     const feats: string[] = t(`subscription_plan.feat_${featKey}`, { returnObjects: true }) as string[] ?? [];
 
+    // Real per-plan yearly savings — derived from local-currency RC packages.
+    // Returns null for Free or when offerings are still loading / yearly isn't
+    // cheaper than 12× monthly.
+    const savings = planKey !== 'free'
+      ? calcYearlySavings(findPackage(planKey, 'monthly'), findPackage(planKey, 'yearly'))
+      : null;
+
+    // User-already-on-yearly check: hide "Switch to Yearly" CTA when the
+    // current plan IS already on the yearly billing period (otherwise we'd
+    // tell a yearly Pro subscriber to "switch to yearly" — broken UX from the
+    // screenshot bug report).
+    const userIsAlreadyYearly = isCurrent && access?.billingPeriod === 'yearly';
+    const showYearlySwitchCta = isCurrent && billingPeriod === 'yearly' && !userIsAlreadyYearly;
+
     return (
       <View style={[styles.planCard, {
         backgroundColor: isDark ? '#1C1C2E' : '#FFFFFF',
@@ -170,21 +184,22 @@ export default function SubscriptionPlanScreen() {
           <View style={[styles.planIconWrap, { backgroundColor: d.color + '20' }]}>
             <Ionicons name={d.icon as any} size={20} color={d.color} />
           </View>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={[styles.planCardName, { color: colors.text }]}>{d.name}</Text>
-              {isCurrent && (
-                <View style={[styles.currentBadge, { backgroundColor: d.color }]}>
-                  <Text style={styles.currentBadgeText}>
-                    {t('subscription_plan.current_plan')}
-                    {planKey !== 'free' ? ` · ${access?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` : ''}
-                  </Text>
-                </View>
-              )}
-            </View>
+          {/* Title column — name on its own line, badge below it.
+              Avoids collisions with wide local-currency prices like 14,990.00₸. */}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={[styles.planCardName, { color: colors.text }]}>{d.name}</Text>
+            {isCurrent && (
+              <View style={[styles.currentBadge, { backgroundColor: d.color, alignSelf: 'flex-start', marginTop: 4 }]}>
+                <Text style={styles.currentBadgeText}>
+                  {t('subscription_plan.current_plan')}
+                  {planKey !== 'free' ? ` · ${access?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}` : ''}
+                </Text>
+              </View>
+            )}
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[styles.planCardPrice, { color: d.color }]}>{price}</Text>
+          {/* Price column — flexShrink 0 so the price never gets squeezed. */}
+          <View style={{ alignItems: 'flex-end', flexShrink: 0, marginLeft: 8 }}>
+            <Text style={[styles.planCardPrice, { color: d.color }]} numberOfLines={1}>{price}</Text>
             {planKey !== 'free' && (
               <Text style={{ fontSize: 11, color: colors.textMuted }}>
                 /{billingPeriod === 'monthly' ? t('paywall.month', 'mo') : t('paywall.year', 'yr')}
@@ -192,6 +207,18 @@ export default function SubscriptionPlanScreen() {
             )}
           </View>
         </View>
+
+        {/* Yearly savings pill — green badge that materializes when the user is
+            on the Yearly tab AND we have real package data showing a discount.
+            Shown for both Pro and Team to make the yearly value tangible. */}
+        {planKey !== 'free' && billingPeriod === 'yearly' && savings && (
+          <View style={[styles.savingsRow, { backgroundColor: isDark ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.12)' }]}>
+            <Ionicons name="trending-down" size={14} color="#22C55E" />
+            <Text style={styles.savingsText}>
+              {t('subscription_plan.yearly_savings', { amount: formatMoney(savings.amount, savings.currency, i18n.language) })}
+            </Text>
+          </View>
+        )}
 
         {/* Features */}
         {Array.isArray(feats) && feats.map((f: string, i: number) => (
@@ -202,26 +229,17 @@ export default function SubscriptionPlanScreen() {
         ))}
 
         {/* Action */}
-        {planKey !== 'free' && (
-          (() => {
-            // On yearly tab: always show "Switch to Yearly" even if already on this plan monthly
-            const isYearlyUpgrade = isCurrent && billingPeriod === 'yearly';
-            if (!isCurrent || isYearlyUpgrade) {
-              return (
-                <TouchableOpacity
-                  style={[styles.planCardBtn, { backgroundColor: d.color }]}
-                  onPress={() => router.push('/paywall' as any)}
-                >
-                  <Text style={styles.planCardBtnText}>
-                    {isYearlyUpgrade
-                      ? t('paywall.switch_to_yearly', 'Switch to Yearly →')
-                      : t('subscription_plan.upgrade_to', { plan: d.name })}
-                  </Text>
-                </TouchableOpacity>
-              );
-            }
-            return null;
-          })()
+        {planKey !== 'free' && (!isCurrent || showYearlySwitchCta) && (
+          <TouchableOpacity
+            style={[styles.planCardBtn, { backgroundColor: d.color }]}
+            onPress={() => router.push('/paywall' as any)}
+          >
+            <Text style={styles.planCardBtnText}>
+              {showYearlySwitchCta
+                ? t('paywall.switch_to_yearly', 'Switch to Yearly →')
+                : t('subscription_plan.upgrade_to', { plan: d.name })}
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
     );
@@ -479,10 +497,20 @@ const styles = StyleSheet.create({
   planCard: { borderRadius: 20, padding: 18, gap: 10 },
   currentBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   currentBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', textTransform: 'uppercase' },
-  planCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  planCardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   planIconWrap: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   planCardName: { fontSize: 20, fontWeight: '900' },
   planCardPrice: { fontSize: 22, fontWeight: '900' },
+  savingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  savingsText: { fontSize: 12, fontWeight: '800', color: '#16A34A' },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   featureText: { fontSize: 14, fontWeight: '500', flex: 1 },
   planCardBtn: { borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
