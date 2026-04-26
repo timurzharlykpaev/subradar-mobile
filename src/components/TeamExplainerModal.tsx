@@ -11,10 +11,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useTheme } from '../theme';
 import { analytics } from '../services/analytics';
-import { useSubscriptionsStore } from '../stores/subscriptionsStore';
-import { useSettingsStore } from '../stores/settingsStore';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
+import { useRevenueCat } from '../hooks/useRevenueCat';
+import { calcYearlySavings } from '../utils/calcYearlySavings';
+import { formatMoney } from '../utils/formatMoney';
 
 interface Props {
   visible: boolean;
@@ -35,9 +38,8 @@ export default function TeamExplainerModal({ visible, onClose, source }: Props) 
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
-  const currency = useSettingsStore((s) => s.currency || 'USD');
-  const currencySymbol = currency === 'RUB' ? '₽' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  const access = useEffectiveAccess();
+  const { offerings } = useRevenueCat();
 
   const scaleAnim = useRef(new Animated.Value(0.85)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -57,23 +59,37 @@ export default function TeamExplainerModal({ visible, onClose, source }: Props) 
     }
   }, [visible, source]);
 
-  // Personalised math: monthly_total from user's active subs
-  const userMonthly = React.useMemo(() => {
-    return subscriptions
-      .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
-      .reduce((sum, s) => {
-        const mult =
-          s.billingPeriod === 'WEEKLY' ? 4 :
-          s.billingPeriod === 'QUARTERLY' ? 1 / 3 :
-          s.billingPeriod === 'YEARLY' ? 1 / 12 :
-          1;
-        return sum + (Number(s.amount) || 0) * mult;
-      }, 0);
-  }, [subscriptions]);
-  const yearlyTotal = Math.round(userMonthly * 12);
-  const teamCost = 9.99 * 12; // $119.88
-  const splitPerPerson = Math.round((teamCost / 4) * 100) / 100;
-  const savings = Math.max(0, Math.round(yearlyTotal * 0.75));
+  // Use the actual Team plan prices from RevenueCat (in the user's local
+  // currency) — not the user's spending on third-party subscriptions and
+  // never the previous hardcoded $9.99/$119.88 USD math.
+  const teamMonthlyPkg = React.useMemo(() => {
+    const id = access?.products?.team?.monthly;
+    if (!id) return null;
+    return offerings?.current?.availablePackages?.find(
+      (p: any) => p.product?.identifier === id,
+    ) ?? null;
+  }, [access?.products?.team?.monthly, offerings]);
+
+  const teamYearlyPkg = React.useMemo(() => {
+    const id = access?.products?.team?.yearly;
+    if (!id) return null;
+    return offerings?.current?.availablePackages?.find(
+      (p: any) => p.product?.identifier === id,
+    ) ?? null;
+  }, [access?.products?.team?.yearly, offerings]);
+
+  const teamYearlyPrice: number | null = teamYearlyPkg?.product?.price ?? null;
+  const teamCurrency: string | null = teamYearlyPkg?.product?.currencyCode ?? null;
+  // Per-person/month split for a household of 4. yearlyPrice / 4 people / 12 mo.
+  const splitPerPersonText = teamYearlyPrice && teamCurrency
+    ? formatMoney(teamYearlyPrice / 4 / 12, teamCurrency, i18n.language)
+    : null;
+
+  // Real "switch from monthly to yearly" savings for the Team plan.
+  const yearlySavings = calcYearlySavings(teamMonthlyPkg, teamYearlyPkg);
+  const savingsText = yearlySavings
+    ? formatMoney(yearlySavings.amount, yearlySavings.currency, i18n.language)
+    : null;
 
   const handlePrimaryCta = () => {
     analytics.track('team_explainer_cta_tapped', { source, step: stepIndex });
@@ -129,18 +145,23 @@ export default function TeamExplainerModal({ visible, onClose, source }: Props) 
                 ))}
               </View>
 
-              {/* Personalised math card — only on last step */}
-              {isLastStep && userMonthly > 0 && (
+              {/* Pricing card — only on last step, only when RC offerings loaded.
+                  Numbers come from the user's local-currency Team package
+                  (App Store / Play Store), not a hardcoded USD baseline. */}
+              {isLastStep && splitPerPersonText && (
                 <View style={[styles.mathCard, { backgroundColor: isDark ? '#22223A' : '#F0FDF4', borderColor: '#10B981' }]}>
                   <Text style={[styles.mathLabel, { color: colors.textSecondary }]}>
                     {t('team_explainer.math_label', { defaultValue: 'Your household of 4' })}
                   </Text>
                   <Text style={[styles.mathValue, { color: '#10B981' }]}>
-                    {currencySymbol}{splitPerPerson} {t('team_explainer.per_person', { defaultValue: 'per person/mo' })}
+                    {splitPerPersonText} {t('team_explainer.per_person', { defaultValue: 'per person/mo' })}
                   </Text>
-                  {savings > 0 && (
+                  {savingsText && (
                     <Text style={[styles.mathSavings, { color: colors.text }]}>
-                      {t('team_explainer.savings_vs_separate', { defaultValue: 'Save up to' })} {currencySymbol}{savings}/yr
+                      {t('team_upsell.save_vs_separate', {
+                        amount: savingsText,
+                        defaultValue: 'Save {{amount}}/year',
+                      })}
                     </Text>
                   )}
                 </View>

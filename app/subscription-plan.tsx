@@ -9,13 +9,16 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
+import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { billingApi } from '../src/api/billing';
 import { useTheme } from '../src/theme';
 import CancellationInterceptModal from '../src/components/CancellationInterceptModal';
 import { BannerRenderer } from '../src/components/BannerRenderer';
-import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
 import { analytics } from '../src/services/analytics';
+import { calcYearlySavings } from '../src/utils/calcYearlySavings';
+import { formatMoney } from '../src/utils/formatMoney';
+import i18n from '../src/i18n';
 
 const PLAN_DISPLAY: Record<string, { name: string; icon: string; color: string }> = {
   free:         { name: 'Free',  icon: 'leaf-outline',    color: '#6B7280' },
@@ -23,10 +26,11 @@ const PLAN_DISPLAY: Record<string, { name: string; icon: string; color: string }
   organization: { name: 'Team',  icon: 'people-outline',  color: '#06B6D4' },
 };
 
-const PRICES: Record<string, Record<string, string>> = {
-  free:         { monthly: '$0',     yearly: '$0' },
-  pro:          { monthly: '$2.99',  yearly: '$24.99' },
-  organization: { monthly: '$9.99',  yearly: '$79.99' },
+/** Map our internal planKey to the products bucket on `access.products`. */
+const PLAN_PRODUCT_KEY: Record<string, 'pro' | 'team' | undefined> = {
+  free: undefined,
+  pro: 'pro',
+  organization: 'team',
 };
 
 export default function SubscriptionPlanScreen() {
@@ -38,17 +42,46 @@ export default function SubscriptionPlanScreen() {
   const isLoading = !access;
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
   const currencySymbol = useSettingsStore((s) => s.currency === 'RUB' ? '₽' : s.currency === 'EUR' ? '€' : s.currency === 'GBP' ? '£' : '$');
+  const { offerings } = useRevenueCat();
 
-  // Personalised yearly savings = monthly_price*12 - yearly_price (Pro only)
+  /**
+   * Resolve the localized priceString from RevenueCat offerings for a plan +
+   * billing period. Returns null while offerings are loading or when the
+   * user's region simply doesn't have that product. Falls back to '—' so the
+   * UI doesn't render a stale hardcoded USD value.
+   */
+  const findPackage = React.useCallback(
+    (planKey: string, period: 'monthly' | 'yearly') => {
+      const productKey = PLAN_PRODUCT_KEY[planKey];
+      if (!productKey) return null;
+      const id = access?.products?.[productKey]?.[period];
+      if (!id) return null;
+      return offerings?.current?.availablePackages?.find(
+        (p: any) => p.product?.identifier === id,
+      ) ?? null;
+    },
+    [access?.products, offerings],
+  );
+
+  const priceString = React.useCallback(
+    (planKey: string, period: 'monthly' | 'yearly'): string => {
+      // Free plan: show the localized "Free" word instead of "0,00 ₽" — same
+      // pattern as the main paywall (`getPrice` in paywall.tsx).
+      if (planKey === 'free') return t('paywall.free_price', 'Free');
+      const pkg = findPackage(planKey, period);
+      return pkg?.product?.priceString ?? '—';
+    },
+    [findPackage, t],
+  );
+
+  // Real Pro yearly savings from RC packages (used by CancellationInterceptModal
+  // to discourage downgrade with a concrete number in the user's currency).
   const yearlySavings = React.useMemo(() => {
     if (access?.plan !== 'pro') return 0;
-    // Default prices fallback; real prices may be injected via RC offerings later
-    const monthlyTotal = 2.99 * 12;
-    const yearly = 24.99;
-    return Math.max(0, Math.round(monthlyTotal - yearly));
-  }, [access?.plan]);
+    const s = calcYearlySavings(findPackage('pro', 'monthly'), findPackage('pro', 'yearly'));
+    return s ? Math.round(s.amount) : 0;
+  }, [access?.plan, findPackage]);
 
   // Sync billing period from API response
   useEffect(() => {
@@ -123,7 +156,7 @@ export default function SubscriptionPlanScreen() {
   // Plan card renderer
   const renderPlanCard = (planKey: string, isCurrent: boolean) => {
     const d = PLAN_DISPLAY[planKey] ?? PLAN_DISPLAY.free;
-    const price = PRICES[planKey]?.[billingPeriod] ?? '$0';
+    const price = priceString(planKey, billingPeriod);
     const featKey = planKey === 'organization' ? 'org' : planKey;
     const feats: string[] = t(`subscription_plan.feat_${featKey}`, { returnObjects: true }) as string[] ?? [];
 
@@ -225,7 +258,7 @@ export default function SubscriptionPlanScreen() {
                 <Text style={styles.heroName}>{display.name}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.heroPrice}>{PRICES[plan]?.[access?.billingPeriod || 'monthly'] ?? '$0'}</Text>
+                <Text style={styles.heroPrice}>{priceString(plan, (access?.billingPeriod as 'monthly' | 'yearly') || 'monthly')}</Text>
                 {plan !== 'free' && (
                   <Text style={styles.heroPeriod}>
                     /{access?.billingPeriod === 'yearly' ? t('paywall.year', 'yr') : t('paywall.month', 'mo')}

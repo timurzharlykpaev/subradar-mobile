@@ -2,7 +2,7 @@
   "expo": {
     "name": "SubRadar",
     "slug": "subradar",
-    "version": "1.3.8",
+    "version": "1.3.9",
     "description": "AI-powered subscription tracker. Add by voice, scan receipts, get reminders before charges, analyze spending across all your subscriptions.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

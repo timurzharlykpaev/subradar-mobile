@@ -26,7 +26,9 @@ import { PurchaseSuccessScreen } from '../src/components/PurchaseSuccessScreen';
 import { RestorePurchasesButton } from '../src/components/RestorePurchasesButton';
 import { SyncRetryModal } from '../src/components/SyncRetryModal';
 import { analytics } from '../src/services/analytics';
-import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
+import { calcYearlySavings } from '../src/utils/calcYearlySavings';
+import { formatMoney } from '../src/utils/formatMoney';
+import i18n from '../src/i18n';
 
 // Key used to persist a "purchase happened but server sync didn't succeed yet"
 // marker across app restarts. DataLoader (Phase 7) will reconcile on cold start.
@@ -98,14 +100,6 @@ export default function PaywallScreen() {
   const openedAt = useRef(Date.now());
   const access = useEffectiveAccess();
   const billingLoading = access?.isLoading ?? !access;
-  const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
-  const userMonthly = subscriptions
-    .filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL')
-    .reduce((sum, s) => {
-      const mult = s.billingPeriod === 'WEEKLY' ? 4 : s.billingPeriod === 'QUARTERLY' ? 1/3 : s.billingPeriod === 'YEARLY' ? 1/12 : 1;
-      return sum + (Number(s.amount) || 0) * mult;
-    }, 0);
-  const teamYearlySavings = userMonthly > 0 ? Math.round(userMonthly * 12 * 0.75) : 0;
   const queryClient = useQueryClient();
   const { offerings, purchasePackage, hasTrialOffer, loading: rcLoading, loadOfferings } = useRevenueCat();
 
@@ -548,6 +542,21 @@ export default function PaywallScreen() {
           const isCurrent = isCurrentPlan(plan.id);
           const { price, period } = getPrice(plan.id);
 
+          // Real "switch to yearly" savings derived from RC package prices in
+          // the user's local currency. Replaces the previous formula that
+          // multiplied the user's total subscription spend by 0.75 and showed
+          // a hardcoded `$` symbol.
+          const yearlySavings =
+            plan.id === 'free'
+              ? null
+              : calcYearlySavings(
+                  findPackage(plan.id, 'monthly'),
+                  findPackage(plan.id, 'yearly'),
+                );
+          const yearlySavingsText = yearlySavings
+            ? formatMoney(yearlySavings.amount, yearlySavings.currency, i18n.language)
+            : null;
+
           return (
             <Animated.View
               key={plan.id}
@@ -591,13 +600,22 @@ export default function PaywallScreen() {
                       )}
                       {plan.id === 'pro' && !isCurrent && !(accessViaTeam && !hasOwnPro) && (
                         <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
-                          <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
+                          <Text style={styles.inlineBadgeText} numberOfLines={1}>{t('paywall.most_popular')}</Text>
                         </View>
                       )}
-                      {plan.id === 'org' && teamYearlySavings > 0 && !isCurrent && (
-                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                          <Text style={styles.inlineBadgeText}>
-                            {t('team_upsell.save_vs_separate', { amount: `$${teamYearlySavings}` })}
+                      {/* Real yearly savings: shows for any plan that has both
+                          monthly and yearly RC packages with positive delta. */}
+                      {yearlySavingsText && !isCurrent && (
+                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E', flexShrink: 1 }]}>
+                          <Text
+                            style={styles.inlineBadgeText}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {t('team_upsell.save_vs_separate', {
+                              amount: yearlySavingsText,
+                              defaultValue: 'Save {{amount}}/year',
+                            })}
                           </Text>
                         </View>
                       )}
@@ -787,8 +805,8 @@ const styles = StyleSheet.create({
   saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
 
   planCard: { marginHorizontal: 20, marginBottom: 12, borderRadius: 20, padding: 16 },
-  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  inlineBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 },
+  inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, maxWidth: '100%' },
+  inlineBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 0.3, flexShrink: 1 },
 
   planHeader: { flexDirection: 'row', alignItems: 'center' },
   planIconCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
