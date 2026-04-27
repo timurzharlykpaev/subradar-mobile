@@ -132,7 +132,8 @@
     "status_trial": "Trial",
     "status_cancelled": "Cancelled",
     "status_paused": "Paused",
-    "status_expired": "Expired"
+    "status_expired": "Expired",
+    "upgrade_cta": "Upgrade"
   },
   "add": {
     "title": "Add Subscription",

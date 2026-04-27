@@ -132,7 +132,8 @@
     "status_paused": "Pausada",
     "status_expired": "Expirada",
     "soft_limit_title": "Solo 1 espacio gratis",
-    "soft_limit_subtitle": "Actualiza a Pro para seguimiento ilimitado"
+    "soft_limit_subtitle": "Actualiza a Pro para seguimiento ilimitado",
+    "upgrade_cta": "Mejorar"
   },
   "add": {
     "title": "Agregar Suscripción",

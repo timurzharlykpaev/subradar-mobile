@@ -132,7 +132,8 @@
     "status_paused": "暂停",
     "status_expired": "已过期",
     "soft_limit_title": "仅剩1个免费位",
-    "soft_limit_subtitle": "升级到Pro以无限追踪"
+    "soft_limit_subtitle": "升级到Pro以无限追踪",
+    "upgrade_cta": "升级"
   },
   "add": {
     "title": "添加订阅",

@@ -132,7 +132,8 @@
     "status_paused": "一時停止",
     "status_expired": "期限切れ",
     "soft_limit_title": "無料枠が1つ残っています",
-    "soft_limit_subtitle": "無制限追跡のためProへ"
+    "soft_limit_subtitle": "無制限追跡のためProへ",
+    "upgrade_cta": "アップグレード"
   },
   "add": {
     "title": "サブスクリプションを追加",

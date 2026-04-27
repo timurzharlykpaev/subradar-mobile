@@ -141,7 +141,8 @@
     "status_trial": "Пробный",
     "status_cancelled": "Отменена",
     "status_paused": "Пауза",
-    "status_expired": "Истекла"
+    "status_expired": "Истекла",
+    "upgrade_cta": "Улучшить"
   },
   "add": {
     "title": "Добавить подписку",

@@ -132,7 +132,8 @@
     "status_paused": "일시중지",
     "status_expired": "만료됨",
     "soft_limit_title": "무료 슬롯 1개 남음",
-    "soft_limit_subtitle": "무제한 추적을 위해 Pro로 업그레이드"
+    "soft_limit_subtitle": "무제한 추적을 위해 Pro로 업그레이드",
+    "upgrade_cta": "업그레이드"
   },
   "add": {
     "title": "구독 추가",

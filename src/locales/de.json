@@ -132,7 +132,8 @@
     "status_paused": "Pausiert",
     "status_expired": "Abgelaufen",
     "soft_limit_title": "Nur noch 1 freier Slot",
-    "soft_limit_subtitle": "Upgrade auf Pro für unbegrenztes Tracking"
+    "soft_limit_subtitle": "Upgrade auf Pro für unbegrenztes Tracking",
+    "upgrade_cta": "Upgraden"
   },
   "add": {
     "title": "Abonnement hinzufügen",

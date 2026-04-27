@@ -12,6 +12,11 @@ export const subscriptionsApi = {
         limit: SUBSCRIPTIONS_DEFAULT_LIMIT,
         sort: 'amount',
         order: 'DESC',
+        // Server caps the response at the user's plan limit so a Free
+        // user who downgraded can't pull cancelled-from-UI subs by
+        // hitting the API directly. UI-side cap is for layout; the
+        // server-side cap is what actually enforces the gating.
+        gateByPlan: true,
         ...params,
       },
     }),

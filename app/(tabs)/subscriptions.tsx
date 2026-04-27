@@ -254,8 +254,10 @@ export default function SubscriptionsScreen() {
               style={[styles.upgradeBtn, { backgroundColor: colors.primary }]}
               onPress={() => router.push('/paywall')}
             >
-              <Ionicons name="diamond" size={14} color="#FFF" />
-              <Text style={styles.upgradeBtnText}>PRO</Text>
+              <Ionicons name="arrow-up" size={14} color="#FFF" />
+              <Text style={styles.upgradeBtnText}>
+                {t('subscriptions.upgrade_cta', 'Upgrade')}
+              </Text>
             </TouchableOpacity>
           )}
         </View>

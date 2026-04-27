@@ -132,7 +132,8 @@
     "status_paused": "Pausée",
     "status_expired": "Expirée",
     "soft_limit_title": "Plus qu'1 place gratuite",
-    "soft_limit_subtitle": "Passez à Pro pour un suivi illimité"
+    "soft_limit_subtitle": "Passez à Pro pour un suivi illimité",
+    "upgrade_cta": "Mettre à niveau"
   },
   "add": {
     "title": "Ajouter un abonnement",

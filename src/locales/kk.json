@@ -132,7 +132,8 @@
     "status_paused": "Кідіртілді",
     "status_expired": "Мерзімі өтті",
     "soft_limit_title": "Тек 1 тегін орын қалды",
-    "soft_limit_subtitle": "Шектеусіз бақылау үшін Pro-ға жаңартыңыз"
+    "soft_limit_subtitle": "Шектеусіз бақылау үшін Pro-ға жаңартыңыз",
+    "upgrade_cta": "Жетілдіру"
   },
   "add": {
     "title": "Жазылым қосу",

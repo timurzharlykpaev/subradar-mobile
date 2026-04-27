@@ -132,7 +132,8 @@
     "status_paused": "Pausada",
     "status_expired": "Expirada",
     "soft_limit_title": "Só 1 slot grátis restante",
-    "soft_limit_subtitle": "Atualize para Pro para rastreamento ilimitado"
+    "soft_limit_subtitle": "Atualize para Pro para rastreamento ilimitado",
+    "upgrade_cta": "Atualizar"
   },
   "add": {
     "title": "Adicionar Assinatura",
