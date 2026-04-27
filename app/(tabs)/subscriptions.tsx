@@ -161,8 +161,30 @@ export default function SubscriptionsScreen() {
     return Object.entries(counts).filter(([, c]) => c > 1);
   }, [subscriptions]);
 
+  const isDegraded = access?.flags.degradedMode ?? false;
+  const hiddenSubsCount = access?.flags.hiddenSubscriptionsCount ?? 0;
+
+  // In degraded mode the user can only access the oldest N subscriptions
+  // that fit the free tier — the rest are surfaced as locked teasers in
+  // the footer. Capture that allow-list once, then apply it to the
+  // search/sort/filter pipeline below so locked items can't leak into the
+  // visible list (search would otherwise still find them).
+  const allowedIds = useMemo(() => {
+    if (!isDegraded) return null;
+    const oldestFirst = [...subscriptions].sort(
+      (a, b) =>
+        new Date((a as any).createdAt ?? 0).getTime() -
+        new Date((b as any).createdAt ?? 0).getTime(),
+    );
+    const limit = access?.limits.subscriptions.limit ?? 0;
+    return new Set(oldestFirst.slice(0, limit).map((s) => s.id));
+  }, [isDegraded, subscriptions, access?.limits.subscriptions.limit]);
+
   const subs = useMemo(() => {
-    const filtered = getFiltered();
+    let filtered = getFiltered();
+    if (allowedIds) {
+      filtered = filtered.filter((s) => allowedIds.has(s.id));
+    }
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'amount_high': return (Number(b.displayAmount ?? b.amount) || 0) - (Number(a.displayAmount ?? a.amount) || 0);
@@ -175,17 +197,7 @@ export default function SubscriptionsScreen() {
           return da - db;
       }
     });
-  }, [getFiltered, filter, searchQuery, selectedCategory, sortBy, subscriptions]);
-
-  const sortedByCreated = useMemo(() => {
-    return [...subscriptions].sort((a, b) =>
-      new Date((a as any).createdAt ?? 0).getTime() - new Date((b as any).createdAt ?? 0).getTime()
-    );
-  }, [subscriptions]);
-
-  const isDegraded = access?.flags.degradedMode ?? false;
-  const hiddenSubsCount = access?.flags.hiddenSubscriptionsCount ?? 0;
-  const visibleSubs = isDegraded ? sortedByCreated.slice(0, 3) : sortedByCreated;
+  }, [getFiltered, filter, searchQuery, selectedCategory, sortBy, subscriptions, allowedIds]);
 
   const handleDelete = useCallback((id: string, name: string) => {
     Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
