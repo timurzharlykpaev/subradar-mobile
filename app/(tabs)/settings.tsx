@@ -51,7 +51,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { t } = useTranslation();
-  const { currency, setCurrency, language, setLanguage, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled, dateFormat, setDateFormat } = useSettingsStore();
+  const { currency, setCurrency, language, setLanguage, reminderDays, setReminderDays, notificationsEnabled, setNotificationsEnabled, emailNotifications, setEmailNotifications, weeklyDigestEnabled, setWeeklyDigestEnabled, dateFormat, setDateFormat } = useSettingsStore();
   const region = useSettingsStore((s) => s.region);
   const displayCurrency = useSettingsStore((s) => s.displayCurrency);
   const setRegion = useSettingsStore((s) => s.setRegion);
@@ -68,8 +68,6 @@ export default function SettingsScreen() {
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const version = Constants.expoConfig?.version || '1.0.0';
@@ -85,14 +83,20 @@ export default function SettingsScreen() {
     setRefreshing(false);
   }, [queryClient]);
 
-  // Fetch notification settings on mount
+  // Fetch notification settings on mount, then mirror into the persisted
+  // store so the toggles survive remounts and cold starts (the previous
+  // useState-based version dropped these values whenever Settings unmounted).
   useEffect(() => {
     notificationsApi.getSettings().then((res: any) => {
       const data = res.data ?? res;
-      setEmailNotifications(data.emailNotifications ?? true);
-      setWeeklyDigest(data.weeklyDigestEnabled ?? true);
+      if (typeof data.emailNotifications === 'boolean') {
+        setEmailNotifications(data.emailNotifications);
+      }
+      if (typeof data.weeklyDigestEnabled === 'boolean') {
+        setWeeklyDigestEnabled(data.weeklyDigestEnabled);
+      }
     }).catch(() => {});
-  }, []);
+  }, [setEmailNotifications, setWeeklyDigestEnabled]);
 
   // Drift recovery on mount — catches users whose RC entitlements expired
   // but a stale paid plan is still cached on the backend (lost webhook,
@@ -618,9 +622,9 @@ export default function SettingsScreen() {
             t('settings.weekly_digest_desc', 'AI analysis summary every Monday'),
             isPro ? (
               <Switch
-                value={weeklyDigest}
+                value={weeklyDigestEnabled}
                 onValueChange={(val) => {
-                  setWeeklyDigest(val);
+                  setWeeklyDigestEnabled(val);
                   notificationsApi.updateSettings({ weeklyDigestEnabled: val }).catch(() => {});
                 }}
                 trackColor={{ false: colors.border, true: colors.primary }}

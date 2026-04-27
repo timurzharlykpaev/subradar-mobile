@@ -16,6 +16,10 @@ interface SettingsState {
   language: string;
   reminderDays: number;
   notificationsEnabled: boolean;
+  /** Backend-mirrored — controls transactional + reminder emails. */
+  emailNotifications: boolean;
+  /** Backend-mirrored — Pro-only weekly AI digest email. */
+  weeklyDigestEnabled: boolean;
   dateFormat: string;
   /** When true, analytics (Amplitude) tracking is disabled. Default false. */
   analyticsOptOut: boolean;
@@ -28,6 +32,8 @@ interface SettingsState {
   setLanguage: (language: string) => void;
   setReminderDays: (days: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
+  setEmailNotifications: (enabled: boolean) => void;
+  setWeeklyDigestEnabled: (enabled: boolean) => void;
   setDateFormat: (format: string) => void;
   setAnalyticsOptOut: (optOut: boolean) => void;
   setIcpSegment: (segment: 'solo' | 'family' | 'team' | null) => void;
@@ -43,6 +49,8 @@ export const useSettingsStore = create<SettingsState>()(
       language: 'en',
       reminderDays: 2,
       notificationsEnabled: true,
+      emailNotifications: true,
+      weeklyDigestEnabled: true,
       dateFormat: 'DD/MM',
       analyticsOptOut: false,
       icpSegment: null,
@@ -60,6 +68,8 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setReminderDays: (reminderDays) => set({ reminderDays }),
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
+      setEmailNotifications: (emailNotifications) => set({ emailNotifications }),
+      setWeeklyDigestEnabled: (weeklyDigestEnabled) => set({ weeklyDigestEnabled }),
       setDateFormat: (dateFormat) => set({ dateFormat }),
       setAnalyticsOptOut: (analyticsOptOut) => set({ analyticsOptOut }),
       setIcpSegment: (icpSegment) => set({ icpSegment }),
