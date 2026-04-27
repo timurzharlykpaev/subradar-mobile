@@ -731,7 +731,8 @@
     ],
     "cancelled_until": "Отменено · до {{date}}",
     "cancelled_badge": "Отменено",
-    "access_until": "Доступ сохраняется до {{date}}"
+    "access_until": "Доступ сохраняется до {{date}}",
+    "cancel_open_failed": "Не удалось открыть настройки подписки. Откройте Настройки → Apple ID → Подписки."
   },
   "workspace": {
     "name_placeholder": "Например: My Company",
@@ -1193,7 +1194,8 @@
     "pro_ends_in_one": "Pro заканчивается через {{count}} день",
     "pro_ends_in_other": "Pro заканчивается через {{count}} дней",
     "pro_ends_in_few": "Pro заканчивается через {{count}} дня",
-    "pro_ends_in_many": "Pro заканчивается через {{count}} дней"
+    "pro_ends_in_many": "Pro заканчивается через {{count}} дней",
+    "switch_monthly": "Перейти на месячный"
   },
   "annual_nudge": {
     "title": "Перейти на годовой — экономия $",

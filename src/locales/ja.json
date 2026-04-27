@@ -717,7 +717,8 @@
     "cancelled_until": "キャンセル済み · {{date}}まで",
     "cancelled_badge": "キャンセル済み",
     "access_until": "{{date}}まで利用可能",
-    "upgrade_to": "{{plan}}にアップグレード"
+    "upgrade_to": "{{plan}}にアップグレード",
+    "cancel_open_failed": "定期購読の設定を開けませんでした。「設定」→「Apple ID」→「定期購読」を開いてください。"
   },
   "workspace": {
     "name_placeholder": "例：私の会社",
@@ -1175,7 +1176,8 @@
     "unlock_feature": "Pro でこの機能をアンロック",
     "upgrade_to_pro": "Pro にアップグレード",
     "expires_on": "Pro プランは {{date}} に期限切れになります",
-    "pro_ends_in_other": "Pro は {{count}} 日後に終了します"
+    "pro_ends_in_other": "Pro は {{count}} 日後に終了します",
+    "switch_monthly": "月額プランに切り替える"
   },
   "a11y": {
     "subscription": "{{name}} サブスクリプション",

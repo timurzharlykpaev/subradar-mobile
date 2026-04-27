@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
-  Linking,
   Modal,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -52,8 +50,6 @@ const REASONS: { key: Reason; icon: React.ComponentProps<typeof Ionicons>['name'
   { key: 'other',           icon: 'help-circle-outline',  i18n: 'retention.reason_other',           fallback: 'Other' },
 ];
 
-const APPLE_MANAGE_URL = 'https://apps.apple.com/account/subscriptions';
-
 export default function CancellationInterceptModal({
   visible,
   onClose,
@@ -90,8 +86,10 @@ export default function CancellationInterceptModal({
       analytics.track('cancellation_retention_tapped', { offer: 'switch_to_yearly' });
       router.push('/paywall?prefill=pro-yearly' as any);
     } else if (context === 'yearly') {
-      analytics.track('cancellation_paused_tapped', {});
-      Linking.openURL(APPLE_MANAGE_URL).catch(() => {});
+      // App Store IAP doesn't expose pause — downsell yearly users to monthly
+      // (lower commitment) instead of dumping them into Apple Settings.
+      analytics.track('cancellation_retention_tapped', { offer: 'switch_to_monthly' });
+      router.push('/paywall?prefill=pro-monthly' as any);
     } else {
       analytics.track('cancellation_retention_tapped', { offer: 'finish_trial' });
       // Trial context — just close, they keep trial running
@@ -105,13 +103,6 @@ export default function CancellationInterceptModal({
 
   const handleReasonSelected = (reason: Reason) => {
     analytics.track('cancellation_reason_selected', { reason });
-    if (reason === 'temporary_break') {
-      // Redirect to pause instead of full cancel
-      analytics.track('cancellation_paused_tapped', { via: 'reason' });
-      onClose();
-      Linking.openURL(APPLE_MANAGE_URL).catch(() => {});
-      return;
-    }
     onConfirmCancel(reason);
   };
 
@@ -123,13 +114,13 @@ export default function CancellationInterceptModal({
       return `${t('retention.switch_yearly', { defaultValue: 'Switch to yearly' })}${savings}`;
     }
     if (context === 'yearly') {
-      return t('retention.pause_a_month', { defaultValue: 'Pause subscription' });
+      return t('retention.switch_monthly', { defaultValue: 'Switch to monthly' });
     }
     return t('retention.finish_trial', { defaultValue: 'Finish my free trial' });
   };
 
   const retentionOfferIcon = (): React.ComponentProps<typeof Ionicons>['name'] =>
-    context === 'yearly' ? 'pause-circle' : context === 'trial' ? 'time' : 'trending-down';
+    context === 'yearly' ? 'calendar-outline' : context === 'trial' ? 'time' : 'trending-down';
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>

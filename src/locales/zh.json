@@ -717,7 +717,8 @@
     "cancelled_until": "已取消 · 至 {{date}}",
     "cancelled_badge": "已取消",
     "access_until": "访问权限至 {{date}}",
-    "upgrade_to": "升级至{{plan}}"
+    "upgrade_to": "升级至{{plan}}",
+    "cancel_open_failed": "无法打开订阅设置。请前往「设置」→「Apple ID」→「订阅」。"
   },
   "workspace": {
     "name_placeholder": "例：我的公司",
@@ -1175,7 +1176,8 @@
     "unlock_feature": "使用 Pro 解锁此功能",
     "upgrade_to_pro": "升级到 Pro",
     "expires_on": "您的 Pro 计划将于 {{date}} 到期",
-    "pro_ends_in_other": "Pro 将在 {{count}} 天后结束"
+    "pro_ends_in_other": "Pro 将在 {{count}} 天后结束",
+    "switch_monthly": "切换为月度订阅"
   },
   "a11y": {
     "subscription": "{{name}} 订阅",

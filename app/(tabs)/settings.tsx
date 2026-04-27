@@ -26,21 +26,18 @@ import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { CURRENCIES, LANGUAGES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useBillingStatus } from '../../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 let RevenueCatUI: any = null;
 try { RevenueCatUI = require('react-native-purchases-ui').default; } catch {}
-let Purchases: any = null;
-try { const rc = require('react-native-purchases'); Purchases = rc.default || rc; } catch {}
 import { notificationsApi } from '../../src/api/notifications';
-import { billingApi } from '../../src/api/billing';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
 import { RestorePurchasesButton } from '../../src/components/RestorePurchasesButton';
 import CancellationInterceptModal from '../../src/components/CancellationInterceptModal';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
+import { useCancelSubscription } from '../../src/hooks/useCancelSubscription';
 import { CountryPicker } from '../../src/components/CountryPicker';
 import { CurrencyPicker } from '../../src/components/CurrencyPicker';
 import { COUNTRIES } from '../../src/constants/countries';
@@ -65,8 +62,8 @@ export default function SettingsScreen() {
   const regionInfo = COUNTRIES.find((c) => c.code === region);
   const { isDark, toggleTheme, colors } = useTheme();
 
-  const { data: billing } = useBillingStatus();
   const access = useEffectiveAccess();
+  const cancelSubscription = useCancelSubscription();
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
@@ -75,24 +72,6 @@ export default function SettingsScreen() {
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const version = Constants.expoConfig?.version || '1.0.0';
-
-  // After RevenueCat Customer Center closes, check if subscription was cancelled
-  // and sync with backend + refresh billing data
-  const syncAfterCustomerCenter = useCallback(async () => {
-    try {
-      if (Purchases && typeof Purchases.getCustomerInfo === 'function') {
-        const info = await Purchases.getCustomerInfo();
-        const activeKeys = Object.keys(info?.entitlements?.active ?? {});
-        const hasProEntitlement = activeKeys.some((k: string) => /^(pro|team)$/i.test(k));
-        // If user no longer has Pro entitlement, sync cancellation to backend
-        if (!hasProEntitlement && billing && billing.effective.plan !== 'free') {
-          await billingApi.cancel().catch(() => {});
-        }
-      }
-    } catch {}
-    // Always refetch billing data to pick up any changes
-    await queryClient.invalidateQueries({ queryKey: ['billing'] });
-  }, [billing?.effective.plan, queryClient]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -407,7 +386,7 @@ export default function SettingsScreen() {
                 } catch {
                   // RC UI not available — no-op for free users
                 }
-                await syncAfterCustomerCenter();
+                await queryClient.invalidateQueries({ queryKey: ['billing'] });
               }
             },
             true,
@@ -879,41 +858,17 @@ export default function SettingsScreen() {
       <CancellationInterceptModal
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}
-        onConfirmCancel={async () => {
+        onConfirmCancel={async (reason?: string) => {
           setShowCancelModal(false);
-          if (isTrialing) {
-            // Trial users: cancel directly via backend (no RC subscription exists)
-            try {
-              await billingApi.cancel();
-              await queryClient.invalidateQueries({ queryKey: ['billing'] });
-              Alert.alert(
-                t('subscription_plan.cancelled_title', 'Subscription Cancelled'),
-                t('subscription_plan.cancelled_msg', 'Your trial has been cancelled.'),
-              );
-            } catch (e: any) {
-              Alert.alert(t('common.error'), e?.response?.data?.message || t('common.something_went_wrong'));
-            }
-          } else {
-            // RC subscribers: open Apple subscription management
-            try {
-              await RevenueCatUI.presentCustomerCenter();
-            } catch {
-              // RC UI not available — cancel directly via backend
-              try {
-                await billingApi.cancel();
-                await queryClient.invalidateQueries({ queryKey: ['billing'] });
-                Alert.alert(
-                  t('subscription_plan.cancelled_title', 'Subscription Cancelled'),
-                  t('subscription_plan.cancelled_msg', 'Your subscription has been cancelled.'),
-                );
-                return;
-              } catch (e2: any) {
-                Alert.alert(t('common.error'), e2?.response?.data?.message || t('common.something_went_wrong'));
-                return;
-              }
-            }
-            await syncAfterCustomerCenter();
-          }
+          // Wait for the RN modal to fully dismiss before triggering RC's
+          // Customer Center — iOS refuses to present a second VC while the
+          // first is still animating away.
+          await new Promise((r) => setTimeout(r, 350));
+          await cancelSubscription({
+            isTrialing: !!isTrialing,
+            planKey: access?.plan ?? 'free',
+            reason,
+          });
         }}
       />
       </KeyboardAvoidingView>

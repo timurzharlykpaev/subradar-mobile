@@ -717,7 +717,8 @@
     "cancelled_until": "Болдырылмады · {{date}} дейін",
     "cancelled_badge": "Болдырылмады",
     "access_until": "{{date}} дейін қолжетімді",
-    "upgrade_to": "{{plan}}-ға көшу"
+    "upgrade_to": "{{plan}}-ға көшу",
+    "cancel_open_failed": "Жазылым параметрлерін ашу мүмкін болмады. Параметрлер → Apple ID → Жазылымдар тармағын ашыңыз."
   },
   "workspace": {
     "name_placeholder": "мыс. Менің компаниям",
@@ -1178,7 +1179,8 @@
     "upgrade_to_pro": "Pro-ға жаңарту",
     "expires_on": "Сіздің Pro жоспарыңыз {{date}} күні аяқталады",
     "pro_ends_in_one": "Pro {{count}} күннен кейін аяқталады",
-    "pro_ends_in_other": "Pro {{count}} күннен кейін аяқталады"
+    "pro_ends_in_other": "Pro {{count}} күннен кейін аяқталады",
+    "switch_monthly": "Айлық жоспарға өту"
   },
   "a11y": {
     "subscription": "{{name}} жазылымы",

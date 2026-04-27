@@ -183,7 +183,7 @@ const FLOAT_CARDS_DARK = [
   { name: 'ChatGPT',  amount: '$20.00', bg: '#152A25', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165 },
 ];
 
-function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos, topOffset = 0, textColor, subColor }: {
+const FloatingCard = React.memo(function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos, topOffset = 0, textColor, subColor }: {
   name: string; amount: string; bg: string; iconBg: string; IconComponent: React.FC;
   x: number; delay: number; duration: number; yPos: number; topOffset?: number;
   textColor: string; subColor: string;
@@ -250,9 +250,9 @@ function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, durat
       </View>
     </Animated.View>
   );
-}
+});
 
-function AuthHero() {
+const AuthHero = React.memo(function AuthHero() {
   const { isDark, colors } = useTheme();
   const insets = useSafeAreaInsets();
   const logoScale = useRef(new Animated.Value(0.5)).current;
@@ -345,7 +345,7 @@ function AuthHero() {
       </Animated.View>
     </View>
   );
-}
+});
 
 // ─── Showcase card icons ────────────────────────────────────────────────────
 function ShowcaseAIIcon() {
@@ -1151,6 +1151,13 @@ export default function OnboardingScreen() {
             placeholderTextColor={colors.textMuted}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
+            autoComplete="email"
+            textContentType="emailAddress"
+            returnKeyType="send"
+            onSubmitEditing={handleSendOtp}
+            blurOnSubmit
           />
           <TouchableOpacity testID="btn-send-code" style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={handleSendOtp} disabled={loading}>
             <Text style={styles.emailBtnText}>{t('auth.send_code')}</Text>

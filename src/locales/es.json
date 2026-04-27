@@ -717,7 +717,8 @@
     "cancelled_until": "Cancelado · hasta {{date}}",
     "cancelled_badge": "Cancelado",
     "access_until": "Acceso hasta {{date}}",
-    "upgrade_to": "Actualizar a {{plan}}"
+    "upgrade_to": "Actualizar a {{plan}}",
+    "cancel_open_failed": "No se pudo abrir la configuración de suscripción. Abre Ajustes → ID de Apple → Suscripciones."
   },
   "workspace": {
     "name_placeholder": "ej. Mi Empresa",
@@ -1178,7 +1179,8 @@
     "upgrade_to_pro": "Pasar a Pro",
     "expires_on": "Tu plan Pro caduca el {{date}}",
     "pro_ends_in_one": "Pro termina en {{count}} día",
-    "pro_ends_in_other": "Pro termina en {{count}} días"
+    "pro_ends_in_other": "Pro termina en {{count}} días",
+    "switch_monthly": "Cambiar a mensual"
   },
   "a11y": {
     "subscription": "Suscripción {{name}}",

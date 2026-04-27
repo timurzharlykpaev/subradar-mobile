@@ -717,7 +717,8 @@
     "cancelled_until": "취소됨 · {{date}}까지",
     "cancelled_badge": "취소됨",
     "access_until": "{{date}}까지 이용 가능",
-    "upgrade_to": "{{plan}}으로 업그레이드"
+    "upgrade_to": "{{plan}}으로 업그레이드",
+    "cancel_open_failed": "구독 설정을 열 수 없습니다. 설정 → Apple ID → 구독으로 이동하세요."
   },
   "workspace": {
     "name_placeholder": "예: 내 회사",
@@ -1175,7 +1176,8 @@
     "unlock_feature": "Pro로 이 기능 잠금 해제",
     "upgrade_to_pro": "Pro로 업그레이드",
     "expires_on": "Pro 플랜은 {{date}}에 만료됩니다",
-    "pro_ends_in_other": "Pro가 {{count}}일 후 종료됩니다"
+    "pro_ends_in_other": "Pro가 {{count}}일 후 종료됩니다",
+    "switch_monthly": "월간으로 전환"
   },
   "a11y": {
     "subscription": "{{name}} 구독",

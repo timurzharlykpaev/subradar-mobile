@@ -722,7 +722,8 @@
     ],
     "cancelled_until": "Cancelled · until {{date}}",
     "cancelled_badge": "Cancelled",
-    "access_until": "Access retained until {{date}}"
+    "access_until": "Access retained until {{date}}",
+    "cancel_open_failed": "Could not open subscription settings. Open Settings → Apple ID → Subscriptions."
   },
   "workspace": {
     "name_placeholder": "e.g. My Company",
@@ -1178,7 +1179,8 @@
     "upgrade_to_pro": "Upgrade to Pro",
     "expires_on": "Your Pro plan expires on {{date}}",
     "pro_ends_in_one": "Pro ends in {{count}} day",
-    "pro_ends_in_other": "Pro ends in {{count}} days"
+    "pro_ends_in_other": "Pro ends in {{count}} days",
+    "switch_monthly": "Switch to monthly"
   },
   "annual_nudge": {
     "title": "Switch to yearly — save $",

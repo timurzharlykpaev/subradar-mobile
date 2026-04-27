@@ -1,21 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  Alert, ActivityIndicator, StyleSheet, Animated,
+  ActivityIndicator, StyleSheet, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
-import { billingApi } from '../src/api/billing';
+import { useCancelSubscription } from '../src/hooks/useCancelSubscription';
 import { useTheme } from '../src/theme';
 import CancellationInterceptModal from '../src/components/CancellationInterceptModal';
 import { BannerRenderer } from '../src/components/BannerRenderer';
 import { useSettingsStore } from '../src/stores/settingsStore';
-import { analytics } from '../src/services/analytics';
 import { calcYearlySavings } from '../src/utils/calcYearlySavings';
 import { formatMoney } from '../src/utils/formatMoney';
 import i18n from '../src/i18n';
@@ -37,8 +35,9 @@ export default function SubscriptionPlanScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const access = useEffectiveAccess();
+  const cancelSubscription = useCancelSubscription();
+  const [cancelling, setCancelling] = useState(false);
   const isLoading = !access;
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
@@ -95,31 +94,28 @@ export default function SubscriptionPlanScreen() {
     Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
   }, []);
 
-  const cancelMutation = useMutation({
-    mutationFn: () => billingApi.cancel(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['billing'] });
-      Alert.alert(
-        t('subscription_plan.cancelled_title'),
-        t('subscription_plan.cancelled_msg'),
-        [{ text: 'OK', onPress: () => router.replace('/(tabs)' as any) }]
-      );
-    },
-    onError: (e: any) => Alert.alert(t('common.error'), e?.response?.data?.message || ''),
-  });
-
   const handleCancel = () => {
     // Gate cancel behind intercept modal — retention offer + reason capture.
     // If user is trialing, skip to native confirm (don't interrupt trial cancel).
     setCancelModalVisible(true);
   };
 
-  const handleConfirmCancel = (reason?: string) => {
+  // Wait one tick after closing the RN Modal so iOS doesn't refuse to present
+  // the RC Customer Center on top of an already-presenting view controller.
+  const handleConfirmCancel = async (reason?: string) => {
     setCancelModalVisible(false);
-    if (reason) {
-      analytics.track('subscription_cancelled', { plan: access?.plan ?? 'free', reason });
+    setCancelling(true);
+    await new Promise((r) => setTimeout(r, 350));
+    try {
+      await cancelSubscription({
+        isTrialing: access?.source === 'trial',
+        planKey: access?.plan ?? 'free',
+        reason,
+        onAfter: () => router.replace('/(tabs)' as any),
+      });
+    } finally {
+      setCancelling(false);
     }
-    cancelMutation.mutate();
   };
 
   const handleStartTrial = () => {
@@ -128,8 +124,12 @@ export default function SubscriptionPlanScreen() {
 
   // `cancel_at_period_end` keeps Pro features until the period ends.
   // We surface that as still-Pro in the UI while showing the cancel warning.
+  // For App Store IAP we mostly only see `flags.cancelAtPeriodEnd: true` while
+  // `state` stays `active` until Apple actually stops charging — fall back on
+  // the flag so the UI reflects the pending cancellation right away.
   const rawPlan = access?.plan ?? 'free';
-  const isCancelled = access?.state === 'cancel_at_period_end';
+  const isCancelled =
+    access?.state === 'cancel_at_period_end' || !!access?.flags.cancelAtPeriodEnd;
   const plan = rawPlan;
   const isPro = access?.isPro ?? false;
   const isTeam = plan === 'organization';
@@ -400,9 +400,9 @@ export default function SubscriptionPlanScreen() {
               <TouchableOpacity
                 style={[styles.actionOutline, { borderColor: '#EF444440' }]}
                 onPress={handleCancel}
-                disabled={cancelMutation.isPending}
+                disabled={cancelling}
               >
-                {cancelMutation.isPending ? <ActivityIndicator color="#EF4444" /> : (
+                {cancelling ? <ActivityIndicator color="#EF4444" /> : (
                   <>
                     <Ionicons name="close-circle-outline" size={18} color="#EF4444" />
                     <Text style={[styles.actionOutlineText, { color: '#EF4444' }]}>{t('subscription_plan.cancel_sub')}</Text>
@@ -427,9 +427,9 @@ export default function SubscriptionPlanScreen() {
               <TouchableOpacity
                 style={[styles.actionOutline, { borderColor: colors.border }]}
                 onPress={handleCancel}
-                disabled={cancelMutation.isPending}
+                disabled={cancelling}
               >
-                {cancelMutation.isPending ? <ActivityIndicator color={colors.textMuted} /> : (
+                {cancelling ? <ActivityIndicator color={colors.textMuted} /> : (
                   <Text style={[styles.actionOutlineText, { color: colors.textMuted }]}>{t('subscription_plan.cancel_trial')}</Text>
                 )}
               </TouchableOpacity>

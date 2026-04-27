@@ -717,7 +717,8 @@
     "cancelled_until": "Annulé · jusqu'au {{date}}",
     "cancelled_badge": "Annulé",
     "access_until": "Accès jusqu'au {{date}}",
-    "upgrade_to": "Passer à {{plan}}"
+    "upgrade_to": "Passer à {{plan}}",
+    "cancel_open_failed": "Impossible d'ouvrir les paramètres d'abonnement. Allez dans Réglages → Identifiant Apple → Abonnements."
   },
   "workspace": {
     "name_placeholder": "ex. Mon Entreprise",
@@ -1178,7 +1179,8 @@
     "upgrade_to_pro": "Passer à Pro",
     "expires_on": "Votre forfait Pro expire le {{date}}",
     "pro_ends_in_one": "Pro se termine dans {{count}} jour",
-    "pro_ends_in_other": "Pro se termine dans {{count}} jours"
+    "pro_ends_in_other": "Pro se termine dans {{count}} jours",
+    "switch_monthly": "Passer au mensuel"
   },
   "a11y": {
     "subscription": "Abonnement {{name}}",
