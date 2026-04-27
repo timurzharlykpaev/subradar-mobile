@@ -9,4 +9,8 @@ export const billingApi = {
   trialStatus: () => apiClient.get<TrialStatusResponse>('/billing/trial'),
   syncRevenueCat: (productId: string) =>
     apiClient.post('/billing/sync-revenuecat', { productId }),
+  reconcile: () =>
+    apiClient.post<{ success: boolean; action: 'noop' | 'cancel_at_period_end' | 'downgraded'; reason: string }>(
+      '/billing/reconcile',
+    ),
 };

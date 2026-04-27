@@ -60,6 +60,7 @@ import { loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
 import * as SecureStore from 'expo-secure-store';
 import * as Sentry from '@sentry/react-native';
 import { billingApi } from '../src/api/billing';
+import { reconcileBillingDrift } from '../src/utils/reconcileBillingDrift';
 
 const PENDING_RECEIPT_KEY = 'pending_receipt';
 
@@ -195,6 +196,16 @@ function DataLoader() {
           } catch (e: any) {
             analytics.pendingReceiptRecoveryFailed(pending, e?.message);
             // Intentionally do NOT delete — retry on next launch.
+          }
+        }
+
+        // Drift recovery — if RC has no active entitlements but the backend
+        // still reports a paid plan (lost EXPIRATION webhook, legacy manual
+        // grants), ask the backend to verify against RC and downgrade.
+        if (!cancelled) {
+          const drift = await reconcileBillingDrift();
+          if (drift.ran && !cancelled) {
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
           }
         }
       } catch (e) {

@@ -38,6 +38,7 @@ import CancellationInterceptModal from '../../src/components/CancellationInterce
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { useCancelSubscription } from '../../src/hooks/useCancelSubscription';
+import { reconcileBillingDrift } from '../../src/utils/reconcileBillingDrift';
 import { CountryPicker } from '../../src/components/CountryPicker';
 import { CurrencyPicker } from '../../src/components/CurrencyPicker';
 import { COUNTRIES } from '../../src/constants/countries';
@@ -75,7 +76,12 @@ export default function SettingsScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    const drift = await reconcileBillingDrift();
     await queryClient.invalidateQueries({ queryKey: ['billing'] });
+    if (drift.ran) {
+      // give the freshly-invalidated query a moment to refetch
+      await new Promise((r) => setTimeout(r, 200));
+    }
     setRefreshing(false);
   }, [queryClient]);
 
@@ -87,6 +93,17 @@ export default function SettingsScreen() {
       setWeeklyDigest(data.weeklyDigestEnabled ?? true);
     }).catch(() => {});
   }, []);
+
+  // Drift recovery on mount — catches users whose RC entitlements expired
+  // but a stale paid plan is still cached on the backend (lost webhook,
+  // legacy grants). _layout already runs this once at startup; running it
+  // again here covers the case where the user visits Settings without
+  // restarting the app after the drift appeared.
+  useEffect(() => {
+    reconcileBillingDrift().then((res) => {
+      if (res.ran) queryClient.invalidateQueries({ queryKey: ['billing'] });
+    });
+  }, [queryClient]);
 
   // `access` (useEffectiveAccess) is the source of truth — all derived flags
   // below are computed from the backend response, no local invariants.

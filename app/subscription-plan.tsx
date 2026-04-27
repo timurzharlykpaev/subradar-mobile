@@ -7,9 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
 import { useRevenueCat } from '../src/hooks/useRevenueCat';
 import { useCancelSubscription } from '../src/hooks/useCancelSubscription';
+import { reconcileBillingDrift } from '../src/utils/reconcileBillingDrift';
 import { useTheme } from '../src/theme';
 import CancellationInterceptModal from '../src/components/CancellationInterceptModal';
 import { BannerRenderer } from '../src/components/BannerRenderer';
@@ -37,7 +39,15 @@ export default function SubscriptionPlanScreen() {
   const { t } = useTranslation();
   const access = useEffectiveAccess();
   const cancelSubscription = useCancelSubscription();
+  const queryClient = useQueryClient();
   const [cancelling, setCancelling] = useState(false);
+
+  // Drift recovery on mount — same rationale as settings.tsx.
+  useEffect(() => {
+    reconcileBillingDrift().then((res) => {
+      if (res.ran) queryClient.invalidateQueries({ queryKey: ['billing'] });
+    });
+  }, [queryClient]);
   const isLoading = !access;
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
