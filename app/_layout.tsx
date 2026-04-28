@@ -288,9 +288,11 @@ function PushSetup() {
         paywall: '/paywall',
         billing_issue: '/subscription-plan',
         pro_expiration: '/subscription-plan',
+        trial_expiry: '/paywall',
         team_invite: '/(tabs)/workspace',
         weekly_digest: '/(tabs)',
         win_back: '/(tabs)',
+        payment_reminders_digest: '/(tabs)/subscriptions',
         test: '/(tabs)/settings',
       };
 
