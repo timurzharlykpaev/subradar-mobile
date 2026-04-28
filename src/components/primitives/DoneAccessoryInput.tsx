@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useImperativeHandle, memo } from 'react';
+import React, { forwardRef, useRef, useImperativeHandle } from 'react';
 import {
   TextInput,
   InputAccessoryView,
@@ -27,12 +27,17 @@ export interface DoneAccessoryInputProps extends TextInputProps {
  *
  * NumericInput is a compatibility shim around this component; prefer this
  * primitive directly in new code.
+ *
+ * NOTE: do NOT wrap this in `React.memo` — the combination
+ * `memo(forwardRef(...))` rendered inside another forwardRef shim
+ * (NumericInput) breaks React Fabric's `getComponentNameFromFiber` during
+ * error logging (`type.render` is read on the wrong fiber and throws
+ * "Cannot read property 'displayName' of undefined"), masking the original
+ * error and crashing the surface. The keystroke perf win we expected from
+ * this memo turned out to be tiny — the real gains come from the parent's
+ * stable callbacks + memoized styles + ThemeContext.value memo.
  */
-// Memoized so the (potentially heavy on iOS) InputAccessoryView toolbar
-// doesn't re-render for every other input on the screen when the user is
-// typing in just one of them. Combined with stable theme/callback identity
-// from the parent, this keeps idle inputs out of the keystroke render path.
-export const DoneAccessoryInput = memo(forwardRef<TextInput, DoneAccessoryInputProps>(function DoneAccessoryInput(
+export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>(function DoneAccessoryInput(
   { accessoryId, showDoneAccessory = true, ...props },
   ref,
 ) {
@@ -71,7 +76,7 @@ export const DoneAccessoryInput = memo(forwardRef<TextInput, DoneAccessoryInputP
       )}
     </>
   );
-}));
+});
 
 const styles = StyleSheet.create({
   toolbar: {
