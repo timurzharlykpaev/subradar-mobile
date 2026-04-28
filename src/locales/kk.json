@@ -396,7 +396,11 @@
     "region_change_currency_title": "Көрсету валютасын өзгерту керек пе?",
     "region_change_currency_body": "Жазылымдарды {{currency}} валютасында көрсету керек пе?",
     "region_change_keep": "{{currency}}-ні сақтау",
-    "region_change_switch": "{{currency}}-ке ауысу"
+    "region_change_switch": "{{currency}}-ке ауысу",
+    "send_test_notification": "Сынақ хабарламасын жіберу",
+    "send_test_notification_desc": "Push осы құрылғыда жұмыс істейтінін тексеру",
+    "test_notification_sent_title": "Сынақ жіберілді",
+    "test_notification_sent_msg": "Хабарлама бірнеше секундта келуі керек. Егер көрмесеңіз — жүйелік параметрлерде push рұқсат етілгенін тексеріңіз."
   },
   "auth": {
     "welcome": "Қайта оралуыңызбен",

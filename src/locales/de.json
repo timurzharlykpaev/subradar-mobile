@@ -388,7 +388,11 @@
     "region_change_currency_title": "Anzeigewährung ändern?",
     "region_change_currency_body": "Abos in {{currency}} anzeigen?",
     "region_change_keep": "{{currency}} behalten",
-    "region_change_switch": "Zu {{currency}} wechseln"
+    "region_change_switch": "Zu {{currency}} wechseln",
+    "send_test_notification": "Test-Benachrichtigung senden",
+    "send_test_notification_desc": "Push auf diesem Gerät prüfen",
+    "test_notification_sent_title": "Test gesendet",
+    "test_notification_sent_msg": "Es sollte in wenigen Sekunden ankommen. Wenn nicht — prüfe, ob Push in den iOS/Android-Einstellungen erlaubt ist."
   },
   "auth": {
     "welcome": "Willkommen zurück",

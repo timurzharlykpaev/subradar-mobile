@@ -388,7 +388,11 @@
     "region_change_currency_title": "更改显示货币?",
     "region_change_currency_body": "以 {{currency}} 显示订阅?",
     "region_change_keep": "保留 {{currency}}",
-    "region_change_switch": "切换到 {{currency}}"
+    "region_change_switch": "切换到 {{currency}}",
+    "send_test_notification": "发送测试通知",
+    "send_test_notification_desc": "验证此设备上的推送是否正常工作",
+    "test_notification_sent_title": "测试已发送",
+    "test_notification_sent_msg": "几秒钟内应该会到达。如果没有看到，请检查 iOS/Android 设置中的通知是否已启用。"
   },
   "auth": {
     "welcome": "欢迎回来",

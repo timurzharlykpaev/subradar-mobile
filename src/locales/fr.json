@@ -388,7 +388,11 @@
     "region_change_currency_title": "Modifier la devise d'affichage ?",
     "region_change_currency_body": "Afficher les abonnements en {{currency}} ?",
     "region_change_keep": "Garder {{currency}}",
-    "region_change_switch": "Passer à {{currency}}"
+    "region_change_switch": "Passer à {{currency}}",
+    "send_test_notification": "Envoyer une notification test",
+    "send_test_notification_desc": "Vérifier que les notifications push fonctionnent sur cet appareil",
+    "test_notification_sent_title": "Test envoyé",
+    "test_notification_sent_msg": "Elle devrait arriver dans quelques secondes. Si vous ne la voyez pas, vérifiez que les notifications sont activées dans les réglages iOS/Android."
   },
   "auth": {
     "welcome": "Bon retour",

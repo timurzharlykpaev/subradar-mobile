@@ -388,7 +388,11 @@
     "region_change_currency_title": "표시 통화를 변경하시겠습니까?",
     "region_change_currency_body": "{{currency}}로 구독을 표시하시겠습니까?",
     "region_change_keep": "{{currency}} 유지",
-    "region_change_switch": "{{currency}}로 전환"
+    "region_change_switch": "{{currency}}로 전환",
+    "send_test_notification": "테스트 알림 보내기",
+    "send_test_notification_desc": "이 기기에서 푸시가 작동하는지 확인",
+    "test_notification_sent_title": "테스트 전송됨",
+    "test_notification_sent_msg": "몇 초 안에 도착합니다. 보이지 않으면 iOS/Android 설정에서 알림이 활성화되어 있는지 확인하세요."
   },
   "auth": {
     "welcome": "다시 오셨군요",

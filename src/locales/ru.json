@@ -397,7 +397,11 @@
     "region_change_currency_title": "Изменить валюту отображения?",
     "region_change_currency_body": "Показывать подписки в {{currency}}?",
     "region_change_keep": "Оставить {{currency}}",
-    "region_change_switch": "Переключить на {{currency}}"
+    "region_change_switch": "Переключить на {{currency}}",
+    "send_test_notification": "Отправить тестовое уведомление",
+    "send_test_notification_desc": "Проверить, что push работает на этом устройстве",
+    "test_notification_sent_title": "Тест отправлен",
+    "test_notification_sent_msg": "Уведомление придёт через несколько секунд. Если не видите — проверьте, что push разрешён в системных настройках."
   },
   "auth": {
     "welcome": "С возвращением",

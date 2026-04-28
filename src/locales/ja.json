@@ -388,7 +388,11 @@
     "region_change_currency_title": "表示通貨を変更しますか?",
     "region_change_currency_body": "{{currency}} でサブスクを表示しますか?",
     "region_change_keep": "{{currency}} のまま",
-    "region_change_switch": "{{currency}} に切り替え"
+    "region_change_switch": "{{currency}} に切り替え",
+    "send_test_notification": "テスト通知を送信",
+    "send_test_notification_desc": "このデバイスで push が動作するか確認",
+    "test_notification_sent_title": "テスト送信済み",
+    "test_notification_sent_msg": "数秒以内に届きます。届かない場合は、iOS/Android の設定で通知が有効になっているか確認してください。"
   },
   "auth": {
     "welcome": "おかえりなさい",

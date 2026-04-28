@@ -655,6 +655,30 @@ export default function SettingsScreen() {
               ))}
             </View>
           </View>
+
+          {/* Send Test Notification — verify permissions + tap-to-open behaviour. */}
+          {renderSettingRow(
+            'paper-plane-outline',
+            colors.primary,
+            t('settings.send_test_notification', 'Send Test Notification'),
+            t('settings.send_test_notification_desc', 'Verify that push works on this device'),
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            async () => {
+              try {
+                await notificationsApi.sendTest();
+                Alert.alert(
+                  t('settings.test_notification_sent_title', 'Test sent'),
+                  t('settings.test_notification_sent_msg', "It should arrive in a few seconds. If you don't see it, check that notifications are enabled in iOS/Android settings."),
+                );
+              } catch (e: any) {
+                Alert.alert(
+                  t('common.error', 'Error'),
+                  e?.response?.data?.message || e?.message || t('common.something_went_wrong', 'Something went wrong'),
+                );
+              }
+            },
+            false,
+          )}
         </View>
 
         {/* ═══ 5. Reports & Data ═══ */}

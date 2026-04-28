@@ -23,4 +23,11 @@ export const notificationsApi = {
     emailNotifications?: boolean;
     weeklyDigestEnabled?: boolean;
   }) => apiClient.put('/notifications/settings', data),
+  /**
+   * Fire a localized test push to the caller's stored FCM token. Used by the
+   * Send Test Notification button in Settings so users can verify push
+   * permissions and tap-to-open behaviour without waiting for a real cron.
+   */
+  sendTest: () =>
+    apiClient.post<{ message: string; token: string }>('/notifications/test'),
 };

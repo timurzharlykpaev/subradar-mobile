@@ -388,7 +388,11 @@
     "region_change_currency_title": "¿Cambiar la moneda de visualización?",
     "region_change_currency_body": "¿Mostrar suscripciones en {{currency}}?",
     "region_change_keep": "Mantener {{currency}}",
-    "region_change_switch": "Cambiar a {{currency}}"
+    "region_change_switch": "Cambiar a {{currency}}",
+    "send_test_notification": "Enviar notificación de prueba",
+    "send_test_notification_desc": "Verifica que las notificaciones push funcionen en este dispositivo",
+    "test_notification_sent_title": "Prueba enviada",
+    "test_notification_sent_msg": "Debería llegar en unos segundos. Si no la ves, comprueba que las notificaciones están habilitadas en los ajustes de iOS/Android."
   },
   "auth": {
     "welcome": "Bienvenido de nuevo",

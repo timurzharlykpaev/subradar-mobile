@@ -396,7 +396,11 @@
     "region_change_currency_title": "Change display currency?",
     "region_change_currency_body": "Show subscriptions in {{currency}}?",
     "region_change_keep": "Keep {{currency}}",
-    "region_change_switch": "Switch to {{currency}}"
+    "region_change_switch": "Switch to {{currency}}",
+    "send_test_notification": "Send Test Notification",
+    "send_test_notification_desc": "Verify that push works on this device",
+    "test_notification_sent_title": "Test sent",
+    "test_notification_sent_msg": "It should arrive in a few seconds. If you don't see it, check that notifications are enabled in iOS/Android settings."
   },
   "auth": {
     "welcome": "Welcome back",

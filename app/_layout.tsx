@@ -273,9 +273,37 @@ function PushSetup() {
     notificationListener.current = Notifications.addNotificationReceivedListener(() => {});
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      const subId = response.notification.request.content.data?.subscriptionId as string | undefined;
+      const data = (response.notification.request.content.data ?? {}) as Record<string, unknown>;
+
+      // Backend sends one of: `type`, `screen`, or `subscriptionId`. We
+      // resolve in that order so legacy payloads keep working while new
+      // categories (paywall, billing_issue, team_invite) route to their
+      // own screens. Anything unrecognised is a no-op so an unknown push
+      // can't crash the app or land the user on a wrong screen.
+      const type = typeof data.type === 'string' ? data.type : null;
+      const screen = typeof data.screen === 'string' ? data.screen : null;
+      const subId = typeof data.subscriptionId === 'string' ? data.subscriptionId : null;
+
+      const SCREEN_BY_TYPE: Record<string, string> = {
+        paywall: '/paywall',
+        billing_issue: '/subscription-plan',
+        pro_expiration: '/subscription-plan',
+        team_invite: '/(tabs)/workspace',
+        weekly_digest: '/(tabs)',
+        win_back: '/(tabs)',
+        test: '/(tabs)/settings',
+      };
+
+      if (type && SCREEN_BY_TYPE[type]) {
+        router.push(SCREEN_BY_TYPE[type] as any);
+        return;
+      }
       if (subId && /^[a-f0-9-]{36}$/.test(subId)) {
         router.push(`/subscription/${subId}` as any);
+        return;
+      }
+      if (screen && screen.startsWith('/')) {
+        router.push(screen as any);
       }
     });
 
