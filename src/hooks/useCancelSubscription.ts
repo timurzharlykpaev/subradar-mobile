@@ -57,6 +57,31 @@ async function checkRcEntitlement(): Promise<EntitlementCheck> {
   }
 }
 
+/**
+ * Detect a "cancelled but still in period" state. After Apple Settings cancel,
+ * the entitlement stays ACTIVE until period end — so plain entitlement check
+ * would think nothing changed. RC SDK exposes `willRenew` on each subscription
+ * which flips to false the moment the user cancels. We use that as the
+ * cancellation tell-tale.
+ */
+async function rcHasPendingCancellation(): Promise<boolean> {
+  if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') return false;
+  try {
+    const info = await Purchases.getCustomerInfo();
+    const subs = info?.subscriptionsByProductIdentifier ?? info?.allPurchasedProductIdentifiers ?? null;
+    // SDK shape varies slightly across versions — defensively scan both legacy
+    // `subscriptionsByProductIdentifier` and the newer `activeSubscriptions`.
+    const candidates: any[] = [];
+    if (subs && typeof subs === 'object' && !Array.isArray(subs)) {
+      for (const k of Object.keys(subs)) candidates.push((subs as any)[k]);
+    }
+    return candidates.some((s) => s && s.willRenew === false);
+  } catch (e: any) {
+    log('rcHasPendingCancellation failed:', e?.message);
+    return false;
+  }
+}
+
 export function useCancelSubscription() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -120,16 +145,35 @@ export function useCancelSubscription() {
         }
       }
 
-      // After Customer Center / Apple Settings closes: force RC sync, then
-      // mirror into backend. RC may return cached info — getCustomerInfo with
-      // `fetchPolicy: NETWORK_ONLY` would be ideal but isn't available on all
-      // SDK versions, so we just check + reconcile. The backend webhook from
-      // RC will eventually flip billingStatus regardless.
-      const afterEntitlement = await checkRcEntitlement();
-      log('IAP cancel — entitlement after:', afterEntitlement);
+      // After Customer Center / Apple Settings closes: force RC sync to bust
+      // the SDK's in-memory cache, otherwise getCustomerInfo() returns the
+      // pre-cancel snapshot and userCancelled would always be false.
+      try {
+        if (Purchases && typeof Purchases.invalidateCustomerInfoCache === 'function') {
+          await Purchases.invalidateCustomerInfoCache();
+        }
+        if (Purchases && typeof Purchases.syncPurchases === 'function') {
+          await Purchases.syncPurchases();
+        }
+      } catch (e: any) {
+        log('RC cache invalidate / syncPurchases failed (non-fatal):', e?.message);
+      }
 
+      const afterEntitlement = await checkRcEntitlement();
+      const pendingCancellation = await rcHasPendingCancellation();
+      log(
+        'IAP cancel — entitlement after:',
+        afterEntitlement,
+        'pendingCancellation:',
+        pendingCancellation,
+      );
+
+      // Two cancellation signals: (1) entitlement disappeared (period already
+      // ended), or (2) entitlement still active but `willRenew=false`
+      // (cancel-at-period-end — the common case right after Apple Settings).
       const userCancelled =
-        beforeEntitlement !== null && afterEntitlement === null;
+        (beforeEntitlement !== null && afterEntitlement === null) ||
+        pendingCancellation;
 
       if (userCancelled) {
         try {
@@ -137,6 +181,14 @@ export function useCancelSubscription() {
           log('backend cancel response:', res?.status, res?.data);
         } catch (e: any) {
           log('backend cancel failed (non-fatal):', e?.response?.status, e?.message);
+        }
+        // Belt and suspenders — also kick the reconcile endpoint so the
+        // backend pulls fresh state from RC REST API even if its own
+        // webhook hasn't arrived yet.
+        try {
+          await billingApi.reconcile();
+        } catch (e: any) {
+          log('reconcile failed (non-fatal):', e?.message);
         }
         await queryClient.invalidateQueries({ queryKey: ['billing'] });
         Alert.alert(

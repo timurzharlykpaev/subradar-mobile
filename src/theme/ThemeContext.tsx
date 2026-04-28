@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from 'react-native';
 import { DarkTheme, LightTheme, ThemeColors } from './colors';
@@ -56,18 +56,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(mode === 'dark' ? 'light' : 'dark');
   }, [mode, setTheme]);
 
-  return (
-    <ThemeContext.Provider value={{
+  // Stabilize the context value: every render of ThemeProvider used to
+  // produce a fresh `value` object, which propagated a new identity to
+  // every `useTheme()` consumer (DoneAccessoryInput × N inputs, every
+  // sheet, every button). With ~60 consumers in the form alone that
+  // multiplied per-keystroke render cost; useMemo cuts it to one.
+  const value = useMemo<ThemeContextValue>(
+    () => ({
       mode,
       colors: mode === 'dark' ? DarkTheme : LightTheme,
       fonts,
       isDark: mode === 'dark',
       toggleTheme,
       setTheme,
-    }}>
-      {children}
-    </ThemeContext.Provider>
+    }),
+    [mode, toggleTheme, setTheme],
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export const useTheme = () => useContext(ThemeContext);

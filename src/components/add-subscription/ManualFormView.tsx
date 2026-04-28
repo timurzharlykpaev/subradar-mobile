@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -84,6 +84,16 @@ function ManualFormViewImpl({
     marginTop: 6,
   }), [colors.background, colors.text, colors.border]);
 
+  // Stable per-field text handlers — prevents the inline `(v) => setF('name', v)`
+  // arrow from invalidating DoneAccessoryInput's React.memo on every keystroke
+  // in any other field.
+  const handleName = useCallback((v: string) => setF('name', v), [setF]);
+  const handleAmount = useCallback((v: string) => setF('amount', v), [setF]);
+  const handleCurrentPlan = useCallback((v: string) => setF('currentPlan', v), [setF]);
+  const handleServiceUrl = useCallback((v: string) => setF('serviceUrl', v), [setF]);
+  const handleCancelUrl = useCallback((v: string) => setF('cancelUrl', v), [setF]);
+  const handleNotes = useCallback((v: string) => setF('notes', v), [setF]);
+
   const canSave = form.name.trim() !== '' && parseFloat(form.amount) > 0;
 
   return (
@@ -106,7 +116,7 @@ function ManualFormViewImpl({
           testID="name-input"
           style={inputStyle}
           value={form.name}
-          onChangeText={(v) => setF('name', v)}
+          onChangeText={handleName}
           placeholder={t('add.name_placeholder')}
           placeholderTextColor={colors.textMuted}
           accessoryId="manual-name"
@@ -121,7 +131,7 @@ function ManualFormViewImpl({
           testID="amount-input"
           style={inputStyle}
           value={form.amount}
-          onChangeText={(v) => setF('amount', v)}
+          onChangeText={handleAmount}
           placeholder="9.99"
           keyboardType="decimal-pad"
           placeholderTextColor={colors.textMuted}
@@ -303,7 +313,7 @@ function ManualFormViewImpl({
             <DoneAccessoryInput
               style={inputStyle}
               value={form.currentPlan}
-              onChangeText={(v) => setF('currentPlan', v)}
+              onChangeText={handleCurrentPlan}
               placeholder={t('add.plan_placeholder')}
               placeholderTextColor={colors.textMuted}
               accessoryId="manual-plan"
@@ -318,7 +328,7 @@ function ManualFormViewImpl({
             <DoneAccessoryInput
               style={inputStyle}
               value={form.serviceUrl}
-              onChangeText={(v) => setF('serviceUrl', v)}
+              onChangeText={handleServiceUrl}
               placeholder="https://netflix.com"
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
@@ -336,7 +346,7 @@ function ManualFormViewImpl({
             <DoneAccessoryInput
               style={inputStyle}
               value={form.cancelUrl}
-              onChangeText={(v) => setF('cancelUrl', v)}
+              onChangeText={handleCancelUrl}
               placeholder="https://netflix.com/cancelplan"
               placeholderTextColor={colors.textMuted}
               autoCapitalize="none"
@@ -375,7 +385,7 @@ function ManualFormViewImpl({
             <DoneAccessoryInput
               style={[inputStyle, { minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }]}
               value={form.notes}
-              onChangeText={(v) => setF('notes', v)}
+              onChangeText={handleNotes}
               placeholder={t('add.notes_placeholder')}
               placeholderTextColor={colors.textMuted}
               multiline

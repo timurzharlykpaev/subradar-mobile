@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useRef, useImperativeHandle, memo } from 'react';
 import {
   TextInput,
   InputAccessoryView,
@@ -28,7 +28,11 @@ export interface DoneAccessoryInputProps extends TextInputProps {
  * NumericInput is a compatibility shim around this component; prefer this
  * primitive directly in new code.
  */
-export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>(function DoneAccessoryInput(
+// Memoized so the (potentially heavy on iOS) InputAccessoryView toolbar
+// doesn't re-render for every other input on the screen when the user is
+// typing in just one of them. Combined with stable theme/callback identity
+// from the parent, this keeps idle inputs out of the keystroke render path.
+export const DoneAccessoryInput = memo(forwardRef<TextInput, DoneAccessoryInputProps>(function DoneAccessoryInput(
   { accessoryId, showDoneAccessory = true, ...props },
   ref,
 ) {
@@ -67,7 +71,7 @@ export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>
       )}
     </>
   );
-});
+}));
 
 const styles = StyleSheet.create({
   toolbar: {

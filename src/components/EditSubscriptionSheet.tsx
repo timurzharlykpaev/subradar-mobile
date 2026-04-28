@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -45,6 +45,8 @@ const PERIOD_LABELS: Record<string, string> = {
   LIFETIME: 'billing.lifetime',
   ONE_TIME: 'billing.one_time',
 };
+
+const REMINDER_OPTIONS = [1, 3, 7] as const;
 
 export function EditSubscriptionSheet({ visible, onClose, subscription }: Props) {
   const { t } = useTranslation();
@@ -202,8 +204,74 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     }
   }, [newCard, addCard, t]);
 
-  const fieldLabel = { fontSize: 12, fontWeight: '600' as const, color: colors.textMuted, marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.5 };
-  const inputStyle = { backgroundColor: colors.surface2, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.text, borderWidth: 1, borderColor: colors.border };
+  // Memoized so the inputs (each wrapped in React.memo) don't re-render on
+  // every keystroke just because the parent rebuilt these style objects.
+  // Without this each `setForm` keystroke would invalidate every other
+  // input's memo, dragging the InputAccessoryView toolbar with it.
+  const fieldLabel = useMemo(
+    () => ({
+      fontSize: 12,
+      fontWeight: '600' as const,
+      color: colors.textMuted,
+      marginBottom: 6,
+      textTransform: 'uppercase' as const,
+      letterSpacing: 0.5,
+    }),
+    [colors.textMuted],
+  );
+  const inputStyle = useMemo(
+    () => ({
+      backgroundColor: colors.surface2,
+      borderRadius: 12,
+      padding: 14,
+      fontSize: 15,
+      color: colors.text,
+      borderWidth: 1,
+      borderColor: colors.border,
+    }),
+    [colors.surface2, colors.text, colors.border],
+  );
+  const notesInputStyle = useMemo(
+    () => [inputStyle, { height: 80, textAlignVertical: 'top' as const, paddingTop: 12 }],
+    [inputStyle],
+  );
+
+  // Stable per-field setters — each input only re-renders when its own value
+  // changes (memoized component + stable onChange identity).
+  const onChangeName = useCallback((v: string) => setForm((f) => ({ ...f, name: v })), []);
+  const onChangeAmount = useCallback((v: string) => setForm((f) => ({ ...f, amount: v })), []);
+  const onChangeBillingDay = useCallback((v: string) => {
+    const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
+    if (!v || isNaN(num)) {
+      setForm((f) => ({ ...f, billingDay: '' }));
+      return;
+    }
+    setForm((f) => ({ ...f, billingDay: String(Math.min(Math.max(num, 1), 31)) }));
+  }, []);
+  const onChangeTags = useCallback((v: string) => setForm((f) => ({ ...f, tags: v })), []);
+  const onChangeNotes = useCallback((v: string) => setForm((f) => ({ ...f, notes: v })), []);
+  const onChangeCardNickname = useCallback(
+    (v: string) => setNewCard((c) => ({ ...c, nickname: v })),
+    [],
+  );
+  const onChangeCardLast4 = useCallback(
+    (v: string) => setNewCard((c) => ({ ...c, last4: v.replace(/\D/g, '').slice(0, 4) })),
+    [],
+  );
+
+  const toggleReminderDay = useCallback((day: number) => {
+    setForm((f) => {
+      const cur = f.reminderDaysBefore ?? [];
+      const next = cur.includes(day)
+        ? cur.filter((d) => d !== day)
+        : [...cur, day].sort((a, b) => a - b);
+      return { ...f, reminderDaysBefore: next };
+    });
+  }, []);
+  const clearReminders = useCallback(
+    () => setForm((f) => ({ ...f, reminderDaysBefore: [] })),
+    [],
+  );
 
   return (
     <Modal visible={visible} animationType="none" transparent onRequestClose={handleClose}>
@@ -219,6 +287,11 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          // Sheet height is 90% of screen; the drag handle (~28px) +
+          // header (~56px) live above the scroll content. Without this
+          // offset iOS lifts the wrong slice and inputs sit under the
+          // keyboard / the header jumps on focus.
+          keyboardVerticalOffset={Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 12 : 0}
           style={{ flex: 1 }}
         >
             <View style={styles.header}>
@@ -243,7 +316,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   <DoneAccessoryInput
                     style={inputStyle}
                     value={form.name}
-                    onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
+                    onChangeText={onChangeName}
                     placeholder={t('add.name_placeholder')}
                     placeholderTextColor={colors.textMuted}
                   />
@@ -255,7 +328,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   <NumericInput
                     style={inputStyle}
                     value={form.amount}
-                    onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
+                    onChangeText={onChangeAmount}
                     placeholder="9.99"
                     keyboardType="decimal-pad"
                     placeholderTextColor={colors.textMuted}
@@ -319,11 +392,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   <NumericInput
                     style={inputStyle}
                     value={form.billingDay}
-                    onChangeText={(v) => {
-                      const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                      if (!v || isNaN(num)) { setForm((f) => ({ ...f, billingDay: '' })); return; }
-                      setForm((f) => ({ ...f, billingDay: String(Math.min(Math.max(num, 1), 31)) }));
-                    }}
+                    onChangeText={onChangeBillingDay}
                     placeholder="1"
                     keyboardType="number-pad"
                     placeholderTextColor={colors.textMuted}
@@ -383,7 +452,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                       <DoneAccessoryInput
                         style={inputStyle}
                         value={newCard.nickname}
-                        onChangeText={(v) => setNewCard((c) => ({ ...c, nickname: v }))}
+                        onChangeText={onChangeCardNickname}
                         placeholder={t('add.card_nickname_example')}
                         placeholderTextColor={colors.textMuted}
                       />
@@ -393,7 +462,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                       <NumericInput
                         style={inputStyle}
                         value={newCard.last4}
-                        onChangeText={(v) => setNewCard((c) => ({ ...c, last4: v.replace(/\D/g, '').slice(0, 4) }))}
+                        onChangeText={onChangeCardLast4}
                         placeholder="1234"
                         keyboardType="number-pad"
                         placeholderTextColor={colors.textMuted}
@@ -436,7 +505,7 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   <DoneAccessoryInput
                     style={inputStyle}
                     value={form.tags}
-                    onChangeText={(v) => setForm((f) => ({ ...f, tags: v }))}
+                    onChangeText={onChangeTags}
                     placeholder={t('add.tags_placeholder', 'work, personal, shared')}
                     placeholderTextColor={colors.textMuted}
                   />
@@ -446,9 +515,9 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.notes')}</Text>
                   <DoneAccessoryInput
-                    style={[inputStyle, { height: 80, textAlignVertical: 'top', paddingTop: 12 }]}
+                    style={notesInputStyle}
                     value={form.notes}
-                    onChangeText={(v) => setForm((f) => ({ ...f, notes: v }))}
+                    onChangeText={onChangeNotes}
                     placeholder={t('add.notes')}
                     placeholderTextColor={colors.textMuted}
                     multiline
@@ -460,50 +529,75 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                 <View style={{ marginBottom: 16 }}>
                   <Text style={fieldLabel}>{t('add.reminder', 'Reminder')}</Text>
                   <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-                    {(() => {
-                      const OPTIONS = [1, 3, 7];
-                      const selected = form.reminderDaysBefore ?? [];
-                      const isOff = selected.length === 0;
-                      const toggle = (day: number) => {
-                        setForm((f) => {
-                          const cur = f.reminderDaysBefore ?? [];
-                          const next = cur.includes(day) ? cur.filter((d) => d !== day) : [...cur, day].sort((a, b) => a - b);
-                          return { ...f, reminderDaysBefore: next };
-                        });
-                      };
+                    <TouchableOpacity
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        backgroundColor:
+                          form.reminderDaysBefore.length === 0 ? colors.primary : colors.background,
+                        borderWidth: 1,
+                        borderColor:
+                          form.reminderDaysBefore.length === 0 ? colors.primary : colors.border,
+                      }}
+                      onPress={clearReminders}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: form.reminderDaysBefore.length === 0 ? '#FFF' : colors.text,
+                        }}
+                      >
+                        {t('add.reminder_off', 'Off')}
+                      </Text>
+                    </TouchableOpacity>
+                    {REMINDER_OPTIONS.map((day) => {
+                      const active = form.reminderDaysBefore.includes(day);
                       return (
-                        <>
-                          <TouchableOpacity
-                            style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: isOff ? colors.primary : colors.background, borderWidth: 1, borderColor: isOff ? colors.primary : colors.border }}
-                            onPress={() => setForm((f) => ({ ...f, reminderDaysBefore: [] }))}
+                        <TouchableOpacity
+                          key={day}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 20,
+                            backgroundColor: active ? colors.primary : colors.background,
+                            borderWidth: 1,
+                            borderColor: active ? colors.primary : colors.border,
+                          }}
+                          onPress={() => toggleReminderDay(day)}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontWeight: '600',
+                              color: active ? '#FFF' : colors.text,
+                            }}
                           >
-                            <Text style={{ fontSize: 12, fontWeight: '600', color: isOff ? '#FFF' : colors.text }}>{t('add.reminder_off', 'Off')}</Text>
-                          </TouchableOpacity>
-                          {OPTIONS.map((day) => {
-                            const active = selected.includes(day);
-                            return (
-                              <TouchableOpacity
-                                key={day}
-                                style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: active ? colors.primary : colors.background, borderWidth: 1, borderColor: active ? colors.primary : colors.border }}
-                                onPress={() => toggle(day)}
-                              >
-                                <Text style={{ fontSize: 12, fontWeight: '600', color: active ? '#FFF' : colors.text }}>{`${day}d`}</Text>
-                              </TouchableOpacity>
-                            );
-                          })}
-                          {/* Legacy non-standard days (e.g. [2] from older data) */}
-                          {selected.filter((d) => !OPTIONS.includes(d)).map((day) => (
-                            <TouchableOpacity
-                              key={`legacy-${day}`}
-                              style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: colors.primary, borderWidth: 1, borderColor: colors.primary }}
-                              onPress={() => toggle(day)}
-                            >
-                              <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFF' }}>{`${day}d`}</Text>
-                            </TouchableOpacity>
-                          ))}
-                        </>
+                            {`${day}d`}
+                          </Text>
+                        </TouchableOpacity>
                       );
-                    })()}
+                    })}
+                    {/* Legacy non-standard days (e.g. [2] from older data) */}
+                    {form.reminderDaysBefore
+                      .filter((d) => !(REMINDER_OPTIONS as readonly number[]).includes(d))
+                      .map((day) => (
+                        <TouchableOpacity
+                          key={`legacy-${day}`}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 20,
+                            backgroundColor: colors.primary,
+                            borderWidth: 1,
+                            borderColor: colors.primary,
+                          }}
+                          onPress={() => toggleReminderDay(day)}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFF' }}>{`${day}d`}</Text>
+                        </TouchableOpacity>
+                      ))}
                   </View>
                 </View>
 

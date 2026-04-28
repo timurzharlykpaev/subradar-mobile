@@ -155,27 +155,43 @@ export function DatePickerField({ label, value, onChange, placeholder }: Props) 
 
             {/* Days grid */}
             <View style={styles.daysGrid}>
-              {gridCells.map((day, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={[
-                    styles.dayCell,
-                    day === selectedDay && { backgroundColor: colors.primary, borderRadius: 20 },
-                  ]}
-                  onPress={() => day && handleSelect(day)}
-                  disabled={!day}
-                  activeOpacity={0.6}
-                >
-                  {day ? (
-                    <Text style={[
-                      styles.dayText,
-                      { color: day === selectedDay ? '#fff' : colors.text },
-                    ]}>
-                      {day}
-                    </Text>
-                  ) : null}
-                </TouchableOpacity>
-              ))}
+              {gridCells.map((day, i) => {
+                // Strict null guards: without them, leading-offset cells
+                // (where day === null) match `selectedDay === null` via
+                // `null === null` and end up painted solid blue with no
+                // text — that's the "blue squares" the user reported.
+                const isSelected =
+                  day !== null && selectedDay !== null && day === selectedDay;
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={[
+                      styles.dayCell,
+                      isSelected && {
+                        backgroundColor: colors.primary,
+                        // 9999 forces a full circle regardless of the
+                        // computed cell width (was 20 — only worked at
+                        // ~40px cells, looked rectangular elsewhere).
+                        borderRadius: 9999,
+                      },
+                    ]}
+                    onPress={() => day !== null && handleSelect(day)}
+                    disabled={day === null}
+                    activeOpacity={0.6}
+                  >
+                    {day !== null ? (
+                      <Text
+                        style={[
+                          styles.dayText,
+                          { color: isSelected ? '#fff' : colors.text },
+                        ]}
+                      >
+                        {day}
+                      </Text>
+                    ) : null}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             {/* Today button */}
@@ -251,10 +267,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   dayCell: {
-    width: '14.28%',
+    width: '14.2857%',
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   dayText: { fontSize: 15, fontWeight: '500' },
   todayButton: {
