@@ -874,7 +874,10 @@
     "start_free_trial": "免费 7 天 — 开始试用",
     "pro_to_team_blocked_title": "请先取消 Pro",
     "pro_to_team_blocked_msg": "Apple 不允许直接从 Pro 升级到 Team。请在 iOS 设置 → 订阅 中取消 Pro 订阅,等当前周期结束后回来购买 Team。",
-    "manage_subscription": "管理订阅"
+    "manage_subscription": "管理订阅",
+    "trial_consent": "免费试用 {{days}} 天。{{date}} 将自动扣费 {{price}}/{{period}},除非在“设置 → 订阅”中取消。自动续订直至取消。",
+    "paid_consent": "{{price}}/{{period}},自动续订直至取消。可在“设置 → 订阅”中随时取消。",
+    "trial_consent_a11y": "试用条款"
   },
   "ai": {
     "or_type": "或输入",

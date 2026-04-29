@@ -879,7 +879,10 @@
     "start_free_trial": "7 days free — Start Trial",
     "pro_to_team_blocked_title": "Cancel Pro first",
     "pro_to_team_blocked_msg": "Apple won't let you upgrade Pro → Team directly. Cancel your Pro subscription in iOS Settings → Subscriptions, wait for the current period to end, then come back to buy Team.",
-    "manage_subscription": "Manage Subscription"
+    "manage_subscription": "Manage Subscription",
+    "trial_consent": "Free for {{days}} days. On {{date}} you will be charged {{price}}/{{period}} unless cancelled in Settings → Subscriptions. Auto-renews until cancelled.",
+    "paid_consent": "{{price}}/{{period}}, auto-renews until cancelled. Cancel anytime in Settings → Subscriptions.",
+    "trial_consent_a11y": "Trial terms"
   },
   "pro_modal": {
     "title_default": "Pro Feature",

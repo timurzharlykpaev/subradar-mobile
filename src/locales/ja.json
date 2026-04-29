@@ -874,7 +874,10 @@
     "start_free_trial": "7日間無料 — トライアル開始",
     "pro_to_team_blocked_title": "先に Pro を解約してください",
     "pro_to_team_blocked_msg": "Apple は Pro → Team の直接アップグレードを許可していません。iOS 設定 → サブスクリプション で Pro を解約し、現在の期間が終了するのを待ってから Team を購入してください。",
-    "manage_subscription": "サブスクリプションを管理"
+    "manage_subscription": "サブスクリプションを管理",
+    "trial_consent": "{{days}} 日間無料。{{date}} に「設定 → サブスクリプション」でキャンセルしない限り {{price}}/{{period}} が課金されます。自動更新されます。",
+    "paid_consent": "{{price}}/{{period}}、キャンセルするまで自動更新されます。「設定 → サブスクリプション」でいつでもキャンセル可能。",
+    "trial_consent_a11y": "トライアル条件"
   },
   "ai": {
     "or_type": "または入力",

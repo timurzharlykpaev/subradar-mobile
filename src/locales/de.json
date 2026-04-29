@@ -874,7 +874,10 @@
     "start_free_trial": "7 Tage kostenlos — Testphase starten",
     "pro_to_team_blocked_title": "Pro zuerst kündigen",
     "pro_to_team_blocked_msg": "Apple lässt einen direkten Wechsel von Pro zu Team nicht zu. Kündige dein Pro-Abo unter iOS-Einstellungen → Abos, warte bis zum Ende des aktuellen Zeitraums und kaufe dann Team.",
-    "manage_subscription": "Abo verwalten"
+    "manage_subscription": "Abo verwalten",
+    "trial_consent": "{{days}} Tage kostenlos. Am {{date}} werden {{price}}/{{period}} abgebucht, sofern du nicht in Einstellungen → Abos kündigst. Verlängert sich automatisch.",
+    "paid_consent": "{{price}}/{{period}}, automatische Verlängerung bis zur Kündigung. Kündigen in Einstellungen → Abos.",
+    "trial_consent_a11y": "Probezeit-Bedingungen"
   },
   "ai": {
     "or_type": "oder eingeben",

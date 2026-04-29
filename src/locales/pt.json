@@ -874,7 +874,10 @@
     "start_free_trial": "7 dias grátis — Iniciar teste",
     "pro_to_team_blocked_title": "Cancele Pro primeiro",
     "pro_to_team_blocked_msg": "A Apple não permite atualizar Pro → Team diretamente. Cancele sua assinatura Pro em Ajustes do iOS → Assinaturas, aguarde o término do período atual e volte para comprar Team.",
-    "manage_subscription": "Gerenciar assinatura"
+    "manage_subscription": "Gerenciar assinatura",
+    "trial_consent": "Grátis por {{days}} dias. Em {{date}}, será cobrado {{price}}/{{period}} a menos que cancele em Ajustes → Assinaturas. Renovação automática.",
+    "paid_consent": "{{price}}/{{period}}, renovação automática até cancelar. Cancele em Ajustes → Assinaturas.",
+    "trial_consent_a11y": "Termos do teste"
   },
   "ai": {
     "or_type": "ou digite",

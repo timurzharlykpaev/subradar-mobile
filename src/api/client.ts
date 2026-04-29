@@ -1,6 +1,7 @@
 // Must be imported BEFORE `uuid` so crypto.getRandomValues is polyfilled.
 import 'react-native-get-random-values';
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import i18n from '../i18n';
 import { useAuthStore } from '../stores/authStore';
@@ -28,6 +29,12 @@ apiClient.interceptors.request.use((config) => {
   if (i18n.language) {
     config.headers['Accept-Language'] = i18n.language;
   }
+  // Tell the backend which native platform initiated the request. The web
+  // app does not set this header, which lets server-side gates
+  // (e.g. blocking /billing/checkout for iOS to satisfy App Store
+  // Guideline 3.1.1) distinguish mobile from web cleanly without
+  // unreliable User-Agent regexes that false-positive on iPhone Safari.
+  config.headers['X-Client-Platform'] = Platform.OS;
   // Attach a correlation ID so server-side logs and client errors can be cross-referenced.
   try {
     const cid = uuidv4();

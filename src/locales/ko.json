@@ -874,7 +874,10 @@
     "start_free_trial": "7일 무료 — 체험 시작",
     "pro_to_team_blocked_title": "먼저 Pro를 취소하세요",
     "pro_to_team_blocked_msg": "Apple은 Pro → Team 직접 업그레이드를 허용하지 않습니다. iOS 설정 → 구독에서 Pro 구독을 취소하고, 현재 기간이 끝날 때까지 기다린 후 다시 Team을 구매하세요.",
-    "manage_subscription": "구독 관리"
+    "manage_subscription": "구독 관리",
+    "trial_consent": "{{days}}일 무료 체험. {{date}}에 설정 → 구독에서 취소하지 않으면 {{price}}/{{period}}이 청구됩니다. 취소 전까지 자동 갱신됩니다.",
+    "paid_consent": "{{price}}/{{period}}, 취소 전까지 자동 갱신. 설정 → 구독에서 언제든지 취소 가능.",
+    "trial_consent_a11y": "체험판 약관"
   },
   "ai": {
     "or_type": "또는 입력",

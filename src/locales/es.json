@@ -874,7 +874,10 @@
     "start_free_trial": "7 días gratis — Empezar prueba",
     "pro_to_team_blocked_title": "Cancela Pro primero",
     "pro_to_team_blocked_msg": "Apple no permite cambiar directamente de Pro a Team. Cancela tu suscripción Pro en Ajustes de iOS → Suscripciones, espera a que finalice el período actual y vuelve para comprar Team.",
-    "manage_subscription": "Gestionar suscripción"
+    "manage_subscription": "Gestionar suscripción",
+    "trial_consent": "Gratis durante {{days}} días. El {{date}} se cobrarán {{price}}/{{period}} salvo cancelación en Ajustes → Suscripciones. Se renueva automáticamente.",
+    "paid_consent": "{{price}}/{{period}}, se renueva automáticamente. Cancela en Ajustes → Suscripciones.",
+    "trial_consent_a11y": "Términos de la prueba"
   },
   "ai": {
     "or_type": "o escribe",
