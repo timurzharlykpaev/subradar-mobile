@@ -7,6 +7,7 @@ import { useTheme } from '../../theme';
 import { KeyboardAwareModal } from '../primitives/KeyboardAwareModal';
 import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 import { DatePickerField } from '../DatePickerField';
+import { BillingDayPicker } from '../BillingDayPicker';
 import { NumericInput } from '../NumericInput';
 import type { ParsedSub } from './types';
 
@@ -304,37 +305,13 @@ function BulkEditModalImpl({
               value={sub.nextPaymentDate || ''}
               onChange={(v) => onUpdate({ nextPaymentDate: v })}
             />
-            {/* Billing Day */}
-            <View style={{ gap: 6 }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
-                {t('add.billing_day', 'Billing day')}
-              </Text>
-              <NumericInput
-                style={{
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: colors.text,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  padding: 14,
-                  backgroundColor: colors.card,
-                  width: 80,
-                }}
-                value={sub.billingDay != null ? String(sub.billingDay) : ''}
-                onChangeText={(v) => {
-                  const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                  onUpdate({
-                    billingDay: isNaN(num) ? undefined : Math.min(Math.max(num, 1), 31),
-                  });
-                }}
-                placeholder="1"
-                placeholderTextColor={colors.textMuted}
-                keyboardType="number-pad"
-                maxLength={2}
-                accessoryId="bulk-billing-day"
-              />
-            </View>
+            {/* Billing Day — grid picker replaces 80px-wide numeric
+                input which clipped on narrow screens. */}
+            <BillingDayPicker
+              label={t('add.billing_day', 'Billing day')}
+              value={sub.billingDay ?? ''}
+              onChange={(day) => onUpdate({ billingDay: day })}
+            />
             {/* Notes */}
             <View style={{ gap: 6 }}>
               <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>

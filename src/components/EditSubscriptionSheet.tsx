@@ -30,6 +30,7 @@ import { useTheme } from '../theme';
 import { NumericInput } from './NumericInput';
 import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 import { DatePickerField } from './DatePickerField';
+import { BillingDayPicker } from './BillingDayPicker';
 import { CurrencyPicker } from './CurrencyPicker';
 
 interface Props {
@@ -539,18 +540,16 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   </ScrollView>
                 </View>
 
-                {/* Billing Day */}
+                {/* Billing Day — grid picker (cleaner than the cramped
+                    numeric input that used to live next to the date
+                    field). */}
                 <View style={styles.field}>
-                  <Text style={fieldLabel}>{t('subscription.billing_day')} (1-31)</Text>
-                  <NumericInput
-                    style={inputStyle}
+                  <BillingDayPicker
+                    label={`${t('subscription.billing_day')} (1-31)`}
                     value={form.billingDay}
-                    onChangeText={onChangeBillingDay}
-                    placeholder="1"
-                    keyboardType="number-pad"
-                    placeholderTextColor={colors.textMuted}
-                    maxLength={2}
-                    accessoryId="edit-billing-day"
+                    onChange={(day) =>
+                      setForm((f) => ({ ...f, billingDay: String(day) }))
+                    }
                   />
                 </View>
 

@@ -14,6 +14,7 @@ import { useTheme } from '../../theme';
 import { usePaymentCardsStore } from '../../stores/paymentCardsStore';
 import { CATEGORIES, BILLING_PERIODS } from '../../constants';
 import { DatePickerField } from '../DatePickerField';
+import { BillingDayPicker } from '../BillingDayPicker';
 import { NumericInput } from '../NumericInput';
 import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 import { CurrencyPicker } from '../CurrencyPicker';
@@ -396,24 +397,13 @@ function ManualFormViewImpl({
             />
           </View>
 
-          {/* Billing Day */}
+          {/* Billing Day — grid picker (was a numeric text input that
+              had iOS layout glitches). */}
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
-              {t('add.billing_day', 'Billing day')}
-            </Text>
-            <NumericInput
-              style={inputStyle}
+            <BillingDayPicker
+              label={t('add.billing_day', 'Billing day')}
               value={form.billingDay}
-              onChangeText={(v) => {
-                const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                if (!v || isNaN(num)) { setF('billingDay', ''); return; }
-                setF('billingDay', String(Math.min(Math.max(num, 1), 31)));
-              }}
-              placeholder="1"
-              placeholderTextColor={colors.textMuted}
-              keyboardType="number-pad"
-              maxLength={2}
-              accessoryId="manual-billing-day"
+              onChange={(day) => setF('billingDay', String(day))}
             />
           </View>
 

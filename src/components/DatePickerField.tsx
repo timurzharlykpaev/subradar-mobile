@@ -165,30 +165,36 @@ export function DatePickerField({ label, value, onChange, placeholder }: Props) 
                 return (
                   <TouchableOpacity
                     key={i}
-                    style={[
-                      styles.dayCell,
-                      isSelected && {
-                        backgroundColor: colors.primary,
-                        // 9999 forces a full circle regardless of the
-                        // computed cell width (was 20 — only worked at
-                        // ~40px cells, looked rectangular elsewhere).
-                        borderRadius: 9999,
-                      },
-                    ]}
+                    style={styles.dayCell}
                     onPress={() => day !== null && handleSelect(day)}
                     disabled={day === null}
                     activeOpacity={0.6}
                   >
-                    {day !== null ? (
-                      <Text
-                        style={[
-                          styles.dayText,
-                          { color: isSelected ? '#fff' : colors.text },
-                        ]}
-                      >
-                        {day}
-                      </Text>
-                    ) : null}
+                    {/*
+                      Selected indicator must live in a fixed-size inner
+                      View — when we put backgroundColor on the cell
+                      itself the rounded fill drifted below the centered
+                      number on iOS (the user reported "синий фон съехал
+                      ниже цифры дня"). Wrapping isolates the indicator
+                      box from the touch target's flex layout.
+                    */}
+                    <View
+                      style={[
+                        styles.dayCircle,
+                        isSelected && { backgroundColor: colors.primary },
+                      ]}
+                    >
+                      {day !== null ? (
+                        <Text
+                          style={[
+                            styles.dayText,
+                            { color: isSelected ? '#fff' : colors.text },
+                          ]}
+                        >
+                          {day}
+                        </Text>
+                      ) : null}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -271,9 +277,15 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
-  dayText: { fontSize: 15, fontWeight: '500' },
+  dayCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayText: { fontSize: 15, fontWeight: '500', lineHeight: 18 },
   todayButton: {
     alignItems: 'center',
     paddingVertical: 12,

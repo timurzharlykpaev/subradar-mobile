@@ -9,6 +9,7 @@ import { convertAmount } from '../services/fxCache';
 import { formatMoney } from '../utils/formatMoney';
 import i18n from '../i18n';
 import { DatePickerField } from './DatePickerField';
+import { BillingDayPicker } from './BillingDayPicker';
 import { NumericInput } from './NumericInput';
 import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 
@@ -319,34 +320,24 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
 
       {showExtras && (
         <View style={styles.extrasSection}>
-          {/* Start Date + Billing Day (same row) */}
-          <View style={styles.fieldRowInline}>
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <DatePickerField
-                label={t('add.start_date', 'Start date')}
-                value={startDate}
-                onChange={setStartDate}
-              />
-            </View>
-            <View style={{ width: 80 }}>
-              <Text style={[styles.label, { color: colors.textSecondary }]}>
-                {t('add.billing_day', 'Billing day')}
-              </Text>
-              <NumericInput
-                style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, textAlign: 'center' }]}
-                value={billingDay}
-                onChangeText={(v) => {
-                  const num = parseInt(v.replace(/[^0-9]/g, ''), 10);
-                  if (!v || isNaN(num)) { setBillingDay(''); return; }
-                  setBillingDay(String(Math.min(Math.max(num, 1), 31)));
-                }}
-                placeholder="1"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="number-pad"
-                maxLength={2}
-                accessoryId="confirm-billing-day"
-              />
-            </View>
+          {/* Start Date */}
+          <View style={styles.fieldRow}>
+            <DatePickerField
+              label={t('add.start_date', 'Start date')}
+              value={startDate}
+              onChange={setStartDate}
+            />
+          </View>
+
+          {/* Billing Day — full-width picker (was a cramped 80px text
+              input next to the date picker that "съезжал вниз" per
+              user feedback). */}
+          <View style={styles.fieldRow}>
+            <BillingDayPicker
+              label={t('add.billing_day', 'Billing day')}
+              value={billingDay}
+              onChange={(day) => setBillingDay(String(day))}
+            />
           </View>
 
           {/* Payment Card */}
