@@ -257,7 +257,14 @@ export default function SettingsScreen() {
     if (access.state === 'grace_pro' || access.state === 'grace_team') {
       return { label: t('settings.plan_grace', 'GRACE'), color: '#F59E0B', sub: `${access.graceDaysLeft ?? 0}d` };
     }
-    if (access.isTeamOwner) return { label: t('settings.plan_team', 'TEAM'), color: '#06B6D4', sub: undefined };
+    // A user can buy Team yearly without ever creating a workspace —
+    // `isTeamOwner` flips true only after a workspace is created, so the
+    // previous flow showed "PRO" in Settings even though they were billed
+    // for Team and the home screen correctly showed "TEAM". Use the
+    // canonical effective.plan so the badge matches what they're paying for.
+    if (access.plan === 'organization') {
+      return { label: t('settings.plan_team', 'TEAM'), color: '#06B6D4', sub: undefined };
+    }
     if (access.hasOwnPaidPlan && access.isTeamMember) return { label: t('settings.plan_pro_team', 'PRO+TEAM'), color: '#06B6D4', sub: undefined };
     if (access.isTeamMember) return { label: t('settings.plan_team_member', 'TEAM'), color: '#06B6D4', sub: undefined };
     if (access.isPro) return { label: t('settings.plan_pro', 'PRO'), color: '#8B5CF6', sub: undefined };
