@@ -2,7 +2,6 @@ import React, { memo, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Image,
   ActivityIndicator,
@@ -185,7 +184,13 @@ function BulkConfirmViewImpl({ items, checked, saving, onToggle, onSave, onEdit,
   const anySelected = selectedCount > 0;
 
   return (
-    <View style={{ flex: 1 }}>
+    // No wrapping `flex: 1` View and no inner ScrollView — this whole
+    // view is rendered inside AddSubscriptionSheet's outer ScrollView.
+    // Nesting another vertical scroll inside it produced the "infinite
+    // scroll, content disappears" bug (parent's main-axis is unbounded
+    // so flex:1 + nested ScrollView → ambiguous layout that grows on
+    // every render). Render rows in-flow; outer scroll handles overflow.
+    <View>
       <TouchableOpacity
         onPress={onCancel}
         style={{
@@ -214,30 +219,23 @@ function BulkConfirmViewImpl({ items, checked, saving, onToggle, onSave, onEdit,
         {t('add.bulk_review_sub', { count: items.length, defaultValue: 'Found: {{count}}' })}
       </Text>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-        automaticallyAdjustKeyboardInsets
-        contentInsetAdjustmentBehavior="automatic"
-      >
-        {items.map((sub, idx) => (
-          <BulkRow
-            key={idx}
-            index={idx}
-            sub={sub}
-            checked={!!checked[idx]}
-            lang={i18n.language}
-            displayCurrency={displayCurrency}
-            onToggle={onToggle}
-            onEdit={onEdit}
-            onRemove={onRemove}
-          />
-        ))}
-      </ScrollView>
+      {items.map((sub, idx) => (
+        <BulkRow
+          key={idx}
+          index={idx}
+          sub={sub}
+          checked={!!checked[idx]}
+          lang={i18n.language}
+          displayCurrency={displayCurrency}
+          onToggle={onToggle}
+          onEdit={onEdit}
+          onRemove={onRemove}
+        />
+      ))}
 
-      {/* Save button */}
+      {/* Save button — sits at the end of the in-flow content. The
+          outer ScrollView's contentContainerStyle.paddingBottom keeps
+          it above the safe-area bottom. */}
       <TouchableOpacity
         onPress={onSave}
         disabled={saving || !anySelected}

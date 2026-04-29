@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback, PanResponder,
 } from 'react-native';
 import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
+import { BulkAddEditModal } from './bulk-add/BulkAddEditModal';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -444,120 +445,22 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     </Modal>
 
     {/* ── Edit Subscription Modal ─────────────────────────────────────────── */}
-    {editingIndex !== null && parsedSubs[editingIndex] && (() => {
-      const sub = parsedSubs[editingIndex];
-      const PERIODS: Array<BulkSub['billingPeriod']> = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'];
-      const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'DESIGN', 'EDUCATION', 'FINANCE', 'INFRASTRUCTURE', 'SECURITY', 'HEALTH', 'SPORT', 'DEVELOPER', 'NEWS', 'BUSINESS', 'OTHER'];
-      return (
-        <Modal visible transparent animationType="slide" onRequestClose={() => setEditingIndex(null)}>
-          <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 12, gap: 12 }}>
-              <TouchableOpacity onPress={() => setEditingIndex(null)}>
-                <Ionicons name="chevron-back" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, flex: 1 }}>{t('common.edit', 'Edit')}</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setParsedSubs([...parsedSubs]);
-                  setEditingIndex(null);
-                }}
-                style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: colors.primary }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFF' }}>{t('common.done', 'Done')}</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="interactive"
-              automaticallyAdjustKeyboardInsets
-              contentInsetAdjustmentBehavior="automatic"
-            >
-              {/* Name */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.service_name', 'Name')}</Text>
-                <DoneAccessoryInput
-                  style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                  value={sub.name}
-                  onChangeText={(v) => { sub.name = v; setParsedSubs([...parsedSubs]); }}
-                  placeholderTextColor={colors.textMuted}
-                />
-              </View>
-              {/* Amount + Currency */}
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <View style={{ flex: 1, gap: 6 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
-                  <DoneAccessoryInput
-                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
-                    value={String(sub.amount)}
-                    onChangeText={(v) => { sub.amount = parseFloat(v) || 0; setParsedSubs([...parsedSubs]); }}
-                    keyboardType="decimal-pad"
-                    placeholderTextColor={colors.textMuted}
-                  />
-                </View>
-                <View style={{ width: 80, gap: 6 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.currency', 'Currency')}</Text>
-                  <DoneAccessoryInput
-                    style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, textAlign: 'center' }}
-                    value={sub.currency}
-                    onChangeText={(v) => { sub.currency = v.toUpperCase(); setParsedSubs([...parsedSubs]); }}
-                    maxLength={3}
-                    autoCapitalize="characters"
-                    placeholderTextColor={colors.textMuted}
-                  />
-                </View>
-              </View>
-              {/* Billing Period */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.billing_period', 'Billing Period')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {PERIODS.map((p) => (
-                    <TouchableOpacity
-                      key={p}
-                      style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: sub.billingPeriod === p ? colors.primary : colors.border, backgroundColor: sub.billingPeriod === p ? colors.primary + '12' : colors.card }}
-                      onPress={() => { sub.billingPeriod = p; setParsedSubs([...parsedSubs]); }}
-                    >
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: sub.billingPeriod === p ? colors.primary : colors.textSecondary }}>
-                        {String(t(`add.${p.toLowerCase()}`, p.toLowerCase()))}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              {/* Category */}
-              <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.category', 'Category')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                  {CATEGORIES.map((c) => (
-                    <TouchableOpacity
-                      key={c}
-                      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: (sub.category || 'OTHER') === c ? colors.primary : colors.border, backgroundColor: (sub.category || 'OTHER') === c ? colors.primary + '12' : colors.card }}
-                      onPress={() => { sub.category = c; setParsedSubs([...parsedSubs]); }}
-                    >
-                      <Text style={{ fontSize: 11, fontWeight: '600', color: (sub.category || 'OTHER') === c ? colors.primary : colors.textSecondary }}>{String(t(`categories.${c.toLowerCase()}`, c))}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              {/* Delete */}
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#EF444440', backgroundColor: '#EF444408', marginTop: 8 }}
-                onPress={() => {
-                  const next = parsedSubs.filter((_, j) => j !== editingIndex);
-                  const nextChecked = checked.filter((_, j) => j !== editingIndex);
-                  setParsedSubs(next);
-                  setChecked(nextChecked);
-                  setEditingIndex(null);
-                }}
-              >
-                <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#EF4444' }}>{t('common.delete', 'Delete')}</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </Modal>
-      );
-    })()}
+    <BulkAddEditModal
+      visible={editingIndex !== null && !!parsedSubs[editingIndex ?? -1]}
+      initial={editingIndex !== null ? parsedSubs[editingIndex] ?? null : null}
+      onSave={(next) => {
+        if (editingIndex === null) return;
+        setParsedSubs((cur) => cur.map((s, i) => (i === editingIndex ? next : s)));
+        setEditingIndex(null);
+      }}
+      onDelete={() => {
+        if (editingIndex === null) return;
+        setParsedSubs((cur) => cur.filter((_, j) => j !== editingIndex));
+        setChecked((cur) => cur.filter((_, j) => j !== editingIndex));
+        setEditingIndex(null);
+      }}
+      onClose={() => setEditingIndex(null)}
+    />
     </>
   );
 }
