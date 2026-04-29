@@ -22,10 +22,15 @@ export default function ExpirationBanner({ payload }: Props) {
       ? Number(payload.daysLeft) || 0
       : 0;
   const endsAt = typeof payload.endsAt === 'string' ? payload.endsAt : null;
+  // Backend tags the banner with the actual plan ('pro' | 'organization').
+  // Mobile labels it accordingly so a Team owner who cancelled doesn't see
+  // "Pro ends" — that hardcoded label was reported by the user as a bug.
+  const planKey = payload.plan === 'organization' ? 'team' : 'pro';
+  const planLabel = planKey === 'team' ? 'Team' : 'Pro';
 
   useEffect(() => {
-    analytics.track('banner_shown', { priority: 'expiration', daysLeft, endsAt });
-  }, [daysLeft, endsAt]);
+    analytics.track('banner_shown', { priority: 'expiration', daysLeft, endsAt, plan: planKey });
+  }, [daysLeft, endsAt, planKey]);
 
   const endDate = endsAt ? new Date(endsAt) : null;
   const formattedDate = endDate
@@ -54,11 +59,19 @@ export default function ExpirationBanner({ payload }: Props) {
         </View>
       </View>
       <Text style={[styles.title, { color: textColor }]}>
-        {t('retention.pro_ends_in', { count: daysLeft, defaultValue: `Pro ends in ${daysLeft} days` })}
+        {t('retention.plan_ends_in', {
+          count: daysLeft,
+          plan: planLabel,
+          defaultValue: `${planLabel} ends in ${daysLeft} days`,
+        })}
       </Text>
       {formattedDate ? (
         <Text style={[styles.subtitle, { color: textColor + 'CC' }]}>
-          {t('retention.expires_on', { date: formattedDate, defaultValue: `Your Pro plan expires on ${formattedDate}` })}
+          {t('retention.expires_on_plan', {
+            date: formattedDate,
+            plan: planLabel,
+            defaultValue: `Your ${planLabel} plan expires on ${formattedDate}`,
+          })}
         </Text>
       ) : null}
       <TouchableOpacity
