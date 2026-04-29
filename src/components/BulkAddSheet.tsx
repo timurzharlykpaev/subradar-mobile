@@ -360,11 +360,14 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
         </View>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          // No vertical offset — the ScrollView below relies on
-          // `automaticallyAdjustKeyboardInsets` for native iOS auto-
-          // scroll-to-focused-input behavior. KAV here just guarantees
-          // the container itself isn't covered by the keyboard.
+          // iOS: pass-through. The ScrollView's
+          // `automaticallyAdjustKeyboardInsets` already shifts content
+          // above the keyboard; adding KAV `behavior="padding"` on top
+          // double-counted the offset and pushed content above the
+          // visible area (the user saw an empty modal). Android still
+          // needs `behavior="height"` because RN does not auto-adjust
+          // ScrollView keyboard insets there.
+          behavior={Platform.OS === 'android' ? 'height' : undefined}
           keyboardVerticalOffset={0}
           style={{ flex: 1 }}
         >

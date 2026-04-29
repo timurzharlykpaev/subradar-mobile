@@ -963,12 +963,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         </GestureDetector>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          // Offset 0: KAV no longer over-shifts content (the previous
-          // SCREEN_HEIGHT*0.1 + 40 push made focused inputs fly above
-          // the visible area). The ScrollView below uses
-          // `automaticallyAdjustKeyboardInsets` so iOS auto-scrolls the
-          // focused input to sit just above the keyboard.
+          // iOS: NO behavior — the ScrollView below has
+          // `automaticallyAdjustKeyboardInsets` and the runtime
+          // (UIScrollView) handles keyboard avoidance natively. Setting
+          // KAV `behavior="padding"` *also* adds bottom padding on top of
+          // the ScrollView's inset → content gets pushed up TWICE and
+          // disappears above the visible area (the user saw an empty
+          // modal). Without a behavior, KAV is just a passive flex wrapper
+          // and only the ScrollView shifts.
+          // Android: keep `height` — RN doesn't auto-adjust keyboard
+          // insets there, so we still need KAV to shrink the container.
+          behavior={Platform.OS === 'android' ? 'height' : undefined}
           keyboardVerticalOffset={0}
           style={{ flex: 1 }}
         >

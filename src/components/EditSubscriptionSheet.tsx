@@ -407,17 +407,16 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         </View>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          // The previous SCREEN_HEIGHT*0.1+28 offset over-shifted iOS:
-          // KAV pushed the entire ScrollView up by ~10% of the screen
-          // *plus* the keyboard pushed the focused input above the
-          // visible area, so the user couldn't see what they were
-          // typing. We now lean on the ScrollView's
-          // `automaticallyAdjustKeyboardInsets` (iOS native) to scroll
-          // the focused input just above the keyboard, while KAV with a
-          // zero offset keeps the layout stable. Net effect: keyboard
-          // appears at the bottom, the focused input is right above it,
-          // nothing flies away.
+          // iOS: pass-through (no behavior). The ScrollView below uses
+          // `automaticallyAdjustKeyboardInsets` and UIScrollView handles
+          // the keyboard inset natively. Setting KAV `behavior="padding"`
+          // on iOS doubled the shift (KAV padding + ScrollView inset),
+          // pushing the focused input above the visible area — the
+          // modal looked empty. Without a behavior on iOS, KAV is just
+          // a flex wrapper and only ScrollView shifts.
+          // Android: keep `height` — there's no native auto-inset, KAV
+          // must shrink the container itself.
+          behavior={Platform.OS === 'android' ? 'height' : undefined}
           keyboardVerticalOffset={0}
           style={{ flex: 1 }}
         >
