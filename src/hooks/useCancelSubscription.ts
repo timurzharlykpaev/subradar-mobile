@@ -48,8 +48,15 @@ async function checkRcEntitlement(): Promise<EntitlementCheck> {
   try {
     const info = await Purchases.getCustomerInfo();
     const active = Object.keys(info?.entitlements?.active ?? {});
-    if (active.some((k) => /^team$/i.test(k))) return 'team';
-    if (active.some((k) => /^pro$/i.test(k))) return 'pro';
+    // Loose substring match — RC dashboard names entitlements with the
+    // brand prefix ("SubRadar Pro", "SubRadar Team"), not the strict
+    // lowercase tokens. The previous /^pro$/i regex returned null for
+    // every legitimate Pro user, so the cancel flow's
+    // beforeEntitlement===null branch made `userCancelled` always false
+    // and the backend cancel never fired. The restorePurchases helper
+    // was already loosened earlier; this brings the cancel hook in line.
+    if (active.some((k) => /(^|\b)(team|organization|org)(\b|$)/i.test(k))) return 'team';
+    if (active.some((k) => /(^|\b)(pro|premium)(\b|$)/i.test(k))) return 'pro';
     return null;
   } catch (e: any) {
     log('getCustomerInfo failed:', e?.message);
