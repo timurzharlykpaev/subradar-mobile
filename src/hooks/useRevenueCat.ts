@@ -137,10 +137,24 @@ export async function logoutRevenueCat(): Promise<void> {
   try {
     await configureRevenueCat();
     if (!configured) return;
+    // RC throws code 22 ("LogOut was called but the current user is
+    // anonymous") if the user never logIn'd or already logged out. We
+    // pre-check and skip — same outcome, but avoids the noisy stack
+    // trace in dev / Sentry.
+    if (typeof Purchases.isAnonymous === 'function') {
+      // fail-safe: if isAnonymous itself throws (SDK in bad state),
+      // assume anon and skip — calling logOut() in that situation is
+      // exactly what threw the noisy code-22 stack trace originally.
+      const anon = await Purchases.isAnonymous().catch(() => true);
+      if (anon) return;
+    }
     await Purchases.logOut();
-  } catch (e) {
+  } catch (e: any) {
+    // Swallow the "anonymous user" case quietly — not actionable.
+    // RC SDK can return the code as either string or number depending
+    // on the bridge version, so accept both.
+    if (e?.code === 22 || e?.code === '22') return;
     if (__DEV__) console.warn('RevenueCat logOut failed:', e);
-    // tolerate — user may have been anon
   }
 }
 
