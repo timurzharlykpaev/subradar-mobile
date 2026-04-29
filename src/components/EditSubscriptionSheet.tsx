@@ -22,6 +22,7 @@ import { CategoryIcon } from './icons';
 import { subscriptionsApi } from '../api/subscriptions';
 import { cardsApi } from '../api/cards';
 import { useSubscriptionsStore } from '../stores/subscriptionsStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { Subscription } from '../types';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
 import { CardBrand } from '../types';
@@ -232,6 +233,23 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
       // the new "в X дн." label immediately.
       const res = await subscriptionsApi.update(subscription.id, payload);
       updateSubscription(subscription.id, res.data ?? payload);
+      // PATCH /subscriptions/:id returns the raw entity (no displayAmount /
+      // displayCurrency / fxRate — those are augmented only on the list
+      // endpoint via findAllWithDisplay). Without re-fetching, the home
+      // screen and detail card keep showing the OLD displayAmount/
+      // displayCurrency merged from the previous list payload — the user
+      // saw "ничего не изменилось" until pull-to-refresh. Fire-and-forget
+      // is safe here: handleClose runs immediately, the store update on
+      // resolve replaces the row in-place.
+      const displayCurrency = useSettingsStore.getState().displayCurrency;
+      subscriptionsApi
+        .getAll({ displayCurrency })
+        .then((r) => {
+          if (Array.isArray(r.data)) {
+            useSubscriptionsStore.getState().setSubscriptions(r.data);
+          }
+        })
+        .catch(() => undefined);
       handleClose();
     } catch {
       Alert.alert(t('common.error'), '');
@@ -390,15 +408,17 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          // Sheet bottom is at the screen bottom; sheet top is at
-          // SCREEN_HEIGHT * 0.1; the drag handle (paddingVertical 12 ×2 +
-          // 4px bar = 28) sits above the KAV. The offset must equal the
-          // KAV's *top* in screen coordinates so iOS pushes content up
-          // to exactly the keyboard top — not 16px below it (where the
-          // focused input ended up hidden under the keyboard before).
-          keyboardVerticalOffset={
-            Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 28 : 0
-          }
+          // The previous SCREEN_HEIGHT*0.1+28 offset over-shifted iOS:
+          // KAV pushed the entire ScrollView up by ~10% of the screen
+          // *plus* the keyboard pushed the focused input above the
+          // visible area, so the user couldn't see what they were
+          // typing. We now lean on the ScrollView's
+          // `automaticallyAdjustKeyboardInsets` (iOS native) to scroll
+          // the focused input just above the keyboard, while KAV with a
+          // zero offset keeps the layout stable. Net effect: keyboard
+          // appears at the bottom, the focused input is right above it,
+          // nothing flies away.
+          keyboardVerticalOffset={0}
           style={{ flex: 1 }}
         >
             <View style={styles.header}>

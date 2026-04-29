@@ -359,7 +359,15 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
           <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' }} />
         </View>
 
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          // No vertical offset — the ScrollView below relies on
+          // `automaticallyAdjustKeyboardInsets` for native iOS auto-
+          // scroll-to-focused-input behavior. KAV here just guarantees
+          // the container itself isn't covered by the keyboard.
+          keyboardVerticalOffset={0}
+          style={{ flex: 1 }}
+        >
           {/* Header */}
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
