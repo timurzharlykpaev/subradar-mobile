@@ -101,7 +101,7 @@ export default function PaywallScreen() {
   const access = useEffectiveAccess();
   const billingLoading = access?.isLoading ?? !access;
   const queryClient = useQueryClient();
-  const { offerings, purchasePackage, hasTrialOffer, loading: rcLoading, loadOfferings } = useRevenueCat();
+  const { offerings, purchasePackage, hasTrialOffer, trialDurationDays, loading: rcLoading, loadOfferings } = useRevenueCat();
 
   // Force-refresh billing when paywall opens to get latest plan status
   useEffect(() => {
@@ -798,6 +798,59 @@ export default function PaywallScreen() {
           );
         })()}
 
+        {/* Apple Guideline 3.1.2(b) explicit consent block — trial length,
+            concrete first-charge date, exact post-trial price, and how to
+            cancel. Must sit immediately under the CTA so the user reads it
+            before the secondary "Maybe later" action. Without this RIGHT
+            HERE (the auto-renew disclaimer below the legal links is too
+            far down) the App Review team has reasonable grounds to reject
+            the build under 3.1.2. */}
+        {(() => {
+          if (selected === 'free') return null;
+          const pkg = findPackage(selected, billingPeriod);
+          const priceStr = pkg?.product?.priceString ?? '';
+          const periodWord =
+            billingPeriod === 'yearly'
+              ? t('paywall.year', 'yr')
+              : t('paywall.month', 'mo');
+          if (canTrial && selected === 'pro') {
+            const days = trialDurationDays || 7;
+            const firstChargeDate = new Date(Date.now() + days * 86400_000);
+            const formattedDate = firstChargeDate.toLocaleDateString(
+              i18n.language || undefined,
+              { year: 'numeric', month: 'short', day: 'numeric' },
+            );
+            return (
+              <Text
+                style={[styles.trialConsent, { color: colors.textSecondary }]}
+                accessibilityLabel={t('paywall.trial_consent_a11y', 'Trial terms')}
+              >
+                {t('paywall.trial_consent', {
+                  days,
+                  price: priceStr,
+                  period: periodWord,
+                  date: formattedDate,
+                  defaultValue:
+                    'Free for {{days}} days. On {{date}} you will be charged {{price}}/{{period}} unless cancelled in Settings → Subscriptions. Auto-renews until cancelled.',
+                })}
+              </Text>
+            );
+          }
+          if (priceStr) {
+            return (
+              <Text style={[styles.trialConsent, { color: colors.textSecondary }]}>
+                {t('paywall.paid_consent', {
+                  price: priceStr,
+                  period: periodWord,
+                  defaultValue:
+                    '{{price}}/{{period}}, auto-renews until cancelled. Cancel anytime in Settings → Subscriptions.',
+                })}
+              </Text>
+            );
+          }
+          return null;
+        })()}
+
         {/* Secondary action — small and unemphasised */}
         <TouchableOpacity
           style={styles.laterBtn}
@@ -924,6 +977,17 @@ const styles = StyleSheet.create({
   laterBtn: { alignItems: 'center', paddingVertical: 14 },
   laterText: { fontSize: 13, fontWeight: '600', opacity: 0.5 },
   disclaimer: { textAlign: 'center', fontSize: 11, paddingHorizontal: 32, lineHeight: 16 },
+  // Apple 3.1.2(b) consent block — sits directly under the CTA, slightly
+  // larger than the legal disclaimer at the bottom so it's actually read.
+  trialConsent: {
+    textAlign: 'center',
+    fontSize: 12,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 4,
+    lineHeight: 17,
+    fontWeight: '500',
+  },
   legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 8, paddingBottom: 4 },
   legalLink: { fontSize: 12, textDecorationLine: 'underline' },
 });
