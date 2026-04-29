@@ -60,6 +60,7 @@ export type AnalyticsEvent =
   | 'purchase_completed'
   | 'purchase_failed'
   | 'purchase_cancelled'
+  | 'paywall_replayed_cancelled_sub'
   | 'restore_tapped'
   | 'restore_completed'
 

@@ -427,6 +427,12 @@ export default function PaywallScreen() {
       let actualPlanKey: 'pro' | 'org' = selected as 'pro' | 'org';
       let actualPeriod: 'monthly' | 'yearly' = billingPeriod;
       let actualPrice: number = pkg.product.price;
+      // Track whether the active product is a CANCELLED-but-still-running
+      // subscription that Apple Sandbox replayed instead of producing a
+      // fresh transaction. We surface a helpful explainer afterwards
+      // because hitting Buy in this state does NOT un-cancel the sub —
+      // only Settings → Subscriptions → Resubscribe does.
+      let isCancelledReplay = false;
       try {
         if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') {
           throw new Error('Purchases SDK not available');
@@ -464,6 +470,13 @@ export default function PaywallScreen() {
             actualPrice = Number(subsMap[picked].price);
           }
         }
+        // Detect the cancelled-replay case for the picked product. Apple
+        // Sandbox keeps `unsubscribe_detected_at` on the receipt forever
+        // once the user cancelled, so willRenew=false survives every
+        // subsequent "Buy" tap. RC mirrors that flag.
+        if (picked && subsMap[picked]?.willRenew === false) {
+          isCancelledReplay = true;
+        }
       } catch (e: any) {
         if (__DEV__) console.warn('[Paywall] getCustomerInfo lookup failed:', e?.message);
       }
@@ -485,6 +498,35 @@ export default function PaywallScreen() {
       } else {
         // Keep pending_receipt in storage so DataLoader can retry on next cold start.
         setShowSyncRetry(true);
+      }
+
+      // Honest UX: if Apple Sandbox replayed a CANCELLED transaction
+      // (the one bug-class we keep getting reports about), tell the
+      // user the receipt is real but the sub is still scheduled to end
+      // — and point them to Settings → Subscriptions → Resubscribe.
+      if (isCancelledReplay) {
+        analytics.track('paywall_replayed_cancelled_sub', {
+          product_id: actualProductId,
+          plan: actualPlanKey,
+        });
+        setTimeout(() => {
+          Alert.alert(
+            t('paywall.replay_cancel_title', 'Subscription still cancelling'),
+            t(
+              'paywall.replay_cancel_msg',
+              'Apple replayed your previous subscription instead of starting a new one — and it\'s still scheduled to end at the period close. To keep it active, open Settings → Apple ID → Subscriptions → SubRadar → Resubscribe.',
+            ),
+            [
+              { text: t('common.cancel', 'Later'), style: 'cancel' },
+              {
+                text: t('paywall.open_apple_subs', 'Open Apple Subscriptions'),
+                onPress: () => {
+                  Linking.openURL('https://apps.apple.com/account/subscriptions').catch(() => {});
+                },
+              },
+            ],
+          );
+        }, 800);
       }
     } catch (e: any) {
       console.error('[Paywall] Purchase error:', e?.message);
