@@ -572,7 +572,8 @@
     "one_time": "único",
     "quarterly": "trimestral",
     "weekly": "semanal",
-    "yearly": "anual"
+    "yearly": "anual",
+    "charged_in_currency": "Cobrado en {{amount}}"
   },
   "cards": {
     "title": "Tarjetas",

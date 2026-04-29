@@ -572,7 +572,8 @@
     "one_time": "一次性",
     "quarterly": "每季度",
     "weekly": "每周",
-    "yearly": "每年"
+    "yearly": "每年",
+    "charged_in_currency": "扣款金额：{{amount}}"
   },
   "cards": {
     "title": "卡片",

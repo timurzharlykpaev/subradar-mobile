@@ -580,7 +580,8 @@
     "one_time": "бір реттік",
     "quarterly": "тоқсан сайын",
     "weekly": "апта сайын",
-    "yearly": "жыл сайын"
+    "yearly": "жыл сайын",
+    "charged_in_currency": "Есептен шығарылады: {{amount}}"
   },
   "cards": {
     "title": "Карталар",

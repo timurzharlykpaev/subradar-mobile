@@ -572,7 +572,8 @@
     "one_time": "一回限り",
     "quarterly": "四半期ごと",
     "weekly": "毎週",
-    "yearly": "毎年"
+    "yearly": "毎年",
+    "charged_in_currency": "請求額：{{amount}}"
   },
   "cards": {
     "title": "カード",

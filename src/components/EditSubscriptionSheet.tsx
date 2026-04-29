@@ -29,6 +29,7 @@ import { useTheme } from '../theme';
 import { NumericInput } from './NumericInput';
 import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 import { DatePickerField } from './DatePickerField';
+import { CurrencyPicker } from './CurrencyPicker';
 
 interface Props {
   visible: boolean;
@@ -352,6 +353,14 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     (c: string) => setForm((f) => ({ ...f, color: f.color === c ? '' : c })),
     [],
   );
+  const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
+  const onPickCurrency = useCallback(
+    (c: string) => {
+      setForm((f) => ({ ...f, currency: c }));
+      setCurrencyPickerVisible(false);
+    },
+    [],
+  );
 
   const toggleReminderDay = useCallback((day: number) => {
     setForm((f) => {
@@ -420,18 +429,45 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   />
                 </View>
 
-                {/* Amount */}
+                {/* Amount + Currency — kept as a pair on one row so the
+                    user can never enter an amount in a currency they
+                    can't see. The currency button opens a full picker
+                    (search + 40+ codes) instead of a tiny dropdown. */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.amount')}</Text>
-                  <NumericInput
-                    style={inputStyle}
-                    value={form.amount}
-                    onChangeText={onChangeAmount}
-                    placeholder="9.99"
-                    keyboardType="decimal-pad"
-                    placeholderTextColor={colors.textMuted}
-                    accessoryId="edit-amount"
-                  />
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <NumericInput
+                        style={inputStyle}
+                        value={form.amount}
+                        onChangeText={onChangeAmount}
+                        placeholder="9.99"
+                        keyboardType="decimal-pad"
+                        placeholderTextColor={colors.textMuted}
+                        accessoryId="edit-amount"
+                      />
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => setCurrencyPickerVisible(true)}
+                      activeOpacity={0.7}
+                      style={[
+                        inputStyle,
+                        {
+                          minWidth: 96,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('add.currency', 'Currency')}
+                    >
+                      <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+                        {form.currency || 'USD'}
+                      </Text>
+                      <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 {/* Billing Period */}
@@ -849,6 +885,14 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
             </ScrollView>
         </KeyboardAvoidingView>
       </Animated.View>
+
+      <CurrencyPicker
+        visible={currencyPickerVisible}
+        selected={form.currency || 'USD'}
+        onSelect={onPickCurrency}
+        onClose={() => setCurrencyPickerVisible(false)}
+        title={t('add.currency', 'Currency')}
+      />
     </Modal>
   );
 }

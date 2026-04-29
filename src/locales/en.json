@@ -585,7 +585,8 @@
     "one_time": "one-time",
     "quarterly": "quarterly",
     "weekly": "weekly",
-    "yearly": "yearly"
+    "yearly": "yearly",
+    "charged_in_currency": "Charged in {{amount}}"
   },
   "cards": {
     "title": "Cards",

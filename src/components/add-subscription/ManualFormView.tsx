@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback } from 'react';
+import React, { memo, useMemo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   View,
@@ -16,6 +16,7 @@ import { CATEGORIES, BILLING_PERIODS } from '../../constants';
 import { DatePickerField } from '../DatePickerField';
 import { NumericInput } from '../NumericInput';
 import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
+import { CurrencyPicker } from '../CurrencyPicker';
 import { GiftIcon } from '../icons';
 import type { AddSubscriptionForm, AddSubscriptionFormCtx } from './useAddSubscriptionForm';
 
@@ -89,6 +90,14 @@ function ManualFormViewImpl({
   // in any other field.
   const handleName = useCallback((v: string) => setF('name', v), [setF]);
   const handleAmount = useCallback((v: string) => setF('amount', v), [setF]);
+  const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
+  const onPickCurrency = useCallback(
+    (c: string) => {
+      setF('currency', c);
+      setCurrencyPickerVisible(false);
+    },
+    [setF],
+  );
   const handleCurrentPlan = useCallback((v: string) => setF('currentPlan', v), [setF]);
   const handleServiceUrl = useCallback((v: string) => setF('serviceUrl', v), [setF]);
   const handleCancelUrl = useCallback((v: string) => setF('cancelUrl', v), [setF]);
@@ -127,16 +136,47 @@ function ManualFormViewImpl({
         <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
           {t('add.amount')} *
         </Text>
-        <NumericInput
-          testID="amount-input"
-          style={inputStyle}
-          value={form.amount}
-          onChangeText={handleAmount}
-          placeholder="9.99"
-          keyboardType="decimal-pad"
-          placeholderTextColor={colors.textMuted}
-          accessoryId="manual-amount"
-        />
+        {/* Amount + Currency on one row — without an explicit currency
+            picker the user previously could only type a number and the
+            sub silently inherited their displayCurrency. After
+            switching display to a different currency they ended up with
+            mixed-currency totals (a sub stored in USD shown as KZT and
+            vice-versa). Showing the currency right next to the amount
+            makes the unit unambiguous. */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <NumericInput
+              testID="amount-input"
+              style={inputStyle}
+              value={form.amount}
+              onChangeText={handleAmount}
+              placeholder="9.99"
+              keyboardType="decimal-pad"
+              placeholderTextColor={colors.textMuted}
+              accessoryId="manual-amount"
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() => setCurrencyPickerVisible(true)}
+            activeOpacity={0.7}
+            style={[
+              inputStyle,
+              {
+                minWidth: 96,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={t('add.currency', 'Currency')}
+          >
+            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+              {form.currency || 'USD'}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={{ marginBottom: 16 }}>
@@ -573,6 +613,14 @@ function ManualFormViewImpl({
           <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800' }}>{t('add.add_subscription')}</Text>
         )}
       </TouchableOpacity>
+
+      <CurrencyPicker
+        visible={currencyPickerVisible}
+        selected={form.currency || 'USD'}
+        onSelect={onPickCurrency}
+        onClose={() => setCurrencyPickerVisible(false)}
+        title={t('add.currency', 'Currency')}
+      />
     </View>
   );
 }

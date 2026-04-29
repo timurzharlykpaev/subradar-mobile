@@ -173,13 +173,19 @@ export default function SubscriptionDetailScreen() {
           </View>
 
           {(() => {
-            const origCurrency = subscription.originalCurrency || subscription.currency;
+            // The "currency" of a sub is what the user is actually billed
+            // in. `displayCurrency` is the user's chosen UI preference (set
+            // in Settings). When they differ we show two numbers — the
+            // primary one in the user's preference + a labelled secondary
+            // line so it's clear which is which. Without the explicit
+            // labels it looked like the app was randomly mixing currencies.
+            const subCurrency = subscription.currency;
             const hasConversion =
               !!subscription.displayCurrency &&
               !!subscription.displayAmount &&
-              subscription.displayCurrency !== origCurrency;
+              subscription.displayCurrency !== subCurrency;
             const primaryAmount = subscription.displayAmount ?? String(subscription.amount);
-            const primaryCurrency = subscription.displayCurrency ?? subscription.currency;
+            const primaryCurrency = subscription.displayCurrency ?? subCurrency;
             const lang = i18n.language || 'en';
             return (
               <>
@@ -189,7 +195,10 @@ export default function SubscriptionDetailScreen() {
                 </Text>
                 {hasConversion && (
                   <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>
-                    {formatMoney(subscription.amount, origCurrency, lang)}
+                    {t('subscription.charged_in_currency', {
+                      defaultValue: 'Charged in {{amount}}',
+                      amount: formatMoney(subscription.amount, subCurrency, lang),
+                    })}
                   </Text>
                 )}
               </>

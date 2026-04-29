@@ -572,7 +572,8 @@
     "one_time": "einmalig",
     "quarterly": "quartalsweise",
     "weekly": "wöchentlich",
-    "yearly": "jährlich"
+    "yearly": "jährlich",
+    "charged_in_currency": "Abgerechnet in {{amount}}"
   },
   "cards": {
     "title": "Karten",

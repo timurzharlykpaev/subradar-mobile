@@ -586,7 +586,8 @@
     "one_time": "разовый",
     "quarterly": "ежеквартально",
     "weekly": "еженедельно",
-    "yearly": "ежегодно"
+    "yearly": "ежегодно",
+    "charged_in_currency": "Списание в {{amount}}"
   },
   "cards": {
     "title": "Карты",

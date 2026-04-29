@@ -572,7 +572,8 @@
     "one_time": "unique",
     "quarterly": "trimestriel",
     "weekly": "hebdomadaire",
-    "yearly": "annuel"
+    "yearly": "annuel",
+    "charged_in_currency": "Facturé en {{amount}}"
   },
   "cards": {
     "title": "Cartes",

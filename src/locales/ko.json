@@ -572,7 +572,8 @@
     "one_time": "일회성",
     "quarterly": "분기별",
     "weekly": "매주",
-    "yearly": "매년"
+    "yearly": "매년",
+    "charged_in_currency": "청구 금액: {{amount}}"
   },
   "cards": {
     "title": "카드",
