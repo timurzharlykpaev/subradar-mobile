@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "Сатып алуларды қалпына келтіру",
-      "success": "Сатып алулар қалпына келтірілді",
-      "notFound": "Белсенді жазылымдар табылмады",
+      "successTitle": "Дайын",
+      "successMessage": "Сатып алулар қалпына келтірілді.",
+      "notFoundTitle": "Табылмады",
+      "notFoundMessage": "Осы Apple ID / Google тіркелгісінде белсенді жазылым табылмады.",
       "errorTitle": "Қате",
+      "errorMessage": "Сатып алуларды қалпына келтіру мүмкін болмады.",
       "unavailableTitle": "Қол жетімсіз",
-      "unavailableMessage": "Бұл құрастыруда сатып алулар реттелмеген"
+      "unavailableMessage": "Бұл құрастыруда сатып алулар реттелмеген. App Store / Google Play нұсқасын қолданып көріңіз."
     },
     "banners": {
       "billingIssue": {

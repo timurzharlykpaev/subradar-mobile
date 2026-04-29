@@ -945,11 +945,14 @@
     },
     "restore": {
       "button": "Восстановить покупки",
-      "success": "Покупки восстановлены",
-      "notFound": "Активных подписок не найдено",
+      "successTitle": "Готово",
+      "successMessage": "Покупки восстановлены.",
+      "notFoundTitle": "Не найдено",
+      "notFoundMessage": "Активных подписок на этом Apple ID / Google-аккаунте не найдено.",
       "errorTitle": "Ошибка",
+      "errorMessage": "Не удалось восстановить покупки.",
       "unavailableTitle": "Недоступно",
-      "unavailableMessage": "Покупки не настроены в этой сборке"
+      "unavailableMessage": "Покупки не настроены на этой сборке. Попробуйте в App Store / Google Play версии приложения."
     },
     "banners": {
       "billingIssue": {

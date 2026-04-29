@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "購入を復元",
-      "success": "購入を復元しました",
-      "notFound": "有効なサブスクリプションが見つかりません",
+      "successTitle": "完了",
+      "successMessage": "購入を復元しました。",
+      "notFoundTitle": "見つかりません",
+      "notFoundMessage": "この Apple ID / Google アカウントに有効なサブスクリプションは見つかりませんでした。",
       "errorTitle": "エラー",
+      "errorMessage": "購入を復元できませんでした。",
       "unavailableTitle": "利用できません",
-      "unavailableMessage": "このビルドでは購入が設定されていません"
+      "unavailableMessage": "このビルドでは購入が設定されていません。App Store / Google Play 版のアプリをお試しください。"
     },
     "banners": {
       "billingIssue": {

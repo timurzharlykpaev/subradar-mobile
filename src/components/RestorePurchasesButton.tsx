@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { billingApi } from '../api/billing';
@@ -30,17 +31,23 @@ interface Props {
  */
 export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const { restorePurchases } = useRevenueCat();
   const queryClient = useQueryClient();
+
+  const buttonLabel = t('billing.restore.button', 'Restore purchases');
 
   const handlePress = async () => {
     if (loading) return;
 
     if (!isRevenueCatAvailable()) {
       Alert.alert(
-        'Недоступно',
-        'Покупки не настроены на этой сборке. Попробуйте в App Store / Google Play версии приложения.',
+        t('billing.restore.unavailableTitle', 'Unavailable'),
+        t(
+          'billing.restore.unavailableMessage',
+          'Purchases are not configured in this build. Try the App Store / Google Play version of the app.',
+        ),
       );
       return;
     }
@@ -91,14 +98,22 @@ export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
       analytics.restoreCompleted(origin, success, productId);
 
       Alert.alert(
-        success ? 'Готово' : 'Не найдено',
         success
-          ? 'Покупки восстановлены.'
-          : 'Активных подписок на этом Apple ID / Google-аккаунте не найдено.',
+          ? t('billing.restore.successTitle', 'Done')
+          : t('billing.restore.notFoundTitle', 'Not found'),
+        success
+          ? t('billing.restore.successMessage', 'Purchases restored.')
+          : t(
+              'billing.restore.notFoundMessage',
+              'No active subscriptions found on this Apple ID / Google account.',
+            ),
       );
     } catch (error: any) {
       analytics.restoreFailed(origin, error?.message);
-      Alert.alert('Ошибка', error?.message ?? 'Не удалось восстановить покупки.');
+      Alert.alert(
+        t('billing.restore.errorTitle', 'Error'),
+        error?.message ?? t('billing.restore.errorMessage', 'Failed to restore purchases.'),
+      );
     } finally {
       setLoading(false);
     }
@@ -110,14 +125,14 @@ export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
         onPress={handlePress}
         disabled={loading}
         accessibilityRole="button"
-        accessibilityLabel="Восстановить покупки"
+        accessibilityLabel={buttonLabel}
         style={styles.linkContainer}
       >
         {loading ? (
           <ActivityIndicator color={colors.textMuted} size="small" />
         ) : (
           <Text style={[styles.linkText, { color: colors.textMuted }]}>
-            Восстановить покупки
+            {buttonLabel}
           </Text>
         )}
       </TouchableOpacity>
@@ -129,14 +144,14 @@ export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
       onPress={handlePress}
       disabled={loading}
       accessibilityRole="button"
-      accessibilityLabel="Восстановить покупки"
+      accessibilityLabel={buttonLabel}
       style={[styles.buttonContainer, { borderColor: colors.border }]}
     >
       {loading ? (
         <ActivityIndicator color={colors.primary} size="small" />
       ) : (
         <Text style={[styles.buttonText, { color: colors.primary }]}>
-          Восстановить покупки
+          {buttonLabel}
         </Text>
       )}
     </TouchableOpacity>

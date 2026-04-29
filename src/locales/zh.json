@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "恢复购买",
-      "success": "购买已恢复",
-      "notFound": "未找到有效订阅",
+      "successTitle": "完成",
+      "successMessage": "购买已恢复。",
+      "notFoundTitle": "未找到",
+      "notFoundMessage": "在此 Apple ID / Google 帐户上未找到有效订阅。",
       "errorTitle": "错误",
+      "errorMessage": "无法恢复购买。",
       "unavailableTitle": "不可用",
-      "unavailableMessage": "此版本未配置购买功能"
+      "unavailableMessage": "此版本未配置购买功能。请尝试使用 App Store / Google Play 版本的应用。"
     },
     "banners": {
       "billingIssue": {

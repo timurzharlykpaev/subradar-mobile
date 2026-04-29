@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "Restaurer les achats",
-      "success": "Achats restaurés",
-      "notFound": "Aucun abonnement actif trouvé",
+      "successTitle": "Terminé",
+      "successMessage": "Achats restaurés.",
+      "notFoundTitle": "Introuvable",
+      "notFoundMessage": "Aucun abonnement actif trouvé sur cet identifiant Apple / compte Google.",
       "errorTitle": "Erreur",
+      "errorMessage": "Impossible de restaurer les achats.",
       "unavailableTitle": "Indisponible",
-      "unavailableMessage": "Les achats ne sont pas configurés dans cette version"
+      "unavailableMessage": "Les achats ne sont pas configurés dans cette version. Essayez la version App Store / Google Play de l'app."
     },
     "banners": {
       "billingIssue": {

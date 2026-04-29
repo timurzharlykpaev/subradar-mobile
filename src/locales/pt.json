@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "Restaurar compras",
-      "success": "Compras restauradas",
-      "notFound": "Nenhuma assinatura ativa encontrada",
+      "successTitle": "Concluído",
+      "successMessage": "Compras restauradas.",
+      "notFoundTitle": "Não encontrado",
+      "notFoundMessage": "Nenhuma assinatura ativa encontrada neste Apple ID / conta do Google.",
       "errorTitle": "Erro",
+      "errorMessage": "Não foi possível restaurar as compras.",
       "unavailableTitle": "Indisponível",
-      "unavailableMessage": "Compras não estão configuradas nesta versão"
+      "unavailableMessage": "As compras não estão configuradas nesta versão. Experimente a versão da App Store / Google Play do app."
     },
     "banners": {
       "billingIssue": {

@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "Käufe wiederherstellen",
-      "success": "Käufe wiederhergestellt",
-      "notFound": "Keine aktiven Abonnements gefunden",
+      "successTitle": "Fertig",
+      "successMessage": "Käufe wiederhergestellt.",
+      "notFoundTitle": "Nicht gefunden",
+      "notFoundMessage": "Keine aktiven Abos für diese Apple-ID / dieses Google-Konto gefunden.",
       "errorTitle": "Fehler",
+      "errorMessage": "Käufe konnten nicht wiederhergestellt werden.",
       "unavailableTitle": "Nicht verfügbar",
-      "unavailableMessage": "Käufe sind in dieser Version nicht konfiguriert"
+      "unavailableMessage": "Käufe sind in dieser Version nicht eingerichtet. Versuche es mit der App Store / Google Play Version der App."
     },
     "banners": {
       "billingIssue": {

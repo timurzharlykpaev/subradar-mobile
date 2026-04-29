@@ -949,11 +949,14 @@
     },
     "restore": {
       "button": "Restaurar compras",
-      "success": "Compras restauradas",
-      "notFound": "No se encontraron suscripciones activas",
+      "successTitle": "Listo",
+      "successMessage": "Compras restauradas.",
+      "notFoundTitle": "No encontradas",
+      "notFoundMessage": "No se encontraron suscripciones activas en este Apple ID / cuenta de Google.",
       "errorTitle": "Error",
+      "errorMessage": "No se pudieron restaurar las compras.",
       "unavailableTitle": "No disponible",
-      "unavailableMessage": "Las compras no están configuradas en esta versión"
+      "unavailableMessage": "Las compras no están configuradas en esta versión. Prueba la versión de App Store / Google Play de la app."
     },
     "banners": {
       "billingIssue": {

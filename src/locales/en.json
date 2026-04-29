@@ -936,11 +936,14 @@
     },
     "restore": {
       "button": "Restore purchases",
-      "success": "Purchases restored",
-      "notFound": "No active subscriptions found",
+      "successTitle": "Done",
+      "successMessage": "Purchases restored.",
+      "notFoundTitle": "Not found",
+      "notFoundMessage": "No active subscriptions found on this Apple ID / Google account.",
       "errorTitle": "Error",
+      "errorMessage": "Failed to restore purchases.",
       "unavailableTitle": "Unavailable",
-      "unavailableMessage": "Purchases not configured in this build"
+      "unavailableMessage": "Purchases are not configured in this build. Try the App Store / Google Play version of the app."
     },
     "banners": {
       "billingIssue": {
