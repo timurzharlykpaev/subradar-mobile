@@ -50,13 +50,32 @@ export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
     try {
       const { success, customerInfo } = await restorePurchases();
       // RC returns the full CustomerInfo — derive the product identifier from
-      // the currently-active entitlement (team preferred over pro if both
-      // somehow appear). This is what the backend needs to map Apple's
-      // receipt → our Plan/source.
+      // the currently-active entitlement.
+      //
+      // Drift hazard: when a user cancels Team and immediately buys Pro (or
+      // vice-versa), the cancelled entitlement is STILL active until the
+      // period ends, so plain "team ?? pro" picks the stale productId, calls
+      // /billing/sync-revenuecat with it, and the backend re-stamps the user
+      // back to Team with `cancelAtPeriodEnd=false`. To prevent that we
+      // prefer entitlements whose underlying subscription `willRenew=true`
+      // (i.e. NOT scheduled for cancellation) and fall back to whatever's
+      // active only if neither will renew.
       const activeEntitlement = customerInfo?.entitlements?.active;
+      const teamEnt = activeEntitlement?.team;
+      const proEnt = activeEntitlement?.pro;
+      const subsMap: Record<string, any> =
+        (customerInfo as any)?.subscriptionsByProductIdentifier ?? {};
+      const willRenew = (productIdentifier?: string) =>
+        productIdentifier
+          ? subsMap[productIdentifier]?.willRenew !== false
+          : false;
+      const teamWillRenew = willRenew(teamEnt?.productIdentifier);
+      const proWillRenew = willRenew(proEnt?.productIdentifier);
       const productId: string | undefined =
-        activeEntitlement?.team?.productIdentifier ??
-        activeEntitlement?.pro?.productIdentifier;
+        (teamWillRenew && teamEnt?.productIdentifier) ||
+        (proWillRenew && proEnt?.productIdentifier) ||
+        teamEnt?.productIdentifier ||
+        proEnt?.productIdentifier;
 
       if (success && productId) {
         try {
