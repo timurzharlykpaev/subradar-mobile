@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useRef, useImperativeHandle, useId } from 'react';
 import {
   TextInput,
   InputAccessoryView,
@@ -13,10 +13,16 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme';
 
-const DEFAULT_ACCESSORY_ID = 'done-accessory';
-
 export interface DoneAccessoryInputProps extends TextInputProps {
-  /** Unique accessory ID. Defaults to a shared ID so multiple inputs reuse one toolbar. */
+  /**
+   * Unique accessory ID. Defaults to a per-instance unique value generated
+   * via `useId()`. The previous shared-ID default rendered N copies of
+   * `<InputAccessoryView nativeID="done-accessory">` on a form with N
+   * inputs — iOS' input system collapsed them into a single session and
+   * invalidated the cursor session on every focus change ("RTI: perform
+   * input operation requires a valid sessionID"). Each input must own
+   * its own accessory view.
+   */
   accessoryId?: string;
   /** Show the iOS Done toolbar. Defaults to true. */
   showDoneAccessory?: boolean;
@@ -38,36 +44,58 @@ export interface DoneAccessoryInputProps extends TextInputProps {
  * stable callbacks + memoized styles + ThemeContext.value memo.
  */
 export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>(function DoneAccessoryInput(
-  { accessoryId, showDoneAccessory = true, ...props },
+  { accessoryId, showDoneAccessory = true, keyboardAppearance, ...props },
   ref,
 ) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   const innerRef = useRef<TextInput>(null);
   useImperativeHandle(ref, () => innerRef.current!, []);
 
-  const id = accessoryId ?? DEFAULT_ACCESSORY_ID;
+  // useId() gives every instance a stable, render-stable, unique ID — fixes
+  // the iOS sessionID invalidation that happened when N inputs shared one
+  // nativeID. Caller can still pass an explicit `accessoryId` to opt out.
+  const autoId = useId();
+  const id = accessoryId ?? autoId;
   const shouldAttach = Platform.OS === 'ios' && showDoneAccessory;
+
+  // Default to a dark keyboard so the system shell matches the app's
+  // dark surface. Caller can override per-input.
+  const effectiveAppearance =
+    keyboardAppearance ?? (isDark ? 'dark' : 'light');
 
   return (
     <>
       <TextInput
         ref={innerRef}
         inputAccessoryViewID={shouldAttach ? id : undefined}
+        keyboardAppearance={effectiveAppearance}
         {...props}
       />
       {shouldAttach && (
         <InputAccessoryView nativeID={id}>
-          <View style={[styles.toolbar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+          <View
+            style={[
+              styles.toolbar,
+              {
+                // Slightly stronger surface than `colors.background` so the
+                // toolbar stands clearly above the keyboard instead of
+                // blending in. `surface2` falls back to `surface` for themes
+                // that don't define it.
+                backgroundColor: (colors as any).surface2 ?? colors.surface,
+                borderTopColor: colors.border,
+              },
+            ]}
+          >
             <View style={{ flex: 1 }} />
             <TouchableOpacity
-              style={styles.doneButton}
+              style={[styles.doneButton, { backgroundColor: colors.primary }]}
               onPress={() => Keyboard.dismiss()}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               accessibilityRole="button"
               accessibilityLabel={t('common.done', 'Done')}
             >
-              <Text style={[styles.doneText, { color: colors.primary }]}>
+              <Text style={[styles.doneText, { color: '#FFFFFF' }]}>
                 {t('common.done', 'Done')}
               </Text>
             </TouchableOpacity>
@@ -82,16 +110,19 @@ const styles = StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   doneButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 8,
+    minWidth: 64,
+    alignItems: 'center',
   },
   doneText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

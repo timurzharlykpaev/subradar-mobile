@@ -287,11 +287,15 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          // Sheet height is 90% of screen; the drag handle (~28px) +
-          // header (~56px) live above the scroll content. Without this
-          // offset iOS lifts the wrong slice and inputs sit under the
-          // keyboard / the header jumps on focus.
-          keyboardVerticalOffset={Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 12 : 0}
+          // Sheet bottom is at the screen bottom; sheet top is at
+          // SCREEN_HEIGHT * 0.1; the drag handle (paddingVertical 12 ×2 +
+          // 4px bar = 28) sits above the KAV. The offset must equal the
+          // KAV's *top* in screen coordinates so iOS pushes content up
+          // to exactly the keyboard top — not 16px below it (where the
+          // focused input ended up hidden under the keyboard before).
+          keyboardVerticalOffset={
+            Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 28 : 0
+          }
           style={{ flex: 1 }}
         >
             <View style={styles.header}>

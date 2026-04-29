@@ -944,7 +944,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 10 : 0}
+          // Sheet top in screen coords = SCREEN_HEIGHT * 0.1; drag handle
+          // (paddingVertical 18 ×2 + 4px bar = 40) sits above the KAV.
+          // Offset = KAV.top in screen coordinates so iOS lifts content
+          // exactly to the keyboard top (was +10, which left the focused
+          // input ~30px below the keyboard top — invisible).
+          keyboardVerticalOffset={
+            Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.1 + 40 : 0
+          }
           style={{ flex: 1 }}
         >
           <View style={styles.header}>
