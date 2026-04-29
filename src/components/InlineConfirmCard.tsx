@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -44,7 +44,10 @@ const CONFIDENCE_ICON: Record<Confidence, { name: string; color: string }> = {
   low: { name: 'help-circle', color: '#ef4444' },
 };
 
-const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'];
+// Match backend BillingPeriod enum (6 values) so AI-detected LIFETIME /
+// ONE_TIME subs render with the right chip pre-selected and the user can
+// switch to those periods manually.
+const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY', 'LIFETIME', 'ONE_TIME'];
 const CATEGORIES = ['STREAMING', 'AI_SERVICES', 'MUSIC', 'PRODUCTIVITY', 'GAMING', 'INFRASTRUCTURE', 'HEALTH', 'NEWS', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'DEVELOPER', 'SPORT', 'BUSINESS', 'OTHER'];
 const REMINDER_OPTIONS = [
   { label: 'Off', value: null },
@@ -84,6 +87,18 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const [color, setColor] = useState<string | null>(null);
   const [isTrial, setIsTrial] = useState(false);
   const [trialEndDate, setTrialEndDate] = useState('');
+  // Editable URLs — previously read-only from `data.*Url`, so users could
+  // not patch a wrong AI guess before saving. Default to the AI value.
+  const [serviceUrl, setServiceUrl] = useState(data.serviceUrl ?? '');
+  const [cancelUrl, setCancelUrl] = useState(data.cancelUrl ?? '');
+
+  // Re-seed URL state when the parent swaps `data` in-place (e.g. user
+  // picks a different catalog match upstream). Without this the form
+  // would silently keep the previous service's URLs.
+  useEffect(() => {
+    setServiceUrl(data.serviceUrl ?? '');
+    setCancelUrl(data.cancelUrl ?? '');
+  }, [data.serviceUrl, data.cancelUrl]);
 
   const iconUrl = data.iconUrl || `https://icon.horse/icon/${name.toLowerCase().replace(/\s+/g, '')}.com`;
 
@@ -118,8 +133,8 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
       billingPeriod: period,
       category,
       iconUrl,
-      serviceUrl: data.serviceUrl,
-      cancelUrl: data.cancelUrl,
+      serviceUrl: serviceUrl.trim() || undefined,
+      cancelUrl: cancelUrl.trim() || undefined,
       currentPlan: selectedPlan,
       startDate: startDate || new Date().toISOString().split('T')[0],
       nextPaymentDate: nextPaymentDate || undefined,
@@ -457,6 +472,40 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               onChangeText={setTags}
               placeholder={t('add.tags_placeholder', 'work, personal, shared')}
               placeholderTextColor={colors.textSecondary}
+            />
+          </View>
+
+          {/* Service URL — editable so the user can patch what AI guessed */}
+          <View style={styles.fieldRow}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t('add.service_url', 'Service URL')}
+            </Text>
+            <DoneAccessoryInput
+              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              value={serviceUrl}
+              onChangeText={setServiceUrl}
+              placeholder="https://service.com"
+              placeholderTextColor={colors.textSecondary}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+            />
+          </View>
+
+          {/* Cancel URL — same. Powers the "cancel from app" button later. */}
+          <View style={styles.fieldRow}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {t('add.cancel_url', 'Cancel URL')}
+            </Text>
+            <DoneAccessoryInput
+              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              value={cancelUrl}
+              onChangeText={setCancelUrl}
+              placeholder="https://service.com/cancel"
+              placeholderTextColor={colors.textSecondary}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
             />
           </View>
 

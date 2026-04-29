@@ -24,7 +24,7 @@ const INPUT_ACCESSORY_ID = 'join-team-keyboard';
 
 export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const queryClient = useQueryClient();
   const access = useEffectiveAccess();
   const [code, setCode] = useState('');
@@ -98,6 +98,7 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
             returnKeyType="join"
             onSubmitEditing={handleJoin}
             inputAccessoryViewID={Platform.OS === 'ios' ? INPUT_ACCESSORY_ID : undefined}
+            keyboardAppearance={isDark ? 'dark' : 'light'}
           />
 
           <TouchableOpacity

@@ -767,6 +767,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           notes: sub.notes || undefined,
           reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
           reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,
+          // Newly persisted via BulkEditModal — without these the user's
+          // bulk-edit changes silently dropped on save.
+          tags: sub.tags && sub.tags.length > 0 ? sub.tags : undefined,
+          color: sub.color || undefined,
+          currentPlan: sub.currentPlan || undefined,
           addedVia: source,
         });
         addSubscription(res.data);
@@ -834,12 +839,27 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       amount: sub.amount || 0,
       currency: sub.currency || currency || 'USD',
       billingPeriod: safeBillingPeriod,
-      billingDay: 1,
+      billingDay: sub.billingDay ?? 1,
       status: 'ACTIVE',
       serviceUrl: sub.serviceUrl || undefined,
       cancelUrl: sub.cancelUrl || undefined,
       iconUrl: iconUrl || undefined,
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: sub.startDate || new Date().toISOString().split('T')[0],
+      nextPaymentDate: sub.nextPaymentDate || undefined,
+      // Wizard previously dropped these — if the AI-clarification step
+      // surfaced any of them, keep the data in the persisted sub.
+      notes: sub.notes || undefined,
+      tags: sub.tags && sub.tags.length > 0 ? sub.tags : undefined,
+      color: sub.color || undefined,
+      currentPlan: sub.currentPlan || undefined,
+      reminderDaysBefore:
+        sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0
+          ? sub.reminderDaysBefore
+          : undefined,
+      reminderEnabled:
+        sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0
+          ? true
+          : undefined,
       addedVia: 'AI_TEXT',
     });
     addSubscription(res.data);

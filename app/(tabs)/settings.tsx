@@ -9,7 +9,6 @@ import {
   Switch,
   Alert,
   Modal,
-  TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,

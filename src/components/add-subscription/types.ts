@@ -25,7 +25,10 @@ export interface ParsedSub {
   name?: string;
   amount?: number;
   currency?: string;
-  billingPeriod?: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY';
+  // Backend supports 6 periods (LIFETIME, ONE_TIME) but the AI pipeline
+  // historically only emits the 4 recurring ones. Bulk-edit UI lets the
+  // user upgrade to LIFETIME / ONE_TIME by hand before saving.
+  billingPeriod?: 'MONTHLY' | 'YEARLY' | 'WEEKLY' | 'QUARTERLY' | 'LIFETIME' | 'ONE_TIME';
   category?: string;
   serviceUrl?: string;
   cancelUrl?: string;
@@ -36,4 +39,10 @@ export interface ParsedSub {
   billingDay?: number;
   notes?: string;
   reminderDaysBefore?: number[];
+  /** Free-form labels (e.g. "work", "shared") — match the backend `tags` column. */
+  tags?: string[];
+  /** Hex string for the card accent in the list. Matches backend `color`. */
+  color?: string;
+  /** Plan name (e.g. "Premium", "Family") — matches backend `currentPlan`. */
+  currentPlan?: string;
 }

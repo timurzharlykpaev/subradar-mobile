@@ -9,10 +9,11 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  TextInput, Alert, Modal, Animated,
+  Alert, Modal, Animated,
   Dimensions, KeyboardAvoidingView, Platform,
   TouchableWithoutFeedback, PanResponder,
 } from 'react-native';
+import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -270,12 +271,28 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
           amount: sub.amount || 0,
           currency: sub.currency || currency,
           billingPeriod: normalizeBilling(sub.billingPeriod) as any,
-          billingDay: 1,
+          // Use the user's chosen billingDay/startDate when the inline
+          // editor exposed them — fall back to the old hardcoded "today,
+          // day 1" only when the bulk row has no values at all.
+          billingDay: sub.billingDay ?? 1,
           status: 'ACTIVE',
           serviceUrl: sub.serviceUrl || undefined,
           cancelUrl: sub.cancelUrl || undefined,
           iconUrl: iconUrl,
-          startDate: new Date().toISOString().split('T')[0],
+          startDate: sub.startDate || new Date().toISOString().split('T')[0],
+          nextPaymentDate: sub.nextPaymentDate || undefined,
+          notes: sub.notes || undefined,
+          tags: sub.tags && sub.tags.length > 0 ? sub.tags : undefined,
+          color: sub.color || undefined,
+          currentPlan: sub.currentPlan || undefined,
+          reminderDaysBefore:
+            sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0
+              ? sub.reminderDaysBefore
+              : undefined,
+          reminderEnabled:
+            sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0
+              ? true
+              : undefined,
           addedVia: 'AI_TEXT',
         });
         if (res.data?.iconUrl) prefetchImage(res.data.iconUrl);
@@ -459,30 +476,34 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
               {/* Name */}
               <View style={{ gap: 6 }}>
                 <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.service_name', 'Name')}</Text>
-                <TextInput
+                <DoneAccessoryInput
                   style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
                   value={sub.name}
                   onChangeText={(v) => { sub.name = v; setParsedSubs([...parsedSubs]); }}
+                  placeholderTextColor={colors.textMuted}
                 />
               </View>
               {/* Amount + Currency */}
               <View style={{ flexDirection: 'row', gap: 12 }}>
                 <View style={{ flex: 1, gap: 6 }}>
                   <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.amount', 'Amount')}</Text>
-                  <TextInput
+                  <DoneAccessoryInput
                     style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card }}
                     value={String(sub.amount)}
                     onChangeText={(v) => { sub.amount = parseFloat(v) || 0; setParsedSubs([...parsedSubs]); }}
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
+                    placeholderTextColor={colors.textMuted}
                   />
                 </View>
                 <View style={{ width: 80, gap: 6 }}>
                   <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{t('add.currency', 'Currency')}</Text>
-                  <TextInput
+                  <DoneAccessoryInput
                     style={{ fontSize: 16, fontWeight: '700', color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.card, textAlign: 'center' }}
                     value={sub.currency}
                     onChangeText={(v) => { sub.currency = v.toUpperCase(); setParsedSubs([...parsedSubs]); }}
                     maxLength={3}
+                    autoCapitalize="characters"
+                    placeholderTextColor={colors.textMuted}
                   />
                 </View>
               </View>

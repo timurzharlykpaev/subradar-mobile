@@ -27,7 +27,9 @@ interface Props {
   saving?: boolean;
 }
 
-const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY'] as const;
+const PERIODS = ['MONTHLY', 'YEARLY', 'WEEKLY', 'QUARTERLY', 'LIFETIME', 'ONE_TIME'] as const;
+
+const COLOR_PALETTE = ['#3B82F6', '#10B981', '#EF4444', '#F59E0B', '#EC4899', '#06B6D4', '#6B7280'];
 
 const ALL_CATEGORIES = [
   'STREAMING',
@@ -396,6 +398,156 @@ function BulkEditModalImpl({
                     </TouchableOpacity>
                   );
                 })}
+              </View>
+            </View>
+
+            {/* Tags — comma-separated; reuse the same UX as the Edit
+                form. Sent to backend as string[]. */}
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+                {t('add.tags', 'Tags')}
+              </Text>
+              <DoneAccessoryInput
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: colors.text,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 14,
+                  backgroundColor: colors.card,
+                }}
+                value={(sub.tags ?? []).join(', ')}
+                onChangeText={(v) =>
+                  onUpdate({
+                    tags: v
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  })
+                }
+                placeholder={t('add.tags_placeholder', 'work, personal, shared')}
+                placeholderTextColor={colors.textMuted}
+                accessoryId="bulk-tags"
+              />
+            </View>
+
+            {/* Plan / URLs — give the user a chance to fix what AI missed
+                before the sub is created (these used to be Edit-only). */}
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+                {t('add.current_plan', 'Current plan')}
+              </Text>
+              <DoneAccessoryInput
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: colors.text,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 14,
+                  backgroundColor: colors.card,
+                }}
+                value={sub.currentPlan ?? ''}
+                onChangeText={(v) => onUpdate({ currentPlan: v })}
+                placeholder={t('add.current_plan_placeholder', 'Premium, Family, etc.')}
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="words"
+                accessoryId="bulk-current-plan"
+              />
+            </View>
+
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+                {t('add.service_url', 'Service URL')}
+              </Text>
+              <DoneAccessoryInput
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: colors.text,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 14,
+                  backgroundColor: colors.card,
+                }}
+                value={sub.serviceUrl ?? ''}
+                onChangeText={(v) => onUpdate({ serviceUrl: v })}
+                placeholder="https://service.com"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                accessoryId="bulk-service-url"
+              />
+            </View>
+
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+                {t('add.cancel_url', 'Cancel URL')}
+              </Text>
+              <DoneAccessoryInput
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: colors.text,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 14,
+                  backgroundColor: colors.card,
+                }}
+                value={sub.cancelUrl ?? ''}
+                onChangeText={(v) => onUpdate({ cancelUrl: v })}
+                placeholder="https://service.com/cancel"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                accessoryId="bulk-cancel-url"
+              />
+            </View>
+
+            {/* Color picker — same palette + identical "auto" affordance
+                as the Edit form so card accents stay consistent. */}
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+                {t('add.color', 'Color')}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                <TouchableOpacity
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    borderWidth: 2,
+                    borderColor: !sub.color ? colors.primary : colors.border,
+                    backgroundColor: colors.card,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onPress={() => onUpdate({ color: '' })}
+                  accessibilityLabel={t('add.color_auto', 'Auto')}
+                >
+                  <Ionicons name="close" size={14} color={colors.textMuted} />
+                </TouchableOpacity>
+                {COLOR_PALETTE.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: c,
+                      borderWidth: 3,
+                      borderColor: sub.color === c ? colors.text : 'transparent',
+                    }}
+                    onPress={() => onUpdate({ color: c })}
+                  />
+                ))}
               </View>
             </View>
           </View>

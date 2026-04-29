@@ -23,7 +23,6 @@ import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
@@ -37,6 +36,7 @@ import Svg, { Rect, Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeContext';
 import { useVoiceRecorder } from '../../hooks/useVoiceRecorder';
+import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 import type { LoadingStage } from './types';
 
 // ── Loading stage labels (local i18n — wizard-specific strings) ─────────────
@@ -355,7 +355,7 @@ function VoiceInputStageImpl({
       {/* Text input + chips — hidden during loading. */}
       {!loadingStage && (
         <>
-          <TextInput
+          <DoneAccessoryInput
             testID="ai-wizard-input"
             style={[
               styles.textInput,

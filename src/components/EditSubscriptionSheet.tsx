@@ -28,6 +28,7 @@ import { CardBrand } from '../types';
 import { useTheme } from '../theme';
 import { NumericInput } from './NumericInput';
 import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
+import { DatePickerField } from './DatePickerField';
 
 interface Props {
   visible: boolean;
@@ -47,6 +48,11 @@ const PERIOD_LABELS: Record<string, string> = {
 };
 
 const REMINDER_OPTIONS = [1, 3, 7] as const;
+
+// Same palette ManualFormView uses — keep them visually identical between
+// Add and Edit so a sub picked at create-time matches its edit-screen
+// preview.
+const COLOR_PALETTE = ['#3B82F6', '#10B981', '#EF4444', '#F59E0B', '#EC4899', '#06B6D4', '#6B7280'];
 
 export function EditSubscriptionSheet({ visible, onClose, subscription }: Props) {
   const { t } = useTranslation();
@@ -111,6 +117,17 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     notes: '',
     tags: '' as string,
     reminderDaysBefore: [] as number[],
+    // Newly editable fields — without these the user could not correct
+    // wrong dates set at AI-import time, change plan tier (Basic→Premium),
+    // patch a missing service / cancel URL, or recolour the card.
+    startDate: '',
+    nextPaymentDate: '',
+    serviceUrl: '',
+    cancelUrl: '',
+    currentPlan: '',
+    color: '',
+    isTrial: false,
+    trialEndDate: '',
   });
 
   const [showAddCard, setShowAddCard] = useState(false);
@@ -119,17 +136,39 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
 
   useEffect(() => {
     if (visible && subscription) {
+      const sub = subscription as any;
+      // ISO timestamps from the backend may include time — strip to YYYY-MM-DD
+      // so DatePickerField can match its `selectedDay` and the value round-trips
+      // cleanly back to the API.
+      const toDateStr = (v: any): string => {
+        if (!v) return '';
+        if (typeof v === 'string') return v.split('T')[0];
+        try {
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+        } catch {
+          return '';
+        }
+      };
       setForm({
-        name: subscription.name ?? '',
-        amount: String(subscription.amount ?? ''),
-        currency: subscription.currency ?? 'USD',
-        billingPeriod: subscription.billingPeriod ?? 'MONTHLY',
-        category: subscription.category ?? 'OTHER',
-        billingDay: String(subscription.billingDay ?? 1),
-        paymentCardId: subscription.paymentCardId ?? '',
-        notes: subscription.notes ?? '',
-        tags: (subscription.tags ?? []).join(', '),
-        reminderDaysBefore: (subscription as any).reminderDaysBefore ?? [],
+        name: sub.name ?? '',
+        amount: String(sub.amount ?? ''),
+        currency: sub.currency ?? 'USD',
+        billingPeriod: sub.billingPeriod ?? 'MONTHLY',
+        category: sub.category ?? 'OTHER',
+        billingDay: String(sub.billingDay ?? 1),
+        paymentCardId: sub.paymentCardId ?? '',
+        notes: sub.notes ?? '',
+        tags: (sub.tags ?? []).join(', '),
+        reminderDaysBefore: sub.reminderDaysBefore ?? [],
+        startDate: toDateStr(sub.startDate),
+        nextPaymentDate: toDateStr(sub.nextPaymentDate),
+        serviceUrl: sub.serviceUrl ?? '',
+        cancelUrl: sub.cancelUrl ?? '',
+        currentPlan: sub.currentPlan ?? '',
+        color: sub.color ?? '',
+        isTrial: sub.status === 'TRIAL',
+        trialEndDate: toDateStr(sub.trialEndDate),
       });
       setShowAddCard(false);
     }
@@ -163,6 +202,29 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         tags: tags.length > 0 ? tags : undefined,
         reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
         reminderEnabled: form.reminderDaysBefore.length > 0,
+        // Send only when the user actually filled it — empty strings would
+        // overwrite valid backend data with NULLs on PATCH.
+        startDate: form.startDate || undefined,
+        nextPaymentDate: form.nextPaymentDate || undefined,
+        serviceUrl: form.serviceUrl.trim() || undefined,
+        cancelUrl: form.cancelUrl.trim() || undefined,
+        currentPlan: form.currentPlan.trim() || undefined,
+        color: form.color || undefined,
+        // Trial state lives on `status` server-side. Only flip it when the
+        // user explicitly toggles the trial switch — leaves PAUSED /
+        // CANCELLED rows alone.
+        //
+        // We use `undefined` (omits the key from the JSON body) instead of
+        // `null` because the backend DTO declares `trialEndDate` with
+        // `@IsDateString()` from class-validator, which rejects null and
+        // returns 400. Until the backend adds a nullable transform, exiting
+        // a trial just flips status — the stale trialEndDate stays in the
+        // row but is ignored once status !== 'TRIAL'.
+        ...(form.isTrial
+          ? { status: 'TRIAL', trialEndDate: form.trialEndDate || undefined }
+          : subscription.status === 'TRIAL'
+            ? { status: 'ACTIVE' }
+            : {}),
       };
       // Backend recomputes nextPaymentDate when billingDay/Period/startDate
       // changes — use the response, not the request payload, so the card shows
@@ -256,6 +318,38 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   );
   const onChangeCardLast4 = useCallback(
     (v: string) => setNewCard((c) => ({ ...c, last4: v.replace(/\D/g, '').slice(0, 4) })),
+    [],
+  );
+  const onChangeServiceUrl = useCallback(
+    (v: string) => setForm((f) => ({ ...f, serviceUrl: v })),
+    [],
+  );
+  const onChangeCancelUrl = useCallback(
+    (v: string) => setForm((f) => ({ ...f, cancelUrl: v })),
+    [],
+  );
+  const onChangeCurrentPlan = useCallback(
+    (v: string) => setForm((f) => ({ ...f, currentPlan: v })),
+    [],
+  );
+  const onChangeStartDate = useCallback(
+    (v: string) => setForm((f) => ({ ...f, startDate: v })),
+    [],
+  );
+  const onChangeNextPaymentDate = useCallback(
+    (v: string) => setForm((f) => ({ ...f, nextPaymentDate: v })),
+    [],
+  );
+  const onChangeTrialEndDate = useCallback(
+    (v: string) => setForm((f) => ({ ...f, trialEndDate: v })),
+    [],
+  );
+  const onToggleTrial = useCallback(
+    () => setForm((f) => ({ ...f, isTrial: !f.isTrial })),
+    [],
+  );
+  const onPickColor = useCallback(
+    (c: string) => setForm((f) => ({ ...f, color: f.color === c ? '' : c })),
     [],
   );
 
@@ -402,6 +496,25 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                     placeholderTextColor={colors.textMuted}
                     maxLength={2}
                     accessoryId="edit-billing-day"
+                  />
+                </View>
+
+                {/* Start date / Next payment date — let the user correct
+                    dates the AI got wrong or backfill missing ones. The
+                    backend recomputes derived fields on update so it's safe
+                    to send only what changed. */}
+                <View style={styles.field}>
+                  <DatePickerField
+                    label={t('add.start_date', 'Start date')}
+                    value={form.startDate}
+                    onChange={onChangeStartDate}
+                  />
+                </View>
+                <View style={styles.field}>
+                  <DatePickerField
+                    label={t('add.next_payment', 'Next payment date')}
+                    value={form.nextPaymentDate}
+                    onChange={onChangeNextPaymentDate}
                   />
                 </View>
 
@@ -603,6 +716,116 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                         </TouchableOpacity>
                       ))}
                   </View>
+                </View>
+
+                {/* Plan / URLs / Color / Trial — moved out of "More options"
+                    in the Add flow into the canonical edit form so the user
+                    can correct anything captured at AI-import time. */}
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.current_plan', 'Current plan')}</Text>
+                  <DoneAccessoryInput
+                    style={inputStyle}
+                    value={form.currentPlan}
+                    onChangeText={onChangeCurrentPlan}
+                    placeholder={t('add.current_plan_placeholder', 'Premium, Family, etc.')}
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="words"
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.service_url', 'Service URL')}</Text>
+                  <DoneAccessoryInput
+                    style={inputStyle}
+                    value={form.serviceUrl}
+                    onChangeText={onChangeServiceUrl}
+                    placeholder="https://service.com"
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="url"
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.cancel_url', 'Cancel URL')}</Text>
+                  <DoneAccessoryInput
+                    style={inputStyle}
+                    value={form.cancelUrl}
+                    onChangeText={onChangeCancelUrl}
+                    placeholder="https://service.com/cancel"
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="url"
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={fieldLabel}>{t('add.color', 'Color')}</Text>
+                  <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                    <TouchableOpacity
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        borderWidth: 2,
+                        borderColor: !form.color ? colors.primary : colors.border,
+                        backgroundColor: colors.surface2,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onPress={() => onPickColor('')}
+                      accessibilityLabel={t('add.color_auto', 'Auto')}
+                    >
+                      <Ionicons name="close" size={14} color={colors.textMuted} />
+                    </TouchableOpacity>
+                    {COLOR_PALETTE.map((c) => (
+                      <TouchableOpacity
+                        key={c}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          backgroundColor: c,
+                          borderWidth: 3,
+                          borderColor: form.color === c ? colors.text : 'transparent',
+                        }}
+                        onPress={() => onPickColor(c)}
+                      />
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.field}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={fieldLabel}>{t('add.trial_period', 'Trial')}</Text>
+                    <TouchableOpacity
+                      style={{
+                        width: 48,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: form.isTrial ? colors.primary : colors.surface2,
+                        padding: 3,
+                        justifyContent: 'center',
+                        alignItems: form.isTrial ? 'flex-end' : 'flex-start',
+                      }}
+                      onPress={onToggleTrial}
+                      accessibilityRole="switch"
+                      accessibilityState={{ checked: form.isTrial }}
+                    >
+                      <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFF' }} />
+                    </TouchableOpacity>
+                  </View>
+                  {form.isTrial && (
+                    <View style={{ marginTop: 12 }}>
+                      <DatePickerField
+                        label={t('add.trial_end_date', 'Trial ends on')}
+                        value={form.trialEndDate}
+                        onChange={onChangeTrialEndDate}
+                      />
+                    </View>
+                  )}
                 </View>
 
                 {/* Actions */}
