@@ -232,13 +232,28 @@ export default function PaywallScreen() {
           await queryClient.refetchQueries({ queryKey: ['billing'] });
           const billing = queryClient.getQueryData<BillingMeResponse>(['billing', 'me']);
           const plan = billing?.effective?.plan;
-          if (plan && plan !== 'free') {
+          // The expected post-purchase plan derives from the productId we
+          // bought, NOT a generic "anything but free". The previous check
+          // (`plan !== 'free'`) bugged out on Pro→Team upgrades: the user
+          // was already on `plan='pro'`, the syncRetry returned true at
+          // attempt 1 even though the backend was still on Pro and the
+          // upgrade hadn't propagated yet.
+          const expected: 'pro' | 'organization' = /team|org/i.test(productId)
+            ? 'organization'
+            : 'pro';
+          if (plan === expected) {
             console.log('[Paywall] RC sync confirmed: plan =', plan);
             analytics.syncRetrySucceeded(attempt + 1, productId);
             return true;
           }
-          lastError = `plan=${plan ?? 'null'} after sync`;
-          console.warn('[Paywall] RC sync POST ok but plan still', plan, '— retrying');
+          lastError = `plan=${plan ?? 'null'} (expected ${expected})`;
+          console.warn(
+            '[Paywall] RC sync POST ok but plan still',
+            plan,
+            'expected',
+            expected,
+            '— retrying',
+          );
         } catch (e: any) {
           lastError = e?.message;
           console.warn('[Paywall] /billing/me refetch failed:', e?.message);
@@ -282,9 +297,23 @@ export default function PaywallScreen() {
     // silently renews the existing Pro subscription instead of upgrading to
     // Team — receipt comes back with `productId: pro.yearly`, RC stores the old
     // entitlement, backend's `/billing/sync-revenuecat` rejects with 403
-    // because no Team entitlement was ever granted. Block the purchase here
-    // with a clear explanation rather than letting the user pay again for Pro.
-    if (selected === 'org' && access?.plan === 'pro' && access?.hasOwnPaidPlan === true) {
+    // because no Team entitlement was ever granted.
+    //
+    // BUT: skip the block when the user has already cancelled
+    // (`cancelAtPeriodEnd === true`) — at that point Apple itself will
+    // handle the upgrade gracefully (it knows Pro won't renew). And the
+    // most common stuck-state we see in production is "user cancelled in
+    // Apple Settings, EXPIRATION webhook never reached our backend, the
+    // gate keeps blocking forever and the Manage Subscription deep-link
+    // shows nothing because Apple already removed the row." We add an
+    // explicit "I already cancelled" escape hatch that runs `reconcile`
+    // and retries automatically.
+    const proStillRenewing =
+      selected === 'org' &&
+      access?.plan === 'pro' &&
+      access?.hasOwnPaidPlan === true &&
+      access?.flags?.cancelAtPeriodEnd !== true;
+    if (proStillRenewing) {
       Alert.alert(
         t('paywall.pro_to_team_blocked_title', 'Cancel Pro first'),
         t(
@@ -293,6 +322,24 @@ export default function PaywallScreen() {
         ),
         [
           { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          {
+            text: t('paywall.already_cancelled', 'I already cancelled'),
+            onPress: async () => {
+              try {
+                await billingApi.reconcile();
+              } catch {
+                /* reconcile is best-effort */
+              }
+              await queryClient.invalidateQueries({ queryKey: ['billing'] });
+              Alert.alert(
+                t('paywall.reconciled_title', 'Refreshed'),
+                t(
+                  'paywall.reconciled_msg',
+                  'Subscription state refreshed. If your Pro is now cancelled, tap Subscribe again.',
+                ),
+              );
+            },
+          },
           {
             text: t('paywall.manage_subscription', 'Manage Subscription'),
             onPress: () => {

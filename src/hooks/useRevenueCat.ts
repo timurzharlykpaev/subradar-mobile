@@ -337,7 +337,15 @@ export function useRevenueCat() {
       const info = await Purchases.restorePurchases();
       setCustomerInfo(info);
       const restoredKeys = Object.keys(info?.entitlements?.active ?? {});
-      const success = restoredKeys.some((k: string) => /^(pro|team)$/i.test(k));
+      // Loose substring match — RC entitlement keys in the dashboard are
+      // human-readable ("SubRadar Pro", "SubRadar Team"), not the strict
+      // lowercase tokens the previous /^(pro|team)$/i regex required. The
+      // strict version returned `success: false` on every legitimate
+      // restore, blocking the post-restore sync that mirrors the entitlement
+      // into the backend.
+      const success = restoredKeys.some((k: string) =>
+        /(^|\b)(pro|team|organization|premium|org)(\b|$)/i.test(k),
+      );
       return { success, customerInfo: info };
     } catch (error: any) {
       Alert.alert('Restore Error', error?.message || 'Unknown error');

@@ -25,6 +25,7 @@ import { subscriptionsApi } from '../../src/api/subscriptions';
 import { analyticsApi } from '../../src/api/analytics';
 import { useBillingStatus } from '../../src/hooks/useBilling';
 import { useQueryClient } from '@tanstack/react-query';
+import { reconcileBillingDrift } from '../../src/utils/reconcileBillingDrift';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme, fonts } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
@@ -119,12 +120,22 @@ export default function DashboardScreen() {
 
   useEffect(() => { fetchSubscriptions(); fetchAnalytics(); }, [currency]);
 
-  // Refetch billing when app returns to foreground (e.g. after purchase)
+  // Refetch billing when app returns to foreground (e.g. after the user
+  // closes Apple Settings → Subscriptions). A bare invalidate refetches
+  // /billing/me but that endpoint reads our own DB — if the RC EXPIRATION
+  // webhook never arrived, the user keeps seeing the stale "Pro" badge.
+  // Running reconcileBillingDrift first asks the backend to verify against
+  // RC live and downgrade; only then do we invalidate so the UI picks up
+  // the corrected state.
   useEffect(() => {
-    const handleAppState = (next: AppStateStatus) => {
-      if (next === 'active') {
-        queryClient.invalidateQueries({ queryKey: ['billing'] });
+    const handleAppState = async (next: AppStateStatus) => {
+      if (next !== 'active') return;
+      try {
+        await reconcileBillingDrift();
+      } catch {
+        /* best-effort — fall through to plain invalidate */
       }
+      queryClient.invalidateQueries({ queryKey: ['billing'] });
     };
     const sub = AppState.addEventListener('change', handleAppState);
     return () => sub.remove();
