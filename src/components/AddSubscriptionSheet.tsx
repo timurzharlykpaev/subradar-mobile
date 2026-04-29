@@ -744,6 +744,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
     setBulkSaving(true);
     let saved = 0;
+    let limitHit = false;
     const failed: string[] = [];
     for (const sub of selected) {
       try {
@@ -777,9 +778,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         addSubscription(res.data);
         saved++;
       } catch (err: any) {
+        const status = err?.response?.status;
         const code = err?.response?.data?.error?.code;
-        if (code === 'SUBSCRIPTION_LIMIT_REACHED') {
-          failed.push(...selected.slice(selected.indexOf(sub)).map(s => s.name || '?'));
+        const msg = err?.response?.data?.message || '';
+        // Backend returns 403 + SUBSCRIPTION_LIMIT_REACHED OR (older
+        // builds) a generic 403 with "limit/locked" message. Treat
+        // both as "user hit free-tier cap" — instead of showing the
+        // ugly generic "Some failed" alert, route through the same
+        // ProFeatureModal we use elsewhere so the user gets the
+        // upgrade CTA.
+        const isLimitError =
+          code === 'SUBSCRIPTION_LIMIT_REACHED' ||
+          status === 403 ||
+          /limit|exceeded|quota|locked/i.test(msg);
+        if (isLimitError) {
+          limitHit = true;
           break;
         }
         failed.push(sub.name || '?');
@@ -794,7 +807,17 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setSuccessName(`${saved} ${t('add.bulk_saved', 'subscriptions')}`);
       setShowSuccess(true);
     }
-    if (failed.length > 0) {
+    if (limitHit) {
+      // Wait for success animation if any items were saved before the
+      // limit blocked the rest, then open the paywall modal.
+      setTimeout(() => {
+        analytics.track('pro_gate_shown', {
+          feature: 'unlimited_subs',
+          source: 'bulk_save',
+        });
+        setProGate('unlimited_subs');
+      }, saved > 0 ? 2500 : 100);
+    } else if (failed.length > 0) {
       setTimeout(() => {
         Alert.alert(
           t('add.bulk_partial_title', 'Some failed'),
