@@ -425,6 +425,8 @@ export default function PaywallScreen() {
       // claim "Pro purchased" when the user was actually billed for Team.
       let actualProductId = productId;
       let actualPlanKey: 'pro' | 'org' = selected as 'pro' | 'org';
+      let actualPeriod: 'monthly' | 'yearly' = billingPeriod;
+      let actualPrice: number = pkg.product.price;
       try {
         if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') {
           throw new Error('Purchases SDK not available');
@@ -449,16 +451,28 @@ export default function PaywallScreen() {
           );
           actualProductId = picked;
           actualPlanKey = /team|org/i.test(picked) ? 'org' : 'pro';
+          actualPeriod = /yearly/i.test(picked) ? 'yearly' : 'monthly';
+          // Find the matching package in offerings to get the real
+          // localised price. Fallback to subsMap.price (from JWS) if
+          // the offering doesn't have it (rare — disconnected SKUs).
+          const matchingPkg = (offerings?.current?.availablePackages ?? []).find(
+            (p: any) => p?.product?.identifier === picked,
+          );
+          if (matchingPkg?.product?.price != null) {
+            actualPrice = matchingPkg.product.price;
+          } else if (subsMap[picked]?.price != null) {
+            actualPrice = Number(subsMap[picked].price);
+          }
         }
       } catch (e: any) {
         if (__DEV__) console.warn('[Paywall] getCustomerInfo lookup failed:', e?.message);
       }
 
       // Show success / track analytics based on the ACTUAL billed plan,
-      // not the click intent. Sandbox replay would otherwise show "Pro"
-      // confirm screen for a user just billed for Team.
+      // period, and price. Sandbox replay would otherwise label
+      // "Pro Monthly @ 1790" for a user actually billed Team Yearly @ 49990.
       const planLabel = actualPlanKey === 'org' ? 'Team' : 'Pro';
-      analytics.purchaseCompleted(actualPlanKey, billingPeriod, pkg.product.price);
+      analytics.purchaseCompleted(actualPlanKey, actualPeriod, actualPrice);
       setSuccessPlan(planLabel);
 
       // Sync RC then refetch billing so button state updates before user dismisses success screen.
