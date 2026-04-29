@@ -10,6 +10,17 @@ interface Props {
   payload: Record<string, unknown>;
 }
 
+/**
+ * Compact single-row banner that warns the user their paid plan is
+ * winding down. Layout:
+ *
+ *   [⚠]  Team ends in 1 day · Apr 30        [Reactivate]
+ *
+ * Earlier version stacked icon → title → subtitle → CTA into a tall
+ * 4-row card that ate roughly 1/3 of the screen on small phones; the
+ * user reported it as "слишком большой". Now everything sits inline:
+ * icon + text on the left, CTA button on the right.
+ */
 export default function ExpirationBanner({ payload }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -23,8 +34,6 @@ export default function ExpirationBanner({ payload }: Props) {
       : 0;
   const endsAt = typeof payload.endsAt === 'string' ? payload.endsAt : null;
   // Backend tags the banner with the actual plan ('pro' | 'organization').
-  // Mobile labels it accordingly so a Team owner who cancelled doesn't see
-  // "Pro ends" — that hardcoded label was reported by the user as a bug.
   const planKey = payload.plan === 'organization' ? 'team' : 'pro';
   const planLabel = planKey === 'team' ? 'Team' : 'Pro';
 
@@ -48,42 +57,44 @@ export default function ExpirationBanner({ payload }: Props) {
     router.push('/paywall' as any);
   };
 
+  const titleText = t('retention.plan_ends_in', {
+    count: daysLeft,
+    plan: planLabel,
+    defaultValue: `${planLabel} ends in ${daysLeft} days`,
+  });
+
   return (
     <View
       testID="expiration-banner"
       style={[styles.container, { backgroundColor: bgColor, borderColor }]}
     >
-      <View style={styles.topRow}>
-        <View style={[styles.iconCircle, { backgroundColor: iconColor + '20' }]}>
-          <Ionicons name="warning" size={20} color={iconColor} />
+      <View style={styles.row}>
+        <View style={[styles.iconCircle, { backgroundColor: iconColor + '22' }]}>
+          <Ionicons name="warning" size={16} color={iconColor} />
         </View>
+        <View style={styles.textWrap}>
+          <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
+            {titleText}
+          </Text>
+          {formattedDate ? (
+            <Text style={[styles.subtitle, { color: textColor + 'CC' }]} numberOfLines={1}>
+              {t('retention.expires_short', {
+                date: formattedDate,
+                defaultValue: `Until ${formattedDate}`,
+              })}
+            </Text>
+          ) : null}
+        </View>
+        <TouchableOpacity
+          onPress={onReactivate}
+          style={[styles.ctaBtn, { backgroundColor: iconColor }]}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.ctaText}>
+            {t('retention.reactivate', 'Reactivate')}
+          </Text>
+        </TouchableOpacity>
       </View>
-      <Text style={[styles.title, { color: textColor }]}>
-        {t('retention.plan_ends_in', {
-          count: daysLeft,
-          plan: planLabel,
-          defaultValue: `${planLabel} ends in ${daysLeft} days`,
-        })}
-      </Text>
-      {formattedDate ? (
-        <Text style={[styles.subtitle, { color: textColor + 'CC' }]}>
-          {t('retention.expires_on_plan', {
-            date: formattedDate,
-            plan: planLabel,
-            defaultValue: `Your ${planLabel} plan expires on ${formattedDate}`,
-          })}
-        </Text>
-      ) : null}
-      <TouchableOpacity
-        onPress={onReactivate}
-        style={[styles.ctaBtn, { backgroundColor: iconColor }]}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="refresh" size={16} color="#FFF" />
-        <Text style={styles.ctaText}>
-          {t('retention.reactivate', 'Reactivate')}
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -92,43 +103,36 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     marginTop: 12,
-    padding: 16,
-    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
     borderWidth: 1,
   },
-  topRow: {
+  row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    gap: 10,
   },
   iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 4,
+  textWrap: {
+    flex: 1,
+    minWidth: 0,
   },
-  subtitle: {
-    fontSize: 13,
-    marginBottom: 14,
-    lineHeight: 18,
-  },
+  title: { fontSize: 14, fontWeight: '700' },
+  subtitle: { fontSize: 12, marginTop: 1 },
   ctaBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   ctaText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
     color: '#FFF',
   },

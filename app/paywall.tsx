@@ -773,60 +773,37 @@ export default function PaywallScreen() {
                 }}
                 activeOpacity={0.85}
               >
-                {/* Plan header row */}
+                {/* Plan header row — name + price stay strictly on one line.
+                    Badges live in their OWN row below so a wide
+                    "Save 49,990 KZT/yr" pill can never overflow into the
+                    price block (the bug the user reported). */}
                 <View style={styles.planHeader}>
                   <View style={[styles.planIconCircle, { backgroundColor: plan.color + '18' }]}>
                     <Ionicons name={plan.icon} size={22} color={plan.color} />
                   </View>
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    {/* Plan name — own row so long badges below never compete
-                        with it for horizontal space. */}
-                    <Text style={[styles.planName, { color: colors.text }]}>
+                  <View style={{ flex: 1, marginLeft: 12, minWidth: 0 }}>
+                    <Text
+                      style={[styles.planName, { color: colors.text }]}
+                      numberOfLines={1}
+                    >
                       {plan.id === 'free' ? 'Free' : plan.id === 'pro' ? 'Pro' : 'Team'}
                     </Text>
-                    {/* Badges — separate row, wraps if needed. Each badge keeps
-                        its natural width so text never gets truncated with "…". */}
-                    <View style={styles.badgesRow}>
-                      {plan.id === 'pro' && accessViaTeam && !hasOwnPro && (
-                        <View style={[styles.inlineBadge, { backgroundColor: '#10B981' }]}>
-                          <Text style={styles.inlineBadgeText}>{t('paywall.active_via_team', 'ACTIVE VIA TEAM')}</Text>
-                        </View>
-                      )}
-                      {plan.id === 'pro' && !isCurrent && !(accessViaTeam && !hasOwnPro) && (
-                        <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
-                          <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
-                        </View>
-                      )}
-                      {yearlySavingsText && !isCurrent && (
-                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                          <Text style={styles.inlineBadgeText}>
-                            {t('team_upsell.save_vs_separate', {
-                              amount: yearlySavingsText,
-                              defaultValue: 'Save {{amount}}/year',
-                            })}
-                          </Text>
-                        </View>
-                      )}
-                      {showBestValue && !isCurrent && (
-                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                          <Text style={styles.inlineBadgeText}>{t('paywall.best_value', 'BEST VALUE')}</Text>
-                        </View>
-                      )}
-                      {isCurrent && (
-                        <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                          <Text style={styles.inlineBadgeText}>{t('subscription_plan.current_plan').toUpperCase()}</Text>
-                        </View>
-                      )}
-                    </View>
                     {plan.id === 'pro' && canTrial && (
-                      <Text style={[styles.trialHint, { color: plan.color }]}>
+                      <Text
+                        style={[styles.trialHint, { color: plan.color }]}
+                        numberOfLines={1}
+                      >
                         {t('paywall.free_7_days', '7 days free')}
                       </Text>
                     )}
                   </View>
                   <View style={styles.priceBlock}>
-                    <Text style={[styles.planPrice, { color: colors.text }]}>{price}</Text>
-                    {period ? <Text style={[styles.planPeriod, { color: colors.textMuted }]}>{period}</Text> : null}
+                    <Text style={[styles.planPrice, { color: colors.text }]} numberOfLines={1}>{price}</Text>
+                    {period ? (
+                      <Text style={[styles.planPeriod, { color: colors.textMuted }]} numberOfLines={1}>
+                        {period}
+                      </Text>
+                    ) : null}
                   </View>
                   {isSelected && (
                     <View style={[styles.radioOuter, { borderColor: plan.color }]}>
@@ -835,6 +812,42 @@ export default function PaywallScreen() {
                   )}
                   {!isSelected && (
                     <View style={[styles.radioOuter, { borderColor: colors.border }]} />
+                  )}
+                </View>
+
+                {/* Badges — full-width row under the header. Each badge
+                    keeps its natural width and the row wraps. Doesn't
+                    compete with the price block for space anymore. */}
+                <View style={styles.badgesRow}>
+                  {plan.id === 'pro' && accessViaTeam && !hasOwnPro && (
+                    <View style={[styles.inlineBadge, { backgroundColor: '#10B981' }]}>
+                      <Text style={styles.inlineBadgeText}>{t('paywall.active_via_team', 'ACTIVE VIA TEAM')}</Text>
+                    </View>
+                  )}
+                  {plan.id === 'pro' && !isCurrent && !(accessViaTeam && !hasOwnPro) && (
+                    <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
+                      <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
+                    </View>
+                  )}
+                  {yearlySavingsText && !isCurrent && (
+                    <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
+                      <Text style={styles.inlineBadgeText}>
+                        {t('team_upsell.save_vs_separate_short', {
+                          amount: yearlySavingsText,
+                          defaultValue: 'Save {{amount}}/yr',
+                        })}
+                      </Text>
+                    </View>
+                  )}
+                  {showBestValue && !isCurrent && (
+                    <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
+                      <Text style={styles.inlineBadgeText}>{t('paywall.best_value', 'BEST VALUE')}</Text>
+                    </View>
+                  )}
+                  {isCurrent && (
+                    <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
+                      <Text style={styles.inlineBadgeText}>{t('subscription_plan.current_plan').toUpperCase()}</Text>
+                    </View>
                   )}
                 </View>
 
@@ -1053,7 +1066,7 @@ const styles = StyleSheet.create({
   planCard: { marginHorizontal: 20, marginBottom: 12, borderRadius: 20, padding: 16 },
   inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, alignSelf: 'flex-start' },
   inlineBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 0.3 },
-  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
 
   planHeader: { flexDirection: 'row', alignItems: 'center' },
   planIconCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
