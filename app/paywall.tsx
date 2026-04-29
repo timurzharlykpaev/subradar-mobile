@@ -30,6 +30,17 @@ import { calcYearlySavings } from '../src/utils/calcYearlySavings';
 import { formatMoney } from '../src/utils/formatMoney';
 import i18n from '../src/i18n';
 
+// react-native-purchases is unavailable in Expo Go / simulator builds —
+// require lazily so the module crash doesn't take down the whole paywall
+// at import time. We only need `getCustomerInfo()` for the post-purchase
+// productId lookup; if RC isn't loaded the lookup safely no-ops and the
+// click-selected productId is used as-is.
+let Purchases: any = null;
+try {
+  const rc = require('react-native-purchases');
+  Purchases = rc.default || rc;
+} catch {}
+
 // Key used to persist a "purchase happened but server sync didn't succeed yet"
 // marker across app restarts. DataLoader (Phase 7) will reconcile on cold start.
 const PENDING_RECEIPT_KEY = 'pending_receipt';
@@ -403,15 +414,57 @@ export default function PaywallScreen() {
         }
         return;
       }
-      // Show success immediately
-      const planLabel = selected === 'org' ? 'Team' : 'Pro';
-      analytics.purchaseCompleted(selected, billingPeriod, pkg.product.price);
+      // Apple Sandbox quirk: when a tester already has an active sub
+      // for a different product on the same Apple ID, hitting "buy"
+      // sometimes REPLAYS that existing transaction instead of creating
+      // a fresh one for the tapped package. RC then reports the OTHER
+      // product's entitlement and our `/billing/sync-revenuecat` rejects
+      // with 403 because we're sending the click-selected productId.
+      // Read the actual active product from RC and sync with THAT —
+      // also use it for the success label and analytics so we don't
+      // claim "Pro purchased" when the user was actually billed for Team.
+      let actualProductId = productId;
+      let actualPlanKey: 'pro' | 'org' = selected as 'pro' | 'org';
+      try {
+        if (!Purchases || typeof Purchases.getCustomerInfo !== 'function') {
+          throw new Error('Purchases SDK not available');
+        }
+        const info = await Purchases.getCustomerInfo();
+        const active = info?.entitlements?.active ?? {};
+        const subsMap: Record<string, any> =
+          (info as any)?.subscriptionsByProductIdentifier ?? {};
+        const renewing = Object.values(active).find((e: any) => {
+          const sub = subsMap[e?.productIdentifier];
+          return e?.productIdentifier && (sub?.willRenew !== false);
+        }) as any;
+        const fallback = Object.values(active)[0] as any;
+        const picked = renewing?.productIdentifier ?? fallback?.productIdentifier;
+        if (picked && picked !== productId) {
+          console.log(
+            '[Paywall] selected productId',
+            productId,
+            'but RC reports',
+            picked,
+            '— syncing with the actual active product',
+          );
+          actualProductId = picked;
+          actualPlanKey = /team|org/i.test(picked) ? 'org' : 'pro';
+        }
+      } catch (e: any) {
+        if (__DEV__) console.warn('[Paywall] getCustomerInfo lookup failed:', e?.message);
+      }
+
+      // Show success / track analytics based on the ACTUAL billed plan,
+      // not the click intent. Sandbox replay would otherwise show "Pro"
+      // confirm screen for a user just billed for Team.
+      const planLabel = actualPlanKey === 'org' ? 'Team' : 'Pro';
+      analytics.purchaseCompleted(actualPlanKey, billingPeriod, pkg.product.price);
       setSuccessPlan(planLabel);
 
       // Sync RC then refetch billing so button state updates before user dismisses success screen.
       // If sync fails the purchase is still valid on Apple's side — RevenueCat webhook
       // will eventually reconcile. Surface a retry modal if all 3 attempts fail.
-      const syncOk = await attemptSync(productId);
+      const syncOk = await attemptSync(actualProductId);
       if (syncOk) {
         try { await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY); } catch {}
         await queryClient.refetchQueries({ queryKey: ['billing'] });
