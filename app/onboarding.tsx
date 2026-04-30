@@ -1045,7 +1045,12 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 3: Auth
-    <View key="auth" testID="step-auth" style={[styles.step, { flex: 1, justifyContent: 'center', paddingBottom: 8 }]}>
+    // ВАЖНО: НЕ ставить `justifyContent: 'center'` — KAV выше использует
+    // `behavior="padding"`, и при появлении клавиатуры контейнер сжимается,
+    // re-center подбрасывает AuthHero и инпуты ("сильный глюк"). Якорим
+    // содержимое сверху с небольшим paddingTop, чтобы визуально не уехало
+    // от центра без клавиатуры.
+    <View key="auth" testID="step-auth" style={[styles.step, { flex: 1, justifyContent: 'flex-start', paddingTop: 24, paddingBottom: 8 }]}>
       <AuthHero />
 
       {loading && (
@@ -1094,25 +1099,45 @@ export default function OnboardingScreen() {
 
           <View style={styles.otpInputRow}>
             {[0, 1, 2, 3, 4, 5].map((index) => (
-              <DoneAccessoryInput
+              <TextInput
                 key={index}
                 ref={(ref) => { otpInputRefs.current[index] = ref; }}
                 testID={`otp-input-${index}`}
                 style={[styles.otpDigitInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, otpCode[index] ? styles.otpDigitFilled : null]}
                 value={otpCode[index] || ''}
                 onChangeText={(text) => {
-                  // Support paste of full 6-digit code
-                  if (text.length === 6 && /^\d{6}$/.test(text)) {
-                    setOtpCode(text);
-                    otpInputRefs.current[5]?.focus();
+                  // Принимаем любой ввод длиннее 1 как paste (а не только
+                  // ровно 6 цифр через regex — раньше "12 34 56" / поверх
+                  // существующей цифры / частичные коды не срабатывали).
+                  // Чистим всё кроме цифр и распределяем по полям.
+                  const digits = text.replace(/\D/g, '');
+                  if (digits.length >= 2) {
+                    const code = digits.slice(0, 6);
+                    setOtpCode(code);
+                    const target = Math.min(code.length, 5);
+                    otpInputRefs.current[target]?.focus();
                     return;
                   }
-                  handleOtpDigitChange(text, index);
+                  handleOtpDigitChange(digits, index);
                 }}
                 onKeyPress={(e) => handleOtpKeyPress(e, index)}
                 keyboardType="number-pad"
-                maxLength={6}
+                keyboardAppearance={isDark ? 'dark' : 'light'}
+                // Один InputAccessoryView на 6 переключающихся фокусов —
+                // источник iOS RTI sessionID-конфликтов и "System gesture
+                // gate timed out". Number-pad и без Done закрывается тапом
+                // вне поля. Поэтому здесь обычный TextInput, не
+                // DoneAccessoryInput.
+                // maxLength чуть больше 6: даёт пасту с разделителями
+                // ("12 34 56", "123-456") пройти целиком — handler выше
+                // сам выкинет не-цифры и возьмёт первые 6. Отображается
+                // всегда 1 цифра через `value={otpCode[index]}`.
+                maxLength={20}
                 selectTextOnFocus
+                // iOS-autofill SMS-кода: достаточно повесить только на
+                // первое поле — дальше iOS сам распределит цифры.
+                textContentType={index === 0 ? 'oneTimeCode' : 'none'}
+                autoComplete={index === 0 ? 'one-time-code' : 'off'}
               />
             ))}
           </View>
