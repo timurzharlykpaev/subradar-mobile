@@ -1,0 +1,112 @@
+appId: com.goalin.subradar
+name: "99 - App Store Marketing Screenshots (English, full app tour)"
+#
+# Captures the App Store / Google Play screenshot set in one run.
+# Output lands in ~/.maestro/screenshots/ as 99_marketing_*.png.
+#
+# Run on the largest device target Apple requires:
+#   xcrun simctl boot "iPhone 16 Pro Max"
+#   npx expo run:ios --device "iPhone 16 Pro Max"   # build + install
+#   maestro test .maestro/99_marketing_screenshots.yaml
+#
+# After running, the screenshots can be used as:
+#   - direct uploads to App Store Connect (after status-bar cleanup), OR
+#   - source material for AI-generated marketing visuals (device frames
+#     + headlines composed on top).
+---
+- runFlow: ./00_onboarding_flow.yaml
+
+# ── 1. Dashboard hero ─────────────────────────────────────────────────────
+# Primary "what is this app" shot — total spend + active subs list.
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: 99_marketing_01_dashboard
+
+# ── 2. Subscriptions list ─────────────────────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+    optional: true
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: 99_marketing_02_subscriptions
+
+# ── 3. Add subscription — AI tab (the differentiator) ─────────────────────
+- tapOn:
+    id: "tab-home"
+    optional: true
+- tapOn:
+    id: "dashboard-quick-actions"
+    optional: true
+- tapOn:
+    id: "add-sub-sheet"
+    optional: true
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: 99_marketing_03_add_sheet_default
+
+# AI smart-input mode (voice / screenshot / text)
+- tapOn:
+    id: "tab-ai"
+    optional: true
+- takeScreenshot: 99_marketing_04_ai_smart_input
+
+# Voice tab
+- tapOn:
+    id: "tab-voice"
+    optional: true
+- takeScreenshot: 99_marketing_05_voice_input
+
+# Close add sheet
+- tapOn:
+    id: "btn-close-add-sheet"
+    optional: true
+- back
+
+# ── 4. Analytics ──────────────────────────────────────────────────────────
+- tapOn:
+    id: "tab-analytics"
+    optional: true
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: 99_marketing_06_analytics_overview
+
+# Try to scroll to forecasts / category breakdown
+- scroll
+- takeScreenshot: 99_marketing_07_analytics_categories
+
+# ── 5. Subscription detail ────────────────────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+    optional: true
+- runFlow: ./_dismiss_modals.yaml
+# Tap the first subscription card if any exists
+- tapOn:
+    id: "subscription-card-0"
+    optional: true
+# Fallback: tap any visible subscription row
+- tapOn:
+    text: "Netflix"
+    optional: true
+- takeScreenshot: 99_marketing_08_subscription_detail
+
+# Back to list
+- back
+
+# ── 6. Workspace / Team ───────────────────────────────────────────────────
+- tapOn:
+    id: "tab-workspace"
+    optional: true
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: 99_marketing_09_workspace
+
+# ── 7. Settings (proves the polish — billing card, plan badge, language) ──
+- tapOn:
+    id: "tab-settings"
+    optional: true
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: 99_marketing_10_settings
+
+# Sanity guards — never ship a screenshot with these visible
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
