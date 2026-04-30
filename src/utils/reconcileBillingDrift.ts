@@ -52,53 +52,58 @@ export async function reconcileBillingDrift(): Promise<{
     const active = info?.entitlements?.active ?? {};
     const rcActive = Object.keys(active).length > 0;
 
-    // Detect "cancel-at-period-end": the entitlement that matches the
-    // backend's CURRENT plan is still active but its underlying
-    // subscription is set to not renew (user cancelled in Apple Settings).
-    //
-    // The previous version iterated `subscriptionsByProductIdentifier` and
-    // tripped on ANY non-renewing sub — so a user who once cancelled Pro,
-    // then bought a fresh Team that auto-renews, was still flagged as
-    // "pending cancel" because the historical Pro sub kept its
-    // `willRenew=false`. That forced /billing/reconcile to re-stamp the
-    // active Team as cancel_at_period_end and surfaced an expiration
-    // banner under a fully-paid Team.
-    //
-    // Match the active entitlement to the backend plan: org → team*,
-    // pro → pro/premium*. Only that entitlement's `willRenew` is allowed
-    // to drive a reconcile.
-    let pendingCancellation = false;
-    if (rcActive) {
-      const subsMap = (info as any)?.subscriptionsByProductIdentifier;
-      const tierTokens =
-        me.effective.plan === 'organization'
-          ? ['team', 'org']
-          : me.effective.plan === 'pro'
-            ? ['pro', 'premium']
-            : [];
-      if (tierTokens.length > 0 && subsMap && typeof subsMap === 'object') {
-        const currentEnt = Object.entries(active).find(([name]) =>
-          tierTokens.some((tok) => name.toLowerCase().includes(tok)),
-        );
-        const currentProductId = (currentEnt?.[1] as any)?.productIdentifier;
-        if (currentProductId && subsMap[currentProductId]) {
-          pendingCancellation =
-            subsMap[currentProductId].willRenew === false;
-        }
+    // Match the active entitlement to the backend's current plan: org →
+    // team*, pro → pro/premium*. Only this entitlement's renewal status
+    // counts — iterating ALL subscriptions in subsMap previously tripped
+    // on a user's historical cancelled Pro and falsely flagged a
+    // freshly-purchased Team as pending cancel.
+    const subsMap = (info as any)?.subscriptionsByProductIdentifier;
+    const tierTokens =
+      me.effective.plan === 'organization'
+        ? ['team', 'org']
+        : me.effective.plan === 'pro'
+          ? ['pro', 'premium']
+          : [];
+    let currentWillRenew: boolean | undefined;
+    if (rcActive && tierTokens.length > 0 && subsMap && typeof subsMap === 'object') {
+      const currentEnt = Object.entries(active).find(([name]) =>
+        tierTokens.some((tok) => name.toLowerCase().includes(tok)),
+      );
+      const currentProductId = (currentEnt?.[1] as any)?.productIdentifier;
+      if (currentProductId && subsMap[currentProductId]) {
+        const wr = subsMap[currentProductId].willRenew;
+        if (typeof wr === 'boolean') currentWillRenew = wr;
       }
     }
 
-    // Reconcile when (a) RC has nothing active but backend still thinks
-    // user is paid, or (b) RC says "active but won't renew" — backend
-    // should flip billingStatus to cancel_at_period_end so the UI can
-    // show a proper "ends on …" indicator.
-    const needsReconcile = !rcActive || pendingCancellation;
-    if (!needsReconcile) return { ran: false };
+    // Drift can flow in BOTH directions:
+    //   (a) backend thinks user is paid but RC has nothing → lost
+    //       EXPIRATION webhook, downgrade to free.
+    //   (b) backend thinks `active` but matching RC sub is not renewing
+    //       → lost CANCELLATION webhook, flip cancel_at_period_end.
+    //   (c) backend thinks `cancel_at_period_end` but matching RC sub IS
+    //       renewing → lost UNCANCELLATION webhook (Apple lets users
+    //       undo cancel from Settings → Resubscribe). Without this case
+    //       the user sees an expiration banner forever, since reconcile
+    //       only ever previously fired in directions a/b.
+    let driftReason: 'no_rc' | 'should_cancel' | 'should_uncancel' | null = null;
+    if (!rcActive) {
+      driftReason = 'no_rc';
+    } else if (me.effective.state === 'active' && currentWillRenew === false) {
+      driftReason = 'should_cancel';
+    } else if (
+      me.effective.state === 'cancel_at_period_end' &&
+      currentWillRenew === true
+    ) {
+      driftReason = 'should_uncancel';
+    }
+    if (!driftReason) return { ran: false };
 
     console.log(
-      '[BillingDrift] drift detected (rcActive=%s, pendingCancellation=%s); running reconcile',
-      rcActive,
-      pendingCancellation,
+      '[BillingDrift] drift detected (%s, backendState=%s, willRenew=%s); running reconcile',
+      driftReason,
+      me.effective.state,
+      currentWillRenew,
     );
     const res = await billingApi.reconcile();
     const action = res?.data?.action ?? 'noop';
