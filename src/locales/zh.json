@@ -348,6 +348,9 @@
     "privacy": "隐私",
     "analytics_opt_out": "关闭分析",
     "analytics_opt_out_desc": "停止发送使用事件",
+    "data_partners": "数据合作伙伴",
+    "data_partners_desc": "我们与之共享数据的第三方服务",
+    "trademark_disclaimer": "SubRadar AI 与 Apple、Google、Netflix、Spotify、OpenAI 或我们目录中显示的任何其他服务均无附属、认可或赞助关系。所有商标和徽标归各自所有者所有。",
     "weekly_digest": "每周 AI 摘要",
     "weekly_digest_desc": "每周一发送 AI 分析总结",
     "weekly_digest_pro": "Pro 可用",
@@ -1134,6 +1137,23 @@
     "not_found_manual": "没找到？手动输入",
     "more_options": "更多选项",
     "less_options": "收起"
+  },
+  "privacy": {
+    "processors": {
+      "title": "数据合作伙伴",
+      "intro_title": "我们与谁共享数据",
+      "intro_text": "为了运行 SubRadar AI，我们与下列受信任的合作伙伴协作。每个合作伙伴仅接收完成其角色所需的最少数据。您可以查看每个处理方的工作并阅读其隐私政策。",
+      "read_policy": "隐私政策",
+      "rights_title": "您的权利",
+      "rights_text": "根据 GDPR（欧盟）和 CCPA（加州），您有权访问、导出或删除您的数据。如需行使这些权利，请发送邮件至 support@subradar.ai 或使用「设置 → 删除账户」。",
+      "revenuecat": { "purpose": "处理 iOS / Android 上的应用内购买和订阅。接收您的订阅标识符、交易收据和基本账户 ID。" },
+      "openai": { "purpose": "驱动 AI 功能 — 语音转写、截图解析、智能订阅查询。接收您在使用这些功能时提交的音频、图像或文本。" },
+      "firebase": { "purpose": "传递推送通知（续订提醒、扣款警报）。接收与您账户绑定的设备推送令牌。" },
+      "resend": { "purpose": "发送事务邮件 — 登录链接、收据、每周摘要。接收您的邮箱地址和消息元数据。" },
+      "digitalocean": { "purpose": "托管我们的 API 服务器和数据库。存储账户、订阅及分析数据。" },
+      "apple": { "purpose": "通过 Apple 登录或经 App Store 购买时，Apple 按其政策接收认证与购买数据。" },
+      "google": { "purpose": "通过 Google 登录或使用 Android 时，Google 按其政策接收认证与推送投递数据。" }
+    }
   },
   "errors": {
     "something_went_wrong": "出了点问题",

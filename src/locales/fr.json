@@ -348,6 +348,9 @@
     "privacy": "Confidentialité",
     "analytics_opt_out": "Désactiver les analyses",
     "analytics_opt_out_desc": "Arrêter d'envoyer les événements d'utilisation",
+    "data_partners": "Partenaires de données",
+    "data_partners_desc": "Services tiers avec lesquels nous partageons des données",
+    "trademark_disclaimer": "SubRadar AI n'est ni affilié, ni approuvé, ni parrainé par Apple, Google, Netflix, Spotify, OpenAI ou tout autre service présent dans notre catalogue. Toutes les marques et logos appartiennent à leurs propriétaires respectifs.",
     "weekly_digest": "Résumé IA hebdomadaire",
     "weekly_digest_desc": "Synthèse IA chaque lundi",
     "weekly_digest_pro": "Disponible avec Pro",
@@ -1136,6 +1139,23 @@
     "not_found_manual": "Introuvable ? Saisir manuellement",
     "more_options": "Plus d'options",
     "less_options": "Moins"
+  },
+  "privacy": {
+    "processors": {
+      "title": "Partenaires de données",
+      "intro_title": "Avec qui nous partageons les données",
+      "intro_text": "Pour faire tourner SubRadar AI, nous travaillons avec les partenaires de confiance listés ci-dessous. Chacun ne reçoit que les données minimales nécessaires à son rôle. Vous pouvez consulter le rôle de chaque partenaire et lire sa politique de confidentialité.",
+      "read_policy": "Politique de confidentialité",
+      "rights_title": "Vos droits",
+      "rights_text": "Selon le RGPD (UE) et la CCPA (Californie), vous avez le droit d'accéder, d'exporter ou de supprimer vos données. Pour exercer ces droits, écrivez à support@subradar.ai ou utilisez Paramètres → Supprimer le compte.",
+      "revenuecat": { "purpose": "Traite les achats et abonnements iOS / Android. Reçoit l'identifiant de votre abonnement, les reçus de transaction et l'ID de compte." },
+      "openai": { "purpose": "Alimente les fonctions IA — transcription vocale, analyse de captures, recherche intelligente d'abonnements. Reçoit l'audio, l'image ou le texte envoyés." },
+      "firebase": { "purpose": "Délivre les notifications push (rappels de renouvellement, alertes de facturation). Reçoit un jeton push d'appareil lié à votre compte." },
+      "resend": { "purpose": "Envoie les e-mails transactionnels — magic links, reçus, résumés hebdomadaires. Reçoit votre e-mail et les métadonnées du message." },
+      "digitalocean": { "purpose": "Héberge nos serveurs API et notre base de données. Stocke les données de compte, abonnements et analytics." },
+      "apple": { "purpose": "Lors de la connexion avec Apple ou d'un achat via l'App Store, Apple reçoit les données d'auth et d'achat selon sa politique." },
+      "google": { "purpose": "Lors de la connexion avec Google ou de l'utilisation d'Android, Google reçoit les données d'auth et de livraison push selon sa politique." }
+    }
   },
   "errors": {
     "something_went_wrong": "Une erreur est survenue",

@@ -753,6 +753,19 @@ export default function SettingsScreen() {
               thumbColor="#FFFFFF"
             />,
             undefined,
+            true,
+          )}
+          {/* Third-party processors — required for transparent disclosure
+              under GDPR Art. 13 / CCPA. Lists every external service that
+              receives user data so the user can audit before consenting
+              and request removal under right-to-erasure if needed. */}
+          {renderSettingRow(
+            'server-outline',
+            '#0EA5E9',
+            t('settings.data_partners', 'Data partners'),
+            t('settings.data_partners_desc', 'Third-party services we share data with'),
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => router.push('/privacy-processors' as any),
             false,
           )}
         </View>
@@ -858,8 +871,28 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Trademark disclaimer — required as nominative-fair-use cover
+            for the catalog (Netflix, Spotify, Apple, Google, OpenAI, …)
+            we surface in pickers and AI suggestions. Stops a service's
+            legal team from arguing we imply endorsement. */}
+        <Text
+          style={{
+            textAlign: 'center',
+            fontSize: 10,
+            color: colors.textMuted,
+            paddingHorizontal: 32,
+            paddingTop: 24,
+            lineHeight: 14,
+          }}
+        >
+          {t(
+            'settings.trademark_disclaimer',
+            'SubRadar AI is not affiliated with, endorsed by, or sponsored by Apple, Google, Netflix, Spotify, OpenAI, or any other service shown in our catalog. All trademarks and logos are property of their respective owners.',
+          )}
+        </Text>
+
         {/* Version */}
-        <Text style={{ textAlign: 'center', fontSize: 11, color: colors.textMuted, paddingVertical: 28, letterSpacing: 0.3 }}>v{version} · Subradar</Text>
+        <Text style={{ textAlign: 'center', fontSize: 11, color: colors.textMuted, paddingTop: 16, paddingBottom: 28, letterSpacing: 0.3 }}>v{version} · Subradar</Text>
       </ScrollView>
 
       <CountryPicker

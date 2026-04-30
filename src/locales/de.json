@@ -348,6 +348,9 @@
     "privacy": "Datenschutz",
     "analytics_opt_out": "Analytik deaktivieren",
     "analytics_opt_out_desc": "Keine Nutzungsereignisse mehr senden",
+    "data_partners": "Datenpartner",
+    "data_partners_desc": "Drittdienste, mit denen wir Daten teilen",
+    "trademark_disclaimer": "SubRadar AI ist nicht mit Apple, Google, Netflix, Spotify, OpenAI oder anderen in unserem Katalog gezeigten Diensten verbunden, von ihnen unterstützt oder gesponsert. Alle Marken und Logos sind Eigentum ihrer jeweiligen Inhaber.",
     "weekly_digest": "Wöchentlicher KI-Bericht",
     "weekly_digest_desc": "KI-Zusammenfassung jeden Montag",
     "weekly_digest_pro": "Verfügbar in Pro",
@@ -1136,6 +1139,23 @@
     "not_found_manual": "Nicht gefunden? Manuell eingeben",
     "more_options": "Weitere Optionen",
     "less_options": "Weniger"
+  },
+  "privacy": {
+    "processors": {
+      "title": "Datenpartner",
+      "intro_title": "Mit wem wir Daten teilen",
+      "intro_text": "Damit SubRadar AI funktioniert, arbeiten wir mit den unten aufgeführten vertrauenswürdigen Anbietern. Jeder erhält nur die für seine Rolle minimal notwendigen Daten. Sie können sehen, was jeder Verarbeiter tut, und seine Datenschutzerklärung lesen.",
+      "read_policy": "Datenschutzerklärung",
+      "rights_title": "Ihre Rechte",
+      "rights_text": "Nach DSGVO (EU) und CCPA (Kalifornien) haben Sie das Recht auf Auskunft, Export oder Löschung Ihrer Daten. Schreiben Sie an support@subradar.ai oder nutzen Sie „Einstellungen → Konto löschen“.",
+      "revenuecat": { "purpose": "Verarbeitet In-App-Käufe und Abos auf iOS / Android. Erhält Ihre Abo-ID, Transaktionsbelege und die Konto-ID." },
+      "openai": { "purpose": "Treibt KI-Funktionen an — Sprachtranskription, Screenshot-Analyse, intelligente Abo-Suche. Erhält das Audio, Bild oder den Text, den Sie senden." },
+      "firebase": { "purpose": "Liefert Push-Benachrichtigungen (Verlängerungs-Erinnerungen, Abrechnungs-Warnungen). Erhält ein Geräte-Push-Token, das mit Ihrem Konto verknüpft ist." },
+      "resend": { "purpose": "Versendet Transaktions-E-Mails — Anmelde-Links, Belege, wöchentliche Zusammenfassungen. Erhält Ihre E-Mail-Adresse und Nachrichten-Metadaten." },
+      "digitalocean": { "purpose": "Hostet unsere API-Server und Datenbank. Speichert Konto-, Abo- und Analysedaten." },
+      "apple": { "purpose": "Bei Anmeldung mit Apple oder Käufen über den App Store erhält Apple Auth- und Kaufdaten gemäß deren Richtlinie." },
+      "google": { "purpose": "Bei Anmeldung mit Google oder Nutzung von Android erhält Google Auth- und Push-Zustelldaten gemäß deren Richtlinie." }
+    }
   },
   "errors": {
     "something_went_wrong": "Etwas ist schiefgelaufen",

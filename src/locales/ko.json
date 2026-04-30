@@ -348,6 +348,9 @@
     "privacy": "개인정보",
     "analytics_opt_out": "분석 끄기",
     "analytics_opt_out_desc": "사용 이벤트 전송 중지",
+    "data_partners": "데이터 파트너",
+    "data_partners_desc": "데이터를 공유하는 제3자 서비스",
+    "trademark_disclaimer": "SubRadar AI는 Apple, Google, Netflix, Spotify, OpenAI 또는 카탈로그에 표시된 다른 서비스와 제휴되어 있지 않으며 보증되거나 후원되지 않습니다. 모든 상표와 로고는 각 소유자의 자산입니다.",
     "weekly_digest": "주간 AI 요약",
     "weekly_digest_desc": "매주 월요일 AI 분석 요약",
     "weekly_digest_pro": "Pro에서 사용 가능",
@@ -1134,6 +1137,23 @@
     "not_found_manual": "못 찾으셨나요? 직접 입력",
     "more_options": "추가 옵션",
     "less_options": "접기"
+  },
+  "privacy": {
+    "processors": {
+      "title": "데이터 파트너",
+      "intro_title": "데이터를 공유하는 대상",
+      "intro_text": "SubRadar AI 운영을 위해 아래의 신뢰할 수 있는 파트너와 협력합니다. 각 파트너는 자신의 역할에 필요한 최소한의 데이터만 받습니다. 각 파트너의 역할과 개인정보 처리방침을 확인할 수 있습니다.",
+      "read_policy": "개인정보 처리방침",
+      "rights_title": "귀하의 권리",
+      "rights_text": "GDPR(EU) 및 CCPA(캘리포니아)에 따라 데이터에 대한 접근, 내보내기, 삭제를 요청할 수 있습니다. support@subradar.ai로 연락하거나 설정 → 계정 삭제를 사용하세요.",
+      "revenuecat": { "purpose": "iOS / Android 인앱 결제 및 구독을 처리합니다. 구독 식별자, 거래 영수증, 기본 계정 ID를 수신합니다." },
+      "openai": { "purpose": "AI 기능(음성 변환, 스크린샷 분석, 스마트 구독 검색)을 제공합니다. 전송한 오디오, 이미지 또는 텍스트를 수신합니다." },
+      "firebase": { "purpose": "푸시 알림(갱신 알림, 결제 경고)을 전달합니다. 계정에 연결된 기기 푸시 토큰을 수신합니다." },
+      "resend": { "purpose": "트랜잭션 이메일(매직 링크, 영수증, 주간 다이제스트)을 전송합니다. 이메일과 메시지 메타데이터를 수신합니다." },
+      "digitalocean": { "purpose": "API 서버 및 데이터베이스를 호스팅합니다. 계정, 구독, 분석 데이터를 저장합니다." },
+      "apple": { "purpose": "Apple 로그인 또는 App Store 구매 시, Apple은 정책에 따라 인증 및 구매 데이터를 수신합니다." },
+      "google": { "purpose": "Google 로그인 또는 Android 사용 시, Google은 정책에 따라 인증 및 푸시 전송 데이터를 수신합니다." }
+    }
   },
   "errors": {
     "something_went_wrong": "문제가 발생했습니다",

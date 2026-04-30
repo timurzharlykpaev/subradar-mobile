@@ -348,6 +348,9 @@
     "privacy": "Privacidad",
     "analytics_opt_out": "Desactivar analíticas",
     "analytics_opt_out_desc": "Dejar de enviar eventos de uso",
+    "data_partners": "Socios de datos",
+    "data_partners_desc": "Servicios de terceros con los que compartimos datos",
+    "trademark_disclaimer": "SubRadar AI no está afiliado, respaldado ni patrocinado por Apple, Google, Netflix, Spotify, OpenAI ni ningún otro servicio mostrado en nuestro catálogo. Todas las marcas y logotipos son propiedad de sus respectivos dueños.",
     "weekly_digest": "Resumen semanal IA",
     "weekly_digest_desc": "Resumen de análisis IA cada lunes",
     "weekly_digest_pro": "Disponible en Pro",
@@ -1136,6 +1139,23 @@
     "not_found_manual": "¿No lo encontraste? Ingresa manualmente",
     "more_options": "Más opciones",
     "less_options": "Menos"
+  },
+  "privacy": {
+    "processors": {
+      "title": "Socios de datos",
+      "intro_title": "Con quién compartimos datos",
+      "intro_text": "Para que SubRadar AI funcione, trabajamos con los socios de confianza listados abajo. Cada uno recibe solo los datos mínimos necesarios para su función. Puedes revisar lo que hace cada uno y leer su política de privacidad.",
+      "read_policy": "Política de privacidad",
+      "rights_title": "Tus derechos",
+      "rights_text": "Según el RGPD (UE) y la CCPA (California), tienes derecho a acceder, exportar o eliminar tus datos. Para ejercerlos, escribe a support@subradar.ai o usa Ajustes → Eliminar cuenta.",
+      "revenuecat": { "purpose": "Procesa compras y suscripciones en App Store / Google Play. Recibe el identificador de tu suscripción, recibos de transacción e ID básica de la cuenta." },
+      "openai": { "purpose": "Impulsa las funciones de IA — transcripción de voz, análisis de capturas, búsqueda inteligente de suscripciones. Recibe el audio, imagen o texto que envías." },
+      "firebase": { "purpose": "Entrega notificaciones push (recordatorios de renovación, alertas de cobro). Recibe un token push del dispositivo vinculado a tu cuenta." },
+      "resend": { "purpose": "Envía correos transaccionales — enlaces mágicos, recibos, resúmenes semanales. Recibe tu correo y metadatos del mensaje." },
+      "digitalocean": { "purpose": "Aloja nuestros servidores de API y base de datos. Almacena datos de cuenta, suscripciones y analítica." },
+      "apple": { "purpose": "Al iniciar sesión con Apple o comprar vía App Store, Apple recibe datos de auth y compra según su política." },
+      "google": { "purpose": "Al iniciar sesión con Google o usar Android, Google recibe datos de auth y entrega push según su política." }
+    }
   },
   "errors": {
     "something_went_wrong": "Algo salió mal",

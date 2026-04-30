@@ -356,6 +356,9 @@
     "privacy": "Privacy",
     "analytics_opt_out": "Opt out of analytics",
     "analytics_opt_out_desc": "Stop sending usage events",
+    "data_partners": "Data partners",
+    "data_partners_desc": "Third-party services we share data with",
+    "trademark_disclaimer": "SubRadar AI is not affiliated with, endorsed by, or sponsored by Apple, Google, Netflix, Spotify, OpenAI, or any other service shown in our catalog. All trademarks and logos are property of their respective owners.",
     "weekly_digest": "Weekly AI Digest",
     "weekly_digest_desc": "AI analysis summary every Monday",
     "weekly_digest_pro": "Available in Pro",
@@ -436,6 +439,23 @@
     "something_went_wrong": "Something went wrong",
     "try_restart": "Try restarting the app",
     "restart": "Restart"
+  },
+  "privacy": {
+    "processors": {
+      "title": "Data partners",
+      "intro_title": "Who we share data with",
+      "intro_text": "To run SubRadar AI we work with the trusted companies below. Each one only receives the minimum data needed for its role. You can review what each processor does and read their privacy policy.",
+      "read_policy": "Privacy policy",
+      "rights_title": "Your rights",
+      "rights_text": "Under GDPR (EU) and CCPA (California) you have the right to access, export, or delete the data we hold about you. To exercise these rights contact support@subradar.ai or use Settings → Delete Account.",
+      "revenuecat": { "purpose": "Processes in-app purchases and subscriptions on iOS / Android. Receives your subscription identifier, transaction receipts, and basic account ID." },
+      "openai": { "purpose": "Powers AI features — voice transcription, screenshot parsing, smart subscription lookup. Receives the audio, image, or text you submit when using these features." },
+      "firebase": { "purpose": "Delivers push notifications (renewal reminders, billing alerts). Receives a device push token tied to your account." },
+      "resend": { "purpose": "Sends transactional email — sign-in links, receipts, weekly digests. Receives your email address and message metadata." },
+      "digitalocean": { "purpose": "Hosts our API servers and database. Stores account, subscription, and analytics data at rest." },
+      "apple": { "purpose": "When you sign in with Apple or buy via the App Store, Apple receives auth + purchase data per their policy." },
+      "google": { "purpose": "When you sign in with Google or use Android, Google receives auth + push delivery data per their policy." }
+    }
   },
   "landing": {
     "hero_title": "Know exactly where your money goes",
