@@ -1013,7 +1013,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="interactive"
             automaticallyAdjustKeyboardInsets
-            contentInsetAdjustmentBehavior="automatic"
+            // "never": модалка лежит поверх root-view, у которого
+            // top safeArea inset = высота статус-бара/чёлки. С "automatic"
+            // UIScrollView внутри модалки добавляет этот inset как
+            // contentInset.top, начальный contentOffset = -inset, и
+            // визуально верх контента (smart-input) уезжает выше видимой
+            // области, а скроллить вверх нельзя — упёрлись в логический
+            // верх. Высоту хедера/драг-хэндла мы и так считаем сами.
+            contentInsetAdjustmentBehavior="never"
           >
             {flowState === 'idle' && (
               <IdleView
