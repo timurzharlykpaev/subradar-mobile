@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { formatMoney } from '../../src/utils/formatMoney';
 import { workspaceApi } from '../../src/api/workspace';
 import { useTheme } from '../../src/theme';
 import { useRouter } from 'expo-router';
@@ -25,18 +26,25 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
 import TeamExplainerModal from '../../src/components/TeamExplainerModal';
+import { reconcileBillingDrift } from '../../src/utils/reconcileBillingDrift';
 
 export default function WorkspaceScreen() {
   const { colors, isDark } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const access = useEffectiveAccess();
   const isTeam = access?.plan === 'organization';
   const isPro = access?.isPro ?? false;
-  // Workspace currency isn't exposed via billing anymore; fall back to USD.
-  // (Team analytics responses include their own currency per member.)
-  const billingCurrency = 'USD';
+  // Backend `/workspace/me/analytics` does NOT convert per-subscription
+  // currencies — it sums raw `amount` values across each member's subs (see
+  // `subradar-backend/src/workspace/workspace.service.ts:538`). Mixing
+  // currencies in one number is wrong, but until the backend exposes a
+  // per-member converted amount we render it in the user's preferred
+  // display currency so at least the SYMBOL/locale matches what the user
+  // expects to see across the app.
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const locale = i18n.language;
   const currentUser = useAuthStore((s) => s.user);
 
   const [showCreate, setShowCreate] = useState(false);
@@ -56,6 +64,31 @@ export default function WorkspaceScreen() {
     queryFn: () => workspaceApi.getMe().then(r => r.data),
     retry: false,
   });
+
+  // Pull-to-refresh: invalidate everything that drives this screen — billing
+  // (plan + banner priority), workspace, analytics, and AI analysis savings.
+  // Was only re-fetching `workspace`, so banner/spend numbers stayed stale
+  // after a sync change (e.g. just-fixed cancel-state drift) until the user
+  // navigated away and back.
+  const [manualRefreshing, setManualRefreshing] = useState(false);
+  const handleRefresh = React.useCallback(async () => {
+    setManualRefreshing(true);
+    try {
+      // Run RC ↔ backend reconcile FIRST so subsequent refetches see the
+      // corrected state. Critical here because the workspace screen is
+      // the most visible place where the cancel-state drift surfaces (Team
+      // banner / "ends in N days" while Apple says it'll renew).
+      await reconcileBillingDrift().catch(() => undefined);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['billing'] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace'] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace-analysis'] }),
+      ]);
+    } finally {
+      setManualRefreshing(false);
+    }
+  }, [queryClient]);
 
   const { data: analytics } = useQuery({
     queryKey: ['workspace-analytics'],
@@ -107,15 +140,20 @@ export default function WorkspaceScreen() {
     return (
       <SafeAreaView testID="workspace-screen-empty" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          // iOS: pass-through — ScrollView's `automaticallyAdjustKeyboardInsets`
+          // already shifts content above the keyboard; layering KAV padding on
+          // top double-counted the offset and pushed the create-team input
+          // behind the keyboard. Android still needs `behavior="height"`.
+          behavior={Platform.OS === 'android' ? 'height' : undefined}
           style={{ flex: 1 }}
-          keyboardVerticalOffset={90}
+          keyboardVerticalOffset={0}
         >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
           testID="workspace-scroll-empty"
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
           automaticallyAdjustKeyboardInsets
           contentInsetAdjustmentBehavior="automatic"
         >
@@ -384,7 +422,7 @@ export default function WorkspaceScreen() {
         testID="workspace-scroll"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={isRefetching || manualRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
         keyboardShouldPersistTaps="handled"
       >
         {/* Single banner chosen by backend-resolved priority — includes
@@ -473,7 +511,10 @@ export default function WorkspaceScreen() {
             color: colors.text,
             letterSpacing: -1,
           }}>
-            ${analytics?.totalMonthly?.toFixed(0) || 0}/mo
+            {formatMoney(analytics?.totalMonthly ?? 0, displayCurrency, locale)}
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textSecondary }}>
+              {' /'}{t('add_flow.mo', 'mo')}
+            </Text>
           </Text>
           <Text style={{
             fontSize: 14,
@@ -496,7 +537,7 @@ export default function WorkspaceScreen() {
             }}>
               <Ionicons name="sparkles" size={14} color="#22C55E" />
               <Text style={{ fontSize: 13, fontWeight: '700', color: '#22C55E' }}>
-                {t('workspace.ai_savings_potential', 'AI potential savings')}: ${teamSavings.toFixed(0)}/mo
+                {t('workspace.ai_savings_potential', 'AI potential savings')}: {formatMoney(teamSavings, displayCurrency, locale)}/{t('add_flow.mo', 'mo')}
               </Text>
             </View>
           )}
@@ -599,7 +640,7 @@ export default function WorkspaceScreen() {
         {/* ── Subscription Overlaps ── */}
         {overlaps.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-            <TeamOverlaps overlaps={overlaps} currency={billingCurrency} />
+            <TeamOverlaps overlaps={overlaps} currency={displayCurrency} />
           </View>
         )}
 
@@ -608,7 +649,7 @@ export default function WorkspaceScreen() {
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
             <TeamSpendChart
               members={analytics.members.map((m: any) => ({ name: m.name || m.email, amount: m.monthlySpend ?? m.totalMonthly ?? 0 }))}
-              currency={billingCurrency}
+              currency={displayCurrency}
             />
           </View>
         )}
@@ -642,7 +683,10 @@ export default function WorkspaceScreen() {
                 const memberName = m.user?.name || m.user?.email?.split('@')[0] || m.email?.split('@')[0] || t('workspace.members_one');
                 const avatarUrl = m.user?.avatarUrl;
                 const memberSpend = analytics?.members?.find((am: any) => am.userId === m.userId || am.name === memberName);
+                const spendAmount = memberSpend?.monthlySpend ?? memberSpend?.totalMonthly ?? 0;
+                const subCount = memberSpend?.subscriptionCount ?? memberSpend?.count ?? 0;
                 const isOwnerMember = m.role === 'OWNER';
+                const isActive = m.status === 'ACTIVE';
                 const roleColor = isOwnerMember ? colors.primary : m.role === 'ADMIN' ? '#F59E0B' : colors.textSecondary;
                 const roleBg = isOwnerMember ? colors.primary + '18' : m.role === 'ADMIN' ? '#F59E0B18' : (isDark ? '#ffffff0D' : '#0000000A');
 
@@ -665,11 +709,11 @@ export default function WorkspaceScreen() {
                   {avatarUrl ? (
                     <Image
                       source={{ uri: avatarUrl }}
-                      style={{ width: 42, height: 42, borderRadius: 21 }}
+                      style={{ width: 44, height: 44, borderRadius: 22 }}
                     />
                   ) : (
                     <View style={{
-                      width: 42, height: 42, borderRadius: 21,
+                      width: 44, height: 44, borderRadius: 22,
                       backgroundColor: isOwnerMember ? colors.primary + '18' : (isDark ? '#ffffff10' : '#00000008'),
                       alignItems: 'center', justifyContent: 'center',
                     }}>
@@ -682,37 +726,43 @@ export default function WorkspaceScreen() {
                     </View>
                   )}
 
-                  {/* Info */}
+                  {/* Name + role badge + status */}
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }} numberOfLines={1}>
-                      {memberName}
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-                      <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: roleBg }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, flexShrink: 1 }} numberOfLines={1}>
+                        {memberName}
+                      </Text>
+                      <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: roleBg }}>
                         <Text style={{ fontSize: 10, fontWeight: '800', color: roleColor, letterSpacing: 0.5 }}>
                           {m.role}
                         </Text>
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted }} />
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: m.status === 'ACTIVE' ? '#22C55E' : colors.textMuted }}>
-                          {m.status}
-                        </Text>
-                      </View>
-                      {memberSpend && (
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted }}>
-                          ${(memberSpend.monthlySpend ?? memberSpend.totalMonthly ?? 0).toFixed(0)}/{t('paywall.month', 'mo')}
-                        </Text>
-                      )}
                     </View>
-                    <Text style={[styles.memberStatus, { color: colors.textMuted }]}>
-                      {(m.user as any)?.hasOwnPro
-                        ? t('team_logic.member_status_own_pro')
-                        : (m.user as any)?.gracePeriodEnd
-                        ? t('team_logic.member_status_grace')
-                        : t('team_logic.member_status_team')}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: isActive ? '#22C55E' : colors.textMuted }} />
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: isActive ? '#22C55E' : colors.textMuted }} numberOfLines={1}>
+                        {(m.user as any)?.hasOwnPro
+                          ? t('team_logic.member_status_own_pro')
+                          : (m.user as any)?.gracePeriodEnd
+                          ? t('team_logic.member_status_grace')
+                          : t('team_logic.member_status_team')}
+                      </Text>
+                    </View>
                   </View>
+
+                  {/* Spend (right column) */}
+                  {memberSpend && spendAmount > 0 ? (
+                    <View style={{ alignItems: 'flex-end', minWidth: 64 }}>
+                      <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }} numberOfLines={1}>
+                        {formatMoney(spendAmount, displayCurrency, locale)}
+                      </Text>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: colors.textMuted, marginTop: 2 }}>
+                        {subCount > 0
+                          ? `${subCount} · /${t('add_flow.mo', 'mo')}`
+                          : `/${t('add_flow.mo', 'mo')}`}
+                      </Text>
+                    </View>
+                  ) : null}
 
                   {/* Actions */}
                   {m.role !== 'OWNER' && canManage && (
@@ -815,7 +865,7 @@ export default function WorkspaceScreen() {
         member={selectedMember}
         workspaceId={workspace?.id}
         analytics={selectedMember ? analytics?.members?.find((am: any) => am.userId === selectedMember.userId || am.name === (selectedMember.user?.name || selectedMember.email)) : null}
-        currency={billingCurrency}
+        currency={displayCurrency}
         canManage={canManage}
         onRemove={() => selectedMember && removeMutation.mutate(selectedMember.id)}
         onClose={() => setSelectedMember(null)}

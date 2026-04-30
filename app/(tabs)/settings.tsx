@@ -73,13 +73,27 @@ export default function SettingsScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const drift = await reconcileBillingDrift();
-    await queryClient.invalidateQueries({ queryKey: ['billing'] });
-    if (drift.ran) {
-      // give the freshly-invalidated query a moment to refetch
-      await new Promise((r) => setTimeout(r, 200));
+    try {
+      // Reconcile RC ↔ backend drift first so the subsequent refetches see
+      // the corrected billing state in one round-trip.
+      const drift = await reconcileBillingDrift();
+      // Invalidate every query that drives this screen so a single pull
+      // refreshes plan, banner, usage limits, subs, analytics — not just
+      // billing.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['billing'] }),
+        queryClient.invalidateQueries({ queryKey: ['subscriptions'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace'] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-me'] }),
+      ]);
+      if (drift.ran) {
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    } finally {
+      setRefreshing(false);
     }
-    setRefreshing(false);
   }, [queryClient]);
 
   // Fetch notification settings on mount, then mirror into the persisted
@@ -418,8 +432,15 @@ export default function SettingsScreen() {
             },
             true,
           )}
-          {/* Restore Purchases — unified component; always visible (including for Pro). */}
-          <RestorePurchasesButton origin="settings" styleLink />
+          {/* Restore Purchases — only when there's no active paid plan owned
+              by this user. With an active sub, Apple already exposes Manage
+              Subscription above; surfacing Restore there confused users
+              ("why does it say restore if I'm already subscribed?") and
+              risked replaying an OLDER cancelled product over the live
+              entitlement. Paywall keeps the link unconditionally. */}
+          {!(access?.hasOwnPaidPlan && access?.state === 'active') && (
+            <RestorePurchasesButton origin="settings" styleLink />
+          )}
           {/* Payment Cards */}
           {renderSettingRow(
             'wallet-outline',

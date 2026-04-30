@@ -52,17 +52,39 @@ export async function reconcileBillingDrift(): Promise<{
     const active = info?.entitlements?.active ?? {};
     const rcActive = Object.keys(active).length > 0;
 
-    // Detect "cancel-at-period-end": entitlement still active but the user
-    // has cancelled in Apple Settings (RC marks `willRenew=false`). Without
-    // this branch the user can stay on Pro indefinitely if the RC webhook
-    // gets dropped between Apple and our backend.
+    // Detect "cancel-at-period-end": the entitlement that matches the
+    // backend's CURRENT plan is still active but its underlying
+    // subscription is set to not renew (user cancelled in Apple Settings).
+    //
+    // The previous version iterated `subscriptionsByProductIdentifier` and
+    // tripped on ANY non-renewing sub — so a user who once cancelled Pro,
+    // then bought a fresh Team that auto-renews, was still flagged as
+    // "pending cancel" because the historical Pro sub kept its
+    // `willRenew=false`. That forced /billing/reconcile to re-stamp the
+    // active Team as cancel_at_period_end and surfaced an expiration
+    // banner under a fully-paid Team.
+    //
+    // Match the active entitlement to the backend plan: org → team*,
+    // pro → pro/premium*. Only that entitlement's `willRenew` is allowed
+    // to drive a reconcile.
     let pendingCancellation = false;
     if (rcActive) {
       const subsMap = (info as any)?.subscriptionsByProductIdentifier;
-      if (subsMap && typeof subsMap === 'object') {
-        pendingCancellation = Object.values(subsMap).some(
-          (s: any) => s && s.willRenew === false,
+      const tierTokens =
+        me.effective.plan === 'organization'
+          ? ['team', 'org']
+          : me.effective.plan === 'pro'
+            ? ['pro', 'premium']
+            : [];
+      if (tierTokens.length > 0 && subsMap && typeof subsMap === 'object') {
+        const currentEnt = Object.entries(active).find(([name]) =>
+          tierTokens.some((tok) => name.toLowerCase().includes(tok)),
         );
+        const currentProductId = (currentEnt?.[1] as any)?.productIdentifier;
+        if (currentProductId && subsMap[currentProductId]) {
+          pendingCancellation =
+            subsMap[currentProductId].willRenew === false;
+        }
       }
     }
 
