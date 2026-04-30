@@ -43,7 +43,16 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
   return (
     <TouchableOpacity
       testID={`subscription-card-${subscription.id}`}
-      style={[styles.card, { backgroundColor: colors.surface }]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface },
+        // 3px colored stripe on the leading edge when the user picked a
+        // color — keeps the picker's effect visible even on services that
+        // have an iconUrl (where the placeholder tint never shows).
+        subscription.color
+          ? { borderLeftWidth: 3, borderLeftColor: subscription.color }
+          : null,
+      ]}
       activeOpacity={0.85}
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}
       accessibilityRole="button"
@@ -57,8 +66,29 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
             onError={() => setIconError(true)}
           />
         ) : (
-          <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>
-            <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name?.[0]?.toUpperCase() ?? '?'}</Text>
+          // User-chosen `color` (set via the edit form) was previously
+          // written to the backend but never read anywhere on the client,
+          // so the picker had zero visual effect. Apply it to the
+          // placeholder bg + initial when present; fall back to the
+          // theme's primary tint otherwise.
+          <View
+            style={[
+              styles.logoPlaceholder,
+              {
+                backgroundColor: subscription.color
+                  ? subscription.color + '22'
+                  : colors.primaryLight,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.logoText,
+                { color: subscription.color || colors.primary },
+              ]}
+            >
+              {subscription.name?.[0]?.toUpperCase() ?? '?'}
+            </Text>
           </View>
         )}
       </View>

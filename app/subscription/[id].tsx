@@ -155,8 +155,24 @@ export default function SubscriptionDetailScreen() {
           {subscription.iconUrl && !iconError ? (
             <Image source={{ uri: subscription.iconUrl }} style={styles.logo} onError={() => setIconError(true)} />
           ) : (
-            <View style={[styles.logoPlaceholder, { backgroundColor: colors.primaryLight }]}>
-              <Text style={[styles.logoText, { color: colors.primary }]}>{subscription.name?.[0]?.toUpperCase() ?? '?'}</Text>
+            <View
+              style={[
+                styles.logoPlaceholder,
+                {
+                  backgroundColor: subscription.color
+                    ? subscription.color + '22'
+                    : colors.primaryLight,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.logoText,
+                  { color: subscription.color || colors.primary },
+                ]}
+              >
+                {subscription.name?.[0]?.toUpperCase() ?? '?'}
+              </Text>
             </View>
           )}
 
