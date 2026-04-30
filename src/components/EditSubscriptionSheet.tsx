@@ -32,6 +32,7 @@ import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
 import { DatePickerField } from './DatePickerField';
 import { BillingDayPicker } from './BillingDayPicker';
 import { CurrencyPicker } from './CurrencyPicker';
+import { computeNextPaymentDate, type BillingPeriod as ComputeBillingPeriod } from '../utils/computeNextPayment';
 
 interface Props {
   visible: boolean;
@@ -136,6 +137,15 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({ nickname: '', last4: '', brand: 'VISA' as CardBrand });
   const [addingCard, setAddingCard] = useState(false);
+  // The "next payment date" picker used to sit next to billingDay/startDate
+  // and silently contradict them — users would change the day, see a
+  // different next-payment date underneath, and not know which one wins.
+  // The backend always recomputes nextPaymentDate from billingDay+period+
+  // startDate when those change, so the explicit picker is only useful for
+  // genuine one-off overrides (irregular first cycle, partial-month
+  // upgrade). Hidden by default behind an "override" toggle; users see a
+  // live-computed preview instead so they can sanity-check the pattern.
+  const [overrideNextPayment, setOverrideNextPayment] = useState(false);
 
   useEffect(() => {
     if (visible && subscription) {
@@ -174,6 +184,19 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
         trialEndDate: toDateStr(sub.trialEndDate),
       });
       setShowAddCard(false);
+      // Auto-open the override toggle on entry if the stored next-payment
+      // diverges from what the pattern would compute (irregular first
+      // cycle, manual override at AI-import time). Otherwise keep it
+      // collapsed so the form doesn't hand the user a second contradictory
+      // picker for the common case.
+      const stored = toDateStr(sub.nextPaymentDate);
+      const computed = computeNextPaymentDate(
+        toDateStr(sub.startDate),
+        (sub.billingPeriod ?? 'MONTHLY') as ComputeBillingPeriod,
+        Number(sub.billingDay ?? 1),
+      );
+      const computedStr = computed ? computed.toISOString().split('T')[0] : '';
+      setOverrideNextPayment(!!stored && !!computedStr && stored !== computedStr);
     }
   }, [visible, subscription]);
 
@@ -553,10 +576,9 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                   />
                 </View>
 
-                {/* Start date / Next payment date — let the user correct
-                    dates the AI got wrong or backfill missing ones. The
-                    backend recomputes derived fields on update so it's safe
-                    to send only what changed. */}
+                {/* Start date — informational anchor. The backend uses it
+                    together with billingDay/Period to compute every future
+                    nextPaymentDate, so editing it cascades. */}
                 <View style={styles.field}>
                   <DatePickerField
                     label={t('add.start_date', 'Start date')}
@@ -564,12 +586,91 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
                     onChange={onChangeStartDate}
                   />
                 </View>
+
+                {/* Next-payment preview + override.
+                    Replaces the bare DatePickerField that used to sit
+                    here. Two adjacent date fields (billingDay grid +
+                    explicit nextPaymentDate picker) silently contradicted
+                    each other and users couldn't tell which one the
+                    backend would honour. Pattern now: show the live-
+                    computed next-payment so they can sanity-check, hide
+                    the explicit picker behind an "Override" toggle for
+                    the genuinely-irregular cases (trial→paid first
+                    cycle, mid-month upgrades, AI-import gaps). */}
                 <View style={styles.field}>
-                  <DatePickerField
-                    label={t('add.next_payment', 'Next payment date')}
-                    value={form.nextPaymentDate}
-                    onChange={onChangeNextPaymentDate}
-                  />
+                  {(() => {
+                    const computed = computeNextPaymentDate(
+                      form.startDate,
+                      form.billingPeriod as ComputeBillingPeriod,
+                      Number(form.billingDay) || null,
+                    );
+                    const previewStr = computed
+                      ? computed.toLocaleDateString(undefined, {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : t('subscription.next_payment_unavailable', '—');
+                    return (
+                      <View
+                        style={[styles.previewRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      >
+                        <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.previewLabel, { color: colors.textMuted }]}>
+                            {t('add.next_payment', 'Next payment date')}
+                          </Text>
+                          <Text style={[styles.previewValue, { color: colors.text }]}>
+                            {previewStr}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setOverrideNextPayment((prev) => {
+                              const nextOpen = !prev;
+                              if (nextOpen && !form.nextPaymentDate && computed) {
+                                // Pre-seed the override with the computed value so
+                                // the picker opens at a sensible date instead of
+                                // empty.
+                                setForm((f) => ({
+                                  ...f,
+                                  nextPaymentDate: computed.toISOString().split('T')[0],
+                                }));
+                              } else if (!nextOpen) {
+                                // Closing the override clears the field so the
+                                // backend goes back to the computed pattern on
+                                // save.
+                                setForm((f) => ({ ...f, nextPaymentDate: '' }));
+                              }
+                              return nextOpen;
+                            });
+                          }}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Text style={[styles.overrideBtn, { color: colors.primary }]}>
+                            {overrideNextPayment
+                              ? t('subscription.reset_to_pattern', 'Reset')
+                              : t('subscription.override_date', 'Override')}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })()}
+                  {overrideNextPayment && (
+                    <View style={{ marginTop: 12 }}>
+                      <DatePickerField
+                        label={t('subscription.next_payment_override', 'Custom next payment date')}
+                        value={form.nextPaymentDate}
+                        onChange={onChangeNextPaymentDate}
+                      />
+                      <Text style={[styles.overrideHint, { color: colors.textMuted }]}>
+                        {t(
+                          'subscription.override_hint',
+                          'Use only if the next charge is on a different date than the pattern (irregular first cycle, mid-period upgrade).',
+                        )}
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 {/* Payment Card */}
@@ -937,6 +1038,19 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
   form: { paddingBottom: 40 },
   field: { marginBottom: 16 },
+  previewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  previewLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.3, textTransform: 'uppercase' },
+  previewValue: { fontSize: 15, fontWeight: '700', marginTop: 2 },
+  overrideBtn: { fontSize: 13, fontWeight: '700' },
+  overrideHint: { fontSize: 12, lineHeight: 16, marginTop: 8 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
