@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { apiClient } from '../api/client';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { formatMoney } from '../utils/formatMoney';
 
 const { height: SCREEN_H } = Dimensions.get('window');
 const SHEET_H = SCREEN_H * 0.75;
@@ -33,7 +34,7 @@ interface Props {
 }
 
 export function MemberDetailSheet({ visible, member, workspaceId, analytics, currency = 'USD', canManage, onRemove, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const [subs, setSubs] = useState<any[]>([]);
@@ -48,7 +49,7 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
   const spend = analytics?.monthlySpend ?? analytics?.totalMonthly ?? 0;
   const subCount = analytics?.subscriptionCount ?? analytics?.count ?? 0;
   const isOwnerMember = member?.role === 'OWNER';
-  const sym = currency === 'USD' ? '$' : currency;
+  const fmt = (n: number) => formatMoney(n, currency, i18n.language);
 
   // Animate in/out
   useEffect(() => {
@@ -165,7 +166,7 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
           {/* Stats */}
           <View style={styles.statsRow}>
             <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.statValue, { color: colors.primary }]}>{sym}{spend.toFixed(0)}</Text>
+              <Text style={[styles.statValue, { color: colors.primary }]} numberOfLines={1} adjustsFontSizeToFit>{fmt(spend)}</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>/{t('paywall.month', 'mo')}</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -173,7 +174,7 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>{t('subscriptions.title', 'Subs')}</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.statValue, { color: colors.text }]}>{sym}{(spend * 12).toFixed(0)}</Text>
+              <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit>{fmt(spend * 12)}</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>/{t('paywall.year', 'yr')}</Text>
             </View>
           </View>
@@ -211,7 +212,7 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
                         </Text>
                       </View>
                       <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
-                        {sub.currency} {monthly.toFixed(2)}
+                        {formatMoney(monthly, sub.currency || currency, i18n.language)}
                       </Text>
                     </View>
                   );

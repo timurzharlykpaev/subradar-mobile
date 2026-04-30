@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
+import { formatMoney } from '../utils/formatMoney';
 
 interface MemberSpend {
   name: string;
@@ -14,9 +15,8 @@ interface Props {
 }
 
 export function TeamSpendChart({ members, currency = 'USD' }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
-  const sym = currency === 'USD' ? '$' : currency;
   const maxAmount = Math.max(...members.map(m => m.amount), 1);
 
   if (members.length === 0) return null;
@@ -41,8 +41,8 @@ export function TeamSpendChart({ members, currency = 'USD' }: Props) {
                 ]}
               />
             </View>
-            <Text style={[styles.amount, { color: colors.text }]}>
-              {sym}{member.amount.toFixed(0)}
+            <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1}>
+              {formatMoney(member.amount, currency, i18n.language)}
             </Text>
           </View>
         ))}
@@ -57,5 +57,5 @@ const styles = StyleSheet.create({
   name: { width: 70, fontSize: 13 },
   barContainer: { flex: 1, height: 24, borderRadius: 6, overflow: 'hidden', backgroundColor: 'rgba(128,128,128,0.1)' },
   bar: { height: '100%', borderRadius: 6, minWidth: 4 },
-  amount: { width: 55, fontSize: 14, fontWeight: '700', textAlign: 'right' },
+  amount: { minWidth: 64, maxWidth: 96, fontSize: 13, fontWeight: '700', textAlign: 'right' },
 });

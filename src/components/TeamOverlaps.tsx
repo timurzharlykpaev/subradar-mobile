@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
+import { formatMoney } from '../utils/formatMoney';
 
 interface Overlap {
   serviceName: string;
@@ -19,9 +20,9 @@ interface Props {
 }
 
 export function TeamOverlaps({ overlaps, currency = 'USD' }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
-  const sym = currency === 'USD' ? '$' : currency;
+  const fmt = (n: number) => formatMoney(n, currency, i18n.language);
 
   const positiveOverlaps = overlaps.filter(o => o.savingsMonthly > 0);
   if (positiveOverlaps.length === 0) return null;
@@ -40,12 +41,12 @@ export function TeamOverlaps({ overlaps, currency = 'USD' }: Props) {
             {overlap.serviceName} x {overlap.members.length} {t('workspace.members_label', 'members')}
           </Text>
           <Text style={[styles.currentCost, { color: colors.textSecondary }]}>
-            {sym}{overlap.currentTotalMonthly.toFixed(0)}/{t('add_flow.mo', 'mo')} {t('workspace.total_now', 'total now')}
+            {fmt(overlap.currentTotalMonthly)}/{t('add_flow.mo', 'mo')} {t('workspace.total_now', 'total now')}
           </Text>
           <View style={styles.suggestion}>
             <Ionicons name="bulb-outline" size={14} color="#22c55e" />
             <Text style={styles.suggestionText}>
-              {overlap.suggestedPlan}: {sym}{overlap.suggestedTotalMonthly.toFixed(0)}/{t('add_flow.mo', 'mo')} {'->'} {t('workspace.save', 'save')} {sym}{overlap.savingsMonthly.toFixed(0)}
+              {overlap.suggestedPlan}: {fmt(overlap.suggestedTotalMonthly)}/{t('add_flow.mo', 'mo')} {'->'} {t('workspace.save', 'save')} {fmt(overlap.savingsMonthly)}
             </Text>
           </View>
         </View>
