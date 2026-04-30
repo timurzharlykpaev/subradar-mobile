@@ -55,7 +55,15 @@ google-service-account.json
 smoke_*.png
 *.maestro.png
 .maestro/screenshots/
-
-
-# Maestro screenshot artifacts
 .maestro/*.png
+
+# Maestro test outputs accidentally landing at repo root (e.g. 01_dashboard.png, 04b_ai_wizard.png)
+/[0-9][0-9]_*.png
+/[0-9][0-9][a-z]_*.png
+/[0-9][0-9][a-z][a-z]_*.png
+
+# Local visual / debug screenshots
+/subradar-*.jpeg
+/subradar-*.jpg
+/subradar-*.png
+.playwright-mcp/
