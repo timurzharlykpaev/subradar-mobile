@@ -564,7 +564,15 @@ export default function DashboardScreen() {
                 <TouchableOpacity
                   testID={`dashboard-sub-${sub.id}`}
                   key={sub.id}
-                  style={[styles.subCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[
+                    styles.subCard,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                    // Match SubscriptionCard: a 3-pixel coloured stripe on
+                    // the leading edge surfaces the user-chosen color even
+                    // when the service has an iconUrl (where the
+                    // placeholder tint never shows).
+                    sub.color ? { borderLeftWidth: 3, borderLeftColor: sub.color } : null,
+                  ]}
                   onPress={() => router.push(`/subscription/${sub.id}` as any)}
                   activeOpacity={0.8}
                 >
@@ -573,8 +581,11 @@ export default function DashboardScreen() {
                     name={sub.name}
                     category={sub.category}
                     imageStyle={styles.subIcon}
-                    placeholderStyle={[styles.subIconPlaceholder, { backgroundColor: colors.primaryLight }]}
-                    textStyle={[styles.subIconText, { color: colors.primary }]}
+                    placeholderStyle={[
+                      styles.subIconPlaceholder,
+                      { backgroundColor: sub.color ? sub.color + '22' : colors.primaryLight },
+                    ]}
+                    textStyle={[styles.subIconText, { color: sub.color || colors.primary }]}
                   />
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
