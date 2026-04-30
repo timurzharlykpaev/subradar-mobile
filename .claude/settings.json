@@ -5,7 +5,11 @@
       "Bash(ssh -i ~/.ssh/id_steptogoal -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@46.101.197.19 'docker logs --since 15m subradar-api-prod 2>&1; echo \"--DEV--\"; docker logs --since 15m subradar-api-dev 2>&1')",
       "WebFetch(domain:)",
       "WebFetch(domain:www.revenuecat.com)",
-      "WebFetch(domain:grep.app)"
+      "WebFetch(domain:grep.app)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:react-native-purchases.revenuecat.com)",
+      "WebFetch(domain:revenuecat.github.io)"
     ]
   },
   "hooks": {
