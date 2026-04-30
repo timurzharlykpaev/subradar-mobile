@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
   Alert, ActivityIndicator, RefreshControl, StyleSheet,
   KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard,
+  TextInput,
 } from 'react-native';
 import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { formatMoney } from '../../src/utils/formatMoney';
 import { workspaceApi } from '../../src/api/workspace';
@@ -52,6 +53,18 @@ export default function WorkspaceScreen() {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showJoinTeam, setShowJoinTeam] = useState(false);
   const [showTeamExplainer, setShowTeamExplainer] = useState(false);
+  // Manual focus on the create-team field. Replaces TextInput's `autoFocus`,
+  // which on iOS 18+ kicked in BEFORE the surrounding ScrollView had
+  // settled `automaticallyAdjustKeyboardInsets`; the resulting layout shift
+  // tore the keyboard's session and emitted a stream of
+  // `RTIInputSystemClient … requires a valid sessionID` warnings — visually
+  // observable as a flickering / laggy input.
+  const wsNameRef = useRef<TextInput | null>(null);
+  useEffect(() => {
+    if (!showCreate) return;
+    const t = setTimeout(() => wsNameRef.current?.focus(), 80);
+    return () => clearTimeout(t);
+  }, [showCreate]);
 
   // Force billing refresh when workspace tab opens to get latest plan status
   useEffect(() => {
@@ -65,29 +78,38 @@ export default function WorkspaceScreen() {
     retry: false,
   });
 
-  // Pull-to-refresh: invalidate everything that drives this screen — billing
-  // (plan + banner priority), workspace, analytics, and AI analysis savings.
-  // Was only re-fetching `workspace`, so banner/spend numbers stayed stale
-  // after a sync change (e.g. just-fixed cancel-state drift) until the user
-  // navigated away and back.
-  const [manualRefreshing, setManualRefreshing] = useState(false);
+  // Pull-to-refresh: re-fetch billing (plan + banner priority), workspace,
+  // analytics, and AI analysis savings. Previously only `workspace` was
+  // refetched — banner/spend numbers stayed stale after a sync change.
+  //
+  // Using `useIsFetching` to drive the spinner instead of a local flag —
+  // the local-flag version flipped `refreshing` while RefreshControl was
+  // still settling its own gesture state and produced
+  // "Attempting to change the refresh control while it is not idle"
+  // warnings on every pull.
+  const fetchingCount = useIsFetching({
+    predicate: (q) => {
+      const key = q.queryKey?.[0];
+      return (
+        key === 'billing' ||
+        key === 'workspace' ||
+        key === 'workspace-analytics' ||
+        key === 'workspace-analysis'
+      );
+    },
+  });
   const handleRefresh = React.useCallback(async () => {
-    setManualRefreshing(true);
-    try {
-      // Run RC ↔ backend reconcile FIRST so subsequent refetches see the
-      // corrected state. Critical here because the workspace screen is
-      // the most visible place where the cancel-state drift surfaces (Team
-      // banner / "ends in N days" while Apple says it'll renew).
-      await reconcileBillingDrift().catch(() => undefined);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['billing'] }),
-        queryClient.invalidateQueries({ queryKey: ['workspace'] }),
-        queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] }),
-        queryClient.invalidateQueries({ queryKey: ['workspace-analysis'] }),
-      ]);
-    } finally {
-      setManualRefreshing(false);
-    }
+    // Run RC ↔ backend reconcile FIRST so subsequent refetches see the
+    // corrected state. Critical here because the workspace screen is
+    // the most visible place where the cancel-state drift surfaces (Team
+    // banner / "ends in N days" while Apple says it'll renew).
+    await reconcileBillingDrift().catch(() => undefined);
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['billing'] }),
+      queryClient.refetchQueries({ queryKey: ['workspace'] }),
+      queryClient.refetchQueries({ queryKey: ['workspace-analytics'] }),
+      queryClient.refetchQueries({ queryKey: ['workspace-analysis'] }),
+    ]);
   }, [queryClient]);
 
   const { data: analytics } = useQuery({
@@ -298,6 +320,7 @@ export default function WorkspaceScreen() {
                   {t('workspace.team_name_label')}
                 </Text>
                 <DoneAccessoryInput
+                  ref={wsNameRef}
                   testID="input-workspace-name"
                   style={{
                     borderWidth: 1,
@@ -313,7 +336,15 @@ export default function WorkspaceScreen() {
                   onChangeText={setWsName}
                   placeholder={t('workspace.name_placeholder')}
                   placeholderTextColor={colors.textMuted}
-                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={() => {
+                    if (wsName.trim() && !createMutation.isPending) {
+                      createMutation.mutate();
+                    }
+                  }}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  textContentType="organizationName"
                 />
                 <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
                   <TouchableOpacity
@@ -422,7 +453,7 @@ export default function WorkspaceScreen() {
         testID="workspace-scroll"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={<RefreshControl refreshing={isRefetching || manualRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={fetchingCount > 0} onRefresh={handleRefresh} tintColor={colors.primary} />}
         keyboardShouldPersistTaps="handled"
       >
         {/* Single banner chosen by backend-resolved priority — includes
