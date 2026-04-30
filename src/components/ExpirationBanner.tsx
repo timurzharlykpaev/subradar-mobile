@@ -57,11 +57,13 @@ export default function ExpirationBanner({ payload }: Props) {
     router.push('/paywall' as any);
   };
 
-  const titleText = t('retention.plan_ends_in', {
-    count: daysLeft,
-    plan: planLabel,
-    defaultValue: `${planLabel} ends in ${daysLeft} days`,
-  });
+  const titleText = daysLeft <= 0
+    ? t('retention.plan_expired', { plan: planLabel, defaultValue: `${planLabel} has expired` })
+    : t('retention.plan_ends_in', {
+        count: daysLeft,
+        plan: planLabel,
+        defaultValue: `${planLabel} ends in ${daysLeft} days`,
+      });
 
   return (
     <View
