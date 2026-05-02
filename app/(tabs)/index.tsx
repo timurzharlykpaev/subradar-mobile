@@ -196,9 +196,12 @@ export default function DashboardScreen() {
     return sum + displayValueOf(s) * mult;
   }, 0);
 
-  // Previous month estimate from trend data
+  // Previous month estimate from trend data. `hasPrevMonth` gates the
+  // delta badge — without ≥2 months of history we can't compute a
+  // change, so we hide it instead of showing a misleading 0%.
   const prevMonthAmount = monthlyTrend.length >= 2 ? monthlyTrend[monthlyTrend.length - 2]?.amount || 0 : 0;
-  const delta = prevMonthAmount > 0 ? ((totalMonthly - prevMonthAmount) / prevMonthAmount * 100) : 0;
+  const hasPrevMonth = prevMonthAmount > 0;
+  const delta = hasPrevMonth ? ((totalMonthly - prevMonthAmount) / prevMonthAmount * 100) : 0;
 
   // Backend-computed `nextPaymentDate` is the source of truth — refreshed
   // daily server-side + on create/update. Client just parses and sorts.
@@ -415,19 +418,37 @@ export default function DashboardScreen() {
           <Text style={styles.heroAmount}>
             {formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}
           </Text>
-          {delta !== 0 && (
-            <View style={styles.deltaRow}>
-              <View style={[styles.deltaBadge, { backgroundColor: delta > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)' }]}>
-                <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={11} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
-                <Text style={[styles.deltaText, { color: delta > 0 ? '#FCA5A5' : '#86EFAC' }]}>
-                  {Math.abs(delta).toFixed(0)}%
+          {hasPrevMonth && (() => {
+            // Three states: up (red), down (green), flat (neutral). Used
+            // to hide on delta===0 — but for users with stable subs the
+            // delta is almost always 0 (analytics/monthly recomputes
+            // from current ACTIVE/TRIAL subs at each historical point),
+            // so the badge never showed. Showing "—" makes the chart
+            // feel intentional instead of broken.
+            const isUp = delta > 0.5;
+            const isDown = delta < -0.5;
+            const bg = isUp
+              ? 'rgba(239,68,68,0.25)'
+              : isDown
+                ? 'rgba(34,197,94,0.25)'
+                : 'rgba(255,255,255,0.18)';
+            const fg = isUp ? '#FCA5A5' : isDown ? '#86EFAC' : '#FFFFFF';
+            const icon = isUp ? 'arrow-up' : isDown ? 'arrow-down' : 'remove';
+            const label = isUp || isDown
+              ? `${Math.abs(delta).toFixed(0)}%`
+              : t('dashboard.delta_flat', '0%');
+            return (
+              <View style={styles.deltaRow}>
+                <View style={[styles.deltaBadge, { backgroundColor: bg }]}>
+                  <Ionicons name={icon} size={11} color={fg} />
+                  <Text style={[styles.deltaText, { color: fg }]}>{label}</Text>
+                </View>
+                <Text style={styles.deltaCaption} numberOfLines={1}>
+                  {t('dashboard.vs_last_month', 'vs last month')}
                 </Text>
               </View>
-              <Text style={styles.deltaCaption} numberOfLines={1}>
-                {t('dashboard.vs_last_month', 'vs last month')}
-              </Text>
-            </View>
-          )}
+            );
+          })()}
           {isDegraded && (
             <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginTop: 4 }}>
               {t('team_logic.hero_locked_hint', { count: hiddenSubsCount })}
