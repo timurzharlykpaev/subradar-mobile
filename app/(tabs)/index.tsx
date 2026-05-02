@@ -408,20 +408,32 @@ export default function DashboardScreen() {
           <View style={styles.heroDecor1} />
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
-          <View style={styles.heroAmountRow}>
-            <Text style={styles.heroAmount}>{formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}</Text>
-            {delta !== 0 && (
+          {/* Amount sits on its own row + auto-shrinks. With KZT/JPY/IDR
+              the formatted string ("120 000,00 ₸") is long enough that
+              putting the delta badge inline pushed the "vs last month"
+              copy off-screen. Badge now goes on its own line below — both
+              get full width to breathe regardless of locale. */}
+          <Text
+            style={styles.heroAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}
+          </Text>
+          {delta !== 0 && (
+            <View style={styles.deltaRow}>
               <View style={[styles.deltaBadge, { backgroundColor: delta > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)' }]}>
-                <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={10} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
+                <Ionicons name={delta > 0 ? 'arrow-up' : 'arrow-down'} size={11} color={delta > 0 ? '#FCA5A5' : '#86EFAC'} />
                 <Text style={[styles.deltaText, { color: delta > 0 ? '#FCA5A5' : '#86EFAC' }]}>
                   {Math.abs(delta).toFixed(0)}%
                 </Text>
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>
-                  {' '}{t('dashboard.vs_last_month', 'vs last month')}
-                </Text>
               </View>
-            )}
-          </View>
+              <Text style={styles.deltaCaption} numberOfLines={1}>
+                {t('dashboard.vs_last_month', 'vs last month')}
+              </Text>
+            </View>
+          )}
           {isDegraded && (
             <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginTop: 4 }}>
               {t('team_logic.hero_locked_hint', { count: hiddenSubsCount })}
@@ -931,8 +943,16 @@ const styles = StyleSheet.create({
   heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
   heroAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   heroAmount: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
-  deltaBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+  deltaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+    flexWrap: 'wrap',
+  },
+  deltaBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
   deltaText: { fontSize: 12, fontWeight: '800' },
+  deltaCaption: { fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: '500', flexShrink: 1 },
   heroMeta: { flexDirection: 'row', alignItems: 'center', marginTop: 8, backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 12, padding: 10 },
   heroMetaItem: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   heroMetaDivider: { width: 1, height: 16, backgroundColor: 'rgba(255,255,255,0.2)' },
