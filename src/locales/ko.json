@@ -782,6 +782,8 @@
     "total_now": "현재 합계",
     "save": "절약",
     "spend_by_member": "멤버별 지출",
+    "spend_by_member_caption": "{{count}}명의 멤버",
+    "member_unnamed": "멤버",
     "team_savings": "팀 절약 금액",
     "overlaps_found": "개 중복 발견",
     "team_spend": "팀 지출",

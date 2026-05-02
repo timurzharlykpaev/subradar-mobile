@@ -782,6 +782,8 @@
     "total_now": "aktuell gesamt",
     "save": "sparen",
     "spend_by_member": "Ausgaben pro Mitglied",
+    "spend_by_member_caption": "{{count}} Mitglieder",
+    "member_unnamed": "Mitglied",
     "team_savings": "Team-Ersparnis",
     "overlaps_found": "Überschneidungen gefunden",
     "team_spend": "Team-Ausgaben",

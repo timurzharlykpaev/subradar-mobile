@@ -814,6 +814,8 @@
     "total_now": "сейчас всего",
     "save": "экономия",
     "spend_by_member": "Расходы по участникам",
+    "spend_by_member_caption": "{{count}} участников",
+    "member_unnamed": "Участник",
     "team_savings": "Экономия команды",
     "overlaps_found": "пересечений найдено",
     "team_spend": "Расходы команды",

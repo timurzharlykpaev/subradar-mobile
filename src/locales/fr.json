@@ -782,6 +782,8 @@
     "total_now": "total actuel",
     "save": "économiser",
     "spend_by_member": "Dépenses par membre",
+    "spend_by_member_caption": "{{count}} membres",
+    "member_unnamed": "Membre",
     "team_savings": "Économies d'équipe",
     "overlaps_found": "doublons trouvés",
     "team_spend": "Dépenses d'équipe",

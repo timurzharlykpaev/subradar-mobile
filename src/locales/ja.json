@@ -782,6 +782,8 @@
     "total_now": "現在の合計",
     "save": "節約",
     "spend_by_member": "メンバー別支出",
+    "spend_by_member_caption": "{{count}}人のメンバー",
+    "member_unnamed": "メンバー",
     "team_savings": "チームの節約額",
     "overlaps_found": "件の重複を検出",
     "team_spend": "チーム支出",

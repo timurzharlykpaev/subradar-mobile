@@ -805,6 +805,8 @@
     "total_now": "total now",
     "save": "save",
     "spend_by_member": "Spending by Member",
+    "spend_by_member_caption": "{{count}} members",
+    "member_unnamed": "Member",
     "team_savings": "Team savings",
     "overlaps_found": "overlaps found",
     "team_spend": "Team Spend",

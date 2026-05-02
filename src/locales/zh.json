@@ -782,6 +782,8 @@
     "total_now": "当前总计",
     "save": "可省",
     "spend_by_member": "按成员支出",
+    "spend_by_member_caption": "{{count}} 位成员",
+    "member_unnamed": "成员",
     "team_savings": "团队节省",
     "overlaps_found": "个重复",
     "team_spend": "团队支出",

@@ -782,6 +782,8 @@
     "total_now": "қазіргі жиыны",
     "save": "үнемдеу",
     "spend_by_member": "Қатысушылар шығыны",
+    "spend_by_member_caption": "{{count}} қатысушы",
+    "member_unnamed": "Қатысушы",
     "team_savings": "Топтық үнемдеу",
     "overlaps_found": "қайталану табылды",
     "team_spend": "Топтық шығын",
