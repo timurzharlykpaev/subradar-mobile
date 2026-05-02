@@ -74,8 +74,8 @@ export default function AIRecommendationCard({ recommendation, currency }: Props
     >
       {/* Title row */}
       <View style={styles.titleRow}>
-        <Ionicons name={typeIcon} size={20} color={colors.primary} />
-        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+        <Ionicons name={typeIcon} size={20} color={colors.primary} style={styles.titleIcon} />
+        <Text style={[styles.title, { color: colors.text }]}>
           {recommendation.title}
         </Text>
       </View>
@@ -113,14 +113,18 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
     marginBottom: 8,
+  },
+  titleIcon: {
+    marginTop: 2,
   },
   title: {
     fontSize: 15,
     fontWeight: '600',
     flex: 1,
+    lineHeight: 20,
   },
   description: {
     fontSize: 13,

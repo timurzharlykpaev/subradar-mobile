@@ -65,8 +65,26 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
   const cards = usePaymentCardsStore((s) => s.cards);
   const lang = i18n.language || 'en';
   const [name, setName] = useState(data.name.value);
-  const [amount, setAmount] = useState(String(data.amount.value || ''));
-  const [currency, setCurrency] = useState(data.currency.value || 'USD');
+  // Seed the amount/currency in the user's display currency. The catalog
+  // (and quick chips, which derive from a hardcoded USD price) feed raw
+  // foreign-currency values; without converting upfront the main amount
+  // would render as e.g. "15.49" while the plan list below shows the same
+  // tier in tenge — a confusing mismatch the user reported. Plans
+  // already FX-convert when rendered (see plan rows below) so this brings
+  // the headline number in line with them.
+  const [amount, setAmount] = useState(() => {
+    const raw = data.amount.value || 0;
+    const rawCurrency = (data.currency.value || 'USD').toUpperCase();
+    if (rawCurrency === displayCurrency) return String(raw);
+    const converted = convertAmount(raw, rawCurrency, displayCurrency);
+    return converted !== null ? String(converted) : String(raw);
+  });
+  const [currency, setCurrency] = useState(() => {
+    const rawCurrency = (data.currency.value || 'USD').toUpperCase();
+    if (rawCurrency === displayCurrency) return rawCurrency;
+    const converted = convertAmount(data.amount.value || 0, rawCurrency, displayCurrency);
+    return converted !== null ? displayCurrency : rawCurrency;
+  });
   const [period, setPeriod] = useState(data.billingPeriod.value || 'MONTHLY');
   const [category, setCategory] = useState(data.category.value || 'OTHER');
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);

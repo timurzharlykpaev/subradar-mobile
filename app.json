@@ -23,7 +23,8 @@
         "aps-environment": "production",
         "com.apple.developer.associated-domains": [
           "applinks:subradar.ai",
-          "applinks:app.subradar.ai"
+          "applinks:app.subradar.ai",
+          "applinks:app-dev.subradar.ai"
         ]
       },
       "infoPlist": {
@@ -81,6 +82,10 @@
             {
               "scheme": "https",
               "host": "app.subradar.ai"
+            },
+            {
+              "scheme": "https",
+              "host": "app-dev.subradar.ai"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]

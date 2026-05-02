@@ -523,34 +523,47 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   }, [i18n.language, displayCurrency, region, t]);
 
   // ── Quick chip tap ──────────────────────────────────────────────────────
+  // Main amount/currency are derived from the cheapest plan instead of the
+  // hardcoded `chip.amount` — otherwise the displayed default price in
+  // user's currency was inconsistent with the listed plan tiers (e.g.
+  // user in KZT saw a USD-numeric default while plans rendered in tenge).
   const handleQuickChip = useCallback((chip: QuickChipItem) => {
     setAddedViaSource('AI_TEXT');
+    const plans = chip.plans;
+    const cheapest = plans && plans.length > 0
+      ? plans.reduce((min, p) => (p.priceMonthly < min.priceMonthly ? p : min), plans[0])
+      : undefined;
     setConfirmData({
       name: { value: chip.name, confidence: 'high' },
-      amount: { value: chip.amount, confidence: 'high' },
-      currency: { value: displayCurrency, confidence: 'high' },
+      amount: { value: cheapest?.priceMonthly ?? chip.amount, confidence: 'high' },
+      currency: { value: cheapest?.currency ?? chip.currency, confidence: 'high' },
       billingPeriod: { value: chip.billingPeriod, confidence: 'high' },
       category: { value: chip.category, confidence: 'high' },
       iconUrl: chip.iconUrl,
       serviceUrl: chip.serviceUrl,
       cancelUrl: chip.cancelUrl,
-      plans: chip.plans?.map(p => ({ name: p.name, priceMonthly: p.priceMonthly, currency: p.currency })),
+      plans: plans?.map(p => ({ name: p.name, priceMonthly: p.priceMonthly, currency: p.currency })),
     });
     setFlowState('confirm');
-  }, [displayCurrency]);
+  }, []);
 
   // ── Catalog chip tap (from regional catalog) ───────────────────────────
+  // Default to the cheapest plan, not service.plans[0] — backend ordering
+  // isn't guaranteed and users expect the lowest tier to seed the form.
   const handleCatalogChip = useCallback((service: CatalogService) => {
     setAddedViaSource('AI_TEXT');
-    const defaultPlan = service.plans?.[0];
+    const plans = service.plans;
+    const cheapest = plans && plans.length > 0
+      ? plans.reduce((min, p) => (p.price < min.price ? p : min), plans[0])
+      : undefined;
     setConfirmData({
       name: { value: service.name, confidence: 'high' },
-      amount: { value: defaultPlan?.price ?? 0, confidence: 'high' },
-      currency: { value: defaultPlan?.currency ?? displayCurrency, confidence: 'high' },
-      billingPeriod: { value: defaultPlan?.period ?? 'MONTHLY', confidence: 'high' },
+      amount: { value: cheapest?.price ?? 0, confidence: 'high' },
+      currency: { value: cheapest?.currency ?? displayCurrency, confidence: 'high' },
+      billingPeriod: { value: cheapest?.period ?? 'MONTHLY', confidence: 'high' },
       category: { value: service.category || 'OTHER', confidence: 'high' },
       iconUrl: service.iconUrl,
-      plans: service.plans?.map((p) => ({ name: p.name, priceMonthly: p.price, currency: p.currency })),
+      plans: plans?.map((p) => ({ name: p.name, priceMonthly: p.price, currency: p.currency })),
     });
     setFlowState('confirm');
   }, [displayCurrency]);
