@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { View, TouchableOpacity, StyleSheet, InteractionManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet'
 import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { useUIStore } from '../../src/stores/uiStore';
+import { useAuthStore } from '../../src/stores/authStore';
 
 function TabIcon({ name, focused }: { name: React.ComponentProps<typeof Ionicons>['name']; focused: boolean }) {
   const { colors } = useTheme();
@@ -23,6 +24,22 @@ export default function TabsLayout() {
   const { addSheetVisible, openAddSheet, closeAddSheet } = useUIStore();
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
+  const router = useRouter();
+
+  // Auth gate. The 401 interceptor in api/client.ts calls authStore.logout()
+  // when the refresh token is also stale (typical case: app reinstalled on
+  // iOS — the Keychain survives uninstall and serves an old token to the
+  // new build, which the server has already revoked). Without this gate
+  // the user stays on a tabs screen with empty data and no path back to
+  // login. We watch `isAuthenticated` and bounce to /onboarding the
+  // moment the store flips to false.
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
+  useEffect(() => {
+    if (hasHydrated && !isAuthenticated) {
+      router.replace('/onboarding');
+    }
+  }, [hasHydrated, isAuthenticated, router]);
 
   // Pre-mount AddSubscriptionSheet after tab interactions settle (~500ms after load).
   // This eliminates the 1-2s delay on first open (heavy component: 800+ lines, many hooks).

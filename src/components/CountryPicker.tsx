@@ -41,7 +41,17 @@ export function CountryPicker({
   }, [query]);
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    // `presentationStyle="pageSheet"` is the iOS-native sheet style — it
+    // automatically respects the status bar / Dynamic Island insets so
+    // the close button no longer collides with the system clock. On
+    // Android `presentationStyle` is ignored (Android always renders
+    // full-screen), and the SafeAreaView below handles its insets there.
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} hitSlop={12}>

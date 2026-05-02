@@ -49,7 +49,16 @@ export function CurrencyPicker({
   }, [query]);
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    // pageSheet on iOS = native modal sheet with proper status-bar /
+    // Dynamic Island insets out of the box. Android ignores
+    // presentationStyle and falls back to full-screen, where the
+    // SafeAreaView handles top inset.
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} hitSlop={12}>
