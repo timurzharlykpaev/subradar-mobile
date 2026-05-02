@@ -76,6 +76,7 @@ export type AnalyticsEvent =
   // Engagement
   | 'analytics_viewed'
   | 'report_generated'
+  | 'data_exported'
 
   // Team upsell
   | 'team_upsell_modal_shown'

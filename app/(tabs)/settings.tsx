@@ -155,12 +155,32 @@ export default function SettingsScreen() {
     syncNotifications(val, reminderDays);
   };
 
+  // Loading flag for the CSV export row. Without it the user got no
+  // visual feedback while the file was being assembled and the share
+  // sheet warmed up — felt like the button was broken / glitching.
+  const [exporting, setExporting] = useState(false);
   const handleExport = async () => {
+    if (exporting) return;
     const subs = useSubscriptionsStore.getState().subscriptions;
+    if (!subs || subs.length === 0) {
+      Alert.alert(
+        t('settings.export_empty_title', 'Nothing to export'),
+        t('settings.export_empty_msg', 'Add at least one subscription before exporting.'),
+      );
+      return;
+    }
+    setExporting(true);
     try {
       await exportSubscriptionsCsv(subs);
-    } catch {
-      Alert.alert(t('common.error', 'Error'), t('settings.export_failed', 'Failed to export'));
+      analytics.track('data_exported', { count: subs.length, format: 'csv' });
+    } catch (err: any) {
+      const reason = err?.message || String(err);
+      Alert.alert(
+        t('common.error', 'Error'),
+        `${t('settings.export_failed', 'Failed to export')}\n\n${reason}`,
+      );
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -724,9 +744,11 @@ export default function SettingsScreen() {
             'download-outline',
             colors.success,
             t('settings.export_data', 'Export Data (CSV)'),
-            undefined,
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
-            handleExport,
+            exporting ? t('settings.export_running', 'Preparing CSV…') : undefined,
+            exporting
+              ? <ActivityIndicator size="small" color={colors.textMuted} />
+              : <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            exporting ? undefined : handleExport,
             false,
           )}
         </View>
