@@ -408,17 +408,11 @@ export default function DashboardScreen() {
           <View style={styles.heroDecor1} />
           <View style={styles.heroDecor2} />
           <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
-          {/* Amount sits on its own row + auto-shrinks. With KZT/JPY/IDR
-              the formatted string ("120 000,00 ₸") is long enough that
-              putting the delta badge inline pushed the "vs last month"
-              copy off-screen. Badge now goes on its own line below — both
-              get full width to breathe regardless of locale. */}
-          <Text
-            style={styles.heroAmount}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-          >
+          {/* Amount sits on its own row now. Previously the delta badge
+              was inline and got cropped on long-locale currency strings
+              (KZT/JPY: "120 000,00 ₸"). Splitting them lets each take
+              full width regardless of locale. */}
+          <Text style={styles.heroAmount}>
             {formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}
           </Text>
           {delta !== 0 && (
