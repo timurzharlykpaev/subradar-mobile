@@ -45,6 +45,7 @@ import { useIsMounted } from '../hooks/useIsMounted';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
 import { isBulkInput } from '../utils/clientParser';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
+import { convertAmount } from '../services/fxCache';
 import { prefetchImage } from '../utils/imagePrefetch';
 import { resolveIconUrl } from '../utils/iconUrl';
 import { translateBackendError } from '../utils/translateBackendError';
@@ -517,20 +518,36 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   }, [i18n.language, displayCurrency, region, t]);
 
   // ── Quick chip tap ──────────────────────────────────────────────────────
-  // Main amount/currency are derived from the cheapest plan instead of the
-  // hardcoded `chip.amount` — otherwise the displayed default price in
-  // user's currency was inconsistent with the listed plan tiers (e.g.
-  // user in KZT saw a USD-numeric default while plans rendered in tenge).
+  // Pick the cheapest plan as the default seed and pre-convert it into the
+  // user's display currency right here so the headline amount + the plan
+  // rows in InlineConfirmCard agree from the first frame. Previously we
+  // seeded `currency: chip.currency` (always 'USD' in QUICK_CHIPS) and
+  // relied on InlineConfirmCard to FX-convert in its useState initializer
+  // — when FX rates weren't warm yet it fell back to the raw USD number,
+  // so the user saw "20 USD" up top while plans below showed "9 267 KZT".
   const handleQuickChip = useCallback((chip: QuickChipItem) => {
     setAddedViaSource('AI_TEXT');
     const plans = chip.plans;
     const cheapest = plans && plans.length > 0
       ? plans.reduce((min, p) => (p.priceMonthly < min.priceMonthly ? p : min), plans[0])
       : undefined;
+    const seedAmount = cheapest?.priceMonthly ?? chip.amount;
+    const seedCurrency = (cheapest?.currency ?? chip.currency).toUpperCase();
+    const targetCurrency = displayCurrency.toUpperCase();
+    const convertedAmount =
+      seedCurrency === targetCurrency
+        ? seedAmount
+        : convertAmount(seedAmount, seedCurrency, targetCurrency) ?? seedAmount;
+    const finalCurrency =
+      seedCurrency === targetCurrency
+        ? seedCurrency
+        : convertAmount(seedAmount, seedCurrency, targetCurrency) === null
+          ? seedCurrency
+          : targetCurrency;
     setConfirmData({
       name: { value: chip.name, confidence: 'high' },
-      amount: { value: cheapest?.priceMonthly ?? chip.amount, confidence: 'high' },
-      currency: { value: cheapest?.currency ?? chip.currency, confidence: 'high' },
+      amount: { value: convertedAmount, confidence: 'high' },
+      currency: { value: finalCurrency, confidence: 'high' },
       billingPeriod: { value: chip.billingPeriod, confidence: 'high' },
       category: { value: chip.category, confidence: 'high' },
       iconUrl: chip.iconUrl,
@@ -539,21 +556,35 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       plans: plans?.map(p => ({ name: p.name, priceMonthly: p.priceMonthly, currency: p.currency })),
     });
     setFlowState('confirm');
-  }, []);
+  }, [displayCurrency]);
 
   // ── Catalog chip tap (from regional catalog) ───────────────────────────
   // Default to the cheapest plan, not service.plans[0] — backend ordering
   // isn't guaranteed and users expect the lowest tier to seed the form.
+  // Pre-convert into displayCurrency for the same reason as handleQuickChip.
   const handleCatalogChip = useCallback((service: CatalogService) => {
     setAddedViaSource('AI_TEXT');
     const plans = service.plans;
     const cheapest = plans && plans.length > 0
       ? plans.reduce((min, p) => (p.price < min.price ? p : min), plans[0])
       : undefined;
+    const seedAmount = cheapest?.price ?? 0;
+    const seedCurrency = (cheapest?.currency ?? displayCurrency).toUpperCase();
+    const targetCurrency = displayCurrency.toUpperCase();
+    const convertedAmount =
+      seedCurrency === targetCurrency
+        ? seedAmount
+        : convertAmount(seedAmount, seedCurrency, targetCurrency) ?? seedAmount;
+    const finalCurrency =
+      seedCurrency === targetCurrency
+        ? seedCurrency
+        : convertAmount(seedAmount, seedCurrency, targetCurrency) === null
+          ? seedCurrency
+          : targetCurrency;
     setConfirmData({
       name: { value: service.name, confidence: 'high' },
-      amount: { value: cheapest?.price ?? 0, confidence: 'high' },
-      currency: { value: cheapest?.currency ?? displayCurrency, confidence: 'high' },
+      amount: { value: convertedAmount, confidence: 'high' },
+      currency: { value: finalCurrency, confidence: 'high' },
       billingPeriod: { value: cheapest?.period ?? 'MONTHLY', confidence: 'high' },
       category: { value: service.category || 'OTHER', confidence: 'high' },
       iconUrl: service.iconUrl,
