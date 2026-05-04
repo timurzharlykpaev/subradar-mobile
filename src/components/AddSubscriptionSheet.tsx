@@ -45,7 +45,7 @@ import { useIsMounted } from '../hooks/useIsMounted';
 import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catalogLookup';
 import { isBulkInput } from '../utils/clientParser';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
-import { convertAmount } from '../services/fxCache';
+import { convertAmount, hasFxRates, refreshFxRates } from '../services/fxCache';
 import { prefetchImage } from '../utils/imagePrefetch';
 import { resolveIconUrl } from '../utils/iconUrl';
 import { translateBackendError } from '../utils/translateBackendError';
@@ -186,6 +186,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         if (!isMounted.current) return;
         if (services.length > 0) setCatalogServices(services);
       });
+      // Warm the FX cache while the user is still scanning chips, so by the
+      // time they tap one the cheapest-plan price can be converted into
+      // displayCurrency synchronously. Without this, cold-start tap →
+      // chip → confirm sees null from convertAmount and falls back to raw
+      // USD, while the plan rows below render in KZT (already converted at
+      // render time once rates land) — the exact mismatch reported.
+      if (!hasFxRates()) {
+        refreshFxRates().catch(() => {});
+      }
     } else {
       translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 });
       backdropOpacity.value = withTiming(0, { duration: 250 });
@@ -525,7 +534,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // relied on InlineConfirmCard to FX-convert in its useState initializer
   // — when FX rates weren't warm yet it fell back to the raw USD number,
   // so the user saw "20 USD" up top while plans below showed "9 267 KZT".
-  const handleQuickChip = useCallback((chip: QuickChipItem) => {
+  const handleQuickChip = useCallback(async (chip: QuickChipItem) => {
     setAddedViaSource('AI_TEXT');
     const plans = chip.plans;
     const cheapest = plans && plans.length > 0
@@ -534,19 +543,25 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     const seedAmount = cheapest?.priceMonthly ?? chip.amount;
     const seedCurrency = (cheapest?.currency ?? chip.currency).toUpperCase();
     const targetCurrency = displayCurrency.toUpperCase();
-    const convertedAmount =
+    // Block the confirm-sheet seed on FX rates being available so the
+    // cheapest-plan amount is ALWAYS expressed in the user's display
+    // currency. Showing a brief loading screen here is preferable to the
+    // alternative — opening the sheet with the headline amount in USD
+    // and the plan rows in KZT, which the user reads as a hard bug.
+    if (seedCurrency !== targetCurrency && !hasFxRates()) {
+      setLoadingStage('thinking');
+      setFlowState('loading');
+      await refreshFxRates();
+    }
+    const converted =
       seedCurrency === targetCurrency
         ? seedAmount
-        : convertAmount(seedAmount, seedCurrency, targetCurrency) ?? seedAmount;
-    const finalCurrency =
-      seedCurrency === targetCurrency
-        ? seedCurrency
-        : convertAmount(seedAmount, seedCurrency, targetCurrency) === null
-          ? seedCurrency
-          : targetCurrency;
+        : convertAmount(seedAmount, seedCurrency, targetCurrency);
+    const finalAmount = converted ?? seedAmount;
+    const finalCurrency = converted == null ? seedCurrency : targetCurrency;
     setConfirmData({
       name: { value: chip.name, confidence: 'high' },
-      amount: { value: convertedAmount, confidence: 'high' },
+      amount: { value: finalAmount, confidence: 'high' },
       currency: { value: finalCurrency, confidence: 'high' },
       billingPeriod: { value: chip.billingPeriod, confidence: 'high' },
       category: { value: chip.category, confidence: 'high' },
@@ -562,7 +577,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // Default to the cheapest plan, not service.plans[0] — backend ordering
   // isn't guaranteed and users expect the lowest tier to seed the form.
   // Pre-convert into displayCurrency for the same reason as handleQuickChip.
-  const handleCatalogChip = useCallback((service: CatalogService) => {
+  const handleCatalogChip = useCallback(async (service: CatalogService) => {
     setAddedViaSource('AI_TEXT');
     const plans = service.plans;
     const cheapest = plans && plans.length > 0
@@ -571,19 +586,20 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     const seedAmount = cheapest?.price ?? 0;
     const seedCurrency = (cheapest?.currency ?? displayCurrency).toUpperCase();
     const targetCurrency = displayCurrency.toUpperCase();
-    const convertedAmount =
+    if (seedCurrency !== targetCurrency && !hasFxRates()) {
+      setLoadingStage('thinking');
+      setFlowState('loading');
+      await refreshFxRates();
+    }
+    const converted =
       seedCurrency === targetCurrency
         ? seedAmount
-        : convertAmount(seedAmount, seedCurrency, targetCurrency) ?? seedAmount;
-    const finalCurrency =
-      seedCurrency === targetCurrency
-        ? seedCurrency
-        : convertAmount(seedAmount, seedCurrency, targetCurrency) === null
-          ? seedCurrency
-          : targetCurrency;
+        : convertAmount(seedAmount, seedCurrency, targetCurrency);
+    const finalAmount = converted ?? seedAmount;
+    const finalCurrency = converted == null ? seedCurrency : targetCurrency;
     setConfirmData({
       name: { value: service.name, confidence: 'high' },
-      amount: { value: convertedAmount, confidence: 'high' },
+      amount: { value: finalAmount, confidence: 'high' },
       currency: { value: finalCurrency, confidence: 'high' },
       billingPeriod: { value: cheapest?.period ?? 'MONTHLY', confidence: 'high' },
       category: { value: service.category || 'OTHER', confidence: 'high' },
