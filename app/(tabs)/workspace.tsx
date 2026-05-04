@@ -113,12 +113,37 @@ export default function WorkspaceScreen() {
     retry: false,
   });
 
-  // Prefer the currency the backend actually used to convert sums —
-  // ensures the rendered symbol matches the number. Falls back to the
-  // local store while analytics is still loading or on legacy server
-  // builds that don't return the field.
-  const displayCurrency: string =
-    (analytics as any)?.displayCurrency ?? localDisplayCurrency;
+  // Backend conversion currency. May lag the local pick by one fetch —
+  // we self-heal below.
+  const serverDisplayCurrency: string | undefined = (analytics as any)?.displayCurrency;
+
+  // Self-heal: when the local pick diverges from what the backend used
+  // to convert team totals, push the local currency to /users/me, drop
+  // the cached analytics for THIS workspace by invalidating the query,
+  // and refetch. Fires once per mismatched render — without this the
+  // user sees USD totals for up to 5 minutes (analytics Redis TTL)
+  // even after picking KZT in Settings, which read as a hard bug.
+  const localUpper = localDisplayCurrency.toUpperCase();
+  const serverUpper = (serverDisplayCurrency || '').toUpperCase();
+  useEffect(() => {
+    if (!analytics || !serverUpper) return;
+    if (serverUpper === localUpper) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { usersApi } = await import('../../src/api/users');
+        await usersApi.updateMe({ displayCurrency: localUpper } as any);
+        if (cancelled) return;
+        await queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
+        await queryClient.invalidateQueries({ queryKey: ['analytics'] });
+      } catch (e: any) {
+        if (__DEV__) console.warn('[Workspace] currency self-heal failed:', e?.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [analytics, serverUpper, localUpper, queryClient]);
+
+  const displayCurrency: string = serverDisplayCurrency ?? localDisplayCurrency;
 
   const { data: analysisData } = useWorkspaceAnalysisLatest();
   const teamSavings = analysisData?.result?.teamSavings;
