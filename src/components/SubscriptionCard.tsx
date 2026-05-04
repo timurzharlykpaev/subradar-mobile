@@ -3,9 +3,20 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
+  Vibration,
+  Platform,
 } from 'react-native';
 import { Image } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  withSpring,
+  cancelAnimation,
+  Easing,
+} from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -16,6 +27,10 @@ import { useTheme, fonts } from '../theme';
 import { GiftIcon } from './icons';
 import { formatMoney } from '../utils/formatMoney';
 import { parseBackendDate, daysUntilDate } from '../utils/formatters';
+
+const LONG_PRESS_MS = 400;
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface Props {
   subscription: Subscription;
@@ -41,8 +56,54 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) =
   const trialUrgent = trialDays !== null && trialDays <= 3 && trialDays >= 0;
   const trialExpired = trialDays !== null && trialDays < 0;
 
+  // Long-press feedback: gradually scale the card down as the finger is held
+  // (matches the iOS context-menu preview affordance), then snap back with a
+  // tiny spring + haptic when the long-press fires. The previous flat
+  // `TouchableOpacity` gave only a 0.85 opacity dim, so users couldn't tell
+  // the gesture had registered until the action sheet animated in.
+  const scale = useSharedValue(1);
+  const longPressFiredRef = React.useRef(false);
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  const handlePressIn = () => {
+    longPressFiredRef.current = false;
+    cancelAnimation(scale);
+    // Match the dip's duration to delayLongPress so the 0.95 floor is reached
+    // exactly when the system fires onLongPress — no awkward "still moving"
+    // moment when the menu appears.
+    scale.value = withTiming(0.95, { duration: LONG_PRESS_MS, easing: Easing.out(Easing.quad) });
+  };
+
+  const handlePressOut = () => {
+    cancelAnimation(scale);
+    if (longPressFiredRef.current) {
+      // Long-press path already played its bounce — just settle.
+      scale.value = withSpring(1, { damping: 14, stiffness: 220, mass: 0.6 });
+    } else {
+      // Short tap or aborted long-press — quick return to rest.
+      scale.value = withTiming(1, { duration: 140, easing: Easing.out(Easing.cubic) });
+    }
+  };
+
+  const handleLongPress = () => {
+    longPressFiredRef.current = true;
+    if (Platform.OS === 'android') {
+      Vibration.vibrate(10);
+    } else {
+      // iOS Vibration is blunt — use the shorter, single tactile blip pattern.
+      Vibration.vibrate([0, 8]);
+    }
+    // Tiny squish-and-pop bounce so the user feels the hand-off from
+    // "holding" to "menu opened".
+    scale.value = withSequence(
+      withTiming(0.92, { duration: 80, easing: Easing.out(Easing.quad) }),
+      withSpring(1, { damping: 12, stiffness: 240, mass: 0.6 }),
+    );
+    onLongPress?.();
+  };
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       testID={`subscription-card-${subscription.id}`}
       style={[
         styles.card,
@@ -53,11 +114,13 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) =
         subscription.color
           ? { borderLeftWidth: 3, borderLeftColor: subscription.color }
           : null,
+        animatedStyle,
       ]}
-      activeOpacity={0.85}
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}
-      onLongPress={onLongPress}
-      delayLongPress={400}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onLongPress={onLongPress ? handleLongPress : undefined}
+      delayLongPress={LONG_PRESS_MS}
       accessibilityRole="button"
       accessibilityLabel={t('a11y.subscription', { name: subscription.name, defaultValue: `${subscription.name} subscription` })}
     >
@@ -179,7 +242,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) =
           </>
         ) : null}
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 };
 
