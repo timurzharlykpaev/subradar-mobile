@@ -11,7 +11,10 @@
         "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1",
         "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com"
       }
     },
     "preview": {
@@ -20,7 +23,10 @@
         "EXPO_PUBLIC_API_URL": "https://api-dev.subradar.ai/api/v1",
         "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com"
       },
       "ios": {
         "simulator": false,
@@ -39,6 +45,9 @@
         "EXPO_PUBLIC_REVENUECAT_KEY": "appl_IDgkDELtmOrLlMVaOpCcPemoqyH",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
         "EXPO_PUBLIC_SENTRY_DSN": "__TODO_SET_SENTRY_DSN_BEFORE_BUILD__",
         "EXPO_PUBLIC_AMPLITUDE_KEY": "__TODO_SET_AMPLITUDE_KEY_BEFORE_BUILD__",
         "EXPO_PUBLIC_ENV": "testflight"
@@ -63,6 +72,9 @@
         "EXPO_PUBLIC_REVENUECAT_KEY": "appl_IDgkDELtmOrLlMVaOpCcPemoqyH",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
         "EXPO_PUBLIC_SENTRY_DSN": "__TODO_SET_SENTRY_DSN_BEFORE_BUILD__",
         "EXPO_PUBLIC_AMPLITUDE_KEY": "__TODO_SET_AMPLITUDE_KEY_BEFORE_BUILD__",
         "EXPO_PUBLIC_ENV": "production"
@@ -85,7 +97,10 @@
         "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1",
         "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB": "1026598677430-0plhgefudbm5rjcnjas2ag8l6ohgkb9f.apps.googleusercontent.com"
       },
       "ios": {
         "simulator": false,
