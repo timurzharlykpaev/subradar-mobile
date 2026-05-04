@@ -672,7 +672,11 @@
     "error_generic": "Impossible de générer le rapport",
     "error_network": "Erreur réseau, vérifiez votre connexion",
     "retry": "Réessayer",
-    "free_limit_hint": "Plan gratuit : 1 rapport PDF par mois. L'export CSV est illimité."
+    "free_limit_hint": "Plan gratuit : 1 rapport PDF par mois. L'export CSV est illimité.",
+    "scope_personal": "Personnel",
+    "scope_team": "Équipe",
+    "scope_team_hint": "Agrège les abonnements de tous les membres actifs. Inclut la répartition par membre et les économies sur les doublons.",
+    "generating_team_pdf": "Création du rapport d'équipe…"
   },
   "edit_profile": {
     "title": "Modifier le profil",
@@ -864,7 +868,8 @@
     "no_subs_data": "Aucune donnée d'abonnement disponible",
     "team_report": "Rapport d'équipe",
     "share_instructions": "Envoyez ce code à un coéquipier. Appuyez sur le code pour copier, ou utilisez Partager pour envoyer via Messages, WhatsApp, etc.",
-    "tap_to_copy": "Appuyez pour copier"
+    "tap_to_copy": "Appuyez pour copier",
+    "subs_count": "{{count}} abonnement(s) affiché(s)"
   },
   "paywall": {
     "choose_plan": "Choisir un plan",

@@ -672,7 +672,11 @@
     "error_generic": "レポートを生成できませんでした",
     "error_network": "ネットワークエラー、接続を確認してください",
     "retry": "再試行",
-    "free_limit_hint": "無料プラン: PDF レポートは月 1 回。CSV エクスポートは無制限。"
+    "free_limit_hint": "無料プラン: PDF レポートは月 1 回。CSV エクスポートは無制限。",
+    "scope_personal": "個人",
+    "scope_team": "チーム",
+    "scope_team_hint": "全アクティブメンバーのサブスクリプションを集計。メンバー別内訳と重複節約を含みます。",
+    "generating_team_pdf": "チームレポートを作成中…"
   },
   "edit_profile": {
     "title": "プロフィール編集",
@@ -864,7 +868,8 @@
     "no_subs_data": "サブスクのデータがありません",
     "team_report": "チームレポート",
     "share_instructions": "このコードをチームメイトに送信してください。タップでコピー、または共有でメッセージ・WhatsApp 等から送信できます。",
-    "tap_to_copy": "タップしてコピー"
+    "tap_to_copy": "タップしてコピー",
+    "subs_count": "{{count}} 件のサブスクリプションを表示"
   },
   "paywall": {
     "choose_plan": "プランを選択",

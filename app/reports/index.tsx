@@ -18,6 +18,7 @@ import { API_URL } from '../../src/api/client';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
+import { workspaceApi } from '../../src/api/workspace';
 
 type ExportFormat = 'pdf' | 'csv';
 
@@ -46,6 +47,10 @@ export default function ReportsScreen() {
   const [reportType, setReportType] = useState('summary');
   const [dateRange, setDateRange] = useState<'month' | 'quarter' | 'year'>('month');
   const [format, setFormat] = useState<ExportFormat>('pdf');
+  // Scope: personal report (default) vs team-wide. Only the workspace
+  // owner sees the toggle — members can only export their own data.
+  const [scope, setScope] = useState<'personal' | 'team'>('personal');
+  const isTeamOwner = (access?.isTeamOwner ?? false) && (access?.plan === 'organization');
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState('');
 
@@ -83,22 +88,38 @@ export default function ReportsScreen() {
   // ── PDF export (server-side, async with polling) ─────────────
   const handlePdfExport = async () => {
     setGenerating(true);
-    setProgress(t('reports.generating_pdf', 'Generating PDF...'));
+    setProgress(
+      scope === 'team'
+        ? t('reports.generating_team_pdf', 'Generating team report…')
+        : t('reports.generating_pdf', 'Generating PDF...'),
+    );
     try {
       const { from, to } = getPeriodDates();
 
-      // 1. Create report on server
-      const res = await fetch(`${API_URL}/reports/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ type: reportType.toUpperCase(), from, to, locale: i18n.language || 'en' }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw Object.assign(new Error(body?.message || `Server error: ${res.status}`), { status: res.status });
+      // 1. Create report on server. Team-scope reports go through the
+      // workspace endpoint which only owners can hit; the response shape
+      // is identical to /reports/generate so the polling + download
+      // path below stays unified.
+      let reportId: string | null = null;
+      if (scope === 'team') {
+        const teamReport = await workspaceApi.generateTeamReport(
+          reportType.toUpperCase() as 'SUMMARY' | 'DETAILED' | 'TAX',
+          { from, to, locale: i18n.language || 'en' },
+        );
+        reportId = teamReport.id;
+      } else {
+        const res = await fetch(`${API_URL}/reports/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ type: reportType.toUpperCase(), from, to, locale: i18n.language || 'en' }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw Object.assign(new Error(body?.message || `Server error: ${res.status}`), { status: res.status });
+        }
+        const report = await res.json();
+        reportId = report?.data?.id || report?.id;
       }
-      const report = await res.json();
-      const reportId = report?.data?.id || report?.id;
       if (!reportId) throw new Error('No report ID returned');
 
       // 2. Poll for READY status (max 30s)
@@ -132,7 +153,7 @@ export default function ReportsScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(localPath, { mimeType: 'application/pdf', dialogTitle: t('reports.share_title', 'Save or Share Report'), UTI: 'com.adobe.pdf' });
       }
-      analytics.track('report_generated', { type: reportType, format: 'pdf', period: dateRange });
+      analytics.track('report_generated', { type: reportType, format: 'pdf', period: dateRange, scope });
     } catch (err: any) {
       console.error('Report error:', err);
       const status = err?.status;
@@ -165,6 +186,40 @@ export default function ReportsScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Personal / Team scope toggle — visible only to workspace owners.
+            Members and personal accounts continue to see the legacy single-
+            scope flow so we don't add a confusing UI affordance for users
+            who can't use it. */}
+        {isTeamOwner && (
+          <View style={{ paddingHorizontal: 20, marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row', backgroundColor: colors.surface2, borderRadius: 12, padding: 4 }}>
+              {(['personal', 'team'] as const).map((opt) => {
+                const active = scope === opt;
+                const label = opt === 'personal'
+                  ? t('reports.scope_personal', 'Personal')
+                  : t('reports.scope_team', 'Team');
+                return (
+                  <TouchableOpacity
+                    key={opt}
+                    onPress={() => setScope(opt)}
+                    activeOpacity={0.85}
+                    style={{ flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center', backgroundColor: active ? colors.surface : 'transparent' }}
+                  >
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: active ? colors.primary : colors.textSecondary }}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {scope === 'team' && (
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8, paddingHorizontal: 4, lineHeight: 16 }}>
+                {t('reports.scope_team_hint', 'Aggregates subscriptions across every active team member. Includes per-member breakdown and overlap savings.')}
+              </Text>
+            )}
+          </View>
+        )}
+
         {/* Report Type */}
         <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>{t('reports.report_type', 'Report Type')}</Text>
         <View style={styles.typeCards}>

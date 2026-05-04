@@ -716,7 +716,11 @@
     "error_generic": "Could not generate report",
     "error_network": "Network error, check your connection",
     "retry": "Retry",
-    "free_limit_hint": "Free plan: 1 PDF report per month. CSV export is unlimited."
+    "free_limit_hint": "Free plan: 1 PDF report per month. CSV export is unlimited.",
+    "scope_personal": "Personal",
+    "scope_team": "Team",
+    "scope_team_hint": "Aggregates subscriptions across every active team member. Includes per-member breakdown and overlap savings.",
+    "generating_team_pdf": "Generating team report…"
   },
   "edit_profile": {
     "title": "Edit Profile",
@@ -900,7 +904,8 @@
     "no_subs_data": "No subscription data available",
     "team_report": "Team Report",
     "share_instructions": "Send this code to a teammate. Tap the code to copy, or use Share to send via Messages, WhatsApp, etc.",
-    "tap_to_copy": "Tap to copy"
+    "tap_to_copy": "Tap to copy",
+    "subs_count": "{{count}} subscription(s) shown"
   },
   "paywall": {
     "choose_plan": "Choose a Plan",

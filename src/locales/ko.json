@@ -672,7 +672,11 @@
     "error_generic": "보고서를 생성할 수 없습니다",
     "error_network": "네트워크 오류, 연결을 확인하세요",
     "retry": "다시 시도",
-    "free_limit_hint": "무료 플랜: 월 1회 PDF 보고서. CSV 내보내기는 무제한."
+    "free_limit_hint": "무료 플랜: 월 1회 PDF 보고서. CSV 내보내기는 무제한.",
+    "scope_personal": "개인",
+    "scope_team": "팀",
+    "scope_team_hint": "활성 팀원 전원의 구독을 집계합니다. 멤버별 상세 및 중복 절감 포함.",
+    "generating_team_pdf": "팀 보고서 생성 중…"
   },
   "edit_profile": {
     "title": "프로필 편집",
@@ -864,7 +868,8 @@
     "no_subs_data": "구독 데이터가 없습니다",
     "team_report": "팀 리포트",
     "share_instructions": "이 코드를 팀원에게 보내세요. 코드를 탭해 복사하거나 공유로 메시지·WhatsApp 등으로 전송할 수 있습니다.",
-    "tap_to_copy": "탭하여 복사"
+    "tap_to_copy": "탭하여 복사",
+    "subs_count": "{{count}}개 구독 표시 중"
   },
   "paywall": {
     "choose_plan": "플랜 선택",

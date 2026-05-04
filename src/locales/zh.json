@@ -672,7 +672,11 @@
     "error_generic": "无法生成报告",
     "error_network": "网络错误，请检查连接",
     "retry": "重试",
-    "free_limit_hint": "免费方案:每月 1 份 PDF 报告。CSV 导出无限制。"
+    "free_limit_hint": "免费方案:每月 1 份 PDF 报告。CSV 导出无限制。",
+    "scope_personal": "个人",
+    "scope_team": "团队",
+    "scope_team_hint": "汇总所有活跃成员的订阅,含按成员明细及重复订阅节省。",
+    "generating_team_pdf": "正在生成团队报告…"
   },
   "edit_profile": {
     "title": "编辑资料",
@@ -864,7 +868,8 @@
     "no_subs_data": "没有订阅数据",
     "team_report": "团队报告",
     "share_instructions": "将此代码发送给队友。点按代码即可复制,或使用分享通过短信、WhatsApp 等发送。",
-    "tap_to_copy": "点按以复制"
+    "tap_to_copy": "点按以复制",
+    "subs_count": "显示 {{count}} 个订阅"
   },
   "paywall": {
     "choose_plan": "选择计划",

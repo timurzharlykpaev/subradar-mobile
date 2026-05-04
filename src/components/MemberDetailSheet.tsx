@@ -191,33 +191,52 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
                 {t('workspace.no_subs_data', 'No subscription data available')}
               </Text>
             ) : (
-              <View style={[styles.subsList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                {subs.filter((s: any) => s.status === 'ACTIVE' || s.status === 'TRIAL').slice(0, 20).map((sub: any, i: number) => {
-                  const monthly = sub.billingPeriod === 'YEARLY' ? Number(sub.amount) / 12
-                    : sub.billingPeriod === 'WEEKLY' ? Number(sub.amount) * 4.33
-                    : Number(sub.amount) || 0;
-                  return (
-                    <View key={sub.id} style={[styles.subRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
-                      {sub.iconUrl ? (
-                        <Image source={{ uri: sub.iconUrl }} style={{ width: 32, height: 32, borderRadius: 8 }} />
-                      ) : (
-                        <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: colors.primary + '18', alignItems: 'center', justifyContent: 'center' }}>
-                          <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary }}>{(sub.name || '?')[0].toUpperCase()}</Text>
+              (() => {
+                // Render every active/trial subscription. The previous
+                // `slice(0, 20)` silently hid extras — owners with members
+                // who had >20 subs reviewed an incomplete list and made
+                // the wrong consolidation calls. Sorted by monthly cost
+                // so the costliest items lead.
+                const visible = subs
+                  .filter((s: any) => s.status === 'ACTIVE' || s.status === 'TRIAL')
+                  .map((s: any) => {
+                    const monthly = s.billingPeriod === 'YEARLY' ? Number(s.amount) / 12
+                      : s.billingPeriod === 'WEEKLY' ? Number(s.amount) * 4.33
+                      : s.billingPeriod === 'QUARTERLY' ? Number(s.amount) / 3
+                      : Number(s.amount) || 0;
+                    return { sub: s, monthly };
+                  })
+                  .sort((a, b) => b.monthly - a.monthly);
+                return (
+                  <View style={[styles.subsList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    {visible.map(({ sub, monthly }, i: number) => (
+                      <View key={sub.id} style={[styles.subRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                        {sub.iconUrl ? (
+                          <Image source={{ uri: sub.iconUrl }} style={{ width: 32, height: 32, borderRadius: 8 }} />
+                        ) : (
+                          <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: colors.primary + '18', alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary }}>{(sub.name || '?')[0].toUpperCase()}</Text>
+                          </View>
+                        )}
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }} numberOfLines={1}>{sub.name}</Text>
+                          <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                            {String(t(`categories.${(sub.category || 'OTHER').toLowerCase()}`, sub.category))} · {String(t(`add.${(sub.billingPeriod || 'MONTHLY').toLowerCase()}`, sub.billingPeriod))}
+                          </Text>
                         </View>
-                      )}
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }} numberOfLines={1}>{sub.name}</Text>
-                        <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                          {String(t(`categories.${(sub.category || 'OTHER').toLowerCase()}`, sub.category))} · {String(t(`add.${(sub.billingPeriod || 'MONTHLY').toLowerCase()}`, sub.billingPeriod))}
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
+                          {formatMoney(monthly, sub.currency || currency, i18n.language)}
                         </Text>
                       </View>
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
-                        {formatMoney(monthly, sub.currency || currency, i18n.language)}
+                    ))}
+                    {visible.length > 0 && (
+                      <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', paddingVertical: 12 }}>
+                        {t('workspace.subs_count', { count: visible.length, defaultValue: '{{count}} subscription(s) shown' })}
                       </Text>
-                    </View>
-                  );
-                })}
-              </View>
+                    )}
+                  </View>
+                );
+              })()
             )}
           </View>
 

@@ -672,7 +672,11 @@
     "error_generic": "Não foi possível gerar o relatório",
     "error_network": "Erro de rede, verifique sua conexão",
     "retry": "Tentar novamente",
-    "free_limit_hint": "Plano gratuito: 1 relatório PDF por mês. Exportação CSV ilimitada."
+    "free_limit_hint": "Plano gratuito: 1 relatório PDF por mês. Exportação CSV ilimitada.",
+    "scope_personal": "Pessoal",
+    "scope_team": "Equipe",
+    "scope_team_hint": "Agrega assinaturas de todos os membros ativos. Inclui detalhamento por membro e economia em duplicatas.",
+    "generating_team_pdf": "Gerando relatório da equipe…"
   },
   "edit_profile": {
     "title": "Editar Perfil",
@@ -864,7 +868,8 @@
     "no_subs_data": "Nenhum dado de assinatura disponível",
     "team_report": "Relatório da equipe",
     "share_instructions": "Envie este código a um colega. Toque no código para copiar, ou use Compartilhar para enviar via Mensagens, WhatsApp, etc.",
-    "tap_to_copy": "Toque para copiar"
+    "tap_to_copy": "Toque para copiar",
+    "subs_count": "{{count}} assinatura(s) mostrada(s)"
   },
   "paywall": {
     "choose_plan": "Escolha um plano",

@@ -672,7 +672,11 @@
     "error_generic": "No se pudo generar el informe",
     "error_network": "Error de red, comprueba tu conexión",
     "retry": "Reintentar",
-    "free_limit_hint": "Plan gratis: 1 informe PDF al mes. La exportación CSV es ilimitada."
+    "free_limit_hint": "Plan gratis: 1 informe PDF al mes. La exportación CSV es ilimitada.",
+    "scope_personal": "Personal",
+    "scope_team": "Equipo",
+    "scope_team_hint": "Agrega las suscripciones de todos los miembros activos. Incluye desglose por miembro y ahorros por duplicados.",
+    "generating_team_pdf": "Generando reporte de equipo…"
   },
   "edit_profile": {
     "title": "Editar perfil",
@@ -864,7 +868,8 @@
     "no_subs_data": "No hay datos de suscripciones disponibles",
     "team_report": "Informe del equipo",
     "share_instructions": "Envía este código a un compañero. Toca el código para copiarlo, o usa Compartir para enviarlo por Mensajes, WhatsApp, etc.",
-    "tap_to_copy": "Toca para copiar"
+    "tap_to_copy": "Toca para copiar",
+    "subs_count": "{{count}} suscripción(es) mostrada(s)"
   },
   "paywall": {
     "choose_plan": "Elige un plan",
