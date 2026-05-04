@@ -472,17 +472,6 @@ export default function SettingsScreen() {
             false,
             'row-cards',
           )}
-          {/* Connected Accounts (Gmail import) */}
-          {renderSettingRow(
-            'mail-outline',
-            '#EA4335',
-            t('emailImport.settings.sectionTitle'),
-            undefined,
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
-            () => router.push('/email-import/settings' as any),
-            false,
-            'row-connected-accounts',
-          )}
         </View>
 
         {/* ═══ 3. Preferences ═══ */}

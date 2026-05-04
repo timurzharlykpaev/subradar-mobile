@@ -1049,8 +1049,6 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 onStopRecording={stopRecording}
                 onCamera={handleCamera}
                 onManualToggle={handleManualToggle}
-                onProGate={setProGate}
-                onClose={onClose}
               />
             )}
             {flowState === 'loading' && (

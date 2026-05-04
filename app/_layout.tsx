@@ -58,10 +58,6 @@ import { analytics } from '../src/services/analytics';
 analytics.init();
 import { loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
 import * as SecureStore from 'expo-secure-store';
-import { useEffectiveAccess } from '../src/hooks/useEffectiveAccess';
-import { useGmailScan } from '../src/hooks/useGmailScan';
-import { useUIStore } from '../src/stores/uiStore';
-import { emailImportApi } from '../src/api/emailImport';
 import * as Sentry from '@sentry/react-native';
 import { billingApi } from '../src/api/billing';
 import { reconcileBillingDrift } from '../src/utils/reconcileBillingDrift';
@@ -254,83 +250,6 @@ function DataLoader() {
   return null;
 }
 
-/**
- * Opportunistic Gmail re-scan on app launch.
- *
- * Runs only when:
- *   - User is authenticated and Pro/Team
- *   - Gmail is currently connected (token in Keychain)
- *   - User hasn't disabled `emailImportAutoScan` in Settings
- *   - >= 14 days have passed since the last scan
- *
- * Findings (if any) are written to `useUIStore.opportunisticGmailFindings`
- * — the dashboard's `OpportunisticBanner` reads from there.
- *
- * Failures are swallowed silently — user-initiated scans surface errors,
- * background scans must not.
- */
-function GmailOpportunisticScan() {
-  // Lazy import: don't pull `expo-auth-session/providers/google` into the
-  // app layout module unless the user has actually configured the OAuth
-  // client. Keeps cold-start clean while CASA/Phase-0 is in progress.
-  const { isGmailOAuthConfigured } = require('../src/hooks/useGmailAuth');
-  if (!isGmailOAuthConfigured()) return null;
-  return <GmailOpportunisticScanInner />;
-}
-
-function GmailOpportunisticScanInner() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const access = useEffectiveAccess();
-  const autoScan = useSettingsStore((s) => s.emailImportAutoScan);
-  const { silentScan } = useGmailScan();
-  const setFindings = useUIStore((s) => s.setOpportunisticGmailFindings);
-  const ranRef = useRef(false);
-
-  useEffect(() => {
-    if (ranRef.current) return;
-    if (!isAuthenticated) return;
-    if (!access || (!access.isPro && !access.isTeamOwner && !access.isTeamMember)) return;
-    if (!autoScan) return;
-
-    ranRef.current = true;
-
-    (async () => {
-      try {
-        const { gmailTokenStore } = await import('../src/services/gmail/gmailTokenStore');
-        const refreshToken = await gmailTokenStore.getRefreshToken();
-        if (!refreshToken) return;
-
-        const status = await emailImportApi.getStatus().catch(() => null);
-        if (!status?.data) return;
-        if (status.data.lastScanAt) {
-          const last = new Date(status.data.lastScanAt).getTime();
-          const fourteenDaysAgo = Date.now() - 14 * 24 * 3600 * 1000;
-          if (last > fourteenDaysAgo) return;
-        }
-
-        const r = await silentScan();
-        if (r.newCandidates.length > 0) {
-          setFindings(r.newCandidates);
-        }
-      } catch {
-        // Silent — opportunistic background flow
-      }
-    })();
-  }, [isAuthenticated, access, autoScan, silentScan, setFindings]);
-
-  return null;
-}
-
-/**
- * Renders the Gmail opportunistic-findings banner above the tab content.
- * Self-hides when there are no findings, so it has zero footprint when idle.
- */
-function GmailOpportunisticBannerHost() {
-  // Lazy import to keep the layout module light if Gmail import is unused.
-  const { OpportunisticBanner } = require('../src/components/email-import/OpportunisticBanner');
-  return <OpportunisticBanner />;
-}
-
 function PushSetup() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const notificationListener = useRef<EventSubscription | null>(null);
@@ -492,16 +411,10 @@ export default function RootLayout() {
           <QueryClientProvider client={queryClient}>
             <AdaptiveStatusBar />
             <OfflineBanner />
-            <GmailOpportunisticBannerHost />
             <LanguageLoader />
             <DataLoader />
             <PushSetup />
-            <GmailOpportunisticScan />
             <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="email-import/connect" options={{ presentation: 'card' }} />
-              <Stack.Screen name="email-import/scanning" options={{ presentation: 'card', gestureEnabled: false }} />
-              <Stack.Screen name="email-import/review" options={{ presentation: 'card' }} />
-              <Stack.Screen name="email-import/settings" options={{ presentation: 'card' }} />
               <Stack.Screen name="onboarding" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="subscription/[id]" options={{ presentation: 'modal' }} />

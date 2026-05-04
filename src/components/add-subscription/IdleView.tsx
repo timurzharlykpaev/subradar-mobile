@@ -12,7 +12,6 @@ import { useTheme } from '../../theme';
 import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 import { AICreditsBadge } from '../AICreditsBadge';
 import { CameraIcon } from '../icons';
-import { GmailImportEntryButton } from '../email-import/GmailImportEntryButton';
 import type { CatalogService } from '../../services/catalogCache';
 
 // ── Quick chips (hardcoded, 0 AI credits, 0 network) ─────────────────────────
@@ -94,10 +93,6 @@ interface Props {
   onStopRecording: () => void;
   onCamera: () => void;
   onManualToggle: () => void;
-  /** Show the Pro paywall modal for the given feature key (Gmail import). */
-  onProGate?: (feature: string) => void;
-  /** Close the parent Add Sheet (used before navigating to Gmail flow). */
-  onClose?: () => void;
   /**
    * Initial value for the smart input. Parent should pair this with a
    * remount `key` when it needs to reset or replace the value — state
@@ -117,8 +112,6 @@ function IdleViewImpl({
   onStopRecording,
   onCamera,
   onManualToggle,
-  onProGate,
-  onClose,
   seedSmartInput,
 }: Props) {
   const { colors } = useTheme();
@@ -267,13 +260,6 @@ function IdleViewImpl({
           )}
         </View>
       </View>
-
-      {/* Gmail import entry — Pro/Team gated, navigates out of the sheet. */}
-      {onProGate && (
-        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-          <GmailImportEntryButton onProGate={onProGate} onPress={onClose} />
-        </View>
-      )}
 
       {/* "or enter manually" collapsible */}
       <TouchableOpacity
