@@ -125,6 +125,14 @@ function IdleViewImpl({
   const { t } = useTranslation();
   const [smartInput, setSmartInput] = useState(seedSmartInput ?? '');
   const [showAllChips, setShowAllChips] = useState(false);
+  // Pause idle decoration animations while the user is typing in the smart
+  // input. On low-end Android the simultaneous pulse + ring loops kept the
+  // JS bridge busy enough that every keystroke took 80–120 ms to repaint —
+  // visible as input lag. Native driver ≠ free: each tick still posts a
+  // batch onto the bridge.
+  const [smartFocused, setSmartFocused] = useState(false);
+  const handleSmartFocus = useCallback(() => setSmartFocused(true), []);
+  const handleSmartBlur = useCallback(() => setSmartFocused(false), []);
 
   const handleSubmit = useCallback(() => {
     const v = smartInput.trim();
@@ -156,7 +164,7 @@ function IdleViewImpl({
   // recording begins so the active state owns the visual.
   const pulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    if (isRecording) {
+    if (isRecording || smartFocused) {
       pulse.setValue(1);
       return;
     }
@@ -168,7 +176,7 @@ function IdleViewImpl({
     );
     loop.start();
     return () => loop.stop();
-  }, [isRecording, pulse]);
+  }, [isRecording, smartFocused, pulse]);
 
   // Active-recording rings — two concentric pulses that expand outward,
   // give clear visual feedback that the mic is live without needing to
@@ -387,7 +395,11 @@ function IdleViewImpl({
             placeholderTextColor={colors.textMuted}
             returnKeyType="search"
             onSubmitEditing={handleSubmit}
+            onFocus={handleSmartFocus}
+            onBlur={handleSmartBlur}
             autoCorrect={false}
+            autoCapitalize="none"
+            spellCheck={false}
           />
         </View>
         {smartInput.trim().length > 0 ? (

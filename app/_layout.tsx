@@ -559,7 +559,13 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 1800);
+    // 1800ms was the original "give the brand a moment" timer, but the splash
+    // already covers cold-start font + asset decode (~300–600ms on most
+    // devices), so anything above ~700ms felt like the app was hung. Cut to
+    // 600ms — splash still feels intentional but the first interactive frame
+    // arrives ~1.2s sooner. Fonts gating below still blocks render until
+    // they're ready, so the splash never disappears prematurely.
+    const timer = setTimeout(() => setShowSplash(false), 600);
     return () => clearTimeout(timer);
   }, []);
 

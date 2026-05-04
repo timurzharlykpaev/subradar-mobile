@@ -9,6 +9,7 @@ import { useTheme } from '../theme';
 import { apiClient } from '../api/client';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatMoney } from '../utils/formatMoney';
+import { convertAmount } from '../services/fxCache';
 
 const { height: SCREEN_H } = Dimensions.get('window');
 const SHEET_H = SCREEN_H * 0.75;
@@ -197,19 +198,28 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
                 // who had >20 subs reviewed an incomplete list and made
                 // the wrong consolidation calls. Sorted by monthly cost
                 // so the costliest items lead.
+                const toCur = currency.toUpperCase();
                 const visible = subs
                   .filter((s: any) => s.status === 'ACTIVE' || s.status === 'TRIAL')
                   .map((s: any) => {
-                    const monthly = s.billingPeriod === 'YEARLY' ? Number(s.amount) / 12
+                    const rawMonthly = s.billingPeriod === 'YEARLY' ? Number(s.amount) / 12
                       : s.billingPeriod === 'WEEKLY' ? Number(s.amount) * 4.33
                       : s.billingPeriod === 'QUARTERLY' ? Number(s.amount) / 3
                       : Number(s.amount) || 0;
-                    return { sub: s, monthly };
+                    // Convert each row to the user's chosen display currency.
+                    // Backend stores subs in mixed per-member currencies, so
+                    // without this the list mixed "15 000 KZT" rows with
+                    // "22.99 $" rows on the same screen.
+                    const fromCur = (s.currency || currency).toUpperCase();
+                    const converted = fromCur === toCur ? rawMonthly : convertAmount(rawMonthly, fromCur, toCur);
+                    const monthly = converted ?? rawMonthly;
+                    const displayCur = converted == null ? fromCur : toCur;
+                    return { sub: s, monthly, displayCur };
                   })
                   .sort((a, b) => b.monthly - a.monthly);
                 return (
                   <View style={[styles.subsList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    {visible.map(({ sub, monthly }, i: number) => (
+                    {visible.map(({ sub, monthly, displayCur }, i: number) => (
                       <View key={sub.id} style={[styles.subRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
                         {sub.iconUrl ? (
                           <Image source={{ uri: sub.iconUrl }} style={{ width: 32, height: 32, borderRadius: 8 }} />
@@ -225,7 +235,7 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
                           </Text>
                         </View>
                         <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>
-                          {formatMoney(monthly, sub.currency || currency, i18n.language)}
+                          {formatMoney(monthly, displayCur, i18n.language)}
                         </Text>
                       </View>
                     ))}

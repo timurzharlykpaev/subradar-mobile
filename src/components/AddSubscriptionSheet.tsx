@@ -46,6 +46,7 @@ import { lookupService, lookupServiceWithAI, CatalogEntry } from '../utils/catal
 import { isBulkInput } from '../utils/clientParser';
 import { getPopularServices, CatalogService } from '../services/catalogCache';
 import { prefetchImage } from '../utils/imagePrefetch';
+import { resolveIconUrl } from '../utils/iconUrl';
 import { translateBackendError } from '../utils/translateBackendError';
 import { IdleView, type QuickChipItem } from './add-subscription/IdleView';
 import { LoadingView } from './add-subscription/LoadingView';
@@ -279,17 +280,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     }
     setSaving(true);
     try {
-      let iconUrl = form.iconUrl;
-      if (!iconUrl && form.serviceUrl) {
-        try {
-          const host = new URL(form.serviceUrl).hostname;
-          iconUrl = `https://icon.horse/icon/${host}`;
-        } catch {}
-      }
-      if (!iconUrl && form.name) {
-        const slug = form.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-        iconUrl = `https://icon.horse/icon/${slug}.com`;
-      }
+      const iconUrl = resolveIconUrl({ iconUrl: form.iconUrl, serviceUrl: form.serviceUrl });
 
       const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
       const rawBilling = (form.billingPeriod || 'MONTHLY').toUpperCase();
@@ -367,11 +358,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     const source = addedViaSourceRef.current;
 
     try {
-    const iconUrl = data.iconUrl || (data.serviceUrl
-      ? `https://icon.horse/icon/${(() => { try { return new URL(data.serviceUrl).hostname; } catch { return ''; } })()}`
-      : data.name
-        ? `https://icon.horse/icon/${data.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
-        : undefined);
+    const iconUrl = resolveIconUrl({ iconUrl: data.iconUrl, serviceUrl: data.serviceUrl });
 
     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
     const rawCategory = (data.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
@@ -770,7 +757,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       try {
         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
         const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-        const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
         const todayStr = new Date().toISOString().split('T')[0];
         const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',
@@ -862,11 +849,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Wizard: AI-clarification fallback handlers ──────────────────────────
   const handleWizardSave = useCallback(async (sub: ParsedSub) => {
-    const iconUrl = sub.iconUrl || (sub.serviceUrl
-      ? `https://icon.horse/icon/${(() => { try { return new URL(sub.serviceUrl).hostname; } catch { return ''; } })()}`
-      : sub.name
-        ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}.com`
-        : undefined);
+    const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
 
     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
     const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
@@ -923,7 +906,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       try {
         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
         const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-        const iconUrl = sub.iconUrl || (sub.name ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g,'')}.com` : undefined);
+        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
         const todayStr2 = new Date().toISOString().split('T')[0];
         const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',

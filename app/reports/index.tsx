@@ -27,7 +27,12 @@ export default function ReportsScreen() {
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
   const { token } = useAuthStore();
-  const { currency } = useSettingsStore();
+  const { currency, displayCurrency } = useSettingsStore();
+  // The user's chosen unit (KZT, USD, …) — passed to both team and
+  // personal report endpoints so the PDF renders totals in the same
+  // currency the app is showing, regardless of what the backend has
+  // persisted on `users.displayCurrency`.
+  const reportCurrency = (displayCurrency || currency || 'USD').toUpperCase();
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
   const access = useEffectiveAccess();
   const isPro = access?.isPro ?? false;
@@ -104,14 +109,20 @@ export default function ReportsScreen() {
       if (scope === 'team') {
         const teamReport = await workspaceApi.generateTeamReport(
           reportType.toUpperCase() as 'SUMMARY' | 'DETAILED' | 'TAX',
-          { from, to, locale: i18n.language || 'en' },
+          { from, to, locale: i18n.language || 'en', displayCurrency: reportCurrency },
         );
         reportId = teamReport.id;
       } else {
         const res = await fetch(`${API_URL}/reports/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ type: reportType.toUpperCase(), from, to, locale: i18n.language || 'en' }),
+          body: JSON.stringify({
+            type: reportType.toUpperCase(),
+            from,
+            to,
+            locale: i18n.language || 'en',
+            displayCurrency: reportCurrency,
+          }),
         });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));

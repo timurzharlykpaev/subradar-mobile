@@ -130,11 +130,24 @@ export async function lookupService(name: string): Promise<CatalogEntry | null> 
   const key = name.toLowerCase().trim();
   if (lookupCache.has(key)) return lookupCache.get(key) ?? null;
 
-  // 1. Check local catalog
+  // 1. Check local catalog — exact match first, then progressively trim
+  // tier qualifiers from the right ("chatgpt pro" → "chatgpt"). Without
+  // this fallback, typing a tier name forces the slow AI path which often
+  // returns only the cheapest plan and drops the rest, so the user couldn't
+  // pick "Pro" even though the catalog already had it under "chatgpt".
   const local = QUICK_CATALOG[key];
   if (local) {
     lookupCache.set(key, local);
     return local;
+  }
+  const tokens = key.split(/\s+/).filter(Boolean);
+  for (let cut = tokens.length - 1; cut >= 1; cut--) {
+    const stem = tokens.slice(0, cut).join(' ');
+    const partial = QUICK_CATALOG[stem];
+    if (partial) {
+      lookupCache.set(key, partial);
+      return partial;
+    }
   }
 
   // 2. Try backend service catalog (free endpoint)

@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Switch } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeContext';
 import { useSettingsStore } from '../stores/settingsStore';
 import { usePaymentCardsStore } from '../stores/paymentCardsStore';
-import { convertAmount } from '../services/fxCache';
+import { convertAmount, hasFxRates, refreshFxRates } from '../services/fxCache';
 import { formatMoney } from '../utils/formatMoney';
 import i18n from '../i18n';
 import { DatePickerField } from './DatePickerField';
 import { BillingDayPicker } from './BillingDayPicker';
 import { NumericInput } from './NumericInput';
 import { DoneAccessoryInput } from './primitives/DoneAccessoryInput';
+import { resolveIconUrl } from '../utils/iconUrl';
+import { SubIcon } from './SubIcon';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -85,6 +87,34 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     const converted = convertAmount(data.amount.value || 0, rawCurrency, displayCurrency);
     return converted !== null ? displayCurrency : rawCurrency;
   });
+  // Tracks whether the user (or a plan-chip handler) has edited the amount.
+  // We only retry the FX-driven seed when this is false — once the user has
+  // typed their own number we never overwrite it.
+  const userEditedAmountRef = useRef(false);
+  // Lazy-rehydrate: when the sheet mounts before FX rates are warm, the
+  // seed above falls back to the raw number in the source currency. The
+  // plan rows below DO FX-convert at render time, so the user saw the main
+  // amount in USD next to plans in KZT — exactly the mismatch reported.
+  // Force a refresh and re-seed once rates land.
+  useEffect(() => {
+    if (hasFxRates()) return;
+    let cancelled = false;
+    refreshFxRates().then(() => {
+      if (cancelled || userEditedAmountRef.current) return;
+      const raw = data.amount.value || 0;
+      const rawCurrency = (data.currency.value || 'USD').toUpperCase();
+      if (rawCurrency === displayCurrency) return;
+      const converted = convertAmount(raw, rawCurrency, displayCurrency);
+      if (converted == null) return;
+      setAmount(String(converted));
+      setCurrency(displayCurrency);
+    });
+    return () => { cancelled = true; };
+  }, []);
+  const handleAmountChange = useCallback((v: string) => {
+    userEditedAmountRef.current = true;
+    setAmount(v);
+  }, []);
   const [period, setPeriod] = useState(data.billingPeriod.value || 'MONTHLY');
   const [category, setCategory] = useState(data.category.value || 'OTHER');
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -119,10 +149,13 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     setCancelUrl(data.cancelUrl ?? '');
   }, [data.serviceUrl, data.cancelUrl]);
 
-  const iconUrl = data.iconUrl || `https://icon.horse/icon/${name.toLowerCase().replace(/\s+/g, '')}.com`;
+  const iconUrl = resolveIconUrl({ iconUrl: data.iconUrl, serviceUrl: serviceUrl || data.serviceUrl });
 
   const handlePlanSelect = (plan: { name: string; priceMonthly: number; currency: string }) => {
     setSelectedPlan(plan.name);
+    // Picking a plan counts as an explicit user choice — lock the amount so
+    // the lazy FX-rehydrate effect doesn't overwrite it once rates land.
+    userEditedAmountRef.current = true;
     const converted = convertAmount(plan.priceMonthly, plan.currency, displayCurrency);
     if (converted !== null) {
       setAmount(String(converted));
@@ -179,13 +212,13 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Header */}
       <View style={styles.header}>
-        {iconUrl ? (
-          <Image source={{ uri: iconUrl }} style={styles.iconImage} />
-        ) : (
-          <View style={[styles.iconBox, { backgroundColor: colors.background }]}>
-            <Text style={styles.iconLetter}>{name.charAt(0).toUpperCase()}</Text>
-          </View>
-        )}
+        <SubIcon
+          iconUrl={iconUrl}
+          name={name}
+          imageStyle={styles.iconImage}
+          placeholderStyle={[styles.iconBox, { backgroundColor: colors.background }]}
+          textStyle={styles.iconLetter}
+        />
         <View style={{ flex: 1 }}>
           <DoneAccessoryInput
             style={[styles.nameInput, { color: colors.text }]}
@@ -236,7 +269,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
           <NumericInput
             style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={handleAmountChange}
             keyboardType="decimal-pad"
             placeholder="0.00"
             placeholderTextColor={colors.textSecondary}

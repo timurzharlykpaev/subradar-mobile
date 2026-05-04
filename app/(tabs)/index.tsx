@@ -268,13 +268,19 @@ export default function DashboardScreen() {
   const planLabel = isTeam ? 'TEAM' : isPro ? 'PRO' : 'FREE';
 
   if (loading) {
-    // Skeleton mirrors the real layout (plan badge → AI insight → hero
-    // spend → forecast row → upcoming list → trials → category chart →
-    // recent subs) so the cross-fade to loaded content is seamless.
+    // Use the SAME SafeAreaView wrapper as the loaded state so the safe-area
+    // top inset stays identical across the loading→loaded transition. With
+    // the prior plain `<View flex={1}>` wrapper the inset only kicked in on
+    // the loaded render, producing a visible layout shift (skeleton appeared
+    // shifted, then snapped to centre as content mounted).
     return (
-      <View testID="dashboard-screen-loading" style={{ flex: 1 }}>
+      <SafeAreaView
+        testID="dashboard-screen-loading"
+        edges={["top"]}
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <DashboardSkeleton />
-      </View>
+      </SafeAreaView>
     );
   }
 

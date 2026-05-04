@@ -28,6 +28,7 @@ import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
 import TeamExplainerModal from '../../src/components/TeamExplainerModal';
 import { reconcileBillingDrift } from '../../src/utils/reconcileBillingDrift';
+import { convertAmount } from '../../src/services/fxCache';
 import { WorkspaceMembersSkeleton } from '../../src/components/skeletons';
 
 export default function WorkspaceScreen() {
@@ -106,44 +107,37 @@ export default function WorkspaceScreen() {
     ]);
   }, [queryClient]);
 
+  // Pass the user's chosen currency on every fetch so server-side conversion
+  // matches what we render. Without this, /workspace/me/analytics fell back
+  // to the user's persisted backend currency (often stale USD) and Team
+  // totals showed wrong amounts for up to 5 min (analytics Redis TTL).
+  const localUpper = localDisplayCurrency.toUpperCase();
   const { data: analytics } = useQuery({
-    queryKey: ['workspace-analytics'],
-    queryFn: () => workspaceApi.getAnalytics().then(r => r.data),
+    queryKey: ['workspace-analytics', localUpper],
+    queryFn: () => workspaceApi.getAnalytics({ displayCurrency: localUpper }).then(r => r.data),
     enabled: !!workspace,
     retry: false,
   });
 
-  // Backend conversion currency. May lag the local pick by one fetch —
-  // we self-heal below.
-  const serverDisplayCurrency: string | undefined = (analytics as any)?.displayCurrency;
-
-  // Self-heal: when the local pick diverges from what the backend used
-  // to convert team totals, push the local currency to /users/me, drop
-  // the cached analytics for THIS workspace by invalidating the query,
-  // and refetch. Fires once per mismatched render — without this the
-  // user sees USD totals for up to 5 minutes (analytics Redis TTL)
-  // even after picking KZT in Settings, which read as a hard bug.
-  const localUpper = localDisplayCurrency.toUpperCase();
-  const serverUpper = (serverDisplayCurrency || '').toUpperCase();
-  useEffect(() => {
-    if (!analytics || !serverUpper) return;
-    if (serverUpper === localUpper) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { usersApi } = await import('../../src/api/users');
-        await usersApi.updateMe({ displayCurrency: localUpper } as any);
-        if (cancelled) return;
-        await queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
-        await queryClient.invalidateQueries({ queryKey: ['analytics'] });
-      } catch (e: any) {
-        if (__DEV__) console.warn('[Workspace] currency self-heal failed:', e?.message);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [analytics, serverUpper, localUpper, queryClient]);
-
-  const displayCurrency: string = serverDisplayCurrency ?? localDisplayCurrency;
+  // Always render in the user's chosen currency. The backend should respect
+  // the displayCurrency query param above and pre-convert totals, but in
+  // practice it sometimes returns amounts in a different currency (stale
+  // user persisted value, cache, etc). We treat the local pick as the
+  // source of truth for what the UI shows and client-convert anything the
+  // backend gave us in a different unit. Falls back to the raw amount when
+  // FX cache hasn't loaded yet — better stale than blank.
+  const displayCurrency: string = localUpper;
+  const serverCurrency: string = (((analytics as any)?.displayCurrency as string) || localUpper).toUpperCase();
+  const toDisplay = (amount: number | undefined | null): number => {
+    const n = Number(amount) || 0;
+    if (serverCurrency === displayCurrency) return n;
+    return convertAmount(n, serverCurrency, displayCurrency) ?? n;
+  };
+  const teamMonthly = toDisplay(analytics?.totalMonthly);
+  const avgPerMember =
+    analytics && (analytics as any).memberCount > 0
+      ? teamMonthly / (analytics as any).memberCount
+      : 0;
 
   const { data: analysisData } = useWorkspaceAnalysisLatest();
   const teamSavings = analysisData?.result?.teamSavings;
@@ -568,7 +562,7 @@ export default function WorkspaceScreen() {
             color: colors.text,
             letterSpacing: -1,
           }}>
-            {formatMoney(analytics?.totalMonthly ?? 0, displayCurrency, locale)}
+            {formatMoney(teamMonthly, displayCurrency, locale)}
             <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textSecondary }}>
               {' /'}{t('add_flow.mo', 'mo')}
             </Text>
@@ -659,11 +653,7 @@ export default function WorkspaceScreen() {
                 <Ionicons name="person-outline" size={18} color="#F59E0B" />
               </View>
               <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
-                {formatMoney(
-                  analytics.memberCount > 0 ? analytics.totalMonthly / analytics.memberCount : 0,
-                  displayCurrency,
-                  locale,
-                )}
+                {formatMoney(avgPerMember, displayCurrency, locale)}
               </Text>
               <Text style={{ fontSize: 11, color: colors.textSecondary }}>
                 {t('workspace.avg_per_member', 'Avg / member')}
@@ -709,7 +699,7 @@ export default function WorkspaceScreen() {
         {analytics?.members && analytics.members.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
             <TeamSpendChart
-              members={analytics.members.map((m: any) => ({ name: m.name || m.email, amount: m.monthlySpend ?? m.totalMonthly ?? 0 }))}
+              members={analytics.members.map((m: any) => ({ name: m.name || m.email, amount: toDisplay(m.monthlySpend ?? m.totalMonthly) }))}
               currency={displayCurrency}
             />
           </View>
@@ -746,7 +736,7 @@ export default function WorkspaceScreen() {
                 const memberName = m.user?.name || m.user?.email?.split('@')[0] || m.email?.split('@')[0] || t('workspace.members_one');
                 const avatarUrl = m.user?.avatarUrl;
                 const memberSpend = analytics?.members?.find((am: any) => am.userId === m.userId || am.name === memberName);
-                const spendAmount = memberSpend?.monthlySpend ?? memberSpend?.totalMonthly ?? 0;
+                const spendAmount = toDisplay(memberSpend?.monthlySpend ?? memberSpend?.totalMonthly);
                 const subCount = memberSpend?.subscriptionCount ?? memberSpend?.count ?? 0;
                 const isOwnerMember = m.role === 'OWNER';
                 const isActive = m.status === 'ACTIVE';
@@ -927,7 +917,23 @@ export default function WorkspaceScreen() {
         visible={!!selectedMember}
         member={selectedMember}
         workspaceId={workspace?.id}
-        analytics={selectedMember ? analytics?.members?.find((am: any) => am.userId === selectedMember.userId || am.name === (selectedMember.user?.name || selectedMember.email)) : null}
+        analytics={(() => {
+          if (!selectedMember) return null;
+          const raw = analytics?.members?.find(
+            (am: any) =>
+              am.userId === selectedMember.userId ||
+              am.name === (selectedMember.user?.name || selectedMember.email),
+          );
+          if (!raw) return null;
+          // Pre-convert per-member spend to displayCurrency so the sheet's
+          // header card shows the user's chosen unit, not whatever the
+          // backend stored.
+          return {
+            ...raw,
+            monthlySpend: toDisplay(raw.monthlySpend ?? raw.totalMonthly),
+            totalMonthly: toDisplay(raw.totalMonthly ?? raw.monthlySpend),
+          };
+        })()}
         currency={displayCurrency}
         canManage={canManage}
         onRemove={() => selectedMember && removeMutation.mutate(selectedMember.id)}

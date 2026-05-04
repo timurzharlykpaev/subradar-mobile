@@ -6,37 +6,45 @@ import { useTheme } from '../theme';
  * SubscriptionSkeleton — placeholder card shown while the subscriptions list
  * is loading for the first time. Uses a horizontally travelling shimmer
  * overlay to feel like a real loading state rather than a flat pulse.
+ *
+ * The shimmer + pulse Animated.Values live at the module scope and start
+ * once on first mount. Previously each card created its own pair, so a
+ * 3-row skeleton ran 6 parallel loops — on low-end Android the JS thread
+ * couldn't schedule them in lockstep and rows pulsed out of phase, which
+ * read as "frozen" / janky animation.
  */
+const sharedShimmer = new Animated.Value(0);
+const sharedPulse = new Animated.Value(0.6);
+let loopsStarted = false;
+
+function ensureLoops() {
+  if (loopsStarted) return;
+  loopsStarted = true;
+  Animated.loop(
+    Animated.timing(sharedShimmer, {
+      toValue: 1,
+      duration: 1400,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }),
+  ).start();
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(sharedPulse, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      Animated.timing(sharedPulse, { toValue: 0.6, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+    ]),
+  ).start();
+}
+
 export function SubscriptionSkeleton() {
   const { colors, isDark } = useTheme();
-  const shimmer = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(0.6)).current;
   const cardWidthRef = useRef(Dimensions.get('window').width - 40);
 
   useEffect(() => {
-    const shimmerLoop = Animated.loop(
-      Animated.timing(shimmer, {
-        toValue: 1,
-        duration: 1400,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }),
-    );
-    const pulseLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0.6, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      ]),
-    );
-    shimmerLoop.start();
-    pulseLoop.start();
-    return () => {
-      shimmerLoop.stop();
-      pulseLoop.stop();
-    };
-  }, [shimmer, pulse]);
+    ensureLoops();
+  }, []);
 
-  const translateX = shimmer.interpolate({
+  const translateX = sharedShimmer.interpolate({
     inputRange: [0, 1],
     outputRange: [-cardWidthRef.current, cardWidthRef.current],
   });
@@ -48,7 +56,7 @@ export function SubscriptionSkeleton() {
     <Animated.View
       style={[
         styles.card,
-        { backgroundColor: colors.card, borderColor: colors.border, opacity: pulse },
+        { backgroundColor: colors.card, borderColor: colors.border, opacity: sharedPulse },
       ]}
       onLayout={(e) => {
         cardWidthRef.current = e.nativeEvent.layout.width;

@@ -27,6 +27,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
 import { useRouter } from 'expo-router';
 import { prefetchImage } from '../utils/imagePrefetch';
+import { resolveIconUrl } from '../utils/iconUrl';
 import { TextInputMode } from './bulk-add/TextInputMode';
 import { VoiceMode } from './bulk-add/VoiceMode';
 import { ScreenshotMode } from './bulk-add/ScreenshotMode';
@@ -143,9 +144,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
       currency: s.currency || currency,
       billingPeriod: normalizeBilling(s.billingPeriod) as BulkSub['billingPeriod'],
       category: normalizeCategory(s.category),
-      iconUrl: s.iconUrl || (s.name
-        ? `https://icon.horse/icon/${s.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`
-        : undefined),
+      iconUrl: resolveIconUrl({ iconUrl: s.iconUrl, serviceUrl: s.serviceUrl }),
     }));
     setParsedSubs(enriched);
     setChecked(enriched.map((s) => !s.isDuplicate));
@@ -263,9 +262,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
     let saved = 0;
     for (const sub of toAdd) {
       try {
-        const iconUrl = sub.iconUrl || (sub.name
-          ? `https://icon.horse/icon/${sub.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`
-          : undefined);
+        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
         const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',
           category: normalizeCategory(sub.category),

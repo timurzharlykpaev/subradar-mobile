@@ -2,7 +2,10 @@ import { apiClient } from './client';
 
 export const workspaceApi = {
   getMe: () => apiClient.get('/workspace/me'),
-  getAnalytics: () => apiClient.get('/workspace/me/analytics'),
+  getAnalytics: (opts?: { displayCurrency?: string }) =>
+    apiClient.get('/workspace/me/analytics', {
+      params: opts?.displayCurrency ? { displayCurrency: opts.displayCurrency } : undefined,
+    }),
   create: (name: string) => apiClient.post('/workspace', { name }),
   invite: (workspaceId: string, email: string, role = 'MEMBER') =>
     apiClient.post(`/workspace/${workspaceId}/invite`, { email, role }),
@@ -104,13 +107,14 @@ export const workspaceApi = {
    */
   generateTeamReport: async (
     type: 'SUMMARY' | 'DETAILED' | 'TAX',
-    opts?: { from?: string; to?: string; locale?: string },
+    opts?: { from?: string; to?: string; locale?: string; displayCurrency?: string },
   ) => {
     const { data } = await apiClient.post('/workspace/me/reports/generate', {
       type,
       from: opts?.from,
       to: opts?.to,
       locale: opts?.locale,
+      displayCurrency: opts?.displayCurrency,
     });
     return data as {
       id: string;
