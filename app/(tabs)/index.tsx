@@ -73,6 +73,12 @@ export default function DashboardScreen() {
   const prevSubsCount = useRef<number | null>(null);
 
 
+  // Track whether the most recent fetch returned data successfully. Used to
+  // gate the "Add your first subscription" empty state so that a transient
+  // network error on cold start doesn't trick a long-time user into seeing
+  // the first-run flow when their list is just temporarily unavailable.
+  const [fetchSucceeded, setFetchSucceeded] = React.useState(false);
+
   const fetchSubscriptions = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
@@ -86,6 +92,7 @@ export default function DashboardScreen() {
         console.log('[Home] /subscriptions →', items.length, 'items', statusCounts);
       }
       setSubscriptions(items as any);
+      setFetchSucceeded(true);
     } catch (err: any) {
       if (__DEV__) console.warn('[Home] /subscriptions error:', err?.response?.status, err?.message);
     } finally {
@@ -142,15 +149,18 @@ export default function DashboardScreen() {
     return () => sub.remove();
   }, [queryClient]);
 
-  // Show WelcomeSheet on first visit with no subscriptions
+  // Show WelcomeSheet on first visit with no subscriptions. Gated on
+  // `fetchSucceeded` so we don't pop the first-run sheet at long-time
+  // users who just hit a transient /subscriptions error on cold start.
   useEffect(() => {
     if (loading) return;
+    if (!fetchSucceeded) return;
     if (subscriptions.length === 0 && !useUIStore.getState().addSheetVisible) {
       AsyncStorage.getItem('welcome_shown').then((val) => {
         if (!val) setShowWelcome(true);
       });
     }
-  }, [loading, subscriptions.length]);
+  }, [loading, fetchSucceeded, subscriptions.length]);
 
   // Aha trial trigger — fires when user has invested enough to see value
   // (2nd subscription added per BILLING_RULES.md trial trigger spec).
@@ -706,7 +716,9 @@ export default function DashboardScreen() {
         )}
 
         {/* ── Empty State ────────────────────────────────────── */}
-        {subscriptions.length === 0 && (
+        {/* Gated on `fetchSucceeded` so a failed /subscriptions request
+            doesn't render the first-run prompt to an established user. */}
+        {fetchSucceeded && subscriptions.length === 0 && (
           <View style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 32 }}>
             <View style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
               <Ionicons name="wallet-outline" size={36} color={colors.primary} />

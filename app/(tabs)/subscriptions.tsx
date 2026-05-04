@@ -54,6 +54,10 @@ export default function SubscriptionsScreen() {
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const [refreshing, setRefreshing] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  // Same rationale as the Dashboard: gate the empty state on a confirmed
+  // successful fetch so a network blip on cold start doesn't render
+  // "no subscriptions yet" to a long-time user who has plenty.
+  const [fetchSucceeded, setFetchSucceeded] = useState(false);
   const [sortBy, setSortBy] = useState<SortType>('next_date');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -70,6 +74,7 @@ export default function SubscriptionsScreen() {
         console.log('[Subs] /subscriptions →', items.length, 'items', statusCounts);
       }
       setSubscriptions(items as any);
+      setFetchSucceeded(true);
     } catch (err: any) {
       reportError(`subscriptions.fetchSubs: ${err?.message ?? err}`, err?.stack);
     } finally {
@@ -588,7 +593,13 @@ export default function SubscriptionsScreen() {
           getItemLayout={(_data, index) => ({ length: 92, offset: 92 * index, index })}
           renderItem={renderItem}
           ListEmptyComponent={
-            initialLoading ? (
+            // Show skeletons while we still don't have a confirmed empty
+            // result — covers both the initial-loading window and the
+            // case where the fetch failed and store is "[]" by default.
+            // Otherwise an established user with hundreds of subs would
+            // see "no subscriptions yet" the moment a /subscriptions
+            // request hiccupped.
+            initialLoading || (!fetchSucceeded && !searchQuery) ? (
               <View style={{ paddingTop: 8 }}>
                 <SubscriptionSkeleton />
                 <SubscriptionSkeleton />
