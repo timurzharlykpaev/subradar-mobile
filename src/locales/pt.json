@@ -1294,5 +1294,65 @@
     "high": "ALTA",
     "medium": "MÉDIA",
     "low": "BAIXA"
+  },
+  "emailImport": {
+    "entry": { "title": "Importar do Gmail", "subtitle": "Encontre assinaturas em 10 segundos", "proBadge": "PRO" },
+    "consent": {
+      "title": "Conecte o Gmail para encontrar suas assinaturas",
+      "willDo": {
+        "heading": "O que faremos",
+        "scan": "Verificar seu Gmail por recibos (somente leitura)",
+        "ai": "Usar IA para identificar assinaturas recorrentes",
+        "review": "Mostrar lista para revisar antes de salvar"
+      },
+      "willNot": {
+        "heading": "O que nunca faremos",
+        "read": "Nunca leremos seus e-mails pessoais",
+        "store": "Nunca armazenaremos seus e-mails em nossos servidores",
+        "send": "Nunca enviaremos nada do seu Gmail",
+        "share": "Nunca compartilharemos seus dados com terceiros"
+      },
+      "control": {
+        "heading": "Seu controle",
+        "disconnect": "Desconecte a qualquer momento em Configurações",
+        "wipe": "Desconectar apaga nosso acesso imediatamente",
+        "review": "Você revisa cada assinatura antes de salvar"
+      },
+      "cta": "Conectar Gmail", "skip": "Agora não", "privacyLink": "Política de privacidade"
+    },
+    "scan": { "fetching": "Lendo sua caixa de entrada…", "parsing": "Identificando assinaturas…", "progress": "{{current}} de {{total}}", "cancel": "Cancelar" },
+    "results": {
+      "title": "Encontramos {{count}} assinaturas",
+      "confidenceHigh": "Certo", "confidenceMid": "Verifique o valor", "confidenceLow": "Incerto",
+      "notSureSection": "Incertos ({{count}})", "alreadyAdded": "Já na sua lista",
+      "trialBadge": "Teste", "fromSender": "De {{sender}}", "saveButton": "Salvar {{count}}"
+    },
+    "empty": { "title": "Nenhuma assinatura ativa encontrada", "body": "Verificamos os últimos {{days}} dias. Você pode adicionar manualmente.", "manual": "Adicionar manualmente" },
+    "error": {
+      "oauthCancelled": "Conexão cancelada",
+      "oauthFailed": "Falha ao conectar ao Gmail. Tente novamente.",
+      "tokenRevoked": "Acesso ao Gmail revogado. Reconecte.",
+      "scanFailed": "Falha na busca. Puxe para tentar novamente.",
+      "networkOffline": "Sem conexão de internet"
+    },
+    "success": { "toast": "{{count}} assinaturas importadas" },
+    "banner": { "title": "Encontramos {{count}} novas assinaturas no seu Gmail", "review": "Revisar", "dismiss": "Dispensar" },
+    "settings": {
+      "sectionTitle": "Contas conectadas",
+      "gmailConnected": "Gmail conectado", "gmailDisconnected": "Conectar Gmail",
+      "lastScan": "Última busca: {{when}}", "scanNow": "Buscar agora",
+      "disconnect": "Desconectar Gmail", "disconnectConfirm": "Desconectar Gmail e apagar acesso?", "disconnectDone": "Gmail desconectado",
+      "windowLabel": "Período de busca", "window90": "90 dias", "window180": "6 meses", "window365": "1 ano",
+      "autoScanLabel": "Busca automática ao abrir", "autoScanHelp": "A cada 14 dias verificamos silenciosamente"
+    },
+    "forwarding": { "heading": "Ou encaminhe e-mails", "body": "Encaminhe qualquer recibo para:", "copyAddress": "Copiar", "copied": "Copiado" },
+    "paywall": {
+      "title": "Importe assinaturas do Gmail",
+      "description": "Encontre todas as assinaturas ativas em 10 segundos.",
+      "benefit1": "Economize horas de entrada manual",
+      "benefit2": "Detecte testes esquecidos",
+      "benefit3": "Nunca perca uma renovação",
+      "benefit4": "Atualizações automáticas de preços"
+    }
   }
 }

@@ -1291,5 +1291,65 @@
     "high": "高",
     "medium": "中",
     "low": "低"
+  },
+  "emailImport": {
+    "entry": { "title": "Gmailからインポート", "subtitle": "10秒でサブスクを検出", "proBadge": "PRO" },
+    "consent": {
+      "title": "Gmailを接続してサブスクを検出",
+      "willDo": {
+        "heading": "実行する内容",
+        "scan": "Gmailから請求書を読み取り(読み取り専用)",
+        "ai": "AIで定期サブスクを識別",
+        "review": "保存前にリストを確認"
+      },
+      "willNot": {
+        "heading": "決して行わないこと",
+        "read": "個人メールやチャットを読みません",
+        "store": "メールをサーバーに保存しません",
+        "send": "Gmailから送信しません",
+        "share": "第三者にデータを共有しません"
+      },
+      "control": {
+        "heading": "あなたのコントロール",
+        "disconnect": "設定からいつでも切断可能",
+        "wipe": "切断時にアクセスを即座に削除",
+        "review": "保存前に各サブスクを確認"
+      },
+      "cta": "Gmailを接続", "skip": "あとで", "privacyLink": "プライバシーポリシー"
+    },
+    "scan": { "fetching": "受信トレイを読み込み中…", "parsing": "サブスクを識別中…", "progress": "{{total}}件中{{current}}件", "cancel": "キャンセル" },
+    "results": {
+      "title": "{{count}}件のサブスクが見つかりました",
+      "confidenceHigh": "確実", "confidenceMid": "金額を確認", "confidenceLow": "不確実",
+      "notSureSection": "不確実 ({{count}})", "alreadyAdded": "既にリストにあり",
+      "trialBadge": "試用", "fromSender": "{{sender}}より", "saveButton": "{{count}}件を保存"
+    },
+    "empty": { "title": "アクティブなサブスクが見つかりません", "body": "過去{{days}}日間を確認しました。手動で追加できます。", "manual": "手動で追加" },
+    "error": {
+      "oauthCancelled": "接続をキャンセルしました",
+      "oauthFailed": "Gmailに接続できません。再試行してください。",
+      "tokenRevoked": "Gmailアクセスが取り消されました。再接続してください。",
+      "scanFailed": "スキャンに失敗しました。引っ張って再試行。",
+      "networkOffline": "インターネット接続なし"
+    },
+    "success": { "toast": "{{count}}件のサブスクをインポートしました" },
+    "banner": { "title": "Gmailで{{count}}件の新規サブスクが見つかりました", "review": "確認", "dismiss": "閉じる" },
+    "settings": {
+      "sectionTitle": "接続済みアカウント",
+      "gmailConnected": "Gmail接続済み", "gmailDisconnected": "Gmailを接続",
+      "lastScan": "前回のスキャン: {{when}}", "scanNow": "今すぐスキャン",
+      "disconnect": "Gmail切断", "disconnectConfirm": "Gmailを切断してアクセスを削除しますか?", "disconnectDone": "Gmailを切断しました",
+      "windowLabel": "スキャン期間", "window90": "90日", "window180": "6ヶ月", "window365": "1年",
+      "autoScanLabel": "アプリ起動時に自動スキャン", "autoScanHelp": "14日ごとに新規サブスクを静かに確認"
+    },
+    "forwarding": { "heading": "またはメールを転送", "body": "サブスクの領収書を転送:", "copyAddress": "コピー", "copied": "コピー済み" },
+    "paywall": {
+      "title": "Gmailからサブスクをインポート",
+      "description": "受信トレイの全アクティブサブスクを10秒で検出。",
+      "benefit1": "手動入力の時間を節約",
+      "benefit2": "忘れた試用を検出",
+      "benefit3": "更新を見逃さない",
+      "benefit4": "価格を自動更新"
+    }
   }
 }

@@ -157,8 +157,13 @@ export default function DashboardScreen() {
     if (loading) return;
     const prev = prevSubsCount.current ?? 0;
     if (prev < 2 && subscriptions.length >= 2) {
-      const hasActivePlan = access?.isPro ?? false;
-      if (!hasActivePlan) {
+      // Bug: previously used `access?.isPro` which is FALSE for Team users
+      // (their plan is 'organization'), so paying Team customers were
+      // incorrectly offered a trial after adding 2 subs.
+      // Fix: any non-free plan disqualifies from trial.
+      const hasAnyPaidPlan =
+        !!access && (access.plan === 'pro' || access.plan === 'organization');
+      if (!hasAnyPaidPlan) {
         AsyncStorage.getItem('trial_offered').then((val) => {
           if (!val) {
             analytics.track('aha_trial_offer_shown', { trigger: 'second_sub' });

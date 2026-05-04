@@ -1294,5 +1294,104 @@
     "high": "HIGH",
     "medium": "MEDIUM",
     "low": "LOW"
+  },
+  "emailImport": {
+    "entry": {
+      "title": "Import from Gmail",
+      "subtitle": "Find subscriptions in 10 seconds",
+      "proBadge": "PRO"
+    },
+    "consent": {
+      "title": "Connect Gmail to find your subscriptions",
+      "willDo": {
+        "heading": "What we'll do",
+        "scan": "Scan your Gmail for billing receipts (read-only access)",
+        "ai": "Use AI to identify recurring subscriptions",
+        "review": "Show you a list to review before saving"
+      },
+      "willNot": {
+        "heading": "What we'll never do",
+        "read": "Never read your personal emails or conversations",
+        "store": "Never store your emails on our servers",
+        "send": "Never send anything from your Gmail",
+        "share": "Never share your data with third parties"
+      },
+      "control": {
+        "heading": "Your control",
+        "disconnect": "Disconnect at any time in Settings",
+        "wipe": "Disconnecting wipes all our access immediately",
+        "review": "You'll review every subscription before it's saved"
+      },
+      "cta": "Connect Gmail",
+      "skip": "Not now",
+      "privacyLink": "Privacy Policy"
+    },
+    "scan": {
+      "fetching": "Reading your inbox…",
+      "parsing": "Identifying subscriptions…",
+      "progress": "{{current}} of {{total}}",
+      "cancel": "Cancel"
+    },
+    "results": {
+      "title": "We found {{count}} subscriptions",
+      "confidenceHigh": "Sure",
+      "confidenceMid": "Verify amount",
+      "confidenceLow": "Not sure",
+      "notSureSection": "Not sure ({{count}})",
+      "alreadyAdded": "Already in your list",
+      "trialBadge": "Trial",
+      "fromSender": "From {{sender}}",
+      "saveButton": "Save {{count}} selected"
+    },
+    "empty": {
+      "title": "We didn't find any active subscriptions",
+      "body": "We checked the last {{days}} days. You can still add them manually.",
+      "manual": "Add manually"
+    },
+    "error": {
+      "oauthCancelled": "Connection cancelled",
+      "oauthFailed": "Couldn't connect to Gmail. Try again.",
+      "tokenRevoked": "Gmail access was revoked. Reconnect to continue.",
+      "scanFailed": "Scan failed. Pull to retry.",
+      "networkOffline": "No internet connection"
+    },
+    "success": {
+      "toast": "Imported {{count}} subscriptions"
+    },
+    "banner": {
+      "title": "We found {{count}} new subscriptions in your Gmail",
+      "review": "Review",
+      "dismiss": "Dismiss"
+    },
+    "settings": {
+      "sectionTitle": "Connected Accounts",
+      "gmailConnected": "Gmail connected",
+      "gmailDisconnected": "Connect Gmail",
+      "lastScan": "Last scan: {{when}}",
+      "scanNow": "Scan now",
+      "disconnect": "Disconnect Gmail",
+      "disconnectConfirm": "Disconnect Gmail and wipe access?",
+      "disconnectDone": "Gmail disconnected",
+      "windowLabel": "Scan window",
+      "window90": "90 days",
+      "window180": "6 months",
+      "window365": "1 year",
+      "autoScanLabel": "Auto-scan when I open the app",
+      "autoScanHelp": "We'll quietly check for new subscriptions every 14 days"
+    },
+    "forwarding": {
+      "heading": "Or forward emails",
+      "body": "Forward any subscription receipt to:",
+      "copyAddress": "Copy",
+      "copied": "Copied"
+    },
+    "paywall": {
+      "title": "Import subscriptions from Gmail",
+      "description": "Find every active subscription in your inbox in 10 seconds.",
+      "benefit1": "Save hours of manual entry",
+      "benefit2": "Detect forgotten trials",
+      "benefit3": "Never miss a renewal",
+      "benefit4": "Update prices automatically"
+    }
   }
 }

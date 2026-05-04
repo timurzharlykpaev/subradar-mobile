@@ -1294,5 +1294,65 @@
     "high": "ALTA",
     "medium": "MEDIA",
     "low": "BAJA"
+  },
+  "emailImport": {
+    "entry": { "title": "Importar de Gmail", "subtitle": "Encuentra suscripciones en 10 segundos", "proBadge": "PRO" },
+    "consent": {
+      "title": "Conecta Gmail para encontrar tus suscripciones",
+      "willDo": {
+        "heading": "Lo que haremos",
+        "scan": "Escanear tu Gmail buscando recibos (solo lectura)",
+        "ai": "Usar IA para identificar suscripciones recurrentes",
+        "review": "Mostrar la lista para revisar antes de guardar"
+      },
+      "willNot": {
+        "heading": "Lo que nunca haremos",
+        "read": "Nunca leemos tus correos personales",
+        "store": "Nunca almacenamos tus correos en nuestros servidores",
+        "send": "Nunca enviamos nada desde tu Gmail",
+        "share": "Nunca compartimos tus datos con terceros"
+      },
+      "control": {
+        "heading": "Tu control",
+        "disconnect": "Desconecta cuando quieras en Ajustes",
+        "wipe": "Al desconectar borramos nuestro acceso al instante",
+        "review": "Revisas cada suscripción antes de guardarla"
+      },
+      "cta": "Conectar Gmail", "skip": "Ahora no", "privacyLink": "Política de privacidad"
+    },
+    "scan": { "fetching": "Leyendo tu bandeja…", "parsing": "Identificando suscripciones…", "progress": "{{current}} de {{total}}", "cancel": "Cancelar" },
+    "results": {
+      "title": "Encontramos {{count}} suscripciones",
+      "confidenceHigh": "Seguro", "confidenceMid": "Verifica el importe", "confidenceLow": "Dudoso",
+      "notSureSection": "Dudosos ({{count}})", "alreadyAdded": "Ya en tu lista",
+      "trialBadge": "Prueba", "fromSender": "De {{sender}}", "saveButton": "Guardar {{count}}"
+    },
+    "empty": { "title": "No encontramos suscripciones activas", "body": "Revisamos los últimos {{days}} días. Puedes añadirlas manualmente.", "manual": "Añadir manualmente" },
+    "error": {
+      "oauthCancelled": "Conexión cancelada",
+      "oauthFailed": "No se pudo conectar a Gmail. Inténtalo de nuevo.",
+      "tokenRevoked": "Acceso a Gmail revocado. Vuelve a conectar.",
+      "scanFailed": "Falló la búsqueda. Tira para reintentar.",
+      "networkOffline": "Sin conexión a internet"
+    },
+    "success": { "toast": "{{count}} suscripciones importadas" },
+    "banner": { "title": "Encontramos {{count}} suscripciones nuevas en tu Gmail", "review": "Revisar", "dismiss": "Descartar" },
+    "settings": {
+      "sectionTitle": "Cuentas conectadas",
+      "gmailConnected": "Gmail conectado", "gmailDisconnected": "Conectar Gmail",
+      "lastScan": "Última búsqueda: {{when}}", "scanNow": "Buscar ahora",
+      "disconnect": "Desconectar Gmail", "disconnectConfirm": "¿Desconectar Gmail y borrar acceso?", "disconnectDone": "Gmail desconectado",
+      "windowLabel": "Período de búsqueda", "window90": "90 días", "window180": "6 meses", "window365": "1 año",
+      "autoScanLabel": "Buscar automáticamente al abrir", "autoScanHelp": "Cada 14 días buscamos nuevas suscripciones en silencio"
+    },
+    "forwarding": { "heading": "O reenvía correos", "body": "Reenvía cualquier recibo a:", "copyAddress": "Copiar", "copied": "Copiado" },
+    "paywall": {
+      "title": "Importa suscripciones desde Gmail",
+      "description": "Encuentra cada suscripción activa en tu bandeja en 10 segundos.",
+      "benefit1": "Ahorra horas de entrada manual",
+      "benefit2": "Detecta pruebas olvidadas",
+      "benefit3": "No pierdas ninguna renovación",
+      "benefit4": "Actualiza precios automáticamente"
+    }
   }
 }

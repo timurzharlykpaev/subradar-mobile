@@ -1294,5 +1294,65 @@
     "high": "HOCH",
     "medium": "MITTEL",
     "low": "NIEDRIG"
+  },
+  "emailImport": {
+    "entry": { "title": "Aus Gmail importieren", "subtitle": "Abos in 10 Sekunden finden", "proBadge": "PRO" },
+    "consent": {
+      "title": "Gmail verbinden, um deine Abos zu finden",
+      "willDo": {
+        "heading": "Was wir tun werden",
+        "scan": "Gmail nach Rechnungen durchsuchen (nur Lesezugriff)",
+        "ai": "KI nutzen, um wiederkehrende Abos zu erkennen",
+        "review": "Liste vor dem Speichern zur Prüfung anzeigen"
+      },
+      "willNot": {
+        "heading": "Was wir niemals tun",
+        "read": "Wir lesen nie deine privaten E-Mails",
+        "store": "Wir speichern deine E-Mails nie auf unseren Servern",
+        "send": "Wir senden nie etwas von deinem Gmail",
+        "share": "Wir geben deine Daten nie an Dritte weiter"
+      },
+      "control": {
+        "heading": "Deine Kontrolle",
+        "disconnect": "Jederzeit in den Einstellungen trennen",
+        "wipe": "Trennen löscht unseren Zugriff sofort",
+        "review": "Jedes Abo wird vor dem Speichern geprüft"
+      },
+      "cta": "Gmail verbinden", "skip": "Nicht jetzt", "privacyLink": "Datenschutzerklärung"
+    },
+    "scan": { "fetching": "Posteingang wird gelesen…", "parsing": "Abos werden erkannt…", "progress": "{{current}} von {{total}}", "cancel": "Abbrechen" },
+    "results": {
+      "title": "{{count}} Abos gefunden",
+      "confidenceHigh": "Sicher", "confidenceMid": "Betrag prüfen", "confidenceLow": "Unsicher",
+      "notSureSection": "Unsicher ({{count}})", "alreadyAdded": "Schon in deiner Liste",
+      "trialBadge": "Testphase", "fromSender": "Von {{sender}}", "saveButton": "{{count}} speichern"
+    },
+    "empty": { "title": "Keine aktiven Abos gefunden", "body": "Wir haben die letzten {{days}} Tage geprüft. Du kannst manuell hinzufügen.", "manual": "Manuell hinzufügen" },
+    "error": {
+      "oauthCancelled": "Verbindung abgebrochen",
+      "oauthFailed": "Verbindung mit Gmail fehlgeschlagen. Erneut versuchen.",
+      "tokenRevoked": "Gmail-Zugriff wurde widerrufen. Erneut verbinden.",
+      "scanFailed": "Suche fehlgeschlagen. Zum Aktualisieren ziehen.",
+      "networkOffline": "Keine Internetverbindung"
+    },
+    "success": { "toast": "{{count}} Abos importiert" },
+    "banner": { "title": "{{count}} neue Abos in deinem Gmail gefunden", "review": "Prüfen", "dismiss": "Schließen" },
+    "settings": {
+      "sectionTitle": "Verbundene Konten",
+      "gmailConnected": "Gmail verbunden", "gmailDisconnected": "Gmail verbinden",
+      "lastScan": "Letzte Suche: {{when}}", "scanNow": "Jetzt suchen",
+      "disconnect": "Gmail trennen", "disconnectConfirm": "Gmail trennen und Zugriff löschen?", "disconnectDone": "Gmail getrennt",
+      "windowLabel": "Suchzeitraum", "window90": "90 Tage", "window180": "6 Monate", "window365": "1 Jahr",
+      "autoScanLabel": "Bei App-Start automatisch suchen", "autoScanHelp": "Wir prüfen alle 14 Tage still auf neue Abos"
+    },
+    "forwarding": { "heading": "Oder E-Mails weiterleiten", "body": "Leite Abo-Quittungen weiter an:", "copyAddress": "Kopieren", "copied": "Kopiert" },
+    "paywall": {
+      "title": "Abos aus Gmail importieren",
+      "description": "Finde alle aktiven Abos in deinem Posteingang in 10 Sekunden.",
+      "benefit1": "Stunden manuelle Eingabe sparen",
+      "benefit2": "Vergessene Testphasen erkennen",
+      "benefit3": "Verlängerungen nie verpassen",
+      "benefit4": "Preise automatisch aktualisieren"
+    }
   }
 }

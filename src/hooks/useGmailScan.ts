@@ -149,7 +149,16 @@ export function useGmailScan() {
 
         return result;
       } catch (e: any) {
-        const stage = stageRef.current ?? 'unknown';
+        const stageRaw = stageRef.current;
+        // ScanStage union includes 'done', but only failure stages are
+        // valid for telemetry. Coerce 'done' (impossible to error from)
+        // to 'unknown' so we never feed an unsupported value.
+        const stage =
+          stageRaw === 'fetching_list' ||
+          stageRaw === 'fetching_bodies' ||
+          stageRaw === 'parsing'
+            ? stageRaw
+            : 'unknown';
         const code = e instanceof GmailScanError ? e.code : 'unknown';
         if (code !== 'aborted') {
           emailImportTelemetry.scanFailed({

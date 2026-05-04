@@ -1291,5 +1291,65 @@
     "high": "高",
     "medium": "中",
     "low": "低"
+  },
+  "emailImport": {
+    "entry": { "title": "从 Gmail 导入", "subtitle": "10 秒内找到订阅", "proBadge": "PRO" },
+    "consent": {
+      "title": "连接 Gmail 以查找您的订阅",
+      "willDo": {
+        "heading": "我们将做什么",
+        "scan": "扫描您 Gmail 中的账单收据(仅读取)",
+        "ai": "使用 AI 识别重复订阅",
+        "review": "保存前显示列表供您查看"
+      },
+      "willNot": {
+        "heading": "我们绝不会做什么",
+        "read": "绝不读取您的个人邮件或对话",
+        "store": "绝不在我们的服务器存储您的邮件",
+        "send": "绝不从您的 Gmail 发送任何内容",
+        "share": "绝不与第三方共享您的数据"
+      },
+      "control": {
+        "heading": "您的控制权",
+        "disconnect": "随时在设置中断开连接",
+        "wipe": "断开连接立即清除我们的访问权限",
+        "review": "保存前您将审核每个订阅"
+      },
+      "cta": "连接 Gmail", "skip": "暂不", "privacyLink": "隐私政策"
+    },
+    "scan": { "fetching": "正在读取收件箱…", "parsing": "识别订阅中…", "progress": "{{total}} 中第 {{current}} 项", "cancel": "取消" },
+    "results": {
+      "title": "找到 {{count}} 个订阅",
+      "confidenceHigh": "确定", "confidenceMid": "请核对金额", "confidenceLow": "不确定",
+      "notSureSection": "不确定 ({{count}})", "alreadyAdded": "已在您的列表中",
+      "trialBadge": "试用", "fromSender": "来自 {{sender}}", "saveButton": "保存 {{count}} 个"
+    },
+    "empty": { "title": "未找到活跃订阅", "body": "已检查最近 {{days}} 天。可以手动添加。", "manual": "手动添加" },
+    "error": {
+      "oauthCancelled": "连接已取消",
+      "oauthFailed": "无法连接到 Gmail。请重试。",
+      "tokenRevoked": "Gmail 访问已撤销。请重新连接。",
+      "scanFailed": "扫描失败。下拉重试。",
+      "networkOffline": "无网络连接"
+    },
+    "success": { "toast": "已导入 {{count}} 个订阅" },
+    "banner": { "title": "在您的 Gmail 中找到 {{count}} 个新订阅", "review": "查看", "dismiss": "关闭" },
+    "settings": {
+      "sectionTitle": "已连接账户",
+      "gmailConnected": "Gmail 已连接", "gmailDisconnected": "连接 Gmail",
+      "lastScan": "上次扫描:{{when}}", "scanNow": "立即扫描",
+      "disconnect": "断开 Gmail", "disconnectConfirm": "断开 Gmail 并清除访问权限?", "disconnectDone": "Gmail 已断开",
+      "windowLabel": "扫描时间段", "window90": "90 天", "window180": "6 个月", "window365": "1 年",
+      "autoScanLabel": "打开应用时自动扫描", "autoScanHelp": "每 14 天静默检查新订阅"
+    },
+    "forwarding": { "heading": "或转发邮件", "body": "将任何订阅收据转发至:", "copyAddress": "复制", "copied": "已复制" },
+    "paywall": {
+      "title": "从 Gmail 导入订阅",
+      "description": "10 秒内找到收件箱中的所有活跃订阅。",
+      "benefit1": "节省数小时手动输入",
+      "benefit2": "发现被遗忘的试用",
+      "benefit3": "绝不错过续订",
+      "benefit4": "价格自动更新"
+    }
   }
 }

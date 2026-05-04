@@ -1,19 +1,48 @@
-import * as SQLite from 'expo-sqlite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Local cache of Gmail message-ids that have been scanned.
  *
  * Lives entirely on-device (privacy invariant: backend never sees Gmail
- * message-ids). On disconnect we DROP the table; on uninstall the OS
- * removes the file.
+ * message-ids). On disconnect we wipe the cache; on uninstall the OS
+ * removes AsyncStorage.
+ *
+ * We use AsyncStorage rather than SQLite because:
+ *  - The data shape is trivially flat (just message-ids + small per-id
+ *    metadata), no joins or queries beyond "have I seen this id?".
+ *  - AsyncStorage is JS-only and doesn't require a native rebuild,
+ *    which keeps the feature shippable through OTA updates.
+ *  - Even with 5000 scanned messages, the cache is < 500 KB JSON,
+ *    well within AsyncStorage's per-key safe range.
  */
 
-let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+const STORAGE_KEY = 'gmail_scanned_messages_v1';
 
-const getDb = () => {
-  if (!dbPromise) dbPromise = SQLite.openDatabaseAsync('gmail_import.db');
-  return dbPromise;
-};
+interface ScannedRecord {
+  scannedAt: number;
+  importedSubscriptionId: string | null;
+  sourceSender: string | null;
+}
+
+type StorageShape = Record<string, ScannedRecord>;
+
+let cache: StorageShape | null = null;
+
+async function load(): Promise<StorageShape> {
+  if (cache) return cache;
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    cache = raw ? (JSON.parse(raw) as StorageShape) : {};
+  } catch {
+    cache = {};
+  }
+  return cache!;
+}
+
+async function save(data: StorageShape): Promise<void> {
+  cache = data;
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
 export interface ScannedRow {
   messageId: string;
@@ -23,79 +52,62 @@ export interface ScannedRow {
 }
 
 export const scannedMessageStore = {
-  async init() {
-    const db = await getDb();
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS scanned_messages (
-        message_id TEXT PRIMARY KEY,
-        scanned_at INTEGER NOT NULL,
-        imported_subscription_id TEXT NULL,
-        source_sender TEXT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_scanned_at ON scanned_messages(scanned_at);
-    `);
-  },
+  /**
+   * No-op for AsyncStorage backend, kept for API compatibility with the
+   * earlier SQLite implementation.
+   */
+  async init() { /* AsyncStorage needs no schema setup */ },
 
   async markScanned(rows: { messageId: string; sourceSender: string | null }[]) {
     if (rows.length === 0) return;
-    const db = await getDb();
+    const data = await load();
     const now = Date.now();
-    await db.withTransactionAsync(async () => {
-      for (const r of rows) {
-        await db.runAsync(
-          'INSERT OR IGNORE INTO scanned_messages (message_id, scanned_at, source_sender) VALUES (?, ?, ?)',
-          [r.messageId, now, r.sourceSender],
-        );
-      }
-    });
+    for (const r of rows) {
+      if (data[r.messageId]) continue; // INSERT-OR-IGNORE semantics
+      data[r.messageId] = {
+        scannedAt: now,
+        importedSubscriptionId: null,
+        sourceSender: r.sourceSender,
+      };
+    }
+    await save(data);
   },
 
   async filterUnscanned(messageIds: string[]): Promise<string[]> {
     if (messageIds.length === 0) return [];
-    const db = await getDb();
-    const seen = new Set<string>();
-    // SQLite parameter limit is ~999; chunk to be safe.
-    const CHUNK = 500;
-    for (let i = 0; i < messageIds.length; i += CHUNK) {
-      const slice = messageIds.slice(i, i + CHUNK);
-      const placeholders = slice.map(() => '?').join(',');
-      const rows: { message_id: string }[] = await db.getAllAsync(
-        `SELECT message_id FROM scanned_messages WHERE message_id IN (${placeholders})`,
-        slice,
-      );
-      for (const r of rows) seen.add(r.message_id);
-    }
-    return messageIds.filter((id) => !seen.has(id));
+    const data = await load();
+    return messageIds.filter((id) => !data[id]);
   },
 
   async linkImportedSubscription(messageId: string, subscriptionId: string) {
-    const db = await getDb();
-    await db.runAsync(
-      'UPDATE scanned_messages SET imported_subscription_id = ? WHERE message_id = ?',
-      [subscriptionId, messageId],
-    );
+    const data = await load();
+    if (!data[messageId]) {
+      data[messageId] = {
+        scannedAt: Date.now(),
+        importedSubscriptionId: subscriptionId,
+        sourceSender: null,
+      };
+    } else {
+      data[messageId].importedSubscriptionId = subscriptionId;
+    }
+    await save(data);
   },
 
   async getRow(messageId: string): Promise<ScannedRow | null> {
-    const db = await getDb();
-    const r = await db.getFirstAsync<{
-      message_id: string;
-      scanned_at: number;
-      imported_subscription_id: string | null;
-      source_sender: string | null;
-    }>('SELECT * FROM scanned_messages WHERE message_id = ?', [messageId]);
+    const data = await load();
+    const r = data[messageId];
     return r
       ? {
-          messageId: r.message_id,
-          scannedAt: r.scanned_at,
-          importedSubscriptionId: r.imported_subscription_id,
-          sourceSender: r.source_sender,
+          messageId,
+          scannedAt: r.scannedAt,
+          importedSubscriptionId: r.importedSubscriptionId,
+          sourceSender: r.sourceSender,
         }
       : null;
   },
 
   async dropAll() {
-    const db = await getDb();
-    await db.execAsync('DROP TABLE IF EXISTS scanned_messages');
+    cache = {};
+    await AsyncStorage.removeItem(STORAGE_KEY);
   },
 };

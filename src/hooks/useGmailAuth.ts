@@ -31,12 +31,13 @@ let accessTokenCache: { token: string; expiresAt: number } | null = null;
 let pendingRefresh: Promise<string> | null = null;
 
 function clientIdForPlatform(): string {
-  const id =
+  const raw =
     Platform.OS === 'ios'
       ? process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS
       : Platform.OS === 'android'
         ? process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID
         : process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB;
+  const id = typeof raw === 'string' ? raw : '';
   if (!id) {
     throw new Error(
       'gmail_oauth_not_configured: EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_* env var missing',
@@ -164,7 +165,7 @@ export function useGmailAuth() {
 
       setIsConnected(true);
     } catch (e: any) {
-      reportError(e);
+      reportError(e?.message ?? String(e), e?.stack);
       throw e;
     } finally {
       setIsAuthenticating(false);
@@ -188,11 +189,11 @@ export function useGmailAuth() {
     try {
       const { scannedMessageStore } = await import('../services/scannedMessageStore');
       await scannedMessageStore.dropAll();
-    } catch (e) { reportError(e); }
+    } catch (e: any) { reportError(e?.message ?? String(e), e?.stack); }
 
     try {
       await emailImportApi.disconnect();
-    } catch (e) { reportError(e); }
+    } catch (e: any) { reportError(e?.message ?? String(e), e?.stack); }
 
     setIsConnected(false);
   }, []);
