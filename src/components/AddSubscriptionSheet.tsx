@@ -16,6 +16,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
@@ -80,6 +81,12 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
+  // Safe-area insets so the bottom of the ScrollView doesn't get
+  // clipped by the iPhone home indicator / Android nav bar. Without this
+  // the user couldn't reach the Save button on long forms — content
+  // visually scrolled past it but the last 30-40px lived under the
+  // home indicator gesture zone and weren't tappable.
+  const insets = useSafeAreaInsets();
   const access = useEffectiveAccess();
   const subsLimitReached =
     !!access &&
@@ -1022,10 +1029,21 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
           <ScrollView
             style={styles.content}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            // Bottom padding = (home-indicator inset) + (40px buffer so the
+            // Save button doesn't sit flush against the indicator). The
+            // hard-coded `120` previously over-padded on devices without a
+            // home indicator and under-padded on Android with system nav.
+            contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 0) + 40 }}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="interactive"
             automaticallyAdjustKeyboardInsets
+            // Android needs nestedScrollEnabled when the ScrollView is
+            // inside a gesture-handled container — otherwise the parent
+            // gesture handler can swallow scroll events and the user sees
+            // a frozen list.
+            nestedScrollEnabled
+            scrollEnabled
+            showsVerticalScrollIndicator={false}
             // "never": модалка лежит поверх root-view, у которого
             // top safeArea inset = высота статус-бара/чёлки. С "automatic"
             // UIScrollView внутри модалки добавляет этот inset как
