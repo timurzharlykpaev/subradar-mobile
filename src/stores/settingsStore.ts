@@ -54,11 +54,26 @@ export const useSettingsStore = create<SettingsState>()(
       dateFormat: 'DD/MM',
       analyticsOptOut: false,
       icpSegment: null,
-      setCurrency: (currency) => set({ currency, displayCurrency: currency }),
+      setCurrency: (currency) => {
+        const upper = currency.toUpperCase();
+        set({ currency: upper, displayCurrency: upper });
+        // Backend is the source of truth for analytics / reports
+        // currency conversion. Without this PATCH the user sees their
+        // chosen currency on screen but the backend still computes
+        // totals in whatever DB.displayCurrency was set to (often USD)
+        // — workspace analytics + team reports came back wrong.
+        // Fire-and-forget: auth might not be ready in onboarding.
+        usersApi.updateMe({ displayCurrency: upper }).catch(() => {});
+      },
       setCountry: (country) => set({ country, region: country }),
       setRegion: (region) => set({ region: region.toUpperCase(), country: region.toUpperCase() }),
-      setDisplayCurrency: (displayCurrency) =>
-        set({ displayCurrency: displayCurrency.toUpperCase(), currency: displayCurrency.toUpperCase() }),
+      setDisplayCurrency: (displayCurrency) => {
+        const upper = displayCurrency.toUpperCase();
+        set({ displayCurrency: upper, currency: upper });
+        // Same rationale as setCurrency above — keep DB in sync so
+        // server-side conversion uses the user's actual preference.
+        usersApi.updateMe({ displayCurrency: upper }).catch(() => {});
+      },
       setLanguage: (language) => {
         i18n.changeLanguage(language);
         set({ language });

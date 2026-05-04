@@ -333,6 +333,45 @@ function DataLoader() {
             queryClient.invalidateQueries({ queryKey: ['billing'] });
           }
         }
+
+        // Currency reconcile — pre-existing accounts that picked KZT/RUB/etc
+        // before the auto-PATCH was wired up (commit bac95b1) end up with
+        // their LOCAL store on the right currency but the BACKEND user row
+        // still on the default (USD). Workspace analytics + team reports
+        // run server-side conversion against the BACKEND value, so they
+        // come back in dollars even though everything else in the app is
+        // in tenge. One-shot fix on startup: if the local choice differs
+        // from what the server has, push it once. Subsequent setDisplayCurrency
+        // calls keep them in sync going forward.
+        if (!cancelled) {
+          try {
+            const { usersApi } = await import('../src/api/users');
+            const me = await usersApi.getMe();
+            const serverCurrency = (me?.data?.displayCurrency || me?.data?.currency || '')
+              .toString()
+              .toUpperCase();
+            const localCurrency = (
+              useSettingsStore.getState().displayCurrency || 'USD'
+            ).toUpperCase();
+            if (serverCurrency && localCurrency && serverCurrency !== localCurrency) {
+              if (__DEV__) {
+                console.log(
+                  '[CurrencySync] mismatch — local:',
+                  localCurrency,
+                  'server:',
+                  serverCurrency,
+                  '— pushing local',
+                );
+              }
+              await usersApi.updateMe({ displayCurrency: localCurrency } as any);
+              queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
+              queryClient.invalidateQueries({ queryKey: ['analytics'] });
+              queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+            }
+          } catch (e: any) {
+            if (__DEV__) console.warn('[CurrencySync] failed:', e?.message);
+          }
+        }
       } catch (e) {
         Sentry.captureException(e, { tags: { source: 'rc_init' } });
       }
