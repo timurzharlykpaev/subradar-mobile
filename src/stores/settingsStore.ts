@@ -25,6 +25,12 @@ interface SettingsState {
   analyticsOptOut: boolean;
   /** User-declared ICP segment — drives conditional copy and explainer triggers. */
   icpSegment: 'solo' | 'family' | 'team' | null;
+  /** Gmail import — opportunistic re-scan toggle (only when Gmail is connected). */
+  emailImportAutoScan: boolean;
+  /** Gmail import — how far back to look. 90 / 180 / 365 days. */
+  emailImportWindowDays: 90 | 180 | 365;
+  setEmailImportAutoScan: (enabled: boolean) => void;
+  setEmailImportWindowDays: (days: 90 | 180 | 365) => void;
   setCurrency: (currency: string) => void;
   setCountry: (country: string) => void;
   setRegion: (region: string) => void;
@@ -54,6 +60,10 @@ export const useSettingsStore = create<SettingsState>()(
       dateFormat: 'DD/MM',
       analyticsOptOut: false,
       icpSegment: null,
+      emailImportAutoScan: true,
+      emailImportWindowDays: 365,
+      setEmailImportAutoScan: (emailImportAutoScan) => set({ emailImportAutoScan }),
+      setEmailImportWindowDays: (emailImportWindowDays) => set({ emailImportWindowDays }),
       setCurrency: (currency) => set({ currency, displayCurrency: currency }),
       setCountry: (country) => set({ country, region: country }),
       setRegion: (region) => set({ region: region.toUpperCase(), country: region.toUpperCase() }),

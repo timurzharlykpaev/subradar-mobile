@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import i18n from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { reportError } from '../utils/errorReporter';
+import { isUserNotFoundError } from './staleAuth';
 
 // TODO(security): add certificate pinning for api.subradar.ai.
 // Requires a native library (e.g. react-native-pinch or @mattrglobal/pin) and
@@ -65,8 +66,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // User not found (deleted account, stale JWT) — force logout
-    if (error.response?.status === 404 && error.response?.data?.message === 'User not found') {
+    if (isUserNotFoundError(error)) {
       useAuthStore.getState().logout();
       return Promise.reject(error);
     }
