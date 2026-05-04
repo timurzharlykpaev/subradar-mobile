@@ -38,14 +38,7 @@ export default function WorkspaceScreen() {
   const access = useEffectiveAccess();
   const isTeam = access?.plan === 'organization';
   const isPro = access?.isPro ?? false;
-  // Backend `/workspace/me/analytics` does NOT convert per-subscription
-  // currencies — it sums raw `amount` values across each member's subs (see
-  // `subradar-backend/src/workspace/workspace.service.ts:538`). Mixing
-  // currencies in one number is wrong, but until the backend exposes a
-  // per-member converted amount we render it in the user's preferred
-  // display currency so at least the SYMBOL/locale matches what the user
-  // expects to see across the app.
-  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
+  const localDisplayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const locale = i18n.language;
   const currentUser = useAuthStore((s) => s.user);
 
@@ -119,6 +112,13 @@ export default function WorkspaceScreen() {
     enabled: !!workspace,
     retry: false,
   });
+
+  // Prefer the currency the backend actually used to convert sums —
+  // ensures the rendered symbol matches the number. Falls back to the
+  // local store while analytics is still loading or on legacy server
+  // builds that don't return the field.
+  const displayCurrency: string =
+    (analytics as any)?.displayCurrency ?? localDisplayCurrency;
 
   const { data: analysisData } = useWorkspaceAnalysisLatest();
   const teamSavings = analysisData?.result?.teamSavings;
@@ -634,7 +634,11 @@ export default function WorkspaceScreen() {
                 <Ionicons name="person-outline" size={18} color="#F59E0B" />
               </View>
               <Text style={{ fontSize: 18, fontWeight: '900', color: colors.text }}>
-                ${analytics.memberCount > 0 ? (analytics.totalMonthly / analytics.memberCount).toFixed(0) : '0'}
+                {formatMoney(
+                  analytics.memberCount > 0 ? analytics.totalMonthly / analytics.memberCount : 0,
+                  displayCurrency,
+                  locale,
+                )}
               </Text>
               <Text style={{ fontSize: 11, color: colors.textSecondary }}>
                 {t('workspace.avg_per_member', 'Avg / member')}
