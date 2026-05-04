@@ -432,17 +432,44 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   }, [subsLimitReached, currency, addSubscription, t]);
 
   // ── Convert CatalogEntry to ConfirmCardData ─────────────────────────────
-  const catalogToConfirmData = (entry: CatalogEntry): ConfirmCardData => ({
-    name: { value: entry.name, confidence: 'high' },
-    amount: { value: entry.amount, confidence: entry.amount > 0 ? 'high' : 'low' },
-    currency: { value: useSettingsStore.getState().displayCurrency || entry.currency, confidence: 'high' },
-    billingPeriod: { value: entry.billingPeriod, confidence: 'high' },
-    category: { value: entry.category || 'OTHER', confidence: 'medium' },
-    iconUrl: entry.iconUrl,
-    serviceUrl: entry.serviceUrl,
-    cancelUrl: entry.cancelUrl,
-    plans: entry.plans?.map(p => ({ name: p.name, priceMonthly: p.amount, currency: p.currency })),
-  });
+  // The previous version stamped `currency: displayCurrency` onto the
+  // confirm card without touching `amount`, which produced the worst
+  // possible mismatch — "20 KZT" instead of either "20 USD" (raw) or
+  // "9 267 KZT" (correctly converted). Now we await an FX warm-up if
+  // needed and either return the entry already converted into the
+  // user's currency, or fall back to the entry's own (raw, USD) values
+  // when no FX rate exists. Either way: amount and currency stay in sync.
+  const catalogToConfirmData = useCallback(
+    async (entry: CatalogEntry): Promise<ConfirmCardData> => {
+      const target = (useSettingsStore.getState().displayCurrency || 'USD').toUpperCase();
+      const source = (entry.currency || 'USD').toUpperCase();
+      if (source !== target && !hasFxRates()) {
+        await refreshFxRates();
+      }
+      const converted =
+        source === target
+          ? entry.amount
+          : convertAmount(entry.amount, source, target);
+      const seedAmount = converted ?? entry.amount;
+      const seedCurrency = converted == null ? source : target;
+      return {
+        name: { value: entry.name, confidence: 'high' },
+        amount: { value: seedAmount, confidence: seedAmount > 0 ? 'high' : 'low' },
+        currency: { value: seedCurrency, confidence: 'high' },
+        billingPeriod: { value: entry.billingPeriod, confidence: 'high' },
+        category: { value: entry.category || 'OTHER', confidence: 'medium' },
+        iconUrl: entry.iconUrl,
+        serviceUrl: entry.serviceUrl,
+        cancelUrl: entry.cancelUrl,
+        plans: entry.plans?.map((p) => ({
+          name: p.name,
+          priceMonthly: p.amount,
+          currency: p.currency,
+        })),
+      };
+    },
+    [],
+  );
 
   // ── Smart input submit ──────────────────────────────────────────────────
   const handleSmartSubmit = useCallback(async (text: string) => {
@@ -489,7 +516,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     try {
       const entry = await lookupService(input);
       if (entry) {
-        setConfirmData(catalogToConfirmData(entry));
+        setConfirmData(await catalogToConfirmData(entry));
         setFlowState('confirm');
         return;
       }
@@ -501,7 +528,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     try {
       const result = await lookupServiceWithAI(input, i18n.language ?? 'en', displayCurrency, region);
       if (result.found && result.entry) {
-        setConfirmData(catalogToConfirmData(result.entry));
+        setConfirmData(await catalogToConfirmData(result.entry));
         setFlowState('confirm');
         return;
       }
