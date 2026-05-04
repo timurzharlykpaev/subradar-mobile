@@ -28,6 +28,7 @@ import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
 import TeamExplainerModal from '../../src/components/TeamExplainerModal';
 import { reconcileBillingDrift } from '../../src/utils/reconcileBillingDrift';
+import { WorkspaceMembersSkeleton } from '../../src/components/skeletons';
 
 export default function WorkspaceScreen() {
   const { colors, isDark } = useTheme();
@@ -697,7 +698,9 @@ export default function WorkspaceScreen() {
           </Text>
 
           {isLoading ? (
-            <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
+            <View style={{ marginTop: 12 }}>
+              <WorkspaceMembersSkeleton rows={3} />
+            </View>
           ) : members.length === 0 ? (
             <Text style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: colors.textMuted }}>
               {t('workspace.no_members_yet')}

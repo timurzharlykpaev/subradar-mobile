@@ -33,6 +33,7 @@ import AIRecommendationList from '../../src/components/AIRecommendationList';
 import { analytics } from '../../src/services/analytics';
 import AIDuplicateGroup from '../../src/components/AIDuplicateGroup';
 import AnalysisLoadingState from '../../src/components/AnalysisLoadingState';
+import { AnalyticsSkeleton } from '../../src/components/skeletons';
 import BlurredProSection from '../../src/components/BlurredProSection';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 
@@ -426,7 +427,9 @@ export default function AnalyticsScreen() {
 
   const hasNoData = activeSubs.length === 0 && !summary && byCategoryData.length === 0 && monthlyData.length === 0;
 
-  // Loading state
+  // Loading state — keep the real header visible (faster perceived load),
+  // skeletonize only the body blocks (stat tiles → trend chart → category
+  // breakdown → most-expensive list).
   if (loading) {
     return (
       <SafeAreaView edges={["top"]} style={[styles.container, { backgroundColor: colors.background }]}>
@@ -441,10 +444,7 @@ export default function AnalyticsScreen() {
             </View>
           </View>
         </View>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12 }}>{t('analytics.loading')}</Text>
-        </View>
+        <AnalyticsSkeleton />
       </SafeAreaView>
     );
   }

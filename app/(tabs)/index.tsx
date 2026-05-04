@@ -38,6 +38,7 @@ import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
 import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
+import { DashboardSkeleton } from '../../src/components/skeletons';
 import { analytics } from '../../src/services/analytics';
 import { parseBackendDate, daysUntilDate } from '../../src/utils/formatters';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
@@ -267,10 +268,13 @@ export default function DashboardScreen() {
   const planLabel = isTeam ? 'TEAM' : isPro ? 'PRO' : 'FREE';
 
   if (loading) {
+    // Skeleton mirrors the real layout (plan badge → AI insight → hero
+    // spend → forecast row → upcoming list → trials → category chart →
+    // recent subs) so the cross-fade to loaded content is seamless.
     return (
-      <SafeAreaView testID="dashboard-screen-loading" style={[styles.container, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
+      <View testID="dashboard-screen-loading" style={{ flex: 1 }}>
+        <DashboardSkeleton />
+      </View>
     );
   }
 
