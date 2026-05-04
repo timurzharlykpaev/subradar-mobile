@@ -164,28 +164,29 @@ export default function DashboardScreen() {
 
   // Aha trial trigger — fires when user has invested enough to see value
   // (2nd subscription added per BILLING_RULES.md trial trigger spec).
+  //
+  // Race-condition guard: useEffectiveAccess() returns null until /billing/me
+  // resolves, so on cold start `access` is null and the old check
+  // `!hasAnyPaidPlan` was true even for Pro/Team users. Result: paying
+  // customers got the trial offer the moment they added their 2nd sub.
+  // Now we wait for `access` to materialise AND we positively check that
+  // the user is on the free plan AND that the backend says they can
+  // actually start a trial — anything else short-circuits.
   useEffect(() => {
     if (loading) return;
+    if (!access) return;
     const prev = prevSubsCount.current ?? 0;
-    if (prev < 2 && subscriptions.length >= 2) {
-      // Bug: previously used `access?.isPro` which is FALSE for Team users
-      // (their plan is 'organization'), so paying Team customers were
-      // incorrectly offered a trial after adding 2 subs.
-      // Fix: any non-free plan disqualifies from trial.
-      const hasAnyPaidPlan =
-        !!access && (access.plan === 'pro' || access.plan === 'organization');
-      if (!hasAnyPaidPlan) {
-        AsyncStorage.getItem('trial_offered').then((val) => {
-          if (!val) {
-            analytics.track('aha_trial_offer_shown', { trigger: 'second_sub' });
-            setShowTrialOffer(true);
-            AsyncStorage.setItem('trial_offered', '1');
-          }
-        });
-      }
-    }
     prevSubsCount.current = subscriptions.length;
-  }, [loading, subscriptions.length, access?.plan]);
+    if (prev >= 2 || subscriptions.length < 2) return;
+    if (access.plan !== 'free') return;
+    if (!access.actions?.canStartTrial) return;
+    AsyncStorage.getItem('trial_offered').then((val) => {
+      if (val) return;
+      analytics.track('aha_trial_offer_shown', { trigger: 'second_sub' });
+      setShowTrialOffer(true);
+      AsyncStorage.setItem('trial_offered', '1');
+    });
+  }, [loading, subscriptions.length, access]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'TRIAL');
   const trialSubs = subscriptions.filter((s) => s.status === 'TRIAL');
