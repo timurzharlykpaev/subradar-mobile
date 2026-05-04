@@ -1,17 +1,24 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Image,
+  Animated,
+  Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+// Note: avoiding `expo-linear-gradient` here. Its native view module isn't
+// always compiled into older dev/prod builds (we saw "Unable to get the
+// view config for ExpoLinearGradient" warnings on devices that hadn't been
+// rebuilt yet, and downstream icons inside the view would silently fail to
+// render). A flat-colour sphere with a soft inner highlight gives 90% of
+// the gradient look without any native dependency — works on every build.
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme';
 import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 import { AICreditsBadge } from '../AICreditsBadge';
-import { CameraIcon } from '../icons';
 import type { CatalogService } from '../../services/catalogCache';
 
 // ── Quick chips (hardcoded, 0 AI credits, 0 network) ─────────────────────────
@@ -144,74 +151,263 @@ function IdleViewImpl({
     marginTop: 6,
   };
 
+  // Pulse animation for the idle voice CTA — a subtle 1.0 → 1.06 scale loop
+  // that draws the eye to the mic without feeling jittery. Stops the moment
+  // recording begins so the active state owns the visual.
+  const pulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (isRecording) {
+      pulse.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.06, duration: 1100, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [isRecording, pulse]);
+
+  // Active-recording rings — two concentric pulses that expand outward,
+  // give clear visual feedback that the mic is live without needing to
+  // read any text.
+  const ring1 = useRef(new Animated.Value(0)).current;
+  const ring2 = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!isRecording) {
+      ring1.setValue(0);
+      ring2.setValue(0);
+      return;
+    }
+    const make = (val: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, { toValue: 1, duration: 1500, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(val, { toValue: 0, duration: 0, useNativeDriver: true }),
+        ]),
+      );
+    const a = make(ring1, 0);
+    const b = make(ring2, 750);
+    a.start();
+    b.start();
+    return () => { a.stop(); b.stop(); };
+  }, [isRecording, ring1, ring2]);
+
   return (
     <View style={{ gap: 16, paddingBottom: 40 }}>
-      {/* Smart input with mic & camera */}
-      <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
-          {t('add.smart_input_label', 'What subscription?')}
-        </Text>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <View style={{ flex: 1 }}>
-            <DoneAccessoryInput
-              testID="smart-input"
-              style={[inputStyle, { marginTop: 0 }]}
-              value={smartInput}
-              onChangeText={setSmartInput}
-              placeholder={t('add.smart_input_placeholder', 'Netflix, Spotify $9.99/mo...')}
-              placeholderTextColor={colors.textMuted}
-              returnKeyType="search"
-              onSubmitEditing={handleSubmit}
-              autoCorrect={false}
-            />
-          </View>
-          {/* Mic button */}
-          <TouchableOpacity
-            style={[styles.iconBtn, { backgroundColor: isRecording ? '#EF4444' : colors.primary }]}
-            onPress={handleMicPress}
-          >
-            <Ionicons name={isRecording ? 'stop' : 'mic'} size={20} color="#FFF" />
-          </TouchableOpacity>
-          {/* Camera button */}
-          <TouchableOpacity
-            style={[styles.iconBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}
-            onPress={onCamera}
-          >
-            <CameraIcon size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
+      {/* ── PRIMARY: large centered voice CTA. User explicitly preferred
+          this layout twice over the equal-weight 3-card alternative —
+          the giant mic is THE feature, photo + manual are escape hatches
+          below. */}
+      <TouchableOpacity
+        testID="voice-hero"
+        onPress={handleMicPress}
+        activeOpacity={0.92}
+        style={{ alignItems: 'center', paddingTop: 8 }}
+      >
+        <View style={{ alignItems: 'center', justifyContent: 'center', height: 168 }}>
+          {/* Active recording rings — two concentric pulses outward. */}
+          {isRecording && (
+            <>
+              {[ring1, ring2].map((v, i) => (
+                <Animated.View
+                  key={i}
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    width: 132,
+                    height: 132,
+                    borderRadius: 66,
+                    borderWidth: 2,
+                    borderColor: '#EF4444',
+                    opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
+                    transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.7] }) }],
+                  }}
+                />
+              ))}
+            </>
+          )}
+          {/* Soft outer glow — gives depth without a heavy shadow. */}
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: 168,
+              height: 168,
+              borderRadius: 84,
+              backgroundColor: isRecording ? '#EF4444' : colors.primary,
+              opacity: 0.14,
+            }}
+          />
+          {/* Mic sphere */}
+          <Animated.View style={{ transform: [{ scale: pulse }] }}>
+            <View
+              style={{
+                width: 132,
+                height: 132,
+                borderRadius: 66,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isRecording ? '#EF4444' : colors.primary,
+                overflow: 'hidden',
+                shadowColor: isRecording ? '#EF4444' : colors.primary,
+                shadowOpacity: 0.4,
+                shadowRadius: 18,
+                shadowOffset: { width: 0, height: 6 },
+                elevation: 10,
+              }}
+            >
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: 0, right: 0, bottom: 0,
+                  height: '60%',
+                  backgroundColor: 'rgba(0,0,0,0.18)',
+                }}
+              />
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  top: 14, left: 18,
+                  width: 36, height: 20,
+                  borderRadius: 18,
+                  backgroundColor: 'rgba(255,255,255,0.35)',
+                  transform: [{ rotate: '-25deg' }],
+                }}
+              />
+              <Ionicons
+                name={isRecording ? 'stop' : 'mic'}
+                size={56}
+                color="#FFF"
+                style={{ opacity: 0.97 }}
+              />
+            </View>
+          </Animated.View>
         </View>
-        {isRecording && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+        <Text style={{ fontSize: 19, fontWeight: '800', color: colors.text, marginTop: 14, letterSpacing: -0.3 }}>
+          {isRecording
+            ? t('add.voice_listening', 'Listening…')
+            : t('add.voice_hero_title', 'Just say it')}
+        </Text>
+        {!isRecording ? (
+          <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4, textAlign: 'center', paddingHorizontal: 32, lineHeight: 18 }}>
+            {t('add.voice_hero_subtitle', '“Netflix 15 dollars monthly” — and we add it. No typing.')}
+          </Text>
+        ) : (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' }} />
-            <Text style={{ color: '#EF4444', fontSize: 13, fontWeight: '600' }}>{durationFmt}</Text>
+            <Text style={{ color: '#EF4444', fontSize: 14, fontWeight: '700', fontVariant: ['tabular-nums'] }}>
+              {durationFmt}
+            </Text>
             <Text style={{ color: colors.textMuted, fontSize: 12 }}>
-              {t('add.tap_stop', 'Tap mic to stop')}
+              · {t('add.tap_stop_v2', 'Tap to stop')}
             </Text>
           </View>
         )}
-        {/* Submit button if text entered */}
-        {smartInput.trim().length > 0 && (
+      </TouchableOpacity>
+
+      {/* Divider */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 8, marginTop: 4 }}>
+        <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+          {t('add.divider_or', 'or')}
+        </Text>
+        <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+      </View>
+
+      {/* Secondary: Photo + Manual side-by-side */}
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <TouchableOpacity
+          testID="hero-camera"
+          onPress={onCamera}
+          activeOpacity={0.85}
+          style={[styles.tileCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
+        >
+          <View style={[styles.tileIconWrap, { backgroundColor: '#3B82F61A' }]}>
+            <Ionicons name="scan-outline" size={26} color="#3B82F6" />
+          </View>
+          <Text style={[styles.tileTitle, { color: colors.text }]}>
+            {t('add.hero_photo', 'Take a photo')}
+          </Text>
+          <Text style={[styles.tileSubtitle, { color: colors.textSecondary }]} numberOfLines={2}>
+            {t('add.hero_photo_desc', 'Snap a receipt or screenshot')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="hero-manual"
+          onPress={onManualToggle}
+          activeOpacity={0.85}
+          style={[styles.tileCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
+        >
+          <View style={[styles.tileIconWrap, { backgroundColor: '#10B9811A' }]}>
+            <Ionicons name="reader-outline" size={26} color="#10B981" />
+          </View>
+          <Text style={[styles.tileTitle, { color: colors.text }]}>
+            {t('add.hero_manual', 'Type it in')}
+          </Text>
+          <Text style={[styles.tileSubtitle, { color: colors.textSecondary }]} numberOfLines={2}>
+            {t('add.hero_manual_desc', 'Fill in details by hand')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Smart input — tertiary path. Copy reframes the field as
+          "describe your subscription" rather than "search" — old copy
+          ("Search by name") implied a service catalog lookup, which
+          confused users typing free-form descriptions like "Netflix
+          $9.99/mo". The AI lookup behind it actually accepts both. */}
+      <View style={{ gap: 8, marginTop: 4 }}>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.6, paddingHorizontal: 4 }}>
+          {t('add.describe_label', 'Describe in your own words')}
+        </Text>
+        <View style={{ position: 'relative' }}>
+          <View style={{ position: 'absolute', left: 14, top: 0, bottom: 0, justifyContent: 'center', zIndex: 1 }}>
+            <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
+          </View>
+          <DoneAccessoryInput
+            testID="smart-input"
+            style={[inputStyle, { marginTop: 0, paddingLeft: 42 }]}
+            value={smartInput}
+            onChangeText={setSmartInput}
+            placeholder={t('add.smart_input_placeholder_v3', 'e.g. Netflix $15 monthly, Spotify Family…')}
+            placeholderTextColor={colors.textMuted}
+            returnKeyType="search"
+            onSubmitEditing={handleSubmit}
+            autoCorrect={false}
+          />
+        </View>
+        {smartInput.trim().length > 0 ? (
           <TouchableOpacity
-            style={{ backgroundColor: colors.primary, borderRadius: 12, padding: 14, alignItems: 'center' }}
+            style={{ backgroundColor: colors.primary, borderRadius: 12, padding: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
             onPress={handleSubmit}
           >
+            <Ionicons name="sparkles" size={16} color="#FFF" />
             <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '700' }}>
-              {t('add.search', 'Search')}
+              {t('add.add_via_ai', 'Add with AI')}
             </Text>
           </TouchableOpacity>
+        ) : (
+          <Text style={{ fontSize: 11, color: colors.textMuted, paddingHorizontal: 4, lineHeight: 15 }}>
+            {t('add.describe_hint', 'AI fills in the price, period, and category for you.')}
+          </Text>
         )}
       </View>
 
       {/* Quick chips — catalog → fallback to QUICK_CHIPS */}
       <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary }}>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}>
           {t('add.popular', 'Popular')}
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {catalogServices.length > 0 ? (
             // Regional catalog available — use it
             <>
-              {(showAllChips ? catalogServices : catalogServices.slice(0, 8)).map((svc) => (
+              {(showAllChips ? catalogServices : catalogServices.slice(0, 6)).map((svc) => (
                 <TouchableOpacity
                   key={svc.slug || svc.name}
                   style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
@@ -227,14 +423,14 @@ function IdleViewImpl({
                   <Text style={[styles.quickChipText, { color: colors.text }]}>{svc.name}</Text>
                 </TouchableOpacity>
               ))}
-              {!showAllChips && catalogServices.length > 8 && (
+              {!showAllChips && catalogServices.length > 6 && (
                 <TouchableOpacity
                   style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
                   onPress={handleShowAll}
                 >
                   <Ionicons name="add" size={18} color={colors.textSecondary} />
                   <Text style={[styles.quickChipText, { color: colors.textSecondary }]}>
-                    +{catalogServices.length - 8}
+                    +{catalogServices.length - 6}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -242,17 +438,17 @@ function IdleViewImpl({
           ) : (
             // Fallback to hardcoded QUICK_CHIPS (with FX conversion via InlineConfirmCard)
             <>
-              {(showAllChips ? QUICK_CHIPS : QUICK_CHIPS.slice(0, 8)).map((chip) => (
+              {(showAllChips ? QUICK_CHIPS : QUICK_CHIPS.slice(0, 6)).map((chip) => (
                 <QuickChipButton key={chip.name} chip={chip} colors={colors} onPress={() => onQuickChip(chip)} />
               ))}
-              {!showAllChips && QUICK_CHIPS.length > 8 && (
+              {!showAllChips && QUICK_CHIPS.length > 6 && (
                 <TouchableOpacity
                   style={[styles.quickChip, { borderColor: colors.border, backgroundColor: colors.background }]}
                   onPress={handleShowAll}
                 >
                   <Ionicons name="add" size={18} color={colors.textSecondary} />
                   <Text style={[styles.quickChipText, { color: colors.textSecondary }]}>
-                    +{QUICK_CHIPS.length - 8}
+                    +{QUICK_CHIPS.length - 6}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -260,26 +456,6 @@ function IdleViewImpl({
           )}
         </View>
       </View>
-
-      {/* "or enter manually" collapsible */}
-      <TouchableOpacity
-        testID="btn-manual-toggle"
-        onPress={onManualToggle}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 6,
-          paddingVertical: 14,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        }}
-      >
-        <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
-        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
-          {t('add.or_manual', 'or enter manually')}
-        </Text>
-      </TouchableOpacity>
 
       {/* AI Credits Badge */}
       <AICreditsBadge />
@@ -296,6 +472,36 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Secondary tile (photo / manual) — kept narrower & shorter than the
+  // voice hero so the visual hierarchy reads "voice is the main feature."
+  tileCard: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 6,
+  },
+  tileIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  tileTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  tileSubtitle: {
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 14,
+    paddingHorizontal: 2,
   },
   quickChip: {
     flexDirection: 'row',

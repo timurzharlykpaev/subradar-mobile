@@ -533,19 +533,21 @@ export default function AnalyticsScreen() {
             icon="wallet-outline"
             label={t('analytics.avg_month')}
             value={money(totalMonthly)}
+            sub={t('analytics.avg_month_hint', 'normalized to /mo')}
             color={colors.primary}
           />
           <StatCard
             icon="calendar-outline"
             label={t('analytics.total_year')}
             value={money(totalYearly)}
+            sub={t('analytics.total_year_hint', 'projected 12 mo')}
             color={colors.success}
           />
           <StatCard
             icon="repeat-outline"
             label={t('analytics.active_count', 'Active')}
             value={`${activeSubs.length}`}
-            sub={t('analytics.subscriptions', 'subscriptions')}
+            sub={t('analytics.active_count_hint', 'active + trial')}
             color="#3B82F6"
           />
           {mostExpensive && (
@@ -733,7 +735,11 @@ export default function AnalyticsScreen() {
               </View>
             )}
           </View>
-          <BlurredProSection isPro={isPro} onUpgrade={() => setProModal({ visible: true, feature: 'forecast' })}>
+          <BlurredProSection
+            isPro={isPro}
+            onUpgrade={() => setProModal({ visible: true, feature: 'forecast' })}
+            featureDescription={t('analytics.forecast_pro_desc', 'Project your spending 30 days, 6 months, and a year ahead.')}
+          >
             <View testID="analytics-forecast-row" style={styles.forecastRow}>
               <ForecastCard
                 icon="calendar"
@@ -774,7 +780,11 @@ export default function AnalyticsScreen() {
               </View>
             )}
           </View>
-          <BlurredProSection isPro={isPro} onUpgrade={() => setProModal({ visible: true, feature: 'savings' })}>
+          <BlurredProSection
+            isPro={isPro}
+            onUpgrade={() => setProModal({ visible: true, feature: 'savings' })}
+            featureDescription={t('analytics.savings_pro_desc', 'AI finds duplicate subscriptions and shows how much you can save.')}
+          >
             <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={[styles.savingsHighlight, { backgroundColor: isDark ? 'rgba(52,211,153,0.10)' : 'rgba(5,150,105,0.06)', borderColor: isDark ? 'rgba(52,211,153,0.25)' : 'rgba(5,150,105,0.15)' }]}>
                 <View style={[styles.savingsIconCircle, { backgroundColor: colors.success + '18' }]}>

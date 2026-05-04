@@ -83,7 +83,7 @@ export default function TabsLayout() {
             title: t('tabs.subs'),
             tabBarButtonTestID: 'tab-subs',
             tabBarIcon: ({ focused }) => (
-              <TabIcon name={focused ? 'layers' : 'layers-outline'} focused={focused} />
+              <TabIcon name={focused ? 'list' : 'list-outline'} focused={focused} />
             ),
           }}
         />
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
   },

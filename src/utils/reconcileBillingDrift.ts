@@ -22,7 +22,10 @@ try {
  */
 export async function reconcileBillingDrift(): Promise<{
   ran: boolean;
-  action?: 'noop' | 'cancel_at_period_end' | 'downgraded';
+  // 'upgraded' added when backend infers a fresh INITIAL_PURCHASE /
+  // PRODUCT_CHANGE / RENEWAL from RC (e.g. user re-subscribed after grace
+  // or upgraded mid-cycle). Old clients only check `ran` so this is safe.
+  action?: 'noop' | 'cancel_at_period_end' | 'downgraded' | 'upgraded';
 }> {
   try {
     const meRes = await billingApi.getMe();
@@ -76,7 +79,20 @@ export async function reconcileBillingDrift(): Promise<{
       }
     }
 
-    // Drift can flow in BOTH directions:
+    // Determine which plan tier RC is actually advertising right now.
+    // Used to detect "backend thinks Pro, RC has only Team" — the most
+    // common Sandbox post-replay drift the previous reasons missed.
+    const rcHasTeam = Object.keys(active).some((k) => /team|org/i.test(k));
+    const rcHasPro = Object.keys(active).some((k) =>
+      /pro|premium/i.test(k) && !/team|org/i.test(k),
+    );
+    const rcTier: 'organization' | 'pro' | 'free' = rcHasTeam
+      ? 'organization'
+      : rcHasPro
+        ? 'pro'
+        : 'free';
+
+    // Drift can flow in several directions:
     //   (a) backend thinks user is paid but RC has nothing → lost
     //       EXPIRATION webhook, downgrade to free.
     //   (b) backend thinks `active` but matching RC sub is not renewing
@@ -86,9 +102,23 @@ export async function reconcileBillingDrift(): Promise<{
     //       undo cancel from Settings → Resubscribe). Without this case
     //       the user sees an expiration banner forever, since reconcile
     //       only ever previously fired in directions a/b.
-    let driftReason: 'no_rc' | 'should_cancel' | 'should_uncancel' | null = null;
+    //   (d) backend's effective plan disagrees with RC's active tier
+    //       (e.g. backend says Pro/grace_pro but RC has only a Team
+    //       entitlement active). Apple is the source of truth — we
+    //       force a reconcile so backend re-reads RC and converges.
+    //       This is the case the user hit in sandbox: Pro lifecycle
+    //       lingered while a freshly-replayed Team became the only
+    //       active entitlement on the same Apple ID.
+    let driftReason:
+      | 'no_rc'
+      | 'should_cancel'
+      | 'should_uncancel'
+      | 'plan_mismatch'
+      | null = null;
     if (!rcActive) {
       driftReason = 'no_rc';
+    } else if (rcTier !== 'free' && rcTier !== me.effective.plan) {
+      driftReason = 'plan_mismatch';
     } else if (me.effective.state === 'active' && currentWillRenew === false) {
       driftReason = 'should_cancel';
     } else if (

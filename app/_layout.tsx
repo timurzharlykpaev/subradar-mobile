@@ -63,6 +63,9 @@ import { billingApi } from '../src/api/billing';
 import { reconcileBillingDrift } from '../src/utils/reconcileBillingDrift';
 
 const PENDING_RECEIPT_KEY = 'pending_receipt';
+// Tracks consecutive 5xx/network failures across cold starts so we can
+// give up after 3 attempts instead of looping forever.
+const PENDING_RECEIPT_RETRY_KEY = 'pending_receipt_retry';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -78,14 +81,21 @@ Notifications.setNotificationHandler({
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (!Device.isDevice) return null;
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  let finalStatus = existing;
-  if (existing !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-  if (finalStatus !== 'granted') return null;
+  // Guard the entire flow with try/catch so a Keychain-locked iOS state
+  // (errSecInteractionNotAllowed, "Пользовательское взаимодействие не
+  // разрешено") doesn't surface as an unhandled rejection. This happens
+  // when the OS launches the app while still locked after first boot —
+  // expo-notifications reads the device-token from keychain, which uses
+  // kSecAttrAccessibleAfterFirstUnlock, and the read fails until the
+  // user unlocks once.
   try {
+    const { status: existing } = await Notifications.getPermissionsAsync();
+    let finalStatus = existing;
+    if (existing !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') return null;
     // Use Expo Push Token — works on iOS and Android,
     // backend sends via Expo Push API (no Firebase Admin complexity)
     const expoPushToken = await Notifications.getExpoPushTokenAsync({
@@ -93,7 +103,9 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     });
     return expoPushToken.data; // "ExponentPushToken[xxx]"
   } catch {
-    // Expo Go or simulator — ignore
+    // Expo Go, simulator, OR keychain-locked first-boot state — let the
+    // caller retry on the next AppState=active transition. PushSetup has
+    // an AppState listener for exactly this.
     return null;
   }
 }
@@ -122,6 +134,14 @@ function LanguageLoader() {
   }, [language]);
   return null;
 }
+
+// Lazy-require so Expo Go / simulator builds without the native module
+// don't crash at import time. Same pattern reconcileBillingDrift uses.
+let Purchases: any = null;
+try {
+  const rc = require('react-native-purchases');
+  Purchases = rc.default || rc;
+} catch {}
 
 function DataLoader() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -185,17 +205,122 @@ function DataLoader() {
 
         // Pending receipt recovery — if a previous purchase couldn't reach
         // the backend, retry the sync now that we're authenticated and RC
-        // is configured. Keep the receipt on failure so next launch retries.
+        // is configured.
         const pending = await SecureStore.getItemAsync(PENDING_RECEIPT_KEY);
         if (pending && !cancelled) {
+          // Before retrying the productId from disk, check whether RC
+          // still has it among the active entitlements. In sandbox a
+          // user can tap "Buy Pro", get the Team transaction replayed,
+          // and end up with a stale `pending = pro.yearly` that
+          // backend will keep rejecting (403 — receipt doesn't match
+          // any RC sub) on every cold start. Retrying it forever
+          // produced the loop the user reported. If RC no longer has
+          // it, swap to whatever entitlement IS active so backend can
+          // converge on the right plan; if RC has nothing, drop the
+          // marker entirely.
+          let productToSync = pending;
           try {
-            await billingApi.syncRevenueCat(pending);
-            await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY);
-            queryClient.invalidateQueries({ queryKey: ['billing'] });
-            analytics.pendingReceiptRecovered(pending);
+            if (typeof Purchases?.getCustomerInfo === 'function') {
+              const info = await Purchases.getCustomerInfo();
+              const activeMap = info?.entitlements?.active ?? {};
+              const activeProducts = new Set(
+                Object.values(activeMap)
+                  .map((e: any) => e?.productIdentifier)
+                  .filter(Boolean) as string[],
+              );
+              if (!activeProducts.has(pending)) {
+                // Pick the first active product (renewing preferred) as
+                // a substitute. If none, mark as not retryable.
+                const subsByProduct =
+                  (info as any)?.subscriptionsByProductIdentifier ?? {};
+                const renewingActive = [...activeProducts].find(
+                  (p) => subsByProduct[p]?.willRenew !== false,
+                );
+                const replacement = renewingActive ?? [...activeProducts][0];
+                if (replacement) {
+                  console.log(
+                    '[PendingReceipt] stale productId',
+                    pending,
+                    'no longer active in RC; substituting',
+                    replacement,
+                  );
+                  productToSync = replacement;
+                } else {
+                  console.log(
+                    '[PendingReceipt] stale productId',
+                    pending,
+                    'and RC has no active entitlements — clearing marker',
+                  );
+                  await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY);
+                  productToSync = '';
+                }
+              }
+            }
           } catch (e: any) {
-            analytics.pendingReceiptRecoveryFailed(pending, e?.message);
-            // Intentionally do NOT delete — retry on next launch.
+            if (__DEV__) {
+              console.warn(
+                '[PendingReceipt] RC lookup failed, retrying as-is:',
+                e?.message,
+              );
+            }
+          }
+
+          if (productToSync && !cancelled) {
+            try {
+              await billingApi.syncRevenueCat(productToSync);
+              await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY);
+              await SecureStore.deleteItemAsync(PENDING_RECEIPT_RETRY_KEY).catch(() => {});
+              queryClient.invalidateQueries({ queryKey: ['billing'] });
+              analytics.pendingReceiptRecovered(productToSync);
+            } catch (e: any) {
+              analytics.pendingReceiptRecoveryFailed(productToSync, e?.message);
+              const status = e?.response?.status;
+              const isTerminal4xx =
+                typeof status === 'number' && status >= 400 && status < 500;
+              if (isTerminal4xx) {
+                // 4xx are terminal — receipt is structurally bad / doesn't
+                // match any RC sub on this user. Retrying never helps.
+                console.log(
+                  '[PendingReceipt] terminal',
+                  status,
+                  '— clearing marker to stop retry loop',
+                );
+                try {
+                  await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY);
+                  await SecureStore.deleteItemAsync(PENDING_RECEIPT_RETRY_KEY);
+                } catch {}
+              } else {
+                // 5xx / network — bump retry counter, give up after 3
+                // attempts to avoid burning battery + analytics noise on
+                // a permanently-failing call. Industry practice (Stripe,
+                // Adyen) caps client-side IAP retry at 3 because anything
+                // worse is a backend outage that the user can't fix.
+                let attempts = 0;
+                try {
+                  const raw = await SecureStore.getItemAsync(PENDING_RECEIPT_RETRY_KEY);
+                  attempts = raw ? Number(raw) || 0 : 0;
+                } catch {}
+                attempts += 1;
+                if (attempts >= 3) {
+                  console.log(
+                    '[PendingReceipt] gave up after',
+                    attempts,
+                    'attempts — clearing marker',
+                  );
+                  try {
+                    await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY);
+                    await SecureStore.deleteItemAsync(PENDING_RECEIPT_RETRY_KEY);
+                  } catch {}
+                } else {
+                  try {
+                    await SecureStore.setItemAsync(
+                      PENDING_RECEIPT_RETRY_KEY,
+                      String(attempts),
+                    );
+                  } catch {}
+                }
+              }
+            }
           }
         }
 
@@ -254,21 +379,43 @@ function PushSetup() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const notificationListener = useRef<EventSubscription | null>(null);
   const responseListener = useRef<EventSubscription | null>(null);
+  const tokenRegisteredRef = useRef(false);
+  const appStateSubRef = useRef<{ remove: () => void } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    registerForPushNotificationsAsync().then((token) => {
+    // iOS Keychain accessibility (kSecAttrAccessibleAfterFirstUnlock) means
+    // the device-token read inside expo-notifications fails with
+    // errSecInteractionNotAllowed if the app is woken while the device is
+    // still locked after a reboot. Defer registration to AppState=active
+    // so the keychain is reachable. On a normal warm start the state is
+    // already active and we register immediately.
+    const tryRegister = async () => {
+      if (tokenRegisteredRef.current) return;
+      if (AppState.currentState !== 'active') return;
+      const token = await registerForPushNotificationsAsync();
       if (token) {
+        tokenRegisteredRef.current = true;
         const platform = Platform.OS as 'ios' | 'android';
         // Send the active language alongside the token so the server can pick
         // the correct copy for cron-driven push (reminder/digest/win-back) on
         // first install, before the user touches Settings.
         const locale = i18n.language;
         notificationsApi.registerPushToken(token, platform, locale).catch(() => {});
+        appStateSubRef.current?.remove();
+        appStateSubRef.current = null;
       }
-    });
+    };
+
+    void tryRegister();
+
+    if (!tokenRegisteredRef.current) {
+      appStateSubRef.current = AppState.addEventListener('change', (state) => {
+        if (state === 'active') void tryRegister();
+      });
+    }
 
     notificationListener.current = Notifications.addNotificationReceivedListener(() => {});
 
@@ -312,6 +459,8 @@ function PushSetup() {
     return () => {
       if (notificationListener.current) notificationListener.current.remove();
       if (responseListener.current) responseListener.current.remove();
+      appStateSubRef.current?.remove();
+      appStateSubRef.current = null;
     };
   }, [isAuthenticated, router]);
 

@@ -13,16 +13,33 @@ export function UndoToast({ message, duration = 5000, onUndo, onDismiss }: Props
   const { t } = useTranslation();
   const progress = useRef(new Animated.Value(1)).current;
   const [visible, setVisible] = useState(true);
+  // Track mount status so the timing callback doesn't fire onDismiss after
+  // the parent has already swapped to a new toast (otherwise: a back-to-back
+  // delete would fire onDismiss for the OLD subscription, which the parent
+  // misinterprets as "commit current pending delete" and silently deletes
+  // the wrong row — race documented in code review C1).
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    Animated.timing(progress, {
+    const animation = Animated.timing(progress, {
       toValue: 0,
       duration,
       useNativeDriver: false,
-    }).start(() => {
-      setVisible(false);
-      onDismiss();
     });
+    animation.start(({ finished }) => {
+      if (!mountedRef.current) return;
+      // Only commit-on-timeout when the animation actually ran to completion;
+      // a `.stop()` call from cleanup yields finished=false and we let the
+      // unmount path own the cleanup.
+      if (finished) {
+        setVisible(false);
+        onDismiss();
+      }
+    });
+    return () => {
+      mountedRef.current = false;
+      animation.stop();
+    };
   }, []);
 
   if (!visible) return null;

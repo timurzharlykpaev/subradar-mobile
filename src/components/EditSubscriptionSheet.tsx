@@ -210,6 +210,17 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
       Alert.alert(t('add.required'), t('subscription.invalid_billing_day'));
       return;
     }
+    // Trial requires an end date — without it the home screen renders
+    // "Trial ends [empty]" and the reminder system has no anchor for the
+    // expiry alert. Forcing the field at validation time prevents shipping
+    // a half-configured trial row to the backend.
+    if (form.isTrial && !form.trialEndDate) {
+      Alert.alert(
+        t('add.required'),
+        t('add.trial_end_date_required', 'Pick a trial end date so we can remind you before it expires.'),
+      );
+      return;
+    }
     setSaving(true);
     try {
       const tags = form.tags

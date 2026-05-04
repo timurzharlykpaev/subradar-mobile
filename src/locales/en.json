@@ -33,7 +33,8 @@
     "ok": "OK",
     "share": "Share",
     "next": "Next",
-    "something_went_wrong": "Something went wrong"
+    "something_went_wrong": "Something went wrong",
+    "upgrade": "Upgrade"
   },
   "tabs": {
     "home": "Home",
@@ -134,7 +135,12 @@
     "status_cancelled": "Cancelled",
     "status_paused": "Paused",
     "status_expired": "Expired",
-    "upgrade_cta": "Upgrade"
+    "upgrade_cta": "Upgrade",
+    "action_view": "Open",
+    "action_edit": "Edit",
+    "action_cancel": "Mark as cancelled",
+    "long_press_hint": "Hold any subscription to edit, cancel or delete",
+    "delete_undo_message": "{{name}} deleted"
   },
   "add": {
     "title": "Add Subscription",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "Your answer",
     "bulk_review_title": "Found subscriptions",
     "loading_hint": "AI is processing your request. This usually takes a few seconds.",
-    "screenshot_parse_error": "Could not parse the screenshot. Try a clearer image."
+    "screenshot_parse_error": "Could not parse the screenshot. Try a clearer image.",
+    "hero_photo": "Take a photo",
+    "hero_photo_desc": "Snap a receipt or screenshot",
+    "hero_manual": "Type it in",
+    "hero_manual_desc": "Fill in details by hand",
+    "voice_input": "Voice input",
+    "section_required": "Required",
+    "section_schedule": "Payment schedule",
+    "show_more_v2": "More options (optional)",
+    "trial_end_date_required": "Pick a trial end date so we can remind you before it expires.",
+    "voice_hero_title": "Just say it",
+    "voice_hero_subtitle": "\"Netflix 15 dollars monthly\" — and we add it. No typing.",
+    "voice_listening": "Listening…",
+    "tap_stop_v2": "Tap to stop",
+    "divider_or": "or",
+    "smart_input_placeholder_v2": "Search by name…",
+    "loading_hint_v2": "A few seconds — we're reading the details and adding your subscription.",
+    "describe_label": "Describe in your own words",
+    "smart_input_placeholder_v3": "e.g. Netflix $15 monthly, Spotify Family…",
+    "add_via_ai": "Add with AI",
+    "describe_hint": "AI fills in the price, period, and category for you."
   },
   "periods": {
     "WEEKLY": "Weekly",
@@ -407,7 +433,12 @@
     "send_test_notification": "Send Test Notification",
     "send_test_notification_desc": "Verify that push works on this device",
     "test_notification_sent_title": "Test sent",
-    "test_notification_sent_msg": "It should arrive in a few seconds. If you don't see it, check that notifications are enabled in iOS/Android settings."
+    "test_notification_sent_msg": "It should arrive in a few seconds. If you don't see it, check that notifications are enabled in iOS/Android settings.",
+    "currency_desc": "Used to display all amounts",
+    "reminder_current": "Currently: {{count}}d before",
+    "reminder_current_off": "Currently: off",
+    "logout_team_warning": "You will lose access to this team's shared subscriptions until you sign back in.",
+    "delete_account_billing_warning": "Your paid subscription will NOT be cancelled automatically. Cancel it in your App Store / Google Play account to stop future charges."
   },
   "auth": {
     "welcome": "Welcome back",
@@ -452,13 +483,27 @@
       "read_policy": "Privacy policy",
       "rights_title": "Your rights",
       "rights_text": "Under GDPR (EU) and CCPA (California) you have the right to access, export, or delete the data we hold about you. To exercise these rights contact support@subradar.ai or use Settings → Delete Account.",
-      "revenuecat": { "purpose": "Processes in-app purchases and subscriptions on iOS / Android. Receives your subscription identifier, transaction receipts, and basic account ID." },
-      "openai": { "purpose": "Powers AI features — voice transcription, screenshot parsing, smart subscription lookup. Receives the audio, image, or text you submit when using these features." },
-      "firebase": { "purpose": "Delivers push notifications (renewal reminders, billing alerts). Receives a device push token tied to your account." },
-      "resend": { "purpose": "Sends transactional email — sign-in links, receipts, weekly digests. Receives your email address and message metadata." },
-      "digitalocean": { "purpose": "Hosts our API servers and database. Stores account, subscription, and analytics data at rest." },
-      "apple": { "purpose": "When you sign in with Apple or buy via the App Store, Apple receives auth + purchase data per their policy." },
-      "google": { "purpose": "When you sign in with Google or use Android, Google receives auth + push delivery data per their policy." }
+      "revenuecat": {
+        "purpose": "Processes in-app purchases and subscriptions on iOS / Android. Receives your subscription identifier, transaction receipts, and basic account ID."
+      },
+      "openai": {
+        "purpose": "Powers AI features — voice transcription, screenshot parsing, smart subscription lookup. Receives the audio, image, or text you submit when using these features."
+      },
+      "firebase": {
+        "purpose": "Delivers push notifications (renewal reminders, billing alerts). Receives a device push token tied to your account."
+      },
+      "resend": {
+        "purpose": "Sends transactional email — sign-in links, receipts, weekly digests. Receives your email address and message metadata."
+      },
+      "digitalocean": {
+        "purpose": "Hosts our API servers and database. Stores account, subscription, and analytics data at rest."
+      },
+      "apple": {
+        "purpose": "When you sign in with Apple or buy via the App Store, Apple receives auth + purchase data per their policy."
+      },
+      "google": {
+        "purpose": "When you sign in with Google or use Android, Google receives auth + push delivery data per their policy."
+      }
     }
   },
   "landing": {
@@ -563,7 +608,12 @@
     "total_spend": "total",
     "insight_overlap": "{{count}} categories with overlapping subscriptions",
     "insight_biggest": "Biggest overlap: {{name}} — ${{savings}}/mo savings",
-    "insight_total": "Save ${{monthly}}/mo (${{yearly}}/yr) by consolidating"
+    "insight_total": "Save ${{monthly}}/mo (${{yearly}}/yr) by consolidating",
+    "avg_month_hint": "normalized to /mo",
+    "total_year_hint": "projected 12 mo",
+    "active_count_hint": "active + trial",
+    "forecast_pro_desc": "Project your spending 30 days, 6 months, and a year ahead.",
+    "savings_pro_desc": "AI finds duplicate subscriptions and shows how much you can save."
   },
   "subscription": {
     "billing_day": "Billing Day",
@@ -629,7 +679,10 @@
     "color": "Color",
     "delete_card": "Delete card?",
     "delete_confirm": "This action cannot be undone",
-    "error_validation": "Enter the name and last 4 digits of the card"
+    "error_validation": "Enter the name and last 4 digits of the card",
+    "delete_linked_warning": "{{count}} subscription(s) are linked to this card. They will stay, just without a card assigned.",
+    "add_first": "+ Add your first card",
+    "color_hint": "Helps you tell cards apart at a glance"
   },
   "reports": {
     "title": "Reports",
@@ -662,7 +715,8 @@
     "error_404": "Report not found",
     "error_generic": "Could not generate report",
     "error_network": "Network error, check your connection",
-    "retry": "Retry"
+    "retry": "Retry",
+    "free_limit_hint": "Free plan: 1 PDF report per month. CSV export is unlimited."
   },
   "edit_profile": {
     "title": "Edit Profile",
@@ -844,7 +898,9 @@
     "leave_confirm_msg": "You'll lose access to team analytics.",
     "leave_confirm_title": "Leave team?",
     "no_subs_data": "No subscription data available",
-    "team_report": "Team Report"
+    "team_report": "Team Report",
+    "share_instructions": "Send this code to a teammate. Tap the code to copy, or use Share to send via Messages, WhatsApp, etc.",
+    "tap_to_copy": "Tap to copy"
   },
   "paywall": {
     "choose_plan": "Choose a Plan",
@@ -914,7 +970,9 @@
     "manage_subscription": "Manage Subscription",
     "trial_consent": "Free for {{days}} days. On {{date}} you will be charged {{price}}/{{period}} unless cancelled in Settings → Subscriptions. Auto-renews until cancelled.",
     "paid_consent": "{{price}}/{{period}}, auto-renews until cancelled. Cancel anytime in Settings → Subscriptions.",
-    "trial_consent_a11y": "Trial terms"
+    "trial_consent_a11y": "Trial terms",
+    "replay_different_plan_title": "{{actual}} is already active",
+    "replay_different_plan_msg": "This Apple ID already has an active {{actual}} subscription, so Apple replayed it instead of charging for {{wanted}}. To switch to {{wanted}}, cancel {{actual}} first in Apple ID → Subscriptions."
   },
   "pro_modal": {
     "title_default": "Pro Feature",
@@ -1227,7 +1285,8 @@
     "expires_on": "Your Pro plan expires on {{date}}",
     "pro_ends_in_one": "Pro ends in {{count}} day",
     "pro_ends_in_other": "Pro ends in {{count}} days",
-    "switch_monthly": "Switch to monthly"
+    "switch_monthly": "Switch to monthly",
+    "sample_label": "Sample"
   },
   "annual_nudge": {
     "title": "Switch to yearly — save $",

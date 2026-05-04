@@ -33,7 +33,8 @@
     "ok": "好",
     "share": "分享",
     "next": "下一步",
-    "something_went_wrong": "出了点问题"
+    "something_went_wrong": "出了点问题",
+    "upgrade": "升级"
   },
   "tabs": {
     "home": "首页",
@@ -134,7 +135,12 @@
     "status_expired": "已过期",
     "soft_limit_title": "仅剩1个免费位",
     "soft_limit_subtitle": "升级到Pro以无限追踪",
-    "upgrade_cta": "升级"
+    "upgrade_cta": "升级",
+    "action_view": "打开",
+    "action_edit": "编辑",
+    "action_cancel": "标记为已取消",
+    "long_press_hint": "长按任意订阅以编辑、取消或删除",
+    "delete_undo_message": "{{name}} 已删除"
   },
   "add": {
     "title": "添加订阅",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "您的回答",
     "bulk_review_title": "找到的订阅",
     "loading_hint": "AI 正在处理您的请求,通常需要几秒钟。",
-    "screenshot_parse_error": "无法解析截图。请尝试更清晰的图片。"
+    "screenshot_parse_error": "无法解析截图。请尝试更清晰的图片。",
+    "hero_photo": "拍照",
+    "hero_photo_desc": "拍收据或截屏",
+    "hero_manual": "手动输入",
+    "hero_manual_desc": "手动填写详情",
+    "voice_input": "语音输入",
+    "section_required": "必填",
+    "section_schedule": "付款计划",
+    "show_more_v2": "更多选项 (可选)",
+    "trial_end_date_required": "请选择试用结束日期,以便在到期前提醒您。",
+    "voice_hero_title": "说出来即可",
+    "voice_hero_subtitle": "说\"Netflix 每月 15 美元\",我们就帮您添加。无需输入。",
+    "voice_listening": "正在聆听…",
+    "tap_stop_v2": "点按停止",
+    "divider_or": "或",
+    "smart_input_placeholder_v2": "按名称搜索…",
+    "loading_hint_v2": "稍等几秒 — 我们正在读取详情并添加您的订阅。",
+    "describe_label": "用你自己的话描述",
+    "smart_input_placeholder_v3": "例如:Netflix 每月15美元、Spotify Family…",
+    "add_via_ai": "使用 AI 添加",
+    "describe_hint": "AI 自动填写价格、周期和类别。"
   },
   "settings": {
     "title": "设置",
@@ -399,7 +425,12 @@
     "send_test_notification": "发送测试通知",
     "send_test_notification_desc": "验证此设备上的推送是否正常工作",
     "test_notification_sent_title": "测试已发送",
-    "test_notification_sent_msg": "几秒钟内应该会到达。如果没有看到，请检查 iOS/Android 设置中的通知是否已启用。"
+    "test_notification_sent_msg": "几秒钟内应该会到达。如果没有看到，请检查 iOS/Android 设置中的通知是否已启用。",
+    "currency_desc": "用于显示所有金额",
+    "reminder_current": "当前:提前{{count}}天",
+    "reminder_current_off": "当前:已关闭",
+    "logout_team_warning": "在重新登录前,您将无法访问团队的共享订阅。",
+    "delete_account_billing_warning": "您的付费订阅不会自动取消。请在 App Store / Google Play 账户中取消以停止未来扣费。"
   },
   "auth": {
     "welcome": "欢迎回来",
@@ -533,7 +564,12 @@
     "total_spend": "总计",
     "insight_overlap": "{{count}}个类别存在重复订阅",
     "insight_biggest": "最大重复: {{name}} — ${{savings}}/月可节省",
-    "insight_total": "合并可节省${{monthly}}/月 (${{yearly}}/年)"
+    "insight_total": "合并可节省${{monthly}}/月 (${{yearly}}/年)",
+    "avg_month_hint": "折算为/月",
+    "total_year_hint": "预测12个月",
+    "active_count_hint": "活跃+试用",
+    "forecast_pro_desc": "预测未来 30 天、6 个月和一年的支出。",
+    "savings_pro_desc": "AI 检测重复订阅,显示您可节省多少。"
   },
   "subscription": {
     "billing_day": "扣款日",
@@ -599,7 +635,10 @@
     "color": "颜色",
     "delete_card": "删除卡片？",
     "delete_confirm": "此操作无法撤销",
-    "error_validation": "请输入卡片名称和后4位数字"
+    "error_validation": "请输入卡片名称和后4位数字",
+    "delete_linked_warning": "此卡关联了 {{count}} 个订阅。订阅将保留,但不再分配卡。",
+    "add_first": "+ 添加首张卡",
+    "color_hint": "让您一眼区分不同的卡"
   },
   "reports": {
     "title": "报告",
@@ -632,7 +671,8 @@
     "error_404": "报告未找到",
     "error_generic": "无法生成报告",
     "error_network": "网络错误，请检查连接",
-    "retry": "重试"
+    "retry": "重试",
+    "free_limit_hint": "免费方案:每月 1 份 PDF 报告。CSV 导出无限制。"
   },
   "edit_profile": {
     "title": "编辑资料",
@@ -822,7 +862,9 @@
     "leave_confirm_title": "退出团队？",
     "how_team_works": "Team如何工作?",
     "no_subs_data": "没有订阅数据",
-    "team_report": "团队报告"
+    "team_report": "团队报告",
+    "share_instructions": "将此代码发送给队友。点按代码即可复制,或使用分享通过短信、WhatsApp 等发送。",
+    "tap_to_copy": "点按以复制"
   },
   "paywall": {
     "choose_plan": "选择计划",
@@ -892,7 +934,9 @@
     "manage_subscription": "管理订阅",
     "trial_consent": "免费试用 {{days}} 天。{{date}} 将自动扣费 {{price}}/{{period}},除非在“设置 → 订阅”中取消。自动续订直至取消。",
     "paid_consent": "{{price}}/{{period}},自动续订直至取消。可在“设置 → 订阅”中随时取消。",
-    "trial_consent_a11y": "试用条款"
+    "trial_consent_a11y": "试用条款",
+    "replay_different_plan_title": "{{actual}} 已激活",
+    "replay_different_plan_msg": "此 Apple ID 已有活跃的 {{actual}} 订阅,因此 Apple 重放了该订阅而不是为 {{wanted}} 收费。如需切换到 {{wanted}},请先在 Apple ID → 订阅中取消 {{actual}}。"
   },
   "ai": {
     "or_type": "或输入",
@@ -1152,13 +1196,27 @@
       "read_policy": "隐私政策",
       "rights_title": "您的权利",
       "rights_text": "根据 GDPR（欧盟）和 CCPA（加州），您有权访问、导出或删除您的数据。如需行使这些权利，请发送邮件至 support@subradar.ai 或使用「设置 → 删除账户」。",
-      "revenuecat": { "purpose": "处理 iOS / Android 上的应用内购买和订阅。接收您的订阅标识符、交易收据和基本账户 ID。" },
-      "openai": { "purpose": "驱动 AI 功能 — 语音转写、截图解析、智能订阅查询。接收您在使用这些功能时提交的音频、图像或文本。" },
-      "firebase": { "purpose": "传递推送通知（续订提醒、扣款警报）。接收与您账户绑定的设备推送令牌。" },
-      "resend": { "purpose": "发送事务邮件 — 登录链接、收据、每周摘要。接收您的邮箱地址和消息元数据。" },
-      "digitalocean": { "purpose": "托管我们的 API 服务器和数据库。存储账户、订阅及分析数据。" },
-      "apple": { "purpose": "通过 Apple 登录或经 App Store 购买时，Apple 按其政策接收认证与购买数据。" },
-      "google": { "purpose": "通过 Google 登录或使用 Android 时，Google 按其政策接收认证与推送投递数据。" }
+      "revenuecat": {
+        "purpose": "处理 iOS / Android 上的应用内购买和订阅。接收您的订阅标识符、交易收据和基本账户 ID。"
+      },
+      "openai": {
+        "purpose": "驱动 AI 功能 — 语音转写、截图解析、智能订阅查询。接收您在使用这些功能时提交的音频、图像或文本。"
+      },
+      "firebase": {
+        "purpose": "传递推送通知（续订提醒、扣款警报）。接收与您账户绑定的设备推送令牌。"
+      },
+      "resend": {
+        "purpose": "发送事务邮件 — 登录链接、收据、每周摘要。接收您的邮箱地址和消息元数据。"
+      },
+      "digitalocean": {
+        "purpose": "托管我们的 API 服务器和数据库。存储账户、订阅及分析数据。"
+      },
+      "apple": {
+        "purpose": "通过 Apple 登录或经 App Store 购买时，Apple 按其政策接收认证与购买数据。"
+      },
+      "google": {
+        "purpose": "通过 Google 登录或使用 Android 时，Google 按其政策接收认证与推送投递数据。"
+      }
     }
   },
   "errors": {
@@ -1224,7 +1282,8 @@
     "upgrade_to_pro": "升级到 Pro",
     "expires_on": "您的 Pro 计划将于 {{date}} 到期",
     "pro_ends_in_other": "Pro 将在 {{count}} 天后结束",
-    "switch_monthly": "切换为月度订阅"
+    "switch_monthly": "切换为月度订阅",
+    "sample_label": "示例"
   },
   "a11y": {
     "subscription": "{{name}} 订阅",

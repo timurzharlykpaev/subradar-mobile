@@ -117,6 +117,15 @@ function ManualFormViewImpl({
         <Text style={{ color: colors.textSecondary, fontSize: 15, fontWeight: '600' }}>{t('common.back', 'Back')}</Text>
       </TouchableOpacity>
 
+      {/* Section header — gives non-technical users a clear "you only need
+          these two fields, the rest is optional" signal. */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <Ionicons name="star" size={14} color={colors.primary} />
+        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+          {t('add.section_required', 'Required')}
+        </Text>
+      </View>
+
       {/* Essential fields */}
       <View style={{ marginBottom: 16 }}>
         <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 2 }}>
@@ -215,6 +224,15 @@ function ManualFormViewImpl({
         </ScrollView>
       </View>
 
+      {/* Schedule section — separates payment timing fields from name/amount.
+          Helps users mentally chunk the form into "what you pay" vs "when". */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, marginBottom: 6 }}>
+        <Ionicons name="calendar-outline" size={14} color={colors.textSecondary} />
+        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.6 }}>
+          {t('add.section_schedule', 'Payment schedule')}
+        </Text>
+      </View>
+
       <DatePickerField
         label={t('add.start_date', 'Start date')}
         value={form.startDate}
@@ -226,16 +244,17 @@ function ManualFormViewImpl({
         onChange={(v) => setF('nextPaymentDate', v)}
       />
 
-      {/* "More" toggle */}
+      {/* "More" toggle — explicit "(optional)" suffix tells older users that
+          they're already done if they don't want to fill anything else. */}
       <TouchableOpacity
         onPress={() => setMoreExpanded(!moreExpanded)}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
-          paddingVertical: 14,
-          marginTop: 4,
+          gap: 8,
+          paddingVertical: 16,
+          marginTop: 8,
           borderTopWidth: 1,
           borderTopColor: colors.border,
         }}
@@ -243,10 +262,12 @@ function ManualFormViewImpl({
         <Ionicons
           name={moreExpanded ? 'chevron-up' : 'chevron-down'}
           size={16}
-          color={colors.textSecondary}
+          color={colors.primary}
         />
-        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
-          {moreExpanded ? t('add.show_less', 'Less') : t('add.show_more', 'More options')}
+        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primary }}>
+          {moreExpanded
+            ? t('add.show_less', 'Hide extra options')
+            : t('add.show_more_v2', 'More options (optional)')}
         </Text>
       </TouchableOpacity>
 

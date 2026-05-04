@@ -17,6 +17,7 @@ import { useSettingsStore } from '../../src/stores/settingsStore';
 import { API_URL } from '../../src/api/client';
 import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import { analytics } from '../../src/services/analytics';
+import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 
 type ExportFormat = 'pdf' | 'csv';
 
@@ -27,11 +28,13 @@ export default function ReportsScreen() {
   const { token } = useAuthStore();
   const { currency } = useSettingsStore();
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
+  const access = useEffectiveAccess();
+  const isPro = access?.isPro ?? false;
 
   const REPORT_TYPES = [
     { key: 'summary',  icon: 'bar-chart-outline' as const,      label: t('reports.summary', 'Summary'),  desc: t('reports.summary_desc', 'Overview of your spending by category and status') },
     { key: 'detailed', icon: 'list-outline' as const,            label: t('reports.detailed', 'Detailed'), desc: t('reports.detailed_desc', 'Full list of all subscriptions with details') },
-    { key: 'tax',      icon: 'receipt-outline' as const,         label: t('reports.tax', 'Tax'),           desc: t('reports.tax_desc', 'Business vs personal expenses breakdown') },
+    { key: 'tax',      icon: 'receipt-outline' as const,         label: t('reports.tax', 'Tax'),           desc: t('reports.tax_desc', 'Subscriptions tagged #business are listed separately from personal ones.') },
   ];
 
   const PERIODS = [
@@ -235,6 +238,33 @@ export default function ReportsScreen() {
               </Text>
             </View>
           </View>
+
+          {/* Free-plan limit hint surfaced *before* the user clicks Generate.
+              Without this, free users only learned about the 1/month cap by
+              tapping the button and getting a 403 error — confusing and slow. */}
+          {!isPro && format === 'pdf' && (
+            <View
+              style={{
+                marginTop: 12,
+                paddingTop: 12,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: colors.border,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Ionicons name="information-circle-outline" size={16} color={colors.warning} />
+              <Text style={{ flex: 1, fontSize: 12, color: colors.textSecondary }}>
+                {t('reports.free_limit_hint', 'Free plan: 1 PDF report per month. CSV export is unlimited.')}
+              </Text>
+              <TouchableOpacity onPress={() => router.push('/paywall' as any)}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                  {t('common.upgrade', 'Upgrade')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Generate Button */}

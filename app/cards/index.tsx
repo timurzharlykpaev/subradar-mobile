@@ -14,17 +14,36 @@ import { useTranslation } from 'react-i18next';
 import { cardsApi } from '../../src/api/cards';
 import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
+import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { PaymentCard } from '../../src/types';
 import { COLORS, CARD_BRANDS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CreditCardIcon } from '../../src/components/icons';
 
+// Visual cue for card brand. Single-letter glyphs work across all locales
+// and don't require shipping new SVG assets just to communicate "this is
+// a Visa card vs an Amex card".
+const BRAND_GLYPH: Record<string, { letter: string; color: string }> = {
+  VISA:       { letter: 'V', color: '#1A1F71' },
+  MASTERCARD: { letter: 'M', color: '#EB001B' },
+  AMEX:       { letter: 'A', color: '#006FCF' },
+  DISCOVER:   { letter: 'D', color: '#FF6000' },
+  DINERS:     { letter: 'D', color: '#0079BE' },
+  JCB:        { letter: 'J', color: '#0E4C96' },
+};
+
 const CARD_COLORS = ['#6C47FF', '#FF6B6B', '#4CAF50', '#FF9800', '#1E88E5', '#E91E63'];
 
 function CardVisual({ card }: { card: PaymentCard }) {
+  const brand = BRAND_GLYPH[card.brand] ?? { letter: card.brand?.[0] ?? '?', color: '#64748B' };
   return (
     <View style={[styles.cardVisual, { backgroundColor: card.color }]}>
-      <Text style={styles.cardBrand}>{card.brand}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={[styles.brandGlyph, { backgroundColor: 'rgba(255,255,255,0.96)' }]}>
+          <Text style={[styles.brandGlyphLetter, { color: brand.color }]}>{brand.letter}</Text>
+        </View>
+        <Text style={styles.cardBrand}>{card.brand}</Text>
+      </View>
       <Text style={styles.cardNickname}>{card.nickname}</Text>
       <Text style={styles.cardLast4}>•••• •••• •••• {card.last4}</Text>
     </View>
@@ -50,7 +69,19 @@ export default function CardsScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert(t('cards.delete_card'), t('cards.delete_confirm'), [
+    // Surface how many subscriptions are linked so users don't accidentally
+    // orphan their data. Subs aren't deleted — just unlinked from the card.
+    const linkedCount = useSubscriptionsStore
+      .getState()
+      .subscriptions.filter((s: any) => s.paymentCardId === id).length;
+    const baseMsg = t('cards.delete_confirm');
+    const linkedMsg = linkedCount > 0
+      ? '\n\n' + t('cards.delete_linked_warning', {
+          count: linkedCount,
+          defaultValue: '{{count}} subscription(s) are linked to this card. They will stay, just without a card assigned.',
+        })
+      : '';
+    Alert.alert(t('cards.delete_card'), baseMsg + linkedMsg, [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.delete'), style: 'destructive', onPress: async () => {
           try { await cardsApi.delete(id); } catch {}
@@ -77,6 +108,13 @@ export default function CardsScreen() {
             <CreditCardIcon size={48} color={colors.textMuted} />
             <Text style={[styles.emptyText, { color: colors.text }]}>{t('cards.empty')}</Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>{t('cards.empty_desc')}</Text>
+            <TouchableOpacity
+              testID="btn-add-card-empty"
+              style={{ marginTop: 24, paddingVertical: 14, paddingHorizontal: 28, borderRadius: 14, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              onPress={() => setShowAdd(true)}
+            >
+              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700' }}>{t('cards.add_first', '+ Add your first card')}</Text>
+            </TouchableOpacity>
           </View>
         )}
         {cards.map((card) => (
@@ -126,7 +164,12 @@ export default function CardsScreen() {
               ))}
             </View>
 
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('cards.color')}</Text>
+            <View>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>{t('cards.color')}</Text>
+              <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2, marginBottom: 6 }}>
+                {t('cards.color_hint', 'Helps you tell cards apart at a glance')}
+              </Text>
+            </View>
             <View style={styles.row}>
               {CARD_COLORS.map((c) => (
                 <TouchableOpacity
@@ -164,8 +207,10 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 18, fontWeight: '700', color: COLORS.text, marginBottom: 8 },
   emptySubtext: { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
   cardContainer: { gap: 8 },
-  cardVisual: { borderRadius: 16, padding: 24, height: 160, justifyContent: 'space-between' },
-  cardBrand: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600' },
+  cardVisual: { borderRadius: 16, padding: 24, height: 170, justifyContent: 'space-between' },
+  cardBrand: { color: 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: '700', letterSpacing: 0.5 },
+  brandGlyph: { width: 38, height: 28, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  brandGlyphLetter: { fontSize: 18, fontWeight: '900', letterSpacing: -1 },
   cardNickname: { color: '#fff', fontSize: 20, fontWeight: '700' },
   cardLast4: { color: 'rgba(255,255,255,0.9)', fontSize: 16, letterSpacing: 2 },
   deleteBtn: { alignSelf: 'flex-end', paddingVertical: 4, paddingHorizontal: 12 },

@@ -33,7 +33,8 @@
     "ok": "확인",
     "share": "공유",
     "next": "다음",
-    "something_went_wrong": "문제가 발생했습니다"
+    "something_went_wrong": "문제가 발생했습니다",
+    "upgrade": "업그레이드"
   },
   "tabs": {
     "home": "홈",
@@ -134,7 +135,12 @@
     "status_expired": "만료됨",
     "soft_limit_title": "무료 슬롯 1개 남음",
     "soft_limit_subtitle": "무제한 추적을 위해 Pro로 업그레이드",
-    "upgrade_cta": "업그레이드"
+    "upgrade_cta": "업그레이드",
+    "action_view": "열기",
+    "action_edit": "편집",
+    "action_cancel": "취소됨으로 표시",
+    "long_press_hint": "구독을 길게 눌러 편집, 취소 또는 삭제",
+    "delete_undo_message": "{{name}} 삭제됨"
   },
   "add": {
     "title": "구독 추가",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "답변",
     "bulk_review_title": "발견된 구독",
     "loading_hint": "AI가 요청을 처리하고 있습니다. 보통 몇 초 정도 걸립니다.",
-    "screenshot_parse_error": "스크린샷을 분석할 수 없습니다. 더 선명한 이미지로 시도해 보세요."
+    "screenshot_parse_error": "스크린샷을 분석할 수 없습니다. 더 선명한 이미지로 시도해 보세요.",
+    "hero_photo": "사진 찍기",
+    "hero_photo_desc": "영수증이나 스크린샷",
+    "hero_manual": "직접 입력",
+    "hero_manual_desc": "직접 세부 정보 입력",
+    "voice_input": "음성 입력",
+    "section_required": "필수",
+    "section_schedule": "결제 일정",
+    "show_more_v2": "추가 옵션 (선택)",
+    "trial_end_date_required": "체험 종료일을 선택하면 만료 전에 알려드립니다.",
+    "voice_hero_title": "말씀만 하세요",
+    "voice_hero_subtitle": "\"넷플릭스 월 15달러\"라고 말하면 추가됩니다. 입력 불필요.",
+    "voice_listening": "듣는 중…",
+    "tap_stop_v2": "탭하여 중지",
+    "divider_or": "또는",
+    "smart_input_placeholder_v2": "이름으로 검색…",
+    "loading_hint_v2": "몇 초만 기다려주세요 — 세부 정보를 읽고 구독을 추가하고 있습니다.",
+    "describe_label": "직접 설명하기",
+    "smart_input_placeholder_v3": "예: Netflix 월 15달러, Spotify Family…",
+    "add_via_ai": "AI로 추가",
+    "describe_hint": "AI가 가격, 주기, 카테고리를 자동 입력합니다."
   },
   "settings": {
     "title": "설정",
@@ -399,7 +425,12 @@
     "send_test_notification": "테스트 알림 보내기",
     "send_test_notification_desc": "이 기기에서 푸시가 작동하는지 확인",
     "test_notification_sent_title": "테스트 전송됨",
-    "test_notification_sent_msg": "몇 초 안에 도착합니다. 보이지 않으면 iOS/Android 설정에서 알림이 활성화되어 있는지 확인하세요."
+    "test_notification_sent_msg": "몇 초 안에 도착합니다. 보이지 않으면 iOS/Android 설정에서 알림이 활성화되어 있는지 확인하세요.",
+    "currency_desc": "모든 금액 표시에 사용",
+    "reminder_current": "현재: {{count}}일 전",
+    "reminder_current_off": "현재: 꺼짐",
+    "logout_team_warning": "다시 로그인할 때까지 팀의 공유 구독에 액세스할 수 없습니다.",
+    "delete_account_billing_warning": "유료 구독은 자동으로 취소되지 않습니다. 향후 청구를 중단하려면 App Store / Google Play 계정에서 취소하세요."
   },
   "auth": {
     "welcome": "다시 오셨군요",
@@ -533,7 +564,12 @@
     "total_spend": "총",
     "insight_overlap": "{{count}}개 카테고리에서 중복 구독",
     "insight_biggest": "가장 큰 중복: {{name}} — ${{savings}}/월 절약",
-    "insight_total": "${{monthly}}/월 (${{yearly}}/년) 절약 가능"
+    "insight_total": "${{monthly}}/월 (${{yearly}}/년) 절약 가능",
+    "avg_month_hint": "월 기준 환산",
+    "total_year_hint": "12개월 예상",
+    "active_count_hint": "활성 + 체험",
+    "forecast_pro_desc": "30일·6개월·1년 후까지의 지출을 예측합니다.",
+    "savings_pro_desc": "AI가 중복 구독을 찾아 절약 가능한 금액을 보여줍니다."
   },
   "subscription": {
     "billing_day": "결제일",
@@ -599,7 +635,10 @@
     "color": "색상",
     "delete_card": "카드를 삭제하시겠습니까?",
     "delete_confirm": "이 작업은 되돌릴 수 없습니다",
-    "error_validation": "카드 이름과 끝 4자리를 입력하세요"
+    "error_validation": "카드 이름과 끝 4자리를 입력하세요",
+    "delete_linked_warning": "이 카드에 연결된 구독 {{count}}개. 구독은 유지되지만 카드 할당이 해제됩니다.",
+    "add_first": "+ 첫 카드 추가",
+    "color_hint": "카드를 한눈에 구분하는 데 도움이 됩니다"
   },
   "reports": {
     "title": "보고서",
@@ -632,7 +671,8 @@
     "error_404": "보고서를 찾을 수 없습니다",
     "error_generic": "보고서를 생성할 수 없습니다",
     "error_network": "네트워크 오류, 연결을 확인하세요",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "free_limit_hint": "무료 플랜: 월 1회 PDF 보고서. CSV 내보내기는 무제한."
   },
   "edit_profile": {
     "title": "프로필 편집",
@@ -822,7 +862,9 @@
     "leave_confirm_title": "팀에서 나갈까요?",
     "how_team_works": "Team은 어떻게 작동?",
     "no_subs_data": "구독 데이터가 없습니다",
-    "team_report": "팀 리포트"
+    "team_report": "팀 리포트",
+    "share_instructions": "이 코드를 팀원에게 보내세요. 코드를 탭해 복사하거나 공유로 메시지·WhatsApp 등으로 전송할 수 있습니다.",
+    "tap_to_copy": "탭하여 복사"
   },
   "paywall": {
     "choose_plan": "플랜 선택",
@@ -892,7 +934,9 @@
     "manage_subscription": "구독 관리",
     "trial_consent": "{{days}}일 무료 체험. {{date}}에 설정 → 구독에서 취소하지 않으면 {{price}}/{{period}}이 청구됩니다. 취소 전까지 자동 갱신됩니다.",
     "paid_consent": "{{price}}/{{period}}, 취소 전까지 자동 갱신. 설정 → 구독에서 언제든지 취소 가능.",
-    "trial_consent_a11y": "체험판 약관"
+    "trial_consent_a11y": "체험판 약관",
+    "replay_different_plan_title": "{{actual}}이(가) 이미 활성화되어 있습니다",
+    "replay_different_plan_msg": "이 Apple ID에는 이미 활성 {{actual}} 구독이 있어 Apple이 {{wanted}} 결제 대신 기존 구독을 재사용했습니다. {{wanted}}으로 전환하려면 먼저 Apple ID → 구독에서 {{actual}}을(를) 취소하세요."
   },
   "ai": {
     "or_type": "또는 입력",
@@ -1152,13 +1196,27 @@
       "read_policy": "개인정보 처리방침",
       "rights_title": "귀하의 권리",
       "rights_text": "GDPR(EU) 및 CCPA(캘리포니아)에 따라 데이터에 대한 접근, 내보내기, 삭제를 요청할 수 있습니다. support@subradar.ai로 연락하거나 설정 → 계정 삭제를 사용하세요.",
-      "revenuecat": { "purpose": "iOS / Android 인앱 결제 및 구독을 처리합니다. 구독 식별자, 거래 영수증, 기본 계정 ID를 수신합니다." },
-      "openai": { "purpose": "AI 기능(음성 변환, 스크린샷 분석, 스마트 구독 검색)을 제공합니다. 전송한 오디오, 이미지 또는 텍스트를 수신합니다." },
-      "firebase": { "purpose": "푸시 알림(갱신 알림, 결제 경고)을 전달합니다. 계정에 연결된 기기 푸시 토큰을 수신합니다." },
-      "resend": { "purpose": "트랜잭션 이메일(매직 링크, 영수증, 주간 다이제스트)을 전송합니다. 이메일과 메시지 메타데이터를 수신합니다." },
-      "digitalocean": { "purpose": "API 서버 및 데이터베이스를 호스팅합니다. 계정, 구독, 분석 데이터를 저장합니다." },
-      "apple": { "purpose": "Apple 로그인 또는 App Store 구매 시, Apple은 정책에 따라 인증 및 구매 데이터를 수신합니다." },
-      "google": { "purpose": "Google 로그인 또는 Android 사용 시, Google은 정책에 따라 인증 및 푸시 전송 데이터를 수신합니다." }
+      "revenuecat": {
+        "purpose": "iOS / Android 인앱 결제 및 구독을 처리합니다. 구독 식별자, 거래 영수증, 기본 계정 ID를 수신합니다."
+      },
+      "openai": {
+        "purpose": "AI 기능(음성 변환, 스크린샷 분석, 스마트 구독 검색)을 제공합니다. 전송한 오디오, 이미지 또는 텍스트를 수신합니다."
+      },
+      "firebase": {
+        "purpose": "푸시 알림(갱신 알림, 결제 경고)을 전달합니다. 계정에 연결된 기기 푸시 토큰을 수신합니다."
+      },
+      "resend": {
+        "purpose": "트랜잭션 이메일(매직 링크, 영수증, 주간 다이제스트)을 전송합니다. 이메일과 메시지 메타데이터를 수신합니다."
+      },
+      "digitalocean": {
+        "purpose": "API 서버 및 데이터베이스를 호스팅합니다. 계정, 구독, 분석 데이터를 저장합니다."
+      },
+      "apple": {
+        "purpose": "Apple 로그인 또는 App Store 구매 시, Apple은 정책에 따라 인증 및 구매 데이터를 수신합니다."
+      },
+      "google": {
+        "purpose": "Google 로그인 또는 Android 사용 시, Google은 정책에 따라 인증 및 푸시 전송 데이터를 수신합니다."
+      }
     }
   },
   "errors": {
@@ -1224,7 +1282,8 @@
     "upgrade_to_pro": "Pro로 업그레이드",
     "expires_on": "Pro 플랜은 {{date}}에 만료됩니다",
     "pro_ends_in_other": "Pro가 {{count}}일 후 종료됩니다",
-    "switch_monthly": "월간으로 전환"
+    "switch_monthly": "월간으로 전환",
+    "sample_label": "샘플"
   },
   "a11y": {
     "subscription": "{{name}} 구독",

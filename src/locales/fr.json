@@ -33,7 +33,8 @@
     "ok": "OK",
     "share": "Partager",
     "next": "Suivant",
-    "something_went_wrong": "Une erreur s'est produite"
+    "something_went_wrong": "Une erreur s'est produite",
+    "upgrade": "Améliorer"
   },
   "tabs": {
     "home": "Accueil",
@@ -134,7 +135,12 @@
     "status_expired": "Expirée",
     "soft_limit_title": "Plus qu'1 place gratuite",
     "soft_limit_subtitle": "Passez à Pro pour un suivi illimité",
-    "upgrade_cta": "Mettre à niveau"
+    "upgrade_cta": "Mettre à niveau",
+    "action_view": "Ouvrir",
+    "action_edit": "Modifier",
+    "action_cancel": "Marquer comme annulée",
+    "long_press_hint": "Maintenez un abonnement pour modifier, annuler ou supprimer",
+    "delete_undo_message": "{{name}} supprimé"
   },
   "add": {
     "title": "Ajouter un abonnement",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "Votre réponse",
     "bulk_review_title": "Abonnements trouvés",
     "loading_hint": "AI traite votre demande. Cela prend généralement quelques secondes.",
-    "screenshot_parse_error": "Impossible d'analyser la capture d'écran. Essayez avec une image plus nette."
+    "screenshot_parse_error": "Impossible d'analyser la capture d'écran. Essayez avec une image plus nette.",
+    "hero_photo": "Prendre une photo",
+    "hero_photo_desc": "Reçu ou capture d'écran",
+    "hero_manual": "Saisir manuellement",
+    "hero_manual_desc": "Remplissez les détails manuellement",
+    "voice_input": "Saisie vocale",
+    "section_required": "Obligatoire",
+    "section_schedule": "Calendrier de paiement",
+    "show_more_v2": "Plus d'options (facultatif)",
+    "trial_end_date_required": "Choisissez une date de fin d'essai pour que nous puissions vous prévenir avant l'expiration.",
+    "voice_hero_title": "Dites-le simplement",
+    "voice_hero_subtitle": "« Netflix 15 dollars par mois » — on l'ajoute. Sans rien taper.",
+    "voice_listening": "À l'écoute…",
+    "tap_stop_v2": "Appuyez pour arrêter",
+    "divider_or": "ou",
+    "smart_input_placeholder_v2": "Rechercher par nom…",
+    "loading_hint_v2": "Quelques secondes — nous lisons les détails et ajoutons votre abonnement.",
+    "describe_label": "Décrivez avec vos mots",
+    "smart_input_placeholder_v3": "Ex. Netflix 15 $ par mois, Spotify Famille…",
+    "add_via_ai": "Ajouter avec l'IA",
+    "describe_hint": "L'IA remplit le prix, la période et la catégorie pour vous."
   },
   "settings": {
     "title": "Paramètres",
@@ -399,7 +425,12 @@
     "send_test_notification": "Envoyer une notification test",
     "send_test_notification_desc": "Vérifier que les notifications push fonctionnent sur cet appareil",
     "test_notification_sent_title": "Test envoyé",
-    "test_notification_sent_msg": "Elle devrait arriver dans quelques secondes. Si vous ne la voyez pas, vérifiez que les notifications sont activées dans les réglages iOS/Android."
+    "test_notification_sent_msg": "Elle devrait arriver dans quelques secondes. Si vous ne la voyez pas, vérifiez que les notifications sont activées dans les réglages iOS/Android.",
+    "currency_desc": "Utilisée pour afficher tous les montants",
+    "reminder_current": "Actuel : {{count}}j avant",
+    "reminder_current_off": "Actuel : désactivé",
+    "logout_team_warning": "Vous perdrez l'accès aux abonnements partagés de l'équipe jusqu'à votre prochaine connexion.",
+    "delete_account_billing_warning": "Votre abonnement payant ne sera PAS annulé automatiquement. Annulez-le dans votre compte App Store / Google Play pour arrêter les prélèvements."
   },
   "auth": {
     "welcome": "Bon retour",
@@ -533,7 +564,12 @@
     "total_spend": "total",
     "insight_overlap": "{{count}} catégories avec des abonnements en double",
     "insight_biggest": "Plus grand chevauchement: {{name}} — ${{savings}}/mois",
-    "insight_total": "Économisez ${{monthly}}/mois (${{yearly}}/an) en consolidant"
+    "insight_total": "Économisez ${{monthly}}/mois (${{yearly}}/an) en consolidant",
+    "avg_month_hint": "ramené au /mois",
+    "total_year_hint": "projeté sur 12 mois",
+    "active_count_hint": "actifs + essai",
+    "forecast_pro_desc": "Projetez vos dépenses sur 30 jours, 6 mois et un an.",
+    "savings_pro_desc": "L'IA trouve les abonnements en double et montre combien vous pouvez économiser."
   },
   "subscription": {
     "billing_day": "Jour de facturation",
@@ -599,7 +635,10 @@
     "color": "Couleur",
     "delete_card": "Supprimer la carte ?",
     "delete_confirm": "Cette action est irréversible",
-    "error_validation": "Entrez le nom et les 4 derniers chiffres de la carte"
+    "error_validation": "Entrez le nom et les 4 derniers chiffres de la carte",
+    "delete_linked_warning": "{{count}} abonnement(s) sont liés à cette carte. Ils resteront, sans carte assignée.",
+    "add_first": "+ Ajouter votre première carte",
+    "color_hint": "Vous aide à distinguer les cartes en un coup d'œil"
   },
   "reports": {
     "title": "Rapports",
@@ -632,7 +671,8 @@
     "error_404": "Rapport introuvable",
     "error_generic": "Impossible de générer le rapport",
     "error_network": "Erreur réseau, vérifiez votre connexion",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "free_limit_hint": "Plan gratuit : 1 rapport PDF par mois. L'export CSV est illimité."
   },
   "edit_profile": {
     "title": "Modifier le profil",
@@ -822,7 +862,9 @@
     "leave_confirm_title": "Quitter l'équipe ?",
     "how_team_works": "Comment fonctionne Team ?",
     "no_subs_data": "Aucune donnée d'abonnement disponible",
-    "team_report": "Rapport d'équipe"
+    "team_report": "Rapport d'équipe",
+    "share_instructions": "Envoyez ce code à un coéquipier. Appuyez sur le code pour copier, ou utilisez Partager pour envoyer via Messages, WhatsApp, etc.",
+    "tap_to_copy": "Appuyez pour copier"
   },
   "paywall": {
     "choose_plan": "Choisir un plan",
@@ -892,7 +934,9 @@
     "manage_subscription": "Gérer l'abonnement",
     "trial_consent": "Gratuit pendant {{days}} jours. Le {{date}}, {{price}}/{{period}} seront prélevés sauf annulation dans Réglages → Abonnements. Renouvellement automatique.",
     "paid_consent": "{{price}}/{{period}}, renouvellement automatique jusqu'à annulation. Annuler dans Réglages → Abonnements.",
-    "trial_consent_a11y": "Conditions de l'essai"
+    "trial_consent_a11y": "Conditions de l'essai",
+    "replay_different_plan_title": "{{actual}} est déjà actif",
+    "replay_different_plan_msg": "Cet Apple ID a déjà un abonnement {{actual}} actif, Apple a donc rejoué cet abonnement au lieu de facturer {{wanted}}. Pour passer à {{wanted}}, annulez d'abord {{actual}} dans Apple ID → Abonnements."
   },
   "ai": {
     "or_type": "ou tapez",
@@ -1154,13 +1198,27 @@
       "read_policy": "Politique de confidentialité",
       "rights_title": "Vos droits",
       "rights_text": "Selon le RGPD (UE) et la CCPA (Californie), vous avez le droit d'accéder, d'exporter ou de supprimer vos données. Pour exercer ces droits, écrivez à support@subradar.ai ou utilisez Paramètres → Supprimer le compte.",
-      "revenuecat": { "purpose": "Traite les achats et abonnements iOS / Android. Reçoit l'identifiant de votre abonnement, les reçus de transaction et l'ID de compte." },
-      "openai": { "purpose": "Alimente les fonctions IA — transcription vocale, analyse de captures, recherche intelligente d'abonnements. Reçoit l'audio, l'image ou le texte envoyés." },
-      "firebase": { "purpose": "Délivre les notifications push (rappels de renouvellement, alertes de facturation). Reçoit un jeton push d'appareil lié à votre compte." },
-      "resend": { "purpose": "Envoie les e-mails transactionnels — magic links, reçus, résumés hebdomadaires. Reçoit votre e-mail et les métadonnées du message." },
-      "digitalocean": { "purpose": "Héberge nos serveurs API et notre base de données. Stocke les données de compte, abonnements et analytics." },
-      "apple": { "purpose": "Lors de la connexion avec Apple ou d'un achat via l'App Store, Apple reçoit les données d'auth et d'achat selon sa politique." },
-      "google": { "purpose": "Lors de la connexion avec Google ou de l'utilisation d'Android, Google reçoit les données d'auth et de livraison push selon sa politique." }
+      "revenuecat": {
+        "purpose": "Traite les achats et abonnements iOS / Android. Reçoit l'identifiant de votre abonnement, les reçus de transaction et l'ID de compte."
+      },
+      "openai": {
+        "purpose": "Alimente les fonctions IA — transcription vocale, analyse de captures, recherche intelligente d'abonnements. Reçoit l'audio, l'image ou le texte envoyés."
+      },
+      "firebase": {
+        "purpose": "Délivre les notifications push (rappels de renouvellement, alertes de facturation). Reçoit un jeton push d'appareil lié à votre compte."
+      },
+      "resend": {
+        "purpose": "Envoie les e-mails transactionnels — magic links, reçus, résumés hebdomadaires. Reçoit votre e-mail et les métadonnées du message."
+      },
+      "digitalocean": {
+        "purpose": "Héberge nos serveurs API et notre base de données. Stocke les données de compte, abonnements et analytics."
+      },
+      "apple": {
+        "purpose": "Lors de la connexion avec Apple ou d'un achat via l'App Store, Apple reçoit les données d'auth et d'achat selon sa politique."
+      },
+      "google": {
+        "purpose": "Lors de la connexion avec Google ou de l'utilisation d'Android, Google reçoit les données d'auth et de livraison push selon sa politique."
+      }
     }
   },
   "errors": {
@@ -1227,7 +1285,8 @@
     "expires_on": "Votre forfait Pro expire le {{date}}",
     "pro_ends_in_one": "Pro se termine dans {{count}} jour",
     "pro_ends_in_other": "Pro se termine dans {{count}} jours",
-    "switch_monthly": "Passer au mensuel"
+    "switch_monthly": "Passer au mensuel",
+    "sample_label": "Exemple"
   },
   "a11y": {
     "subscription": "Abonnement {{name}}",

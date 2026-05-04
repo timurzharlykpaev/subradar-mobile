@@ -8,9 +8,16 @@ interface Props {
   isPro: boolean;
   onUpgrade: () => void;
   children: React.ReactNode;
+  // Optional explanatory text describing WHAT the feature does — when
+  // omitted, falls back to the generic "Unlock this feature" copy. Was
+  // added so users see real value before upgrade, not just a locked icon.
+  featureDescription?: string;
+  // Show a small "Preview" pill on the blurred content so users know
+  // the numbers under the blur are not their real data.
+  sampleBadge?: boolean;
 }
 
-export default function BlurredProSection({ isPro, onUpgrade, children }: Props) {
+export default function BlurredProSection({ isPro, onUpgrade, children, featureDescription, sampleBadge = true }: Props) {
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
 
@@ -24,6 +31,11 @@ export default function BlurredProSection({ isPro, onUpgrade, children }: Props)
       <View style={styles.contentWrapper}>
         {children}
       </View>
+      {sampleBadge && (
+        <View style={[styles.sampleBadge, { backgroundColor: colors.primary }]}>
+          <Text style={styles.sampleBadgeText}>{t('retention.sample_label', 'Sample')}</Text>
+        </View>
+      )}
 
       {/* Overlay */}
       <View style={[
@@ -37,7 +49,7 @@ export default function BlurredProSection({ isPro, onUpgrade, children }: Props)
           {t('retention.upgrade_to_pro', 'Upgrade to Pro')}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          {t('retention.unlock_feature', 'Unlock this feature with Pro')}
+          {featureDescription ?? t('retention.unlock_feature', 'Unlock this feature with Pro')}
         </Text>
         <TouchableOpacity
           onPress={onUpgrade}
@@ -102,5 +114,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#FFF',
+  },
+  sampleBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    zIndex: 1,
+  },
+  sampleBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFF',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });

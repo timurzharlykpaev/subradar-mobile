@@ -33,7 +33,8 @@
     "ok": "OK",
     "share": "共有",
     "next": "次へ",
-    "something_went_wrong": "問題が発生しました"
+    "something_went_wrong": "問題が発生しました",
+    "upgrade": "アップグレード"
   },
   "tabs": {
     "home": "ホーム",
@@ -134,7 +135,12 @@
     "status_expired": "期限切れ",
     "soft_limit_title": "無料枠が1つ残っています",
     "soft_limit_subtitle": "無制限追跡のためProへ",
-    "upgrade_cta": "アップグレード"
+    "upgrade_cta": "アップグレード",
+    "action_view": "開く",
+    "action_edit": "編集",
+    "action_cancel": "キャンセル済みにする",
+    "long_press_hint": "編集・キャンセル・削除はサブスクリプションを長押し",
+    "delete_undo_message": "{{name}} を削除しました"
   },
   "add": {
     "title": "サブスクリプションを追加",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "あなたの答え",
     "bulk_review_title": "見つかったサブスク",
     "loading_hint": "AI がリクエストを処理中です。通常は数秒で完了します。",
-    "screenshot_parse_error": "スクリーンショットを解析できませんでした。より鮮明な画像でお試しください。"
+    "screenshot_parse_error": "スクリーンショットを解析できませんでした。より鮮明な画像でお試しください。",
+    "hero_photo": "写真を撮る",
+    "hero_photo_desc": "レシートまたはスクリーンショット",
+    "hero_manual": "手入力",
+    "hero_manual_desc": "手で詳細を入力",
+    "voice_input": "音声入力",
+    "section_required": "必須",
+    "section_schedule": "支払いスケジュール",
+    "show_more_v2": "その他のオプション (任意)",
+    "trial_end_date_required": "トライアル終了日を選択してください。期限前にお知らせします。",
+    "voice_hero_title": "話すだけ",
+    "voice_hero_subtitle": "「ネットフリックス 月15ドル」と話すだけ。入力不要で追加します。",
+    "voice_listening": "聞いています…",
+    "tap_stop_v2": "タップで停止",
+    "divider_or": "または",
+    "smart_input_placeholder_v2": "名前で検索…",
+    "loading_hint_v2": "数秒お待ちください — 詳細を読み取り、サブスクリプションを追加しています。",
+    "describe_label": "自分の言葉で説明",
+    "smart_input_placeholder_v3": "例:Netflix 月15ドル、Spotify Family…",
+    "add_via_ai": "AI で追加",
+    "describe_hint": "AI が価格・周期・カテゴリーを自動入力します。"
   },
   "settings": {
     "title": "設定",
@@ -399,7 +425,12 @@
     "send_test_notification": "テスト通知を送信",
     "send_test_notification_desc": "このデバイスで push が動作するか確認",
     "test_notification_sent_title": "テスト送信済み",
-    "test_notification_sent_msg": "数秒以内に届きます。届かない場合は、iOS/Android の設定で通知が有効になっているか確認してください。"
+    "test_notification_sent_msg": "数秒以内に届きます。届かない場合は、iOS/Android の設定で通知が有効になっているか確認してください。",
+    "currency_desc": "すべての金額表示に使用",
+    "reminder_current": "現在: {{count}}日前",
+    "reminder_current_off": "現在: オフ",
+    "logout_team_warning": "再ログインするまで、チームの共有サブスクリプションにアクセスできません。",
+    "delete_account_billing_warning": "有料サブスクリプションは自動的にキャンセルされません。今後の課金を停止するには App Store / Google Play アカウントでキャンセルしてください。"
   },
   "auth": {
     "welcome": "おかえりなさい",
@@ -533,7 +564,12 @@
     "total_spend": "合計",
     "insight_overlap": "{{count}}カテゴリで重複する契約",
     "insight_biggest": "最大の重複: {{name}} — ${{savings}}/月の節約",
-    "insight_total": "${{monthly}}/月 (${{yearly}}/年) 節約可能"
+    "insight_total": "${{monthly}}/月 (${{yearly}}/年) 節約可能",
+    "avg_month_hint": "月あたりに換算",
+    "total_year_hint": "12 ヶ月の予測",
+    "active_count_hint": "アクティブ+トライアル",
+    "forecast_pro_desc": "30 日後・6 ヶ月後・1 年後までの支出を予測します。",
+    "savings_pro_desc": "AI が重複するサブスクリプションを検出し、節約可能な金額を表示します。"
   },
   "subscription": {
     "billing_day": "請求日",
@@ -599,7 +635,10 @@
     "color": "色",
     "delete_card": "カードを削除しますか？",
     "delete_confirm": "この操作は元に戻せません",
-    "error_validation": "カードの名前と下4桁を入力してください"
+    "error_validation": "カードの名前と下4桁を入力してください",
+    "delete_linked_warning": "このカードに {{count}} 件のサブスクリプションが紐づいています。サブスクリプションは残りますが、カードなしになります。",
+    "add_first": "+ 最初のカードを追加",
+    "color_hint": "カードをひと目で見分けるのに役立ちます"
   },
   "reports": {
     "title": "レポート",
@@ -632,7 +671,8 @@
     "error_404": "レポートが見つかりません",
     "error_generic": "レポートを生成できませんでした",
     "error_network": "ネットワークエラー、接続を確認してください",
-    "retry": "再試行"
+    "retry": "再試行",
+    "free_limit_hint": "無料プラン: PDF レポートは月 1 回。CSV エクスポートは無制限。"
   },
   "edit_profile": {
     "title": "プロフィール編集",
@@ -822,7 +862,9 @@
     "leave_confirm_title": "チームを脱退しますか？",
     "how_team_works": "Teamの仕組み",
     "no_subs_data": "サブスクのデータがありません",
-    "team_report": "チームレポート"
+    "team_report": "チームレポート",
+    "share_instructions": "このコードをチームメイトに送信してください。タップでコピー、または共有でメッセージ・WhatsApp 等から送信できます。",
+    "tap_to_copy": "タップしてコピー"
   },
   "paywall": {
     "choose_plan": "プランを選択",
@@ -892,7 +934,9 @@
     "manage_subscription": "サブスクリプションを管理",
     "trial_consent": "{{days}} 日間無料。{{date}} に「設定 → サブスクリプション」でキャンセルしない限り {{price}}/{{period}} が課金されます。自動更新されます。",
     "paid_consent": "{{price}}/{{period}}、キャンセルするまで自動更新されます。「設定 → サブスクリプション」でいつでもキャンセル可能。",
-    "trial_consent_a11y": "トライアル条件"
+    "trial_consent_a11y": "トライアル条件",
+    "replay_different_plan_title": "{{actual}} は既に有効です",
+    "replay_different_plan_msg": "この Apple ID は既に {{actual}} のサブスクリプションが有効なため、{{wanted}} に課金される代わりに既存のものが再利用されました。{{wanted}} に切り替えるには、まず Apple ID → サブスクリプションで {{actual}} をキャンセルしてください。"
   },
   "ai": {
     "or_type": "または入力",
@@ -1152,13 +1196,27 @@
       "read_policy": "プライバシーポリシー",
       "rights_title": "あなたの権利",
       "rights_text": "GDPR（EU）および CCPA（カリフォルニア）に基づき、データへのアクセス・エクスポート・削除を要求する権利があります。support@subradar.ai までご連絡いただくか、設定 → アカウント削除をご利用ください。",
-      "revenuecat": { "purpose": "iOS / Android のアプリ内購入とサブスクリプションを処理します。サブスクリプション識別子、トランザクションレシート、基本的なアカウント ID を受信します。" },
-      "openai": { "purpose": "AI 機能（音声書き起こし、スクリーンショット解析、スマート検索）を提供します。送信した音声・画像・テキストを受信します。" },
-      "firebase": { "purpose": "プッシュ通知（更新リマインダー、課金アラート）を配信します。アカウントに紐づくデバイスのプッシュトークンを受信します。" },
-      "resend": { "purpose": "トランザクションメール（マジックリンク、領収書、週次ダイジェスト）を送信します。メールアドレスとメッセージのメタデータを受信します。" },
-      "digitalocean": { "purpose": "API サーバーとデータベースをホスティングします。アカウント、サブスクリプション、アナリティクスデータを保存します。" },
-      "apple": { "purpose": "Apple でサインインまたは App Store で購入する際、Apple はそのポリシーに従い認証・購入データを受信します。" },
-      "google": { "purpose": "Google でサインインまたは Android を使用する際、Google はそのポリシーに従い認証・プッシュ配信データを受信します。" }
+      "revenuecat": {
+        "purpose": "iOS / Android のアプリ内購入とサブスクリプションを処理します。サブスクリプション識別子、トランザクションレシート、基本的なアカウント ID を受信します。"
+      },
+      "openai": {
+        "purpose": "AI 機能（音声書き起こし、スクリーンショット解析、スマート検索）を提供します。送信した音声・画像・テキストを受信します。"
+      },
+      "firebase": {
+        "purpose": "プッシュ通知（更新リマインダー、課金アラート）を配信します。アカウントに紐づくデバイスのプッシュトークンを受信します。"
+      },
+      "resend": {
+        "purpose": "トランザクションメール（マジックリンク、領収書、週次ダイジェスト）を送信します。メールアドレスとメッセージのメタデータを受信します。"
+      },
+      "digitalocean": {
+        "purpose": "API サーバーとデータベースをホスティングします。アカウント、サブスクリプション、アナリティクスデータを保存します。"
+      },
+      "apple": {
+        "purpose": "Apple でサインインまたは App Store で購入する際、Apple はそのポリシーに従い認証・購入データを受信します。"
+      },
+      "google": {
+        "purpose": "Google でサインインまたは Android を使用する際、Google はそのポリシーに従い認証・プッシュ配信データを受信します。"
+      }
     }
   },
   "errors": {
@@ -1224,7 +1282,8 @@
     "upgrade_to_pro": "Pro にアップグレード",
     "expires_on": "Pro プランは {{date}} に期限切れになります",
     "pro_ends_in_other": "Pro は {{count}} 日後に終了します",
-    "switch_monthly": "月額プランに切り替える"
+    "switch_monthly": "月額プランに切り替える",
+    "sample_label": "サンプル"
   },
   "a11y": {
     "subscription": "{{name}} サブスクリプション",

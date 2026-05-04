@@ -11,6 +11,7 @@ import {
   RefreshControl,
   KeyboardAvoidingView,
   Platform,
+  ActionSheetIOS,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -33,7 +34,9 @@ import { SubscriptionSkeleton } from '../../src/components/SubscriptionSkeleton'
 import { BannerRenderer } from '../../src/components/BannerRenderer';
 import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
 import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
+import { UndoToast } from '../../src/components/UndoToast';
 import i18n from '../../src/i18n';
+import type { Subscription } from '../../src/types';
 
 type SortType = 'next_date' | 'amount_high' | 'amount_low' | 'name' | 'recent';
 
@@ -199,25 +202,110 @@ export default function SubscriptionsScreen() {
     });
   }, [getFiltered, filter, searchQuery, selectedCategory, sortBy, subscriptions, allowedIds]);
 
-  const handleDelete = useCallback((id: string, name: string) => {
-    Alert.alert(t('subscriptions.delete_title'), `${name}?`, [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: async () => {
-        try {
-          await subscriptionsApi.delete(id);
-          removeSubscription(id);
-        } catch (err: any) {
-          Alert.alert(t('common.error'), translateBackendError(t, err));
-        }
-      }},
-    ]);
-  }, [t, removeSubscription]);
+  // Pending delete: subscription is hidden from the list immediately,
+  // a toast lets the user undo within 5s. Only after the toast dismisses
+  // do we actually call the backend. Mirrors Gmail/iOS Mail UX which is
+  // far more forgiving than the old "Alert + immediate destructive call".
+  const [pendingDelete, setPendingDelete] = useState<Subscription | null>(null);
+  const pendingDeleteRef = useRef<Subscription | null>(null);
+
+  const commitDelete = useCallback(async (sub: Subscription) => {
+    try {
+      await subscriptionsApi.delete(sub.id);
+    } catch (err: any) {
+      // Restore item if backend rejected the deletion.
+      setSubscriptions([sub, ...useSubscriptionsStore.getState().subscriptions] as any);
+      Alert.alert(t('common.error'), translateBackendError(t, err));
+    }
+  }, [t, setSubscriptions]);
+
+  const handleDelete = useCallback((id: string, _name: string) => {
+    const sub = useSubscriptionsStore.getState().subscriptions.find((s) => s.id === id);
+    if (!sub) return;
+    // If a previous delete is still pending, commit it now so we don't
+    // leak a delete (only one undo toast may be in flight).
+    if (pendingDeleteRef.current && pendingDeleteRef.current.id !== sub.id) {
+      commitDelete(pendingDeleteRef.current);
+    }
+    removeSubscription(id);
+    pendingDeleteRef.current = sub;
+    setPendingDelete(sub);
+  }, [removeSubscription, commitDelete]);
+
+  const handleUndoDelete = useCallback(() => {
+    const sub = pendingDeleteRef.current;
+    if (!sub) return;
+    pendingDeleteRef.current = null;
+    setPendingDelete(null);
+    setSubscriptions([sub, ...useSubscriptionsStore.getState().subscriptions] as any);
+  }, [setSubscriptions]);
+
+  const handleDeleteToastDismiss = useCallback(() => {
+    const sub = pendingDeleteRef.current;
+    if (!sub) return;
+    pendingDeleteRef.current = null;
+    setPendingDelete(null);
+    commitDelete(sub);
+  }, [commitDelete]);
+
+  // Long-press menu: surfaces edit/cancel/delete options visibly so users
+  // (especially older or non-technical) don't have to discover the iOS
+  // swipe gesture, which is invisible without a hint.
+  const handleLongPress = useCallback((item: any) => {
+    const isCancelled = item.status === 'CANCELLED';
+    const options = [
+      t('subscriptions.action_view', 'Open'),
+      t('subscriptions.action_edit', 'Edit'),
+      ...(isCancelled ? [] : [t('subscriptions.action_cancel', 'Mark as cancelled')]),
+      t('common.delete', 'Delete'),
+      t('common.cancel', 'Cancel'),
+    ];
+    const cancelButtonIndex = options.length - 1;
+    const destructiveButtonIndex = options.length - 2;
+
+    const onSelect = (idx: number) => {
+      if (idx === 0) router.push(`/subscription/${item.id}` as any);
+      else if (idx === 1) router.push(`/subscription/${item.id}?edit=1` as any);
+      else if (!isCancelled && idx === 2) {
+        // Mark as cancelled — dedicated backend endpoint preserves history.
+        subscriptionsApi.cancel(item.id)
+          .then(() => fetchSubs(true))
+          .catch((err: any) => Alert.alert(t('common.error'), translateBackendError(t, err)));
+      } else if (idx === destructiveButtonIndex) {
+        handleDelete(item.id, item.name);
+      }
+    };
+
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, cancelButtonIndex, destructiveButtonIndex, title: item.name },
+        onSelect,
+      );
+    } else {
+      // Android Alert.alert reliably renders only 3 buttons across OEMs;
+      // anything past the third gets clipped on stock Android, Samsung One UI,
+      // MIUI and others. Strip the menu down to the two destructive-or-edit
+      // options users can't get to via the detail screen tap. "Open" is
+      // redundant (a normal tap already opens), and "Mark as cancelled" is
+      // exposed inside the detail screen as a button — both are safe to drop
+      // from the long-press menu on Android without losing functionality.
+      Alert.alert(item.name, undefined, [
+        { text: t('subscriptions.action_edit', 'Edit'), onPress: () => onSelect(1) },
+        { text: t('common.delete', 'Delete'), style: 'destructive' as const, onPress: () => handleDelete(item.id, item.name) },
+        { text: t('common.cancel', 'Cancel'), style: 'cancel' as const },
+      ]);
+    }
+  }, [t, router, handleDelete, fetchSubs]);
 
   const renderItem = useCallback(
     ({ item }: { item: any }) => (
-      <SubscriptionCard subscription={item} onSwipeDelete={() => handleDelete(item.id, item.name)} />
+      <SubscriptionCard
+        subscription={item}
+        onSwipeDelete={() => handleDelete(item.id, item.name)}
+        onLongPress={() => handleLongPress(item)}
+      />
     ),
-    [handleDelete],
+    [handleDelete, handleLongPress],
   );
 
   // Stats
@@ -497,7 +585,7 @@ export default function SubscriptionsScreen() {
           updateCellsBatchingPeriod={50}
           removeClippedSubviews={true}
           windowSize={10}
-          getItemLayout={(_data, index) => ({ length: 88, offset: 88 * index, index })}
+          getItemLayout={(_data, index) => ({ length: 92, offset: 92 * index, index })}
           renderItem={renderItem}
           ListEmptyComponent={
             initialLoading ? (
@@ -521,16 +609,38 @@ export default function SubscriptionsScreen() {
             )
           }
           ListFooterComponent={
-            isDegraded ? (
-              <View>
-                {Array.from({ length: hiddenSubsCount }).map((_, i) => (
-                  <LockedSubscriptionCard key={`locked-${i}`} hiddenCount={hiddenSubsCount} />
-                ))}
-              </View>
-            ) : null
+            <>
+              {isDegraded
+                ? Array.from({ length: hiddenSubsCount }).map((_, i) => (
+                    <LockedSubscriptionCard key={`locked-${i}`} hiddenCount={hiddenSubsCount} />
+                  ))
+                : null}
+              {subs.length > 0 && (
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 12,
+                    color: colors.textMuted,
+                    paddingVertical: 16,
+                    paddingHorizontal: 32,
+                  }}
+                >
+                  {t('subscriptions.long_press_hint', 'Hold any subscription to edit, cancel or delete')}
+                </Text>
+              )}
+            </>
           }
         />
       </KeyboardAvoidingView>
+
+      {pendingDelete && (
+        <UndoToast
+          key={pendingDelete.id}
+          message={t('subscriptions.delete_undo_message', { name: pendingDelete.name, defaultValue: `${pendingDelete.name} deleted` })}
+          onUndo={handleUndoDelete}
+          onDismiss={handleDeleteToastDismiss}
+        />
+      )}
     </SafeAreaView>
   );
 }

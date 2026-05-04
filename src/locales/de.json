@@ -33,7 +33,8 @@
     "ok": "OK",
     "share": "Teilen",
     "next": "Weiter",
-    "something_went_wrong": "Etwas ist schiefgelaufen"
+    "something_went_wrong": "Etwas ist schiefgelaufen",
+    "upgrade": "Upgrade"
   },
   "tabs": {
     "home": "Start",
@@ -134,7 +135,12 @@
     "status_expired": "Abgelaufen",
     "soft_limit_title": "Nur noch 1 freier Slot",
     "soft_limit_subtitle": "Upgrade auf Pro für unbegrenztes Tracking",
-    "upgrade_cta": "Upgraden"
+    "upgrade_cta": "Upgraden",
+    "action_view": "Öffnen",
+    "action_edit": "Bearbeiten",
+    "action_cancel": "Als gekündigt markieren",
+    "long_press_hint": "Abonnement gedrückt halten zum Bearbeiten, Kündigen oder Löschen",
+    "delete_undo_message": "{{name}} gelöscht"
   },
   "add": {
     "title": "Abonnement hinzufügen",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "Deine Antwort",
     "bulk_review_title": "Gefundene Abos",
     "loading_hint": "AI verarbeitet deine Anfrage. Das dauert normalerweise einige Sekunden.",
-    "screenshot_parse_error": "Der Screenshot konnte nicht ausgelesen werden. Versuche es mit einem klareren Bild."
+    "screenshot_parse_error": "Der Screenshot konnte nicht ausgelesen werden. Versuche es mit einem klareren Bild.",
+    "hero_photo": "Foto machen",
+    "hero_photo_desc": "Beleg oder Screenshot",
+    "hero_manual": "Manuell eingeben",
+    "hero_manual_desc": "Details von Hand ausfüllen",
+    "voice_input": "Spracheingabe",
+    "section_required": "Erforderlich",
+    "section_schedule": "Zahlungsplan",
+    "show_more_v2": "Weitere Optionen (optional)",
+    "trial_end_date_required": "Wählen Sie ein Testenddatum, damit wir Sie vor Ablauf erinnern können.",
+    "voice_hero_title": "Sag es einfach",
+    "voice_hero_subtitle": "„Netflix 15 Dollar monatlich\" — und wir fügen es hinzu. Ohne Tippen.",
+    "voice_listening": "Höre zu…",
+    "tap_stop_v2": "Tippen zum Stoppen",
+    "divider_or": "oder",
+    "smart_input_placeholder_v2": "Nach Name suchen…",
+    "loading_hint_v2": "Ein paar Sekunden — wir lesen die Details und fügen Ihr Abonnement hinzu.",
+    "describe_label": "In eigenen Worten beschreiben",
+    "smart_input_placeholder_v3": "z.B. Netflix 15 $ monatlich, Spotify Family…",
+    "add_via_ai": "Mit KI hinzufügen",
+    "describe_hint": "Die KI füllt Preis, Zeitraum und Kategorie automatisch aus."
   },
   "settings": {
     "title": "Einstellungen",
@@ -399,7 +425,12 @@
     "send_test_notification": "Test-Benachrichtigung senden",
     "send_test_notification_desc": "Push auf diesem Gerät prüfen",
     "test_notification_sent_title": "Test gesendet",
-    "test_notification_sent_msg": "Es sollte in wenigen Sekunden ankommen. Wenn nicht — prüfe, ob Push in den iOS/Android-Einstellungen erlaubt ist."
+    "test_notification_sent_msg": "Es sollte in wenigen Sekunden ankommen. Wenn nicht — prüfe, ob Push in den iOS/Android-Einstellungen erlaubt ist.",
+    "currency_desc": "Für die Anzeige aller Beträge",
+    "reminder_current": "Aktuell: {{count}}T vorher",
+    "reminder_current_off": "Aktuell: aus",
+    "logout_team_warning": "Sie verlieren den Zugriff auf gemeinsame Team-Abonnements, bis Sie sich erneut anmelden.",
+    "delete_account_billing_warning": "Ihr kostenpflichtiges Abonnement wird NICHT automatisch gekündigt. Kündigen Sie es in Ihrem App Store / Google Play-Konto, um weitere Abbuchungen zu stoppen."
   },
   "auth": {
     "welcome": "Willkommen zurück",
@@ -533,7 +564,12 @@
     "total_spend": "gesamt",
     "insight_overlap": "{{count}} Kategorien mit überlappenden Abos",
     "insight_biggest": "Größte Überlappung: {{name}} — ${{savings}}/Mo Ersparnis",
-    "insight_total": "Sparen Sie ${{monthly}}/Mo (${{yearly}}/J) durch Konsolidierung"
+    "insight_total": "Sparen Sie ${{monthly}}/Mo (${{yearly}}/J) durch Konsolidierung",
+    "avg_month_hint": "auf /Monat normalisiert",
+    "total_year_hint": "auf 12 Monate hochgerechnet",
+    "active_count_hint": "aktiv + Trial",
+    "forecast_pro_desc": "Ausgaben für 30 Tage, 6 Monate und ein Jahr im Voraus prognostizieren.",
+    "savings_pro_desc": "KI findet doppelte Abonnements und zeigt, wie viel Sie sparen können."
   },
   "subscription": {
     "billing_day": "Abrechnungstag",
@@ -599,7 +635,10 @@
     "color": "Farbe",
     "delete_card": "Karte löschen?",
     "delete_confirm": "Diese Aktion kann nicht rückgängig gemacht werden",
-    "error_validation": "Name und letzte 4 Ziffern der Karte eingeben"
+    "error_validation": "Name und letzte 4 Ziffern der Karte eingeben",
+    "delete_linked_warning": "{{count}} Abonnement(s) sind mit dieser Karte verknüpft. Sie bleiben erhalten, jedoch ohne zugewiesene Karte.",
+    "add_first": "+ Erste Karte hinzufügen",
+    "color_hint": "Hilft, Karten auf einen Blick zu unterscheiden"
   },
   "reports": {
     "title": "Berichte",
@@ -632,7 +671,8 @@
     "error_404": "Bericht nicht gefunden",
     "error_generic": "Bericht konnte nicht erstellt werden",
     "error_network": "Netzwerkfehler, Verbindung prüfen",
-    "retry": "Wiederholen"
+    "retry": "Wiederholen",
+    "free_limit_hint": "Kostenlos: 1 PDF-Bericht pro Monat. CSV-Export ist unbegrenzt."
   },
   "edit_profile": {
     "title": "Profil bearbeiten",
@@ -822,7 +862,9 @@
     "leave_confirm_title": "Team verlassen?",
     "how_team_works": "Wie funktioniert Team?",
     "no_subs_data": "Keine Abo-Daten verfügbar",
-    "team_report": "Team-Bericht"
+    "team_report": "Team-Bericht",
+    "share_instructions": "Senden Sie diesen Code an ein Teammitglied. Tippen Sie auf den Code zum Kopieren oder nutzen Sie Teilen für Nachrichten, WhatsApp usw.",
+    "tap_to_copy": "Zum Kopieren tippen"
   },
   "paywall": {
     "choose_plan": "Plan wählen",
@@ -892,7 +934,9 @@
     "manage_subscription": "Abo verwalten",
     "trial_consent": "{{days}} Tage kostenlos. Am {{date}} werden {{price}}/{{period}} abgebucht, sofern du nicht in Einstellungen → Abos kündigst. Verlängert sich automatisch.",
     "paid_consent": "{{price}}/{{period}}, automatische Verlängerung bis zur Kündigung. Kündigen in Einstellungen → Abos.",
-    "trial_consent_a11y": "Probezeit-Bedingungen"
+    "trial_consent_a11y": "Probezeit-Bedingungen",
+    "replay_different_plan_title": "{{actual}} ist bereits aktiv",
+    "replay_different_plan_msg": "Diese Apple-ID hat bereits ein aktives {{actual}}-Abonnement, daher hat Apple es wiederverwendet, anstatt {{wanted}} zu berechnen. Um zu {{wanted}} zu wechseln, kündigen Sie zuerst {{actual}} unter Apple-ID → Abonnements."
   },
   "ai": {
     "or_type": "oder eingeben",
@@ -1154,13 +1198,27 @@
       "read_policy": "Datenschutzerklärung",
       "rights_title": "Ihre Rechte",
       "rights_text": "Nach DSGVO (EU) und CCPA (Kalifornien) haben Sie das Recht auf Auskunft, Export oder Löschung Ihrer Daten. Schreiben Sie an support@subradar.ai oder nutzen Sie „Einstellungen → Konto löschen“.",
-      "revenuecat": { "purpose": "Verarbeitet In-App-Käufe und Abos auf iOS / Android. Erhält Ihre Abo-ID, Transaktionsbelege und die Konto-ID." },
-      "openai": { "purpose": "Treibt KI-Funktionen an — Sprachtranskription, Screenshot-Analyse, intelligente Abo-Suche. Erhält das Audio, Bild oder den Text, den Sie senden." },
-      "firebase": { "purpose": "Liefert Push-Benachrichtigungen (Verlängerungs-Erinnerungen, Abrechnungs-Warnungen). Erhält ein Geräte-Push-Token, das mit Ihrem Konto verknüpft ist." },
-      "resend": { "purpose": "Versendet Transaktions-E-Mails — Anmelde-Links, Belege, wöchentliche Zusammenfassungen. Erhält Ihre E-Mail-Adresse und Nachrichten-Metadaten." },
-      "digitalocean": { "purpose": "Hostet unsere API-Server und Datenbank. Speichert Konto-, Abo- und Analysedaten." },
-      "apple": { "purpose": "Bei Anmeldung mit Apple oder Käufen über den App Store erhält Apple Auth- und Kaufdaten gemäß deren Richtlinie." },
-      "google": { "purpose": "Bei Anmeldung mit Google oder Nutzung von Android erhält Google Auth- und Push-Zustelldaten gemäß deren Richtlinie." }
+      "revenuecat": {
+        "purpose": "Verarbeitet In-App-Käufe und Abos auf iOS / Android. Erhält Ihre Abo-ID, Transaktionsbelege und die Konto-ID."
+      },
+      "openai": {
+        "purpose": "Treibt KI-Funktionen an — Sprachtranskription, Screenshot-Analyse, intelligente Abo-Suche. Erhält das Audio, Bild oder den Text, den Sie senden."
+      },
+      "firebase": {
+        "purpose": "Liefert Push-Benachrichtigungen (Verlängerungs-Erinnerungen, Abrechnungs-Warnungen). Erhält ein Geräte-Push-Token, das mit Ihrem Konto verknüpft ist."
+      },
+      "resend": {
+        "purpose": "Versendet Transaktions-E-Mails — Anmelde-Links, Belege, wöchentliche Zusammenfassungen. Erhält Ihre E-Mail-Adresse und Nachrichten-Metadaten."
+      },
+      "digitalocean": {
+        "purpose": "Hostet unsere API-Server und Datenbank. Speichert Konto-, Abo- und Analysedaten."
+      },
+      "apple": {
+        "purpose": "Bei Anmeldung mit Apple oder Käufen über den App Store erhält Apple Auth- und Kaufdaten gemäß deren Richtlinie."
+      },
+      "google": {
+        "purpose": "Bei Anmeldung mit Google oder Nutzung von Android erhält Google Auth- und Push-Zustelldaten gemäß deren Richtlinie."
+      }
     }
   },
   "errors": {
@@ -1227,7 +1285,8 @@
     "expires_on": "Dein Pro-Plan läuft am {{date}} ab",
     "pro_ends_in_one": "Pro endet in {{count}} Tag",
     "pro_ends_in_other": "Pro endet in {{count}} Tagen",
-    "switch_monthly": "Auf monatlich umsteigen"
+    "switch_monthly": "Auf monatlich umsteigen",
+    "sample_label": "Beispiel"
   },
   "a11y": {
     "subscription": "Abo {{name}}",

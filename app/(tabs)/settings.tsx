@@ -193,13 +193,14 @@ export default function SettingsScreen() {
         {
           text: t('common.ok', 'OK'),
           onPress: async () => {
+            // Single alert (was two — confirm + success), now we just reset
+            // and trust the user to see the change next launch. Stacking
+            // two iOS alerts confused older users who tapped through both.
             await AsyncStorage.removeItem('subradar:add-onboarding-seen');
             const state = useAuthStore.getState();
             if ('isOnboarded' in state) {
-              // Reset onboarding flag without logging out
               useAuthStore.setState({ isOnboarded: false } as any);
             }
-            Alert.alert('', t('settings.onboarding_reset', 'Onboarding will show on next app open'));
           },
         },
       ],
@@ -207,12 +208,25 @@ export default function SettingsScreen() {
   };
 
   const handleDeleteAccount = () => {
+    // For users with an active App Store/Play subscription, account deletion
+    // does NOT cancel the recurring charge — they still need to do that in
+    // their store account. Surfacing this up-front prevents the support
+    // tickets we used to get from confused users still being billed after
+    // deletion.
+    const hasActivePaidPlan = access?.hasOwnPaidPlan && access?.state === 'active';
+    const baseMsg = t(
+      'settings.delete_account_warning',
+      'All data will be permanently removed. This cannot be undone.',
+    );
+    const billingMsg = hasActivePaidPlan
+      ? '\n\n' + t(
+          'settings.delete_account_billing_warning',
+          'Your paid subscription will NOT be cancelled automatically. Cancel it in your App Store / Google Play account to stop future charges.',
+        )
+      : '';
     Alert.alert(
       t('settings.delete_account_title', 'Delete Account?'),
-      t(
-        'settings.delete_account_warning',
-        'All data will be permanently removed. This cannot be undone.',
-      ),
+      baseMsg + billingMsg,
       [
         { text: t('common.cancel', 'Cancel'), style: 'cancel' },
         {
@@ -494,7 +508,12 @@ export default function SettingsScreen() {
           </TouchableOpacity>
           <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
 
-          {/* Display currency */}
+          {/* Currency — single picker. The store keeps both `currency` and
+              `displayCurrency` for backend compatibility, but the user only
+              sees one control: changing it syncs both. The legacy chip-row
+              was removed because two separate currency selectors confused
+              everyone (especially older users), and `currency` was never
+              meaningfully different from `displayCurrency` for end users. */}
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 }}
             onPress={() => setCurrencyPickerVisible(true)}
@@ -502,44 +521,15 @@ export default function SettingsScreen() {
             <View style={{ width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primaryLight }}>
               <Ionicons name="wallet-outline" size={20} color={colors.primary} />
             </View>
-            <Text style={{ flex: 1, fontSize: 15, color: colors.text }}>{t('settings.display_currency', 'Display currency')}</Text>
-            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.text, marginRight: 4 }}>{displayCurrency}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, color: colors.text }}>{t('settings.currency', 'Currency')}</Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 1 }}>
+                {t('settings.currency_desc', 'Used to display all amounts')}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text, marginRight: 4 }}>{displayCurrency}</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
-          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
-
-          {/* Currency (legacy quick-select chips — kept for familiarity) */}
-          {renderSettingRow(
-            'cash-outline',
-            colors.success,
-            t('settings.default_currency'),
-            undefined,
-            null,
-            undefined,
-            false,
-          )}
-          <View style={{ paddingHorizontal: 16, paddingBottom: 14 }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {CURRENCIES.map((cur) => (
-                  <TouchableOpacity
-                    testID={`btn-currency-${cur}`}
-                    key={cur}
-                    style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: currency === cur ? colors.primary : colors.surface2, borderWidth: 1, borderColor: currency === cur ? colors.primary : colors.border }}
-                    onPress={() => {
-                      const prev = currency;
-                      setCurrency(cur);
-                      if (prev !== cur) {
-                        analytics.track('currency_changed', { from: prev, to: cur, source: 'chip' });
-                      }
-                    }}
-                  >
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: currency === cur ? '#FFF' : colors.text }}>{cur}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
           <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginHorizontal: 16 }} />
 
           {/* Language */}
@@ -666,7 +656,7 @@ export default function SettingsScreen() {
             'sparkles-outline',
             '#8B5CF6',
             t('settings.weekly_digest', 'Weekly AI Digest'),
-            t('settings.weekly_digest_desc', 'AI analysis summary every Monday'),
+            t('settings.weekly_digest_desc', 'AI analysis summary every Monday at 9:00'),
             isPro ? (
               <Switch
                 value={weeklyDigestEnabled}
@@ -684,18 +674,29 @@ export default function SettingsScreen() {
             true,
           )}
 
-          {/* Remind Before */}
-          <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10 }}>
-            <Text style={{ fontSize: 13, color: colors.textSecondary }}>{t('settings.remind_before')}</Text>
+          {/* Remind Before — explicit current value above the pills so older
+              users can see the active state at a glance, not just by colour
+              difference (some can't perceive the contrast on a busy screen). */}
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+                {t('settings.remind_before')}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                {reminderDays === 0
+                  ? t('settings.reminder_current_off', 'Currently: off')
+                  : t('settings.reminder_current', { count: reminderDays, defaultValue: 'Currently: {{count}}d before' })}
+              </Text>
+            </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {[{ day: 0, label: t('settings.off', 'Off') }, { day: 1, label: t('settings.days_before', { count: 1 }) }, { day: 3, label: t('settings.days_before', { count: 3 }) }, { day: 7, label: t('settings.days_before', { count: 7 }) }].map(({ day, label }) => (
                 <TouchableOpacity
                   testID={`btn-reminder-${day}d`}
                   key={day}
-                  style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: reminderDays === day ? colors.primary : colors.surface2, borderWidth: 1, borderColor: reminderDays === day ? colors.primary : colors.border }}
+                  style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, backgroundColor: reminderDays === day ? colors.primary : colors.surface2, borderWidth: 1.5, borderColor: reminderDays === day ? colors.primary : colors.border }}
                   onPress={() => handleReminderSelect(day)}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: reminderDays === day ? '#FFF' : colors.text }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: reminderDays === day ? '#FFF' : colors.text }}>
                     {label}
                   </Text>
                 </TouchableOpacity>
@@ -837,17 +838,25 @@ export default function SettingsScreen() {
             handleReplayOnboarding,
             true,
           )}
-          {/* Logout */}
+          {/* Logout — surface team-loss warning so users understand the
+              consequence before tapping. Without it, team members get
+              confused when their shared analytics disappear. */}
           {renderSettingRow(
             'log-out-outline',
             colors.error,
             t('settings.logout'),
             undefined,
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
-            () => Alert.alert(t('settings.logout'), t('common.are_you_sure'), [
-              { text: t('common.cancel'), style: 'cancel' },
-              { text: t('settings.logout'), style: 'destructive', onPress: () => { logout(); router.replace('/onboarding'); } },
-            ]),
+            () => {
+              const isTeamMember = access?.isTeamMember ?? false;
+              const message = isTeamMember
+                ? t('settings.logout_team_warning', { defaultValue: 'You will lose access to this team\'s shared subscriptions until you sign back in.' })
+                : t('common.are_you_sure');
+              Alert.alert(t('settings.logout'), message, [
+                { text: t('common.cancel'), style: 'cancel' },
+                { text: t('settings.logout'), style: 'destructive', onPress: () => { logout(); router.replace('/onboarding'); } },
+              ]);
+            },
             false,
           )}
         </View>
@@ -952,9 +961,13 @@ export default function SettingsScreen() {
               {
                 text: t('settings.region_change_switch', 'Switch to {{currency}}', { currency: suggested }),
                 onPress: () => {
+                  // setDisplayCurrency already mirrors to legacy `currency`
+                  // (settingsStore.ts:60-61) — no second setter needed.
                   setDisplayCurrency(suggested);
                   analytics.track('currency_changed', { from: prevCurrency, to: suggested, source: 'region_switch' });
-                  // Single batched PATCH for atomicity
+                  // Backend only persists `displayCurrency`. Sending the legacy
+                  // `currency` field would 400 on strict DTOs and the silent
+                  // .catch would swallow it, losing the user's change.
                   usersApi.updateMe({ region: code, displayCurrency: suggested }).catch(() => {});
                   queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
                   queryClient.invalidateQueries({ queryKey: ['analytics'] });
@@ -968,14 +981,19 @@ export default function SettingsScreen() {
       <CurrencyPicker
         visible={currencyPickerVisible}
         selected={displayCurrency}
-        title={t('settings.display_currency', 'Display currency')}
+        title={t('settings.currency', 'Currency')}
         onClose={() => setCurrencyPickerVisible(false)}
         onSelect={(code) => {
           const prev = displayCurrency;
+          // setDisplayCurrency already mirrors to legacy `currency`
+          // (settingsStore.ts:60-61), so a single setter keeps both in sync.
           setDisplayCurrency(code);
           if (prev !== code) {
             analytics.track('currency_changed', { from: prev, to: code, source: 'picker' });
           }
+          // Backend only knows about `displayCurrency`. Don't send `currency`
+          // in the PATCH body — strict DTOs would reject it and `.catch` would
+          // swallow the failure, losing the user's choice on the server.
           usersApi.updateMe({ displayCurrency: code }).catch(() => {});
           queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
           queryClient.invalidateQueries({ queryKey: ['analytics'] });

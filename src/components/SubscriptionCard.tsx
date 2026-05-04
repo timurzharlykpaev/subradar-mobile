@@ -20,13 +20,14 @@ import { parseBackendDate, daysUntilDate } from '../utils/formatters';
 interface Props {
   subscription: Subscription;
   onSwipeDelete?: () => void;
+  onLongPress?: () => void;
 }
 
 function daysUntilString(date?: string | null): number | null {
   return daysUntilDate(date ? new Date(date) : null);
 }
 
-const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
+const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -55,6 +56,8 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
       ]}
       activeOpacity={0.85}
       onPress={() => router.push(`/subscription/${subscription.id}` as any)}
+      onLongPress={onLongPress}
+      delayLongPress={400}
       accessibilityRole="button"
       accessibilityLabel={t('a11y.subscription', { name: subscription.name, defaultValue: `${subscription.name} subscription` })}
     >
@@ -147,7 +150,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription }) => {
             gap: 3,
           }]}>
             {!trialExpired && trialDays !== 0 && (
-              <GiftIcon size={10} color={trialUrgent ? '#F59E0B' : '#3B82F6'} />
+              <GiftIcon size={11} color={trialUrgent ? '#F59E0B' : '#3B82F6'} />
             )}
             <Text style={[styles.trialBadgeText, {
               color: trialExpired ? '#EF4444' : trialUrgent ? '#F59E0B' : '#3B82F6',
@@ -210,17 +213,17 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 2, flexShrink: 0, maxWidth: 110 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   tagsRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  name: { fontSize: 15, fontWeight: '700', flex: 1, flexShrink: 1, fontFamily: fonts.semiBold },
-  plan: { fontSize: 12 },
-  statusBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, flexShrink: 0 },
-  statusText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
-  amount: { fontSize: 15, fontWeight: '800', fontFamily: fonts.bold },
-  amountOriginal: { fontSize: 10, marginTop: 1 },
-  period: { fontSize: 11 },
-  nextDate: { fontSize: 11, fontWeight: '600' },
-  daysUntil: { fontSize: 9, marginTop: 1 },
-  trialBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },
-  trialBadgeText: { fontSize: 10, fontWeight: '700' },
-  tagBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  tagText: { fontSize: 10, fontWeight: '600' },
+  name: { fontSize: 16, fontWeight: '700', flex: 1, flexShrink: 1, fontFamily: fonts.semiBold },
+  plan: { fontSize: 13 },
+  statusBadge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, flexShrink: 0 },
+  statusText: { fontSize: 11, fontWeight: '700', textTransform: 'capitalize' },
+  amount: { fontSize: 16, fontWeight: '800', fontFamily: fonts.bold },
+  amountOriginal: { fontSize: 11, marginTop: 1 },
+  period: { fontSize: 12 },
+  nextDate: { fontSize: 12, fontWeight: '600' },
+  daysUntil: { fontSize: 11, marginTop: 2, fontWeight: '600' },
+  trialBadge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', gap: 3 },
+  trialBadgeText: { fontSize: 11, fontWeight: '700' },
+  tagBadge: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6 },
+  tagText: { fontSize: 11, fontWeight: '600' },
 });

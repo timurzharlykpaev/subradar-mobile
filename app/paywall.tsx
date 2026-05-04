@@ -495,9 +495,58 @@ export default function PaywallScreen() {
       if (syncOk) {
         try { await SecureStore.deleteItemAsync(PENDING_RECEIPT_KEY); } catch {}
         await queryClient.refetchQueries({ queryKey: ['billing'] });
+        // Force a drift reconcile so backend banners/dates that didn't get
+        // updated by the sync (e.g. a stale "Pro expired" priority while the
+        // freshly-replayed Team is now active) get a chance to clear. The
+        // reconcile is a no-op when there's no drift, so this is cheap.
+        try {
+          const { reconcileBillingDrift } = await import('../src/utils/reconcileBillingDrift');
+          const r = await reconcileBillingDrift();
+          if (r.ran) {
+            await queryClient.refetchQueries({ queryKey: ['billing'] });
+          }
+        } catch (e: any) {
+          if (__DEV__) console.warn('[Paywall] post-purchase reconcile failed:', e?.message);
+        }
       } else {
         // Keep pending_receipt in storage so DataLoader can retry on next cold start.
         setShowSyncRetry(true);
+      }
+
+      // Sandbox replay of an active (not-cancelled) subscription on a
+      // different plan. Different from `isCancelledReplay` above — here the
+      // user got a working subscription, just not the one they tapped.
+      // Without this alert the success screen shows "Team purchased" after
+      // a Pro tap with no explanation, which looks like a bug.
+      const wantedPlan: 'pro' | 'org' = selected as 'pro' | 'org';
+      const replayedDifferentPlan = !isCancelledReplay && actualPlanKey !== wantedPlan;
+      if (replayedDifferentPlan) {
+        const wantedLabel = wantedPlan === 'org' ? 'Team' : 'Pro';
+        const actualLabel = actualPlanKey === 'org' ? 'Team' : 'Pro';
+        analytics.track('paywall_replayed_different_plan', {
+          wanted: wantedPlan,
+          actual: actualPlanKey,
+          product_id: actualProductId,
+        });
+        setTimeout(() => {
+          Alert.alert(
+            t('paywall.replay_different_plan_title', { defaultValue: '{{actual}} is already active', actual: actualLabel }),
+            t('paywall.replay_different_plan_msg', {
+              defaultValue: 'This Apple ID already has an active {{actual}} subscription, so Apple replayed it instead of charging for {{wanted}}. To switch to {{wanted}}, cancel {{actual}} first in Apple ID → Subscriptions.',
+              actual: actualLabel,
+              wanted: wantedLabel,
+            }),
+            [
+              { text: t('common.ok', 'OK'), style: 'default' },
+              {
+                text: t('paywall.open_apple_subs', 'Open Apple Subscriptions'),
+                onPress: () => {
+                  Linking.openURL('https://apps.apple.com/account/subscriptions').catch(() => {});
+                },
+              },
+            ],
+          );
+        }, 800);
       }
 
       // Honest UX: if Apple Sandbox replayed a CANCELLED transaction

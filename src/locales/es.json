@@ -33,7 +33,8 @@
     "ok": "OK",
     "share": "Compartir",
     "next": "Siguiente",
-    "something_went_wrong": "Algo salió mal"
+    "something_went_wrong": "Algo salió mal",
+    "upgrade": "Mejorar"
   },
   "tabs": {
     "home": "Inicio",
@@ -134,7 +135,12 @@
     "status_expired": "Expirada",
     "soft_limit_title": "Solo 1 espacio gratis",
     "soft_limit_subtitle": "Actualiza a Pro para seguimiento ilimitado",
-    "upgrade_cta": "Mejorar"
+    "upgrade_cta": "Mejorar",
+    "action_view": "Abrir",
+    "action_edit": "Editar",
+    "action_cancel": "Marcar como cancelada",
+    "long_press_hint": "Mantén pulsada una suscripción para editar, cancelar o eliminar",
+    "delete_undo_message": "{{name}} eliminada"
   },
   "add": {
     "title": "Agregar Suscripción",
@@ -277,7 +283,27 @@
     "ai_answer_placeholder": "Tu respuesta",
     "bulk_review_title": "Suscripciones encontradas",
     "loading_hint": "AI está procesando tu solicitud. Esto suele tardar unos segundos.",
-    "screenshot_parse_error": "No se pudo procesar la captura de pantalla. Prueba con una imagen más clara."
+    "screenshot_parse_error": "No se pudo procesar la captura de pantalla. Prueba con una imagen más clara.",
+    "hero_photo": "Tomar foto",
+    "hero_photo_desc": "Recibo o captura de pantalla",
+    "hero_manual": "Escribirla",
+    "hero_manual_desc": "Rellena los detalles a mano",
+    "voice_input": "Entrada de voz",
+    "section_required": "Requerido",
+    "section_schedule": "Calendario de pagos",
+    "show_more_v2": "Más opciones (opcional)",
+    "trial_end_date_required": "Elige una fecha de fin de prueba para recordártelo antes de que expire.",
+    "voice_hero_title": "Solo dilo",
+    "voice_hero_subtitle": "«Netflix 15 dólares al mes» — y la añadimos. Sin teclear.",
+    "voice_listening": "Escuchando…",
+    "tap_stop_v2": "Toca para detener",
+    "divider_or": "o",
+    "smart_input_placeholder_v2": "Buscar por nombre…",
+    "loading_hint_v2": "Unos segundos — leemos los detalles y añadimos tu suscripción.",
+    "describe_label": "Descríbela con tus palabras",
+    "smart_input_placeholder_v3": "Ej. Netflix $15 mensual, Spotify Family…",
+    "add_via_ai": "Añadir con IA",
+    "describe_hint": "La IA rellena el precio, período y categoría por ti."
   },
   "settings": {
     "title": "Configuración",
@@ -399,7 +425,12 @@
     "send_test_notification": "Enviar notificación de prueba",
     "send_test_notification_desc": "Verifica que las notificaciones push funcionen en este dispositivo",
     "test_notification_sent_title": "Prueba enviada",
-    "test_notification_sent_msg": "Debería llegar en unos segundos. Si no la ves, comprueba que las notificaciones están habilitadas en los ajustes de iOS/Android."
+    "test_notification_sent_msg": "Debería llegar en unos segundos. Si no la ves, comprueba que las notificaciones están habilitadas en los ajustes de iOS/Android.",
+    "currency_desc": "Se usa para mostrar todos los importes",
+    "reminder_current": "Ahora: {{count}}d antes",
+    "reminder_current_off": "Ahora: desactivado",
+    "logout_team_warning": "Perderás el acceso a las suscripciones compartidas del equipo hasta que vuelvas a iniciar sesión.",
+    "delete_account_billing_warning": "Tu suscripción de pago NO se cancelará automáticamente. Cancélala en tu cuenta de App Store / Google Play para detener cargos futuros."
   },
   "auth": {
     "welcome": "Bienvenido de nuevo",
@@ -533,7 +564,12 @@
     "total_spend": "total",
     "insight_overlap": "{{count}} categorías con suscripciones superpuestas",
     "insight_biggest": "Mayor superposición: {{name}} — ${{savings}}/mes de ahorro",
-    "insight_total": "Ahorra ${{monthly}}/mes (${{yearly}}/año) consolidando"
+    "insight_total": "Ahorra ${{monthly}}/mes (${{yearly}}/año) consolidando",
+    "avg_month_hint": "normalizado al /mes",
+    "total_year_hint": "proyectado a 12 m",
+    "active_count_hint": "activas + prueba",
+    "forecast_pro_desc": "Proyecta tus gastos a 30 días, 6 meses y un año.",
+    "savings_pro_desc": "La IA encuentra suscripciones duplicadas y muestra cuánto puedes ahorrar."
   },
   "subscription": {
     "billing_day": "Día de cobro",
@@ -599,7 +635,10 @@
     "color": "Color",
     "delete_card": "¿Eliminar tarjeta?",
     "delete_confirm": "Esta acción no se puede deshacer",
-    "error_validation": "Ingresa el nombre y los 4 últimos dígitos de la tarjeta"
+    "error_validation": "Ingresa el nombre y los 4 últimos dígitos de la tarjeta",
+    "delete_linked_warning": "{{count}} suscripción(es) están vinculadas a esta tarjeta. Permanecerán sin tarjeta asignada.",
+    "add_first": "+ Añadir tu primera tarjeta",
+    "color_hint": "Te ayuda a distinguir las tarjetas de un vistazo"
   },
   "reports": {
     "title": "Informes",
@@ -632,7 +671,8 @@
     "error_404": "Informe no encontrado",
     "error_generic": "No se pudo generar el informe",
     "error_network": "Error de red, comprueba tu conexión",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "free_limit_hint": "Plan gratis: 1 informe PDF al mes. La exportación CSV es ilimitada."
   },
   "edit_profile": {
     "title": "Editar perfil",
@@ -822,7 +862,9 @@
     "leave_confirm_title": "¿Salir del equipo?",
     "how_team_works": "¿Cómo funciona Team?",
     "no_subs_data": "No hay datos de suscripciones disponibles",
-    "team_report": "Informe del equipo"
+    "team_report": "Informe del equipo",
+    "share_instructions": "Envía este código a un compañero. Toca el código para copiarlo, o usa Compartir para enviarlo por Mensajes, WhatsApp, etc.",
+    "tap_to_copy": "Toca para copiar"
   },
   "paywall": {
     "choose_plan": "Elige un plan",
@@ -892,7 +934,9 @@
     "manage_subscription": "Gestionar suscripción",
     "trial_consent": "Gratis durante {{days}} días. El {{date}} se cobrarán {{price}}/{{period}} salvo cancelación en Ajustes → Suscripciones. Se renueva automáticamente.",
     "paid_consent": "{{price}}/{{period}}, se renueva automáticamente. Cancela en Ajustes → Suscripciones.",
-    "trial_consent_a11y": "Términos de la prueba"
+    "trial_consent_a11y": "Términos de la prueba",
+    "replay_different_plan_title": "{{actual}} ya está activa",
+    "replay_different_plan_msg": "Este Apple ID ya tiene una suscripción {{actual}} activa, así que Apple la reusó en lugar de cobrar por {{wanted}}. Para cambiar a {{wanted}}, primero cancela {{actual}} en Apple ID → Suscripciones."
   },
   "ai": {
     "or_type": "o escribe",
@@ -1154,13 +1198,27 @@
       "read_policy": "Política de privacidad",
       "rights_title": "Tus derechos",
       "rights_text": "Según el RGPD (UE) y la CCPA (California), tienes derecho a acceder, exportar o eliminar tus datos. Para ejercerlos, escribe a support@subradar.ai o usa Ajustes → Eliminar cuenta.",
-      "revenuecat": { "purpose": "Procesa compras y suscripciones en App Store / Google Play. Recibe el identificador de tu suscripción, recibos de transacción e ID básica de la cuenta." },
-      "openai": { "purpose": "Impulsa las funciones de IA — transcripción de voz, análisis de capturas, búsqueda inteligente de suscripciones. Recibe el audio, imagen o texto que envías." },
-      "firebase": { "purpose": "Entrega notificaciones push (recordatorios de renovación, alertas de cobro). Recibe un token push del dispositivo vinculado a tu cuenta." },
-      "resend": { "purpose": "Envía correos transaccionales — enlaces mágicos, recibos, resúmenes semanales. Recibe tu correo y metadatos del mensaje." },
-      "digitalocean": { "purpose": "Aloja nuestros servidores de API y base de datos. Almacena datos de cuenta, suscripciones y analítica." },
-      "apple": { "purpose": "Al iniciar sesión con Apple o comprar vía App Store, Apple recibe datos de auth y compra según su política." },
-      "google": { "purpose": "Al iniciar sesión con Google o usar Android, Google recibe datos de auth y entrega push según su política." }
+      "revenuecat": {
+        "purpose": "Procesa compras y suscripciones en App Store / Google Play. Recibe el identificador de tu suscripción, recibos de transacción e ID básica de la cuenta."
+      },
+      "openai": {
+        "purpose": "Impulsa las funciones de IA — transcripción de voz, análisis de capturas, búsqueda inteligente de suscripciones. Recibe el audio, imagen o texto que envías."
+      },
+      "firebase": {
+        "purpose": "Entrega notificaciones push (recordatorios de renovación, alertas de cobro). Recibe un token push del dispositivo vinculado a tu cuenta."
+      },
+      "resend": {
+        "purpose": "Envía correos transaccionales — enlaces mágicos, recibos, resúmenes semanales. Recibe tu correo y metadatos del mensaje."
+      },
+      "digitalocean": {
+        "purpose": "Aloja nuestros servidores de API y base de datos. Almacena datos de cuenta, suscripciones y analítica."
+      },
+      "apple": {
+        "purpose": "Al iniciar sesión con Apple o comprar vía App Store, Apple recibe datos de auth y compra según su política."
+      },
+      "google": {
+        "purpose": "Al iniciar sesión con Google o usar Android, Google recibe datos de auth y entrega push según su política."
+      }
     }
   },
   "errors": {
@@ -1227,7 +1285,8 @@
     "expires_on": "Tu plan Pro caduca el {{date}}",
     "pro_ends_in_one": "Pro termina en {{count}} día",
     "pro_ends_in_other": "Pro termina en {{count}} días",
-    "switch_monthly": "Cambiar a mensual"
+    "switch_monthly": "Cambiar a mensual",
+    "sample_label": "Ejemplo"
   },
   "a11y": {
     "subscription": "Suscripción {{name}}",

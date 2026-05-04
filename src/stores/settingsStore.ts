@@ -77,25 +77,34 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'subradar-settings',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2,
+      version: 3,
       migrate: (persistedState: any, version: number) => {
         if (!persistedState) return persistedState;
+        let next = persistedState;
         if (version < 2) {
-          return {
-            ...persistedState,
+          next = {
+            ...next,
             region:
-              persistedState.region ??
-              (typeof persistedState.country === 'string'
-                ? persistedState.country.toUpperCase()
-                : 'US'),
+              next.region ??
+              (typeof next.country === 'string' ? next.country.toUpperCase() : 'US'),
             displayCurrency:
-              persistedState.displayCurrency ??
-              (typeof persistedState.currency === 'string'
-                ? persistedState.currency.toUpperCase()
-                : 'USD'),
+              next.displayCurrency ??
+              (typeof next.currency === 'string' ? next.currency.toUpperCase() : 'USD'),
           };
         }
-        return persistedState;
+        if (version < 3) {
+          // v3: collapse `currency` and `displayCurrency` to a single source of
+          // truth. Legacy installs could end up with the two drifting (older
+          // builds wrote `currency` but never `displayCurrency` and vice-versa)
+          // and downstream consumers reading the wrong field would show
+          // mismatched totals on the home/analytics screens.
+          const dc =
+            (typeof next.displayCurrency === 'string' && next.displayCurrency) ||
+            (typeof next.currency === 'string' && next.currency) ||
+            'USD';
+          next = { ...next, displayCurrency: dc.toUpperCase(), currency: dc.toUpperCase() };
+        }
+        return next;
       },
     },
   ),
