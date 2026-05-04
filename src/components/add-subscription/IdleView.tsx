@@ -242,8 +242,23 @@ function IdleViewImpl({
               opacity: 0.14,
             }}
           />
-          {/* Mic sphere */}
-          <Animated.View style={{ transform: [{ scale: pulse }] }}>
+          {/* Mic sphere — split into two layers to dodge the iOS RN
+              bug where `overflow: 'hidden'` + `borderRadius` + shadow
+              props renders the shadow as a rectangle behind the rounded
+              shape. Outer View owns the shadow (no overflow), inner
+              View owns the overlay clip. */}
+          <Animated.View
+            style={{
+              transform: [{ scale: pulse }],
+              borderRadius: 66,
+              backgroundColor: isRecording ? '#EF4444' : colors.primary,
+              shadowColor: isRecording ? '#EF4444' : colors.primary,
+              shadowOpacity: 0.35,
+              shadowRadius: 18,
+              shadowOffset: { width: 0, height: 6 },
+              elevation: 10,
+            }}
+          >
             <View
               style={{
                 width: 132,
@@ -251,13 +266,7 @@ function IdleViewImpl({
                 borderRadius: 66,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: isRecording ? '#EF4444' : colors.primary,
                 overflow: 'hidden',
-                shadowColor: isRecording ? '#EF4444' : colors.primary,
-                shadowOpacity: 0.4,
-                shadowRadius: 18,
-                shadowOffset: { width: 0, height: 6 },
-                elevation: 10,
               }}
             >
               <View
@@ -265,18 +274,18 @@ function IdleViewImpl({
                 style={{
                   position: 'absolute',
                   left: 0, right: 0, bottom: 0,
-                  height: '60%',
-                  backgroundColor: 'rgba(0,0,0,0.18)',
+                  height: '55%',
+                  backgroundColor: 'rgba(0,0,0,0.14)',
                 }}
               />
               <View
                 pointerEvents="none"
                 style={{
                   position: 'absolute',
-                  top: 14, left: 18,
-                  width: 36, height: 20,
-                  borderRadius: 18,
-                  backgroundColor: 'rgba(255,255,255,0.35)',
+                  top: 16, left: 22,
+                  width: 32, height: 18,
+                  borderRadius: 16,
+                  backgroundColor: 'rgba(255,255,255,0.30)',
                   transform: [{ rotate: '-25deg' }],
                 }}
               />

@@ -83,9 +83,21 @@ function LoadingViewImpl({ stage, source, hasTranscribedText, onCancel }: Props)
 
   return (
     <View style={styles.container}>
-      {/* Central pulsing bubble — flat primary colour + glossy highlight. */}
-      <Animated.View style={[styles.bubble, { transform: [{ scale: pulse }] }]}>
-        <View style={[styles.bubbleGradient, { backgroundColor: colors.primary }]}>
+      {/* Central pulsing bubble — split into outer (shadow) + inner
+          (overflow:hidden for highlight clip) layers to dodge the iOS RN
+          bug where overflow + borderRadius + shadow renders the shadow
+          as a rectangle behind the rounded shape. */}
+      <Animated.View
+        style={[
+          styles.bubble,
+          {
+            transform: [{ scale: pulse }],
+            backgroundColor: colors.primary,
+            borderRadius: 48,
+          },
+        ]}
+      >
+        <View style={[styles.bubbleInner, { backgroundColor: colors.primary }]}>
           <View
             pointerEvents="none"
             style={{
@@ -93,8 +105,8 @@ function LoadingViewImpl({ stage, source, hasTranscribedText, onCancel }: Props)
               left: 0,
               right: 0,
               bottom: 0,
-              height: '60%',
-              backgroundColor: 'rgba(0,0,0,0.18)',
+              height: '55%',
+              backgroundColor: 'rgba(0,0,0,0.14)',
             }}
           />
           <View pointerEvents="none" style={styles.bubbleHighlight} />
@@ -185,6 +197,17 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Inner content layer — owns the overflow:hidden clip for the
+  // gradient-fake overlay and highlight. Outer Animated.View (styles
+  // .bubble) owns shadow + border radius so the shadow stays round.
+  bubbleInner: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   bubbleHighlight: {
     position: 'absolute',
