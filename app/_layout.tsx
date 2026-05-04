@@ -270,6 +270,15 @@ function DataLoader() {
  * background scans must not.
  */
 function GmailOpportunisticScan() {
+  // Lazy import: don't pull `expo-auth-session/providers/google` into the
+  // app layout module unless the user has actually configured the OAuth
+  // client. Keeps cold-start clean while CASA/Phase-0 is in progress.
+  const { isGmailOAuthConfigured } = require('../src/hooks/useGmailAuth');
+  if (!isGmailOAuthConfigured()) return null;
+  return <GmailOpportunisticScanInner />;
+}
+
+function GmailOpportunisticScanInner() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const access = useEffectiveAccess();
   const autoScan = useSettingsStore((s) => s.emailImportAutoScan);

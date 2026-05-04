@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../theme/ThemeContext';
 import { useEffectiveAccess } from '../../hooks/useEffectiveAccess';
+import { isGmailOAuthConfigured } from '../../hooks/useGmailAuth';
 import { emailImportTelemetry } from '../../utils/emailImportTelemetry';
 
 interface Props {
@@ -17,6 +18,10 @@ export function GmailImportEntryButton({ onProGate, onPress }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
   const access = useEffectiveAccess();
+
+  // Hide the entry tile entirely until Phase-0 OAuth setup is done. Users
+  // never see a non-functional "Import from Gmail" button.
+  if (!isGmailOAuthConfigured()) return null;
 
   // Plan gating: gracefully handle null while billing loads — treat as Free.
   // (review C7 — useEffectiveAccess returns null while loading, isPro/isTeamOwner/isTeamMember.)

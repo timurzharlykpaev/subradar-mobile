@@ -67,14 +67,36 @@ export type GmailAuthError =
  * email. If different, we wipe the prior local cache so SQLite-cached
  * scanned-ids from the old account don't leak into the new account's view.
  */
+/** True when at least one platform's OAuth client ID is configured. */
+export const isGmailOAuthConfigured = (): boolean => {
+  return Boolean(
+    process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS ||
+      process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID ||
+      process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB,
+  );
+};
+
+// Placeholder strings used while Phase-0 OAuth setup is incomplete. Google's
+// hook crashes synchronously on `undefined` — empty strings prevent that.
+// `connect()` returns 'config_missing' before any network call when these
+// are still in effect, so no real OAuth attempt is made.
+const PLACEHOLDER_CLIENT_ID = 'placeholder.apps.googleusercontent.com';
+
 export function useGmailAuth() {
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  // Always call the hook unconditionally (rules of hooks). When env vars
+  // are missing we feed placeholders and gate the actual `connect()` flow
+  // on `isGmailOAuthConfigured()` so we never make a network call with
+  // bogus IDs.
   const [request, , promptAsync] = Google.useAuthRequest({
-    iosClientId: process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS,
-    androidClientId: process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID,
-    webClientId: process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB,
+    iosClientId:
+      process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_IOS || PLACEHOLDER_CLIENT_ID,
+    androidClientId:
+      process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_ANDROID || PLACEHOLDER_CLIENT_ID,
+    webClientId:
+      process.env.EXPO_PUBLIC_GMAIL_OAUTH_CLIENT_ID_WEB || PLACEHOLDER_CLIENT_ID,
     scopes: GMAIL_SCOPES,
     responseType: 'code',
     extraParams: { access_type: 'offline', prompt: 'consent' },
@@ -123,6 +145,9 @@ export function useGmailAuth() {
   );
 
   const connect = useCallback(async () => {
+    if (!isGmailOAuthConfigured()) {
+      throw new Error('config_missing');
+    }
     if (!request) {
       throw new Error('oauth_failed');
     }
