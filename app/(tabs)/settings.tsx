@@ -741,6 +741,21 @@ export default function SettingsScreen() {
             () => router.push('/reports' as any),
             true,
           )}
+          {/* Gmail bulk-scan — Pro/Team gated server-side; we still show
+              the row for Free users so they discover the feature, the
+              paywall gates them when they tap Scan inside the screen. */}
+          {renderSettingRow(
+            'mail-outline',
+            '#EA4335',
+            t('settings.gmail_import', 'Import from Gmail'),
+            t(
+              'settings.gmail_import_subtitle',
+              'AI scans your inbox for receipts',
+            ),
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            () => router.push('/gmail-import' as any),
+            true,
+          )}
           {renderSettingRow(
             'download-outline',
             colors.success,
