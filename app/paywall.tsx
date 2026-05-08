@@ -90,8 +90,15 @@ export default function PaywallScreen() {
   const { colors, isDark } = useTheme();
   const { t } = useTranslation();
   // Prefill from query: "pro-yearly" | "pro-monthly" | "org-yearly" | "org-monthly"
-  const { prefill } = useLocalSearchParams<{ prefill?: string }>();
+  // Feature: which gated tile sent the user here (e.g. "magic_mail",
+  // "magic_image"). Used as an analytics attribution tag so the funnel
+  // tile-tap → paywall → purchase is measurable per feature.
+  const { prefill, feature } = useLocalSearchParams<{
+    prefill?: string;
+    feature?: string;
+  }>();
   const [prefPlan, prefPeriod] = (typeof prefill === 'string' ? prefill : '').split('-');
+  const featureSource = typeof feature === 'string' ? feature : undefined;
   const initialPlan = prefPlan === 'org' || prefPlan === 'pro' ? prefPlan : 'pro';
   const initialPeriod: 'monthly' | 'yearly' = prefPeriod === 'monthly' ? 'monthly' : 'yearly';
   const [selected, setSelected] = useState(initialPlan);
@@ -117,7 +124,7 @@ export default function PaywallScreen() {
   // Force-refresh billing when paywall opens to get latest plan status
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['billing'] });
-    analytics.paywallViewed('direct');
+    analytics.paywallViewed(featureSource ? 'feature_gate' : 'direct', featureSource);
     // Delay close button — reduces impulsive dismissals
     const timer = setTimeout(() => setShowClose(true), 3000);
     return () => clearTimeout(timer);

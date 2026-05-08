@@ -311,6 +311,12 @@
     "magic_mail_locked_hint": "Pro · scanner la boîte",
     "hero_manual_desc_v2": "Manuel"
   },
+  "gmail": {
+    "daily_limit_title": "Limite quotidienne atteinte",
+    "daily_limit_body": "Vous avez utilisé tous vos scans du jour. Réessayez {{when}}.",
+    "daily_limit_reset_today": "plus tard aujourd'hui",
+    "daily_limit_reset_tomorrow": "demain"
+  },
   "settings": {
     "title": "Paramètres",
     "language": "Langue",

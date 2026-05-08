@@ -311,6 +311,12 @@
     "magic_mail_locked_hint": "Pro · 受信箱スキャン",
     "hero_manual_desc_v2": "手入力"
   },
+  "gmail": {
+    "daily_limit_title": "デイリースキャン上限に到達",
+    "daily_limit_body": "本日のスキャンは使い切りました。{{when}}再度お試しください。",
+    "daily_limit_reset_today": "本日中",
+    "daily_limit_reset_tomorrow": "明日"
+  },
   "settings": {
     "title": "設定",
     "language": "言語",

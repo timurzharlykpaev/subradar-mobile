@@ -311,6 +311,12 @@
     "magic_mail_locked_hint": "Pro · 扫描邮箱",
     "hero_manual_desc_v2": "手动"
   },
+  "gmail": {
+    "daily_limit_title": "每日扫描次数已达上限",
+    "daily_limit_body": "您今天的扫描次数已用完。请{{when}}再试。",
+    "daily_limit_reset_today": "稍后",
+    "daily_limit_reset_tomorrow": "明天"
+  },
   "settings": {
     "title": "设置",
     "language": "语言",

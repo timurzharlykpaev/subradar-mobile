@@ -320,6 +320,12 @@
     "magic_mail_locked_hint": "Pro · скан почты",
     "hero_manual_desc_v2": "Вручную"
   },
+  "gmail": {
+    "daily_limit_title": "Дневной лимит сканирования",
+    "daily_limit_body": "Вы использовали все сканирования за сегодня. Попробуйте {{when}}.",
+    "daily_limit_reset_today": "позже сегодня",
+    "daily_limit_reset_tomorrow": "завтра"
+  },
   "settings": {
     "title": "Настройки",
     "language": "Язык",

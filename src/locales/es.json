@@ -311,6 +311,12 @@
     "magic_mail_locked_hint": "Pro · escanear bandeja",
     "hero_manual_desc_v2": "A mano"
   },
+  "gmail": {
+    "daily_limit_title": "Límite diario de escaneo alcanzado",
+    "daily_limit_body": "Has usado todos tus escaneos de hoy. Inténtalo {{when}}.",
+    "daily_limit_reset_today": "más tarde hoy",
+    "daily_limit_reset_tomorrow": "mañana"
+  },
   "settings": {
     "title": "Configuración",
     "language": "Idioma",

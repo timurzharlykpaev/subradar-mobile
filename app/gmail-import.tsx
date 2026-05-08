@@ -144,12 +144,16 @@ export default function GmailImportScreen() {
       // Friendly daily-cap message: backend returns 429 with a structured
       // body { code: 'GMAIL_DAILY_LIMIT', nextResetAt: <iso>, cap }. We
       // localize the "later today / tomorrow" hint based on whether the
-      // reset is on the same calendar day as now (in the device's TZ) —
-      // exact times across UTC midnight tend to be more confusing than
-      // helpful at this fidelity.
-      if (code === 'GMAIL_DAILY_LIMIT' || err?.response?.status === 429) {
+      // reset is on the same calendar day as now (in the device's TZ).
+      //
+      // Gate on the explicit `code` only — the controller also has a
+      // per-minute @Throttle(2, 60s) that returns 429 with no `code`
+      // field. Without this gate, a user double-tapping Scan would see
+      // the daily-limit copy after 2 fast taps, which reads as a paid
+      // feature regression.
+      if (code === 'GMAIL_DAILY_LIMIT') {
         analytics.track('gmail.scan.rate_limited', {
-          code: code ?? 'unknown',
+          code,
         });
         const nextIso = err?.response?.data?.nextResetAt as string | undefined;
         let whenLabel = t('gmail.daily_limit_reset_tomorrow', 'tomorrow');

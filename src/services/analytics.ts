@@ -308,8 +308,15 @@ class AnalyticsService {
 
   // ─── Convenience helpers (avoids spread boilerplate at call sites) ──────────
 
-  paywallViewed(source: 'onboarding' | 'feature_gate' | 'settings' | 'direct' | 'upsell') {
-    this.track('paywall_viewed', { source });
+  paywallViewed(
+    source: 'onboarding' | 'feature_gate' | 'settings' | 'direct' | 'upsell',
+    feature?: string,
+  ) {
+    // Feature attribution lets us answer "did Magic Mail / Magic Image
+    // drive this Pro purchase?" — without it the locked-tap → paywall →
+    // purchase funnel collapses to a single 'feature_gate' bucket and
+    // the headline-feature ROI question stays unanswerable.
+    this.track('paywall_viewed', { source, feature: feature ?? null });
   }
 
   paywallDismissed(afterSeconds: number, selectedPlan: string, period: string) {

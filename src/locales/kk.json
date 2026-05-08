@@ -311,6 +311,12 @@
     "magic_mail_locked_hint": "Pro · поштаны сканерлеу",
     "hero_manual_desc_v2": "Қолмен"
   },
+  "gmail": {
+    "daily_limit_title": "Күндік сканерлеу шегі",
+    "daily_limit_body": "Бүгінгі барлық сканерлеулерді пайдаландыңыз. {{when}} қайталап көріңіз.",
+    "daily_limit_reset_today": "кейінірек бүгін",
+    "daily_limit_reset_tomorrow": "ертең"
+  },
   "periods": {
     "WEEKLY": "Апта сайын",
     "MONTHLY": "Ай сайын",

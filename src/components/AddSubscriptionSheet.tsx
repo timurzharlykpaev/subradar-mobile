@@ -684,6 +684,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Camera/Screenshot handler ───────────────────────────────────────────
   const handleCamera = useCallback(async () => {
+    // Mirror of `add.magic_mail.tap` — without this event the
+    // image-vs-mail funnel symmetry collapses to "Magic Mail tapped X
+    // times, Magic Image always 0". Fired before the picker opens so it
+    // captures intent regardless of whether the user picks an image.
+    analytics.track('add.magic_image.tap');
     if (__DEV__) console.log('[Screenshot] Opening image picker...');
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
