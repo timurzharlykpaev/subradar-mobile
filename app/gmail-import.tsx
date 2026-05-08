@@ -80,6 +80,10 @@ export default function GmailImportScreen() {
   const [scanSummary, setScanSummary] = useState<
     GmailScanResult['summary'] | null
   >(null);
+  // Tracks whether at least one scan completed in this screen session.
+  // Drives the generic "no new subscriptions" empty state when the
+  // backend doesn't ship the `summary` field yet (older deploy).
+  const [scanRanOnce, setScanRanOnce] = useState(false);
   // Increments per scan attempt. The mutation's resolution checks this
   // against the value it captured at start; if the user kicked off a
   // newer scan in the meantime, the stale resolution is ignored. Without
@@ -210,6 +214,7 @@ export default function GmailImportScreen() {
       setSelected(auto);
       setTruncated(!!result.truncated);
       setScanSummary(result.summary ?? null);
+      setScanRanOnce(true);
     } catch (err: any) {
       const code = err?.response?.data?.code;
       if (code === 'PRO_PLAN_REQUIRED' || err?.response?.status === 402) {
@@ -434,7 +439,7 @@ export default function GmailImportScreen() {
             </TouchableOpacity>
           </View>
 
-          {candidates.length === 0 && !scan.isPending && !scanSummary && (
+          {candidates.length === 0 && !scan.isPending && !scanRanOnce && (
             <Text style={[styles.fineprint, { color: colors.textSecondary }]}>
               {t(
                 'gmail.fineprint.scan',
@@ -446,8 +451,10 @@ export default function GmailImportScreen() {
           {/* Empty-result hint after a scan: explain WHY there are no
               candidates (all already tracked vs nothing recurring vs
               empty inbox) so the user doesn't read empty list as
-              "scan failed". */}
-          {candidates.length === 0 && !scan.isPending && scanSummary && (
+              "scan failed". Falls back to a generic message when the
+              backend doesn't ship `summary` yet (old deploy / dev
+              behind main). */}
+          {candidates.length === 0 && !scan.isPending && scanRanOnce && (
             <View
               style={[
                 loaderStyles.banner,
@@ -462,20 +469,20 @@ export default function GmailImportScreen() {
                 style={[loaderStyles.bannerText, { color: colors.text }]}
                 numberOfLines={3}
               >
-                {scanSummary.droppedDup > 0
+                {scanSummary && scanSummary.droppedDup > 0
                   ? t(
                       'gmail.empty.all_tracked',
                       'Found {{n}} subscription(s) — already in your list. Nothing new to import.',
                       { n: scanSummary.droppedDup },
                     )
-                  : scanSummary.aiReturned === 0
+                  : scanSummary && scanSummary.aiReturned === 0
                     ? t(
                         'gmail.empty.no_recurring',
                         'No recurring subscriptions detected in your last 365 days of receipts.',
                       )
                     : t(
                         'gmail.empty.all_filtered',
-                        'No new subscriptions to import.',
+                        'No new subscriptions found. Anything we detected was already in your list.',
                       )}
               </Text>
             </View>
