@@ -25,6 +25,13 @@ export interface GmailStatus {
   scopes: string[];
 }
 
+export interface GmailCandidatePlan {
+  name: string;
+  amount: number;
+  currency: string;
+  billingPeriod: string;
+}
+
 export interface GmailScanCandidate {
   sourceMessageId: string;
   name: string;
@@ -46,6 +53,17 @@ export interface GmailScanCandidate {
   isCancellation: boolean;
   isTrial: boolean;
   aggregatedFrom: string[];
+  // ── Catalog-enriched (set by backend after AI parse) ─────────────────────
+  // True when `amount` was lifted directly from the receipt body. False
+  // means it was filled from the service catalog as a default — show a
+  // subtle "verify amount" hint in the bulk-confirm row.
+  amountFromEmail?: boolean;
+  iconUrl?: string;
+  serviceUrl?: string;
+  cancelUrl?: string;
+  // Available plans from the catalog so the user can switch tier in the
+  // bulk-confirm row (e.g. ChatGPT Plus → ChatGPT Pro).
+  availablePlans?: GmailCandidatePlan[];
 }
 
 export interface GmailScanResult {

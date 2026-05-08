@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Linking,
   StyleSheet,
   Text,
@@ -432,6 +433,17 @@ function CandidateRow({
 }) {
   const { colors } = useTheme();
   const lowConfidence = item.confidence < 0.6;
+  // `amountFromEmail = false` means the price came from the service
+  // catalog rather than the receipt itself — surface that as a soft
+  // "verify amount" hint so the user double-checks before saving.
+  const amountIsCatalogDefault =
+    item.amountFromEmail === false && item.amount > 0;
+  const [iconError, setIconError] = useState(false);
+  const showIcon = !!item.iconUrl && !iconError;
+  // Letter fallback when no icon URL or the image failed — uses the
+  // service's first letter on a neutral pill so the row never renders
+  // an empty rectangle.
+  const fallbackLetter = (item.name || '?').trim().charAt(0).toUpperCase();
   return (
     <TouchableOpacity onPress={onToggle} style={styles.candidateRow}>
       <View
@@ -447,17 +459,44 @@ function CandidateRow({
           <Ionicons name="checkmark" size={16} color="#FFF" />
         )}
       </View>
+      {showIcon ? (
+        <Image
+          source={{ uri: item.iconUrl! }}
+          style={styles.candidateIcon}
+          onError={() => setIconError(true)}
+        />
+      ) : (
+        <View
+          style={[
+            styles.candidateIcon,
+            styles.candidateIconFallback,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.candidateIconLetter, { color: colors.text }]}>
+            {fallbackLetter}
+          </Text>
+        </View>
+      )}
       <View style={styles.candidateContent}>
         <View style={styles.candidateLine}>
-          <Text style={[styles.candidateName, { color: colors.text }]}>
+          <Text style={[styles.candidateName, { color: colors.text }]} numberOfLines={1}>
             {item.name}
           </Text>
           <Text style={[styles.candidateAmount, { color: colors.text }]}>
-            {item.currency} {item.amount.toFixed(2)}
+            {item.amount > 0
+              ? `${item.currency} ${item.amount.toFixed(2)}`
+              : '—'}
           </Text>
         </View>
         <View style={styles.candidateLine}>
-          <Text style={[styles.candidateMeta, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.candidateMeta, { color: colors.textSecondary }]}
+            numberOfLines={1}
+          >
+            {item.category && item.category !== 'OTHER'
+              ? `${item.category.toLowerCase()} · `
+              : ''}
             {item.billingPeriod.toLowerCase()}
             {item.isTrial ? ' · trial' : ''}
             {item.isCancellation ? ' · cancelled' : ''}
@@ -465,6 +504,13 @@ function CandidateRow({
               ? ` · ${item.aggregatedFrom.length} receipts`
               : ''}
           </Text>
+          {amountIsCatalogDefault && (
+            <Text
+              style={[styles.lowConfBadge, { color: colors.warning ?? '#F59E0B' }]}
+            >
+              ≈
+            </Text>
+          )}
           {lowConfidence && (
             <Text style={[styles.lowConfBadge, { color: colors.warning ?? '#F59E0B' }]}>
               ?
@@ -547,7 +593,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  candidateContent: { flex: 1 },
+  candidateIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+  },
+  candidateIconFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  candidateIconLetter: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  candidateContent: { flex: 1, gap: 2 },
   candidateLine: {
     flexDirection: 'row',
     justifyContent: 'space-between',
