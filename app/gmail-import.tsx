@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
   FlatList,
   Image,
   Linking,
@@ -404,10 +406,12 @@ export default function GmailImportScreen() {
             <Text style={[styles.fineprint, { color: colors.textSecondary }]}>
               {t(
                 'gmail.fineprint.scan',
-                'Tap “Scan inbox” to find subscriptions. The scan looks at receipts from the last 90 days; older mail is ignored.',
+                'Tap “Scan inbox” to find subscriptions. The scan looks at receipts from the last 365 days; older mail is ignored.',
               )}
             </Text>
           )}
+
+          {scan.isPending && <ScanLoader />}
 
           {candidates.length > 0 && (
             <>
@@ -462,6 +466,335 @@ export default function GmailImportScreen() {
     </SafeAreaView>
   );
 }
+
+/**
+ * "Cosmic Inbox Sweep" loader for the Gmail bulk-scan in flight.
+ *
+ * Visual: an amber sphere with a mail glyph at center pulses softly
+ * (1.0 → 1.06 over 1.1 s, native driver). Two concentric rings expand
+ * outward in offset waves like a radar sweep, evoking "scanning the
+ * inbox." Four small mail-icon satellites orbit at radius 86 px,
+ * 6-second rotation, suggesting individual messages being inspected.
+ *
+ * Below the orb, a stage label crossfades through 5 phases on a
+ * timeline calibrated to a typical 25-second scan: connect → list →
+ * AI parse → catalog enrichment → finishing. Subtitle gives the
+ * user a one-line sense of what's happening so a slow scan feels
+ * intentional rather than stuck. A thin amber progress bar caps at
+ * 95 % so it never reads "100 % yet still loading" — the actual
+ * completion takes over the moment results land.
+ *
+ * Implementation note: stays on RN's Animated.* + native driver
+ * across the board; no Reanimated, no extra deps. The Magic Mail
+ * tile uses the same #F59E0B amber accent — keeping that consistent
+ * here ties the loader visually back to the entry point and reads as
+ * a sibling to the voice hero (which uses the primary color).
+ */
+function ScanLoader() {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const startedAtRef = useRef(Date.now());
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, []);
+
+  const elapsed = (now - startedAtRef.current) / 1000;
+
+  // Stage definitions. `at` is the elapsed-time threshold to enter
+  // the stage. The final stage stays sticky once entered so a scan
+  // that runs longer than expected doesn't bounce text around.
+  const stages = useMemo(
+    () => [
+      {
+        key: 'linking',
+        label: t('gmail.scan.stage.linking', 'Linking up'),
+        subtitle: t(
+          'gmail.scan.stage.linking_sub',
+          'Securely connecting to your Gmail',
+        ),
+      },
+      {
+        key: 'sifting',
+        label: t('gmail.scan.stage.sifting', 'Sifting through receipts'),
+        subtitle: t(
+          'gmail.scan.stage.sifting_sub',
+          'Reading the last year of billing emails',
+        ),
+      },
+      {
+        key: 'ai',
+        label: t('gmail.scan.stage.ai', 'AI on the case'),
+        subtitle: t(
+          'gmail.scan.stage.ai_sub',
+          'Identifying subscriptions and amounts',
+        ),
+      },
+      {
+        key: 'crossref',
+        label: t('gmail.scan.stage.crossref', 'Cross-referencing'),
+        subtitle: t(
+          'gmail.scan.stage.crossref_sub',
+          'Matching with our service catalog',
+        ),
+      },
+      {
+        key: 'finishing',
+        label: t('gmail.scan.stage.finishing', 'Almost there'),
+        subtitle: t(
+          'gmail.scan.stage.finishing_sub',
+          'Polishing your results',
+        ),
+      },
+    ],
+    [t],
+  );
+  const stageIdx =
+    elapsed < 2 ? 0 : elapsed < 6 ? 1 : elapsed < 14 ? 2 : elapsed < 22 ? 3 : 4;
+  const current = stages[stageIdx];
+  const progress = Math.min(0.95, elapsed / 25);
+
+  // Animated values. Persistent across renders via useRef so we
+  // don't restart the loops every 250 ms tick.
+  const pulse = useRef(new Animated.Value(1)).current;
+  const ring1 = useRef(new Animated.Value(0)).current;
+  const ring2 = useRef(new Animated.Value(0)).current;
+  const orbit = useRef(new Animated.Value(0)).current;
+  const labelOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, {
+          toValue: 1.06,
+          duration: 1100,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 1100,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+
+    const ringWave = (val: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, {
+            toValue: 1,
+            duration: 1800,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(val, { toValue: 0, duration: 0, useNativeDriver: true }),
+        ]),
+      );
+    ringWave(ring1, 0).start();
+    ringWave(ring2, 900).start();
+
+    Animated.loop(
+      Animated.timing(orbit, {
+        toValue: 1,
+        duration: 6000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
+  }, [pulse, ring1, ring2, orbit]);
+
+  // Crossfade the stage label whenever stageIdx changes.
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(labelOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(labelOpacity, {
+        toValue: 1,
+        duration: 320,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [stageIdx, labelOpacity]);
+
+  const orbitRotate = orbit.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  // Satellite envelopes — 4 mail-icon dots orbiting the central orb.
+  const satellites = [0, 90, 180, 270].map((angle) => {
+    const rad = (angle * Math.PI) / 180;
+    const radius = 86;
+    return {
+      angle,
+      left: radius * Math.cos(rad) + 90 - 9,
+      top: radius * Math.sin(rad) + 90 - 9,
+    };
+  });
+
+  return (
+    <View style={loaderStyles.wrap}>
+      <View style={loaderStyles.orbWrap}>
+        {/* Radar rings */}
+        {[ring1, ring2].map((v, i) => (
+          <Animated.View
+            key={i}
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: 132,
+              height: 132,
+              borderRadius: 66,
+              borderWidth: 2,
+              borderColor: '#F59E0B',
+              opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
+              transform: [
+                { scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.85] }) },
+              ],
+            }}
+          />
+        ))}
+        {/* Soft outer glow */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            width: 168,
+            height: 168,
+            borderRadius: 84,
+            backgroundColor: '#F59E0B',
+            opacity: 0.14,
+          }}
+        />
+        {/* Orbiting envelope satellites */}
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            width: 180,
+            height: 180,
+            transform: [{ rotate: orbitRotate }],
+          }}
+        >
+          {satellites.map((s) => (
+            <View
+              key={s.angle}
+              style={{
+                position: 'absolute',
+                left: s.left,
+                top: s.top,
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: 'rgba(245,158,11,0.18)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="mail" size={10} color="#F59E0B" />
+            </View>
+          ))}
+        </Animated.View>
+        {/* Central pulsing sphere */}
+        <Animated.View
+          style={{
+            transform: [{ scale: pulse }],
+            width: 96,
+            height: 96,
+            borderRadius: 48,
+            backgroundColor: '#F59E0B',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#F59E0B',
+            shadowOpacity: 0.45,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 8,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Highlight smear (top-left) */}
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 12,
+              left: 18,
+              width: 22,
+              height: 12,
+              borderRadius: 11,
+              backgroundColor: 'rgba(255,255,255,0.32)',
+              transform: [{ rotate: '-25deg' }],
+            }}
+          />
+          <Ionicons name="mail" size={42} color="#FFF" style={{ opacity: 0.97 }} />
+        </Animated.View>
+      </View>
+
+      <Animated.View style={{ opacity: labelOpacity, alignItems: 'center', marginTop: 24 }}>
+        <Text style={[loaderStyles.label, { color: colors.text }]}>
+          {current.label}
+        </Text>
+        <Text style={[loaderStyles.subtitle, { color: colors.textSecondary }]}>
+          {current.subtitle}
+        </Text>
+      </Animated.View>
+
+      <View style={[loaderStyles.bar, { backgroundColor: colors.border }]}>
+        <View
+          style={{
+            height: 3,
+            width: `${progress * 100}%`,
+            backgroundColor: '#F59E0B',
+            borderRadius: 2,
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
+const loaderStyles = StyleSheet.create({
+  wrap: {
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+  orbWrap: {
+    width: 200,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  label: {
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 13,
+    marginTop: 6,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    lineHeight: 18,
+  },
+  bar: {
+    marginTop: 28,
+    height: 3,
+    borderRadius: 2,
+    overflow: 'hidden',
+    alignSelf: 'stretch',
+    marginHorizontal: 32,
+  },
+});
 
 function CandidateRow({
   item,
