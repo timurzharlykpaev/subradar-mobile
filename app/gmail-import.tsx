@@ -37,7 +37,7 @@ import {
   useGmailScan,
 } from '../src/hooks/useGmail';
 import { useCreateSubscription } from '../src/hooks/useSubscriptions';
-import type { GmailScanCandidate } from '../src/api/gmail';
+import type { GmailScanCandidate, GmailScanResult } from '../src/api/gmail';
 import { analytics } from '../src/services/analytics';
 
 /**
@@ -73,6 +73,13 @@ export default function GmailImportScreen() {
   // whole inbox in one go. Render a banner inviting the user to
   // re-scan so they don't think the list below is exhaustive.
   const [truncated, setTruncated] = useState(false);
+  // Last successful scan's funnel breakdown. Drives the empty-state
+  // copy: `0 candidates` is meaningless without context, but
+  // `dropped 1 dup` tells the user "we found something, you already
+  // had it" which is a real outcome, not a failure.
+  const [scanSummary, setScanSummary] = useState<
+    GmailScanResult['summary'] | null
+  >(null);
   // Increments per scan attempt. The mutation's resolution checks this
   // against the value it captured at start; if the user kicked off a
   // newer scan in the meantime, the stale resolution is ignored. Without
@@ -171,6 +178,7 @@ export default function GmailImportScreen() {
       setCandidates([]);
       setSelected(new Set());
       setTruncated(false);
+      setScanSummary(null);
       const result = await scan.mutateAsync();
       // Bail if a newer scan was started after this one. Without this
       // a slow first scan that finishes after the user toggled some
@@ -201,6 +209,7 @@ export default function GmailImportScreen() {
       setCandidates(result.candidates);
       setSelected(auto);
       setTruncated(!!result.truncated);
+      setScanSummary(result.summary ?? null);
     } catch (err: any) {
       const code = err?.response?.data?.code;
       if (code === 'PRO_PLAN_REQUIRED' || err?.response?.status === 402) {
@@ -425,13 +434,51 @@ export default function GmailImportScreen() {
             </TouchableOpacity>
           </View>
 
-          {candidates.length === 0 && !scan.isPending && (
+          {candidates.length === 0 && !scan.isPending && !scanSummary && (
             <Text style={[styles.fineprint, { color: colors.textSecondary }]}>
               {t(
                 'gmail.fineprint.scan',
                 'Tap “Scan inbox” to find subscriptions. The scan looks at receipts from the last 365 days; older mail is ignored.',
               )}
             </Text>
+          )}
+
+          {/* Empty-result hint after a scan: explain WHY there are no
+              candidates (all already tracked vs nothing recurring vs
+              empty inbox) so the user doesn't read empty list as
+              "scan failed". */}
+          {candidates.length === 0 && !scan.isPending && scanSummary && (
+            <View
+              style={[
+                loaderStyles.banner,
+                {
+                  backgroundColor: 'rgba(16,185,129,0.10)',
+                  borderColor: '#10B981',
+                },
+              ]}
+            >
+              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+              <Text
+                style={[loaderStyles.bannerText, { color: colors.text }]}
+                numberOfLines={3}
+              >
+                {scanSummary.droppedDup > 0
+                  ? t(
+                      'gmail.empty.all_tracked',
+                      'Found {{n}} subscription(s) — already in your list. Nothing new to import.',
+                      { n: scanSummary.droppedDup },
+                    )
+                  : scanSummary.aiReturned === 0
+                    ? t(
+                        'gmail.empty.no_recurring',
+                        'No recurring subscriptions detected in your last 365 days of receipts.',
+                      )
+                    : t(
+                        'gmail.empty.all_filtered',
+                        'No new subscriptions to import.',
+                      )}
+              </Text>
+            </View>
           )}
 
           {scan.isPending && <ScanLoader />}

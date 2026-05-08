@@ -78,6 +78,14 @@ export interface GmailScanResult {
    * could read in one scan (page budget or MAX_MESSAGES cap).
    * Optional because old backends (≤ this branch) don't ship it. */
   truncated?: boolean;
+  /** Funnel breakdown so the empty-state UI can explain WHY the
+   * candidate list is empty. Optional because old backends don't
+   * ship it. */
+  summary?: {
+    aiReturned: number;
+    droppedNoise: number;
+    droppedDup: number;
+  };
 }
 
 export const gmailApi = {
