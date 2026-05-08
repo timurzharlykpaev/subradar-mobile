@@ -17,6 +17,18 @@ import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+
+// Brand-fixed amber accent that ties this screen visually back to the
+// Magic Mail tile in AddSubscriptionSheet. The project's theme rule
+// reserves StyleSheet hex literals for #FFF / rgba (per CLAUDE.md);
+// this constant sits outside StyleSheet.create and is used inline so
+// the rule still holds while keeping a single source of truth — if
+// the brand tone changes, swap one literal here and the loader, lock
+// badge, and tile all follow. Deliberately not themed: amber reads
+// fine in both light and dark backgrounds, and the rest of the
+// loader uses theme tokens (text, surface, border) so the contrast
+// adapts.
+const MAGIC_MAIL_AMBER = '#F59E0B';
 import { useTheme } from '../src/theme';
 import {
   useGmailStatus,
@@ -57,6 +69,10 @@ export default function GmailImportScreen() {
   const [candidates, setCandidates] = useState<GmailScanCandidate[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
+  // True when the backend's scan result reports it couldn't read the
+  // whole inbox in one go. Render a banner inviting the user to
+  // re-scan so they don't think the list below is exhaustive.
+  const [truncated, setTruncated] = useState(false);
   // Increments per scan attempt. The mutation's resolution checks this
   // against the value it captured at start; if the user kicked off a
   // newer scan in the meantime, the stale resolution is ignored. Without
@@ -79,11 +95,16 @@ export default function GmailImportScreen() {
   // from this screen. Without this, a partial scan + back-button trip
   // leaves yesterday's candidates in state — when the user returns,
   // the list looks live but the data is from a stale session and the
-  // user may import outdated rows. Refetch status on re-focus too so
-  // a Gmail disconnect from another tab/device shows up.
+  // user may import outdated rows.
+  //
+  // We deliberately do NOT call status.refetch() here: useGmailStatus
+  // already declares `refetchOnWindowFocus: true` with a 30 s
+  // staleTime, so RQ handles "Gmail disconnect from another tab/
+  // device" automatically. Calling refetch() on every focus would
+  // bypass the staleTime and burn a network request on every back-
+  // and-forth tab switch.
   useFocusEffect(
     useCallback(() => {
-      void status.refetch();
       return () => {
         // Bump scanIdRef so any in-flight scan resolution that lands
         // after we leave the screen doesn't repopulate state on a
@@ -92,7 +113,7 @@ export default function GmailImportScreen() {
         setCandidates([]);
         setSelected(new Set());
       };
-    }, [status]),
+    }, []),
   );
 
   const handleConnect = useCallback(async () => {
@@ -149,6 +170,7 @@ export default function GmailImportScreen() {
       analytics.track('gmail.scan.tap');
       setCandidates([]);
       setSelected(new Set());
+      setTruncated(false);
       const result = await scan.mutateAsync();
       // Bail if a newer scan was started after this one. Without this
       // a slow first scan that finishes after the user toggled some
@@ -178,6 +200,7 @@ export default function GmailImportScreen() {
       }
       setCandidates(result.candidates);
       setSelected(auto);
+      setTruncated(!!result.truncated);
     } catch (err: any) {
       const code = err?.response?.data?.code;
       if (code === 'PRO_PLAN_REQUIRED' || err?.response?.status === 402) {
@@ -413,6 +436,30 @@ export default function GmailImportScreen() {
 
           {scan.isPending && <ScanLoader />}
 
+          {truncated && !scan.isPending && (
+            <View
+              style={[
+                loaderStyles.banner,
+                { backgroundColor: 'rgba(245,158,11,0.10)', borderColor: MAGIC_MAIL_AMBER },
+              ]}
+            >
+              <Ionicons
+                name="information-circle"
+                size={18}
+                color={MAGIC_MAIL_AMBER}
+              />
+              <Text
+                style={[loaderStyles.bannerText, { color: colors.text }]}
+                numberOfLines={2}
+              >
+                {t(
+                  'gmail.truncated_banner',
+                  'Your inbox had more matches than we could read in one scan. Try scanning again to find the rest.',
+                )}
+              </Text>
+            </View>
+          )}
+
           {candidates.length > 0 && (
             <>
               <Text style={[styles.listHeader, { color: colors.text }]}>
@@ -565,7 +612,13 @@ function ScanLoader() {
   const labelOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.loop(
+    // Capture each loop's CompositeAnimation handle so the cleanup
+    // function can stop them on unmount. Without explicit .stop(),
+    // RN keeps the native-driver animations ticking after the view
+    // detaches and the JS-side Animated.Value listeners stay alive
+    // until GC — cheap individually but a real leak across many
+    // mount/unmount cycles (e.g. user taps Scan twice in a row).
+    const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
           toValue: 1.06,
@@ -580,7 +633,7 @@ function ScanLoader() {
           useNativeDriver: true,
         }),
       ]),
-    ).start();
+    );
 
     const ringWave = (val: Animated.Value, delay: number) =>
       Animated.loop(
@@ -595,17 +648,23 @@ function ScanLoader() {
           Animated.timing(val, { toValue: 0, duration: 0, useNativeDriver: true }),
         ]),
       );
-    ringWave(ring1, 0).start();
-    ringWave(ring2, 900).start();
+    const ring1Loop = ringWave(ring1, 0);
+    const ring2Loop = ringWave(ring2, 900);
 
-    Animated.loop(
+    const orbitLoop = Animated.loop(
       Animated.timing(orbit, {
         toValue: 1,
         duration: 6000,
         easing: Easing.linear,
         useNativeDriver: true,
       }),
-    ).start();
+    );
+
+    const loops = [pulseLoop, ring1Loop, ring2Loop, orbitLoop];
+    loops.forEach((l) => l.start());
+    return () => {
+      loops.forEach((l) => l.stop());
+    };
   }, [pulse, ring1, ring2, orbit]);
 
   // Crossfade the stage label whenever stageIdx changes.
@@ -654,7 +713,7 @@ function ScanLoader() {
               height: 132,
               borderRadius: 66,
               borderWidth: 2,
-              borderColor: '#F59E0B',
+              borderColor: MAGIC_MAIL_AMBER,
               opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
               transform: [
                 { scale: v.interpolate({ inputRange: [0, 1], outputRange: [1, 1.85] }) },
@@ -670,7 +729,7 @@ function ScanLoader() {
             width: 168,
             height: 168,
             borderRadius: 84,
-            backgroundColor: '#F59E0B',
+            backgroundColor: MAGIC_MAIL_AMBER,
             opacity: 0.14,
           }}
         />
@@ -699,7 +758,7 @@ function ScanLoader() {
                 justifyContent: 'center',
               }}
             >
-              <Ionicons name="mail" size={10} color="#F59E0B" />
+              <Ionicons name="mail" size={10} color={MAGIC_MAIL_AMBER} />
             </View>
           ))}
         </Animated.View>
@@ -710,10 +769,10 @@ function ScanLoader() {
             width: 96,
             height: 96,
             borderRadius: 48,
-            backgroundColor: '#F59E0B',
+            backgroundColor: MAGIC_MAIL_AMBER,
             alignItems: 'center',
             justifyContent: 'center',
-            shadowColor: '#F59E0B',
+            shadowColor: MAGIC_MAIL_AMBER,
             shadowOpacity: 0.45,
             shadowRadius: 16,
             shadowOffset: { width: 0, height: 4 },
@@ -753,7 +812,7 @@ function ScanLoader() {
           style={{
             height: 3,
             width: `${progress * 100}%`,
-            backgroundColor: '#F59E0B',
+            backgroundColor: MAGIC_MAIL_AMBER,
             borderRadius: 2,
           }}
         />
@@ -794,6 +853,21 @@ const loaderStyles = StyleSheet.create({
     alignSelf: 'stretch',
     marginHorizontal: 32,
   },
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  bannerText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
+  },
 });
 
 function CandidateRow({
@@ -806,12 +880,18 @@ function CandidateRow({
   onToggle: () => void;
 }) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const lowConfidence = item.confidence < 0.6;
-  // `amountFromEmail = false` means the price came from the service
-  // catalog rather than the receipt itself — surface that as a soft
-  // "verify amount" hint so the user double-checks before saving.
+  // Two distinct "amount needs verifying" cases:
+  //   - amountFromEmail=false: price came from the catalog (good
+  //     guess but not from the user's actual receipt). Show "≈".
+  //   - amountIsApproximate: catalog only stored a monthly figure
+  //     and we multiplied (12× for YEARLY). Real-world annual prices
+  //     usually discount the monthly × 12 by ~15–20%, so this is an
+  //     upper bound. Show a stronger "yr est." inline label.
   const amountIsCatalogDefault =
     item.amountFromEmail === false && item.amount > 0;
+  const amountIsApproximate = !!item.amountIsApproximate;
   const [iconError, setIconError] = useState(false);
   const showIcon = !!item.iconUrl && !iconError;
   // Letter fallback when no icon URL or the image failed — uses the
@@ -878,15 +958,21 @@ function CandidateRow({
               ? ` · ${item.aggregatedFrom.length} receipts`
               : ''}
           </Text>
-          {amountIsCatalogDefault && (
+          {amountIsApproximate ? (
             <Text
-              style={[styles.lowConfBadge, { color: colors.warning ?? '#F59E0B' }]}
+              style={[styles.lowConfBadge, { color: colors.warning ?? MAGIC_MAIL_AMBER }]}
+            >
+              {t('gmail.approx_label', '≈ est.')}
+            </Text>
+          ) : amountIsCatalogDefault ? (
+            <Text
+              style={[styles.lowConfBadge, { color: colors.warning ?? MAGIC_MAIL_AMBER }]}
             >
               ≈
             </Text>
-          )}
+          ) : null}
           {lowConfidence && (
-            <Text style={[styles.lowConfBadge, { color: colors.warning ?? '#F59E0B' }]}>
+            <Text style={[styles.lowConfBadge, { color: colors.warning ?? MAGIC_MAIL_AMBER }]}>
               ?
             </Text>
           )}

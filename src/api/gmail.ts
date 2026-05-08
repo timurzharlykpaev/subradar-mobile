@@ -58,6 +58,10 @@ export interface GmailScanCandidate {
   // means it was filled from the service catalog as a default — show a
   // subtle "verify amount" hint in the bulk-confirm row.
   amountFromEmail?: boolean;
+  /** True when amount was multiplied from a monthly catalog plan
+   * (e.g. 12× monthly for a YEARLY receipt). UI surfaces this as
+   * "approx" so the user knows to verify before saving. */
+  amountIsApproximate?: boolean;
   iconUrl?: string;
   serviceUrl?: string;
   cancelUrl?: string;
@@ -70,6 +74,10 @@ export interface GmailScanResult {
   scanned: number;
   candidates: GmailScanCandidate[];
   durationMs: number;
+  /** True when Gmail had more matching messages than the backend
+   * could read in one scan (page budget or MAX_MESSAGES cap).
+   * Optional because old backends (≤ this branch) don't ship it. */
+  truncated?: boolean;
 }
 
 export const gmailApi = {
