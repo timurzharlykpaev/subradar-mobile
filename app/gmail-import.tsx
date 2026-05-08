@@ -253,12 +253,42 @@ export default function GmailImportScreen() {
     });
   }, [isLoading, isConnected, linkedEmail, t]);
 
+  // Root Stack at app/_layout.tsx is configured with `headerShown: false`,
+  // which strips the system back chevron from every pushed screen.
+  // Gmail-import is reachable from Settings *and* from the Magic Mail tile
+  // in the Add sheet — without an explicit close affordance the user can
+  // get stranded here. Render our own back button in the header.
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      // Hard fallback: deep link from /gmail/callback may land us here
+      // with no nav stack to pop.
+      router.replace('/(tabs)');
+    }
+  }, [router]);
+
   return (
     <SafeAreaView
       style={[styles.flex, { backgroundColor: colors.background }]}
       edges={['top']}
     >
       <Stack.Screen options={{ title: t('gmail.title', 'Gmail import') }} />
+      <View style={styles.topBar}>
+        <TouchableOpacity
+          testID="gmail-back"
+          onPress={handleBack}
+          activeOpacity={0.7}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={styles.topBarBtn}
+        >
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.topBarTitle, { color: colors.text }]} numberOfLines={1}>
+          {t('gmail.title', 'Gmail import')}
+        </Text>
+        <View style={styles.topBarBtn} />
+      </View>
       <View style={styles.header}>
         <View style={styles.headerIconWrap}>
           <Ionicons name="mail-outline" size={28} color={colors.primary} />
@@ -448,6 +478,26 @@ function CandidateRow({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minHeight: 44,
+  },
+  topBarBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topBarTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   header: { padding: 24, alignItems: 'center', gap: 8 },
   headerIconWrap: {
     width: 56,
