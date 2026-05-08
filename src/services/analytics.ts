@@ -149,7 +149,17 @@ export type AnalyticsEvent =
 
   // Unified banner surface
   | 'banner_shown'
-  | 'banner_action_tapped';
+  | 'banner_action_tapped'
+
+  // Gmail bulk-import (Pro/Team)
+  | 'gmail.connect.tap'
+  | 'gmail.connect.success'
+  | 'gmail.connect.cancel'
+  | 'gmail.disconnect.confirm'
+  | 'gmail.scan.tap'
+  | 'gmail.scan.success'
+  | 'gmail.scan.paywall'
+  | 'gmail.import.complete';
 
 export type EventProperties = Record<string, string | number | boolean | null | undefined>;
 

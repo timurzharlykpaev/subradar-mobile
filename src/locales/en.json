@@ -313,8 +313,45 @@
     "LIFETIME": "Lifetime",
     "ONE_TIME": "One-time"
   },
+  "gmail": {
+    "title": "Gmail import",
+    "subtitle": {
+      "loading": "Checking Gmail…",
+      "disconnected": "Connect Gmail to scan your inbox for subscription receipts.",
+      "connected": "Connected as {{email}}."
+    },
+    "cta": {
+      "connect": "Connect Gmail",
+      "scan": "Scan inbox",
+      "disconnect": "Disconnect",
+      "import": "Import {{n}} selected"
+    },
+    "fineprint": {
+      "connect": "SubRadar reads only billing receipts (last 90 days). We never store message bodies.",
+      "scan": "Tap “Scan inbox” to find subscriptions. The scan looks at receipts from the last 90 days; older mail is ignored."
+    },
+    "list": {
+      "found": "Found {{n}} subscriptions"
+    },
+    "disconnect": {
+      "title": "Disconnect Gmail?",
+      "body": "SubRadar will stop scanning your inbox. The grant will be revoked on Google’s side immediately. You can reconnect at any time.",
+      "confirm": "Disconnect"
+    },
+    "import": {
+      "doneTitle": "Imported",
+      "doneBody": "{{ok}} added, {{fail}} skipped."
+    },
+    "errors": {
+      "connectTitle": "Connection failed",
+      "scanTitle": "Scan failed"
+    },
+    "privacyLink": "How we use Gmail data → Privacy Policy"
+  },
   "settings": {
     "title": "Settings",
+    "gmail_import": "Import from Gmail",
+    "gmail_import_subtitle": "AI scans your inbox for receipts",
     "language": "Language",
     "theme": "Theme",
     "currency": "Currency",
