@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -55,6 +55,13 @@ export default function GmailImportScreen() {
   const [candidates, setCandidates] = useState<GmailScanCandidate[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
+  // Increments per scan attempt. The mutation's resolution checks this
+  // against the value it captured at start; if the user kicked off a
+  // newer scan in the meantime, the stale resolution is ignored. Without
+  // this guard, a slow scan that resolves *after* the user toggled
+  // checkboxes would call setSelected(auto) and wipe their manual
+  // selections.
+  const scanIdRef = useRef(0);
 
   // Refresh status whenever the screen is focused (covers the case
   // where the user just came back from Google's consent screen).
@@ -115,21 +122,35 @@ export default function GmailImportScreen() {
   }, [disconnect, t]);
 
   const handleScan = useCallback(async () => {
+    const myScanId = ++scanIdRef.current;
     try {
       analytics.track('gmail.scan.tap');
       setCandidates([]);
       setSelected(new Set());
       const result = await scan.mutateAsync();
+      // Bail if a newer scan was started after this one. Without this
+      // a slow first scan that finishes after the user toggled some
+      // checkboxes from a second scan would clobber their selections.
+      if (myScanId !== scanIdRef.current) return;
       analytics.track('gmail.scan.success', {
         scanned: result.scanned,
         candidates: result.candidates.length,
       });
-      // Auto-select recurring high-confidence candidates only —
-      // borderline / low-confidence rows stay unchecked so the user
-      // makes an explicit decision.
+      // Auto-select rule: high-confidence recurring rows AND
+      // medium-confidence rows that the catalog enriched (iconUrl set
+      // → brand was matched in our catalog → it's almost certainly a
+      // real subscription even if the AI's signal was muddier).
+      // Cancellations and clearly non-recurring stay unchecked.
       const auto = new Set<string>();
       for (const c of result.candidates) {
-        if (c.isRecurring && !c.isCancellation && c.confidence >= 0.7) {
+        if (!c.isRecurring || c.isCancellation) continue;
+        // Parens matter: without them `?? 0 > 0` parses as
+        // `?? (0 > 0)` (`>` binds tighter than `??`) which evaluates
+        // to `?? false`. The truthy/falsy outcome happened to match
+        // intent here but the expression read wrong; spell it out.
+        const hasPlans = (c.availablePlans?.length ?? 0) > 0;
+        const enriched = !!c.iconUrl || hasPlans;
+        if (c.confidence >= 0.7 || (c.confidence >= 0.5 && enriched)) {
           auto.add(c.sourceMessageId);
         }
       }
