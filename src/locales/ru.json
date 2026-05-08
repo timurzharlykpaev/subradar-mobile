@@ -312,7 +312,13 @@
     "describe_label": "Опишите своими словами",
     "smart_input_placeholder_v3": "Например: Нетфликс 15$ в месяц, Спотифай Семья…",
     "add_via_ai": "Добавить через AI",
-    "describe_hint": "AI сам заполнит цену, период и категорию."
+    "describe_hint": "AI сам заполнит цену, период и категорию.",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "Сфоткать чек",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "Сканировать почту",
+    "magic_mail_locked_hint": "Pro · скан почты",
+    "hero_manual_desc_v2": "Вручную"
   },
   "settings": {
     "title": "Настройки",

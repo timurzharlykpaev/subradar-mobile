@@ -99,6 +99,19 @@ interface Props {
   onStartRecording: () => void;
   onStopRecording: () => void;
   onCamera: () => void;
+  /**
+   * Magic Mail (Gmail bulk-scan) tap. Parent decides whether to route
+   * the user to /gmail-import (Pro/Team) or /paywall (Free) — IdleView
+   * just fires the callback and renders the lock badge based on
+   * `magicMailLocked`.
+   */
+  onMagicMail: () => void;
+  /**
+   * True when the current user can't access Magic Mail yet. Renders a
+   * subtle lock badge on the tile so the locked state is visible-but-
+   * actionable rather than hidden.
+   */
+  isMagicMailLocked?: boolean;
   onManualToggle: () => void;
   /**
    * Initial value for the smart input. Parent should pair this with a
@@ -118,6 +131,8 @@ function IdleViewImpl({
   onStartRecording,
   onStopRecording,
   onCamera,
+  onMagicMail,
+  isMagicMailLocked = false,
   onManualToggle,
   seedSmartInput,
 }: Props) {
@@ -337,24 +352,66 @@ function IdleViewImpl({
         <View style={{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
       </View>
 
-      {/* Secondary: Photo + Manual side-by-side */}
-      <View style={{ flexDirection: 'row', gap: 10 }}>
+      {/* Secondary row: Magic Image · Magic Mail · Manual.
+          - Magic Image: rebrand of "Take a photo" — same handler (parse
+            screenshot via AI), just premium-styled to read as a sibling
+            of Magic Mail. Available to all users (consumes AI credits).
+          - Magic Mail: new Pro/Team-gated bulk Gmail import path. Free
+            users see a lock badge on the corner; tap routes to paywall.
+          - Manual: typing-only fallback. */}
+      <View style={{ flexDirection: 'row', gap: 8 }}>
         <TouchableOpacity
-          testID="hero-camera"
+          testID="hero-magic-image"
           onPress={onCamera}
           activeOpacity={0.85}
           style={[styles.tileCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
         >
-          <View style={[styles.tileIconWrap, { backgroundColor: '#3B82F61A' }]}>
-            <Ionicons name="scan-outline" size={26} color="#3B82F6" />
+          <View style={[styles.tileIconWrap, { backgroundColor: '#A855F71A' }]}>
+            <Ionicons name="image" size={22} color="#A855F7" />
+            {/* Sparkle overlay — visual cue for "AI / magic". */}
+            <View style={styles.sparkleOverlay} pointerEvents="none">
+              <Ionicons name="sparkles" size={10} color="#A855F7" />
+            </View>
           </View>
-          <Text style={[styles.tileTitle, { color: colors.text }]}>
-            {t('add.hero_photo', 'Take a photo')}
+          <Text style={[styles.tileTitle, { color: colors.text }]} numberOfLines={1}>
+            {t('add.magic_image_title', 'Magic Image')}
           </Text>
           <Text style={[styles.tileSubtitle, { color: colors.textSecondary }]} numberOfLines={2}>
-            {t('add.hero_photo_desc', 'Snap a receipt or screenshot')}
+            {t('add.magic_image_desc', 'Snap a receipt')}
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          testID="hero-magic-mail"
+          onPress={onMagicMail}
+          activeOpacity={0.85}
+          style={[styles.tileCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
+        >
+          <View style={[styles.tileIconWrap, { backgroundColor: '#F59E0B1A' }]}>
+            <Ionicons name="mail" size={22} color="#F59E0B" />
+            <View style={styles.sparkleOverlay} pointerEvents="none">
+              <Ionicons name="sparkles" size={10} color="#F59E0B" />
+            </View>
+          </View>
+          <Text style={[styles.tileTitle, { color: colors.text }]} numberOfLines={1}>
+            {t('add.magic_mail_title', 'Magic Mail')}
+          </Text>
+          <Text style={[styles.tileSubtitle, { color: colors.textSecondary }]} numberOfLines={2}>
+            {isMagicMailLocked
+              ? t('add.magic_mail_locked_hint', 'Pro · scan inbox')
+              : t('add.magic_mail_desc', 'Scan your inbox')}
+          </Text>
+          {isMagicMailLocked && (
+            // Brand amber accent — kept inline rather than in StyleSheet
+            // because the project rule (CLAUDE.md) reserves StyleSheet
+            // backgrounds for #FFF / rgba; theme-static brand colors
+            // belong on the JSX node.
+            <View style={[styles.lockBadge, { backgroundColor: '#F59E0B' }]} pointerEvents="none">
+              <Ionicons name="lock-closed" size={10} color="#FFF" />
+            </View>
+          )}
+        </TouchableOpacity>
+
         <TouchableOpacity
           testID="hero-manual"
           onPress={onManualToggle}
@@ -362,13 +419,13 @@ function IdleViewImpl({
           style={[styles.tileCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
         >
           <View style={[styles.tileIconWrap, { backgroundColor: '#10B9811A' }]}>
-            <Ionicons name="reader-outline" size={26} color="#10B981" />
+            <Ionicons name="reader-outline" size={22} color="#10B981" />
           </View>
-          <Text style={[styles.tileTitle, { color: colors.text }]}>
+          <Text style={[styles.tileTitle, { color: colors.text }]} numberOfLines={1}>
             {t('add.hero_manual', 'Type it in')}
           </Text>
           <Text style={[styles.tileSubtitle, { color: colors.textSecondary }]} numberOfLines={2}>
-            {t('add.hero_manual_desc', 'Fill in details by hand')}
+            {t('add.hero_manual_desc_v2', 'Fill by hand')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -494,34 +551,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Secondary tile (photo / manual) — kept narrower & shorter than the
-  // voice hero so the visual hierarchy reads "voice is the main feature."
+  // Secondary tile (Magic Image / Magic Mail / Manual) — three in a row
+  // so they're tighter than the previous two-tile layout. Padding +
+  // icon size scaled down to keep titles + subtitles readable on a
+  // 320 px-wide iPhone SE.
   tileCard: {
     flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
+    position: 'relative',
   },
   tileIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
+    position: 'relative',
+  },
+  // Sparkle dot in the top-right of the icon wrap. Sits inside a tiny
+  // pill so it reads as a visible accent on dark backgrounds; pointer
+  // events pass through to the parent tile press.
+  sparkleOverlay: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.10,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tileTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     textAlign: 'center',
   },
   tileSubtitle: {
-    fontSize: 11,
+    fontSize: 10,
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 13,
     paddingHorizontal: 2,
   },
   quickChip: {

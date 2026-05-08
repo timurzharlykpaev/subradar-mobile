@@ -303,7 +303,13 @@
     "describe_label": "직접 설명하기",
     "smart_input_placeholder_v3": "예: Netflix 월 15달러, Spotify Family…",
     "add_via_ai": "AI로 추가",
-    "describe_hint": "AI가 가격, 주기, 카테고리를 자동 입력합니다."
+    "describe_hint": "AI가 가격, 주기, 카테고리를 자동 입력합니다.",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "영수증 촬영",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "받은편지함 스캔",
+    "magic_mail_locked_hint": "Pro · 편지함 스캔",
+    "hero_manual_desc_v2": "직접 입력"
   },
   "settings": {
     "title": "설정",

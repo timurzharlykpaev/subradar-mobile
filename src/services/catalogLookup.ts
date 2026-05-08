@@ -11,6 +11,22 @@ export interface LookupResult {
   source: 'cache' | 'catalog' | 'ai';
 }
 
+// Real service names are short ("Adobe Creative Cloud All Apps" = 29
+// chars / 5 tokens, "Microsoft 365 Family Subscription" = 4 tokens).
+// When the user types a sentence the smart-input pipeline previously
+// forwarded the whole string to /ai/service-catalog/<text> — those
+// 404s surfaced in the prod alert channel. Skip the network call for
+// anything that obviously isn't a service name and let the AI wizard
+// handle natural-language input instead. Caps at 40 chars / 6 tokens so
+// legitimate multi-word brand names still hit the catalog.
+function looksLikeServiceName(key: string): boolean {
+  const trimmed = key.trim();
+  if (trimmed.length === 0 || trimmed.length > 40) return false;
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  if (tokens.length > 6) return false;
+  return true;
+}
+
 export async function lookupService(serviceName: string): Promise<LookupResult | null> {
   // Level 1: Local cache
   const cached = await lookupCache.get(serviceName);
@@ -18,7 +34,13 @@ export async function lookupService(serviceName: string): Promise<LookupResult |
     return { ...cached, source: 'cache' };
   }
 
-  // Level 2: ServiceCatalog endpoint (no AI cost)
+  // Level 2: ServiceCatalog endpoint (no AI cost) — only for inputs that
+  // actually look like service names; sentences and paragraphs go straight
+  // to the AI wizard via the caller.
+  if (!looksLikeServiceName(serviceName)) {
+    return null;
+  }
+
   try {
     const catalogData = await aiApi.serviceCatalogLookup(serviceName);
     if (catalogData?.name) {

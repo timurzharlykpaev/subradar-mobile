@@ -303,7 +303,13 @@
     "describe_label": "Describe in your own words",
     "smart_input_placeholder_v3": "e.g. Netflix $15 monthly, Spotify Family…",
     "add_via_ai": "Add with AI",
-    "describe_hint": "AI fills in the price, period, and category for you."
+    "describe_hint": "AI fills in the price, period, and category for you.",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "Snap a receipt",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "Scan your inbox",
+    "magic_mail_locked_hint": "Pro · scan inbox",
+    "hero_manual_desc_v2": "Fill by hand"
   },
   "periods": {
     "WEEKLY": "Weekly",
@@ -346,7 +352,11 @@
       "connectTitle": "Connection failed",
       "scanTitle": "Scan failed"
     },
-    "privacyLink": "How we use Gmail data → Privacy Policy"
+    "privacyLink": "How we use Gmail data → Privacy Policy",
+    "daily_limit_title": "Daily scan limit reached",
+    "daily_limit_body": "You've used all of your scans for today. Try again {{when}}.",
+    "daily_limit_reset_today": "later today",
+    "daily_limit_reset_tomorrow": "tomorrow"
   },
   "settings": {
     "title": "Settings",

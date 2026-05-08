@@ -758,6 +758,35 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setFlowState('manual');
   }, []);
 
+  // Handler: tap on Magic Mail tile from idle. We *only* commit to a
+  // route once `useEffectiveAccess()` has resolved — while it's null
+  // (cold-start billing fetch in flight) the tap is a no-op so paying
+  // users don't get sent to the paywall during the loading window. This
+  // is the same pattern already adopted by the trial-offer fix in
+  // 33fcaca: don't make plan-gated decisions on null access.
+  // Three-state derivation:
+  //   access null  → billing still loading; show unlocked tile but no-op the tap
+  //   access free  → locked; render lock badge + route to paywall on tap
+  //   access paid  → unlocked; route to /gmail-import on tap
+  const isMagicMailLocked = access != null && !access.isPro;
+
+  const handleMagicMail = useCallback(() => {
+    if (!access) return;
+    if (access.isPro) {
+      analytics.track('add.magic_mail.tap');
+      onClose?.();
+      // expo-router doesn't generate static types for routes that aren't
+      // also declared in the typed-routes config; gmail-import is one of
+      // them. Cast keeps strict mode happy without losing the runtime
+      // path. Same pattern used in app/(tabs)/settings.tsx.
+      router.push('/gmail-import' as any);
+    } else {
+      analytics.track('add.magic_mail.locked_tap');
+      onClose?.();
+      router.push('/paywall?feature=magic_mail' as any);
+    }
+  }, [access, router, onClose]);
+
   // Voice transcription sentinel for LoadingView — lets the "transcribing"
   // step stay visible with a checkmark after we advance to "thinking".
   const hasTranscribedText = transcribedText.length > 0;
@@ -1123,6 +1152,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
                 onStartRecording={startRecording}
                 onStopRecording={stopRecording}
                 onCamera={handleCamera}
+                onMagicMail={handleMagicMail}
+                isMagicMailLocked={isMagicMailLocked}
                 onManualToggle={handleManualToggle}
               />
             )}

@@ -303,7 +303,13 @@
     "describe_label": "Өз сөзіңізбен сипаттаңыз",
     "smart_input_placeholder_v3": "Мысалы: Netflix айына $15, Spotify Family…",
     "add_via_ai": "AI арқылы қосу",
-    "describe_hint": "AI бағаны, мерзімді және санатты өзі толтырады."
+    "describe_hint": "AI бағаны, мерзімді және санатты өзі толтырады.",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "Чекті фотолау",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "Поштаны сканерлеу",
+    "magic_mail_locked_hint": "Pro · поштаны сканерлеу",
+    "hero_manual_desc_v2": "Қолмен"
   },
   "periods": {
     "WEEKLY": "Апта сайын",

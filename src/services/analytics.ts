@@ -159,7 +159,11 @@ export type AnalyticsEvent =
   | 'gmail.scan.tap'
   | 'gmail.scan.success'
   | 'gmail.scan.paywall'
-  | 'gmail.import.complete';
+  | 'gmail.scan.rate_limited'
+  | 'gmail.import.complete'
+  | 'add.magic_mail.tap'
+  | 'add.magic_mail.locked_tap'
+  | 'add.magic_image.tap';
 
 export type EventProperties = Record<string, string | number | boolean | null | undefined>;
 

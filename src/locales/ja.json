@@ -303,7 +303,13 @@
     "describe_label": "自分の言葉で説明",
     "smart_input_placeholder_v3": "例:Netflix 月15ドル、Spotify Family…",
     "add_via_ai": "AI で追加",
-    "describe_hint": "AI が価格・周期・カテゴリーを自動入力します。"
+    "describe_hint": "AI が価格・周期・カテゴリーを自動入力します。",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "領収書を撮影",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "受信箱をスキャン",
+    "magic_mail_locked_hint": "Pro · 受信箱スキャン",
+    "hero_manual_desc_v2": "手入力"
   },
   "settings": {
     "title": "設定",

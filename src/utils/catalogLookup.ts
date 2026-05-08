@@ -125,6 +125,22 @@ const QUICK_CATALOG: Record<string, CatalogEntry> = {
 
 const lookupCache = new Map<string, CatalogEntry | null>();
 
+// Real service names are short ("Adobe Creative Cloud All Apps" = 29
+// chars / 5 tokens, "Microsoft 365 Family Subscription" = 4 tokens).
+// When the user types a sentence ("I have a subscription MailGun") the
+// smart-input pipeline previously forwarded the whole string to
+// /ai/service-catalog/<text>, causing 404s that surfaced in the prod
+// alert channel. Skip the network call for anything that obviously
+// isn't a service name and let the AI wizard handle natural-language
+// input instead. Caps at 40 chars / 6 tokens so legitimate multi-word
+// brand names still hit the catalog.
+function looksLikeServiceName(key: string): boolean {
+  if (key.length === 0 || key.length > 40) return false;
+  const tokens = key.split(/\s+/).filter(Boolean);
+  if (tokens.length > 6) return false;
+  return true;
+}
+
 /** Free lookup: local catalog → backend service catalog. Returns null if unknown. */
 export async function lookupService(name: string): Promise<CatalogEntry | null> {
   const key = name.toLowerCase().trim();
@@ -150,7 +166,13 @@ export async function lookupService(name: string): Promise<CatalogEntry | null> 
     }
   }
 
-  // 2. Try backend service catalog (free endpoint)
+  // 2. Try backend service catalog (free endpoint) — only if the input
+  // shape resembles a service name. Otherwise cache miss and bail.
+  if (!looksLikeServiceName(key)) {
+    lookupCache.set(key, null);
+    return null;
+  }
+
   try {
     const data = await aiApi.serviceCatalogLookup(name);
     if (data && data.name) {

@@ -303,7 +303,13 @@
     "describe_label": "用你自己的话描述",
     "smart_input_placeholder_v3": "例如:Netflix 每月15美元、Spotify Family…",
     "add_via_ai": "使用 AI 添加",
-    "describe_hint": "AI 自动填写价格、周期和类别。"
+    "describe_hint": "AI 自动填写价格、周期和类别。",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "拍下收据",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "扫描邮箱",
+    "magic_mail_locked_hint": "Pro · 扫描邮箱",
+    "hero_manual_desc_v2": "手动"
   },
   "settings": {
     "title": "设置",

@@ -303,7 +303,13 @@
     "describe_label": "Descríbela con tus palabras",
     "smart_input_placeholder_v3": "Ej. Netflix $15 mensual, Spotify Family…",
     "add_via_ai": "Añadir con IA",
-    "describe_hint": "La IA rellena el precio, período y categoría por ti."
+    "describe_hint": "La IA rellena el precio, período y categoría por ti.",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "Foto del recibo",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "Escanea tu bandeja",
+    "magic_mail_locked_hint": "Pro · escanear bandeja",
+    "hero_manual_desc_v2": "A mano"
   },
   "settings": {
     "title": "Configuración",

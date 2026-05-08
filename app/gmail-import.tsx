@@ -138,7 +138,38 @@ export default function GmailImportScreen() {
       const code = err?.response?.data?.code;
       if (code === 'PRO_PLAN_REQUIRED' || err?.response?.status === 402) {
         analytics.track('gmail.scan.paywall');
-        router.push('/paywall');
+        router.push('/paywall?feature=magic_mail');
+        return;
+      }
+      // Friendly daily-cap message: backend returns 429 with a structured
+      // body { code: 'GMAIL_DAILY_LIMIT', nextResetAt: <iso>, cap }. We
+      // localize the "later today / tomorrow" hint based on whether the
+      // reset is on the same calendar day as now (in the device's TZ) —
+      // exact times across UTC midnight tend to be more confusing than
+      // helpful at this fidelity.
+      if (code === 'GMAIL_DAILY_LIMIT' || err?.response?.status === 429) {
+        analytics.track('gmail.scan.rate_limited', {
+          code: code ?? 'unknown',
+        });
+        const nextIso = err?.response?.data?.nextResetAt as string | undefined;
+        let whenLabel = t('gmail.daily_limit_reset_tomorrow', 'tomorrow');
+        if (nextIso) {
+          const next = new Date(nextIso);
+          const now = new Date();
+          if (
+            next.getFullYear() === now.getFullYear() &&
+            next.getMonth() === now.getMonth() &&
+            next.getDate() === now.getDate()
+          ) {
+            whenLabel = t('gmail.daily_limit_reset_today', 'later today');
+          }
+        }
+        Alert.alert(
+          t('gmail.daily_limit_title', 'Daily scan limit reached'),
+          t('gmail.daily_limit_body', "You've used all of your scans for today. Try again {{when}}.", {
+            when: whenLabel,
+          }),
+        );
         return;
       }
       Alert.alert(

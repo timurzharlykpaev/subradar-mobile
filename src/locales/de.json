@@ -303,7 +303,13 @@
     "describe_label": "In eigenen Worten beschreiben",
     "smart_input_placeholder_v3": "z.B. Netflix 15 $ monatlich, Spotify Family…",
     "add_via_ai": "Mit KI hinzufügen",
-    "describe_hint": "Die KI füllt Preis, Zeitraum und Kategorie automatisch aus."
+    "describe_hint": "Die KI füllt Preis, Zeitraum und Kategorie automatisch aus.",
+    "magic_image_title": "Magic Image",
+    "magic_image_desc": "Beleg fotografieren",
+    "magic_mail_title": "Magic Mail",
+    "magic_mail_desc": "Posteingang scannen",
+    "magic_mail_locked_hint": "Pro · Posteingang scannen",
+    "hero_manual_desc_v2": "Manuell"
   },
   "settings": {
     "title": "Einstellungen",
