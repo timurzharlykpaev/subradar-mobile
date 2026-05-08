@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -72,6 +72,26 @@ export default function GmailImportScreen() {
       void sub;
     };
   }, []);
+
+  // Clear stale candidates + selection when the user navigates AWAY
+  // from this screen. Without this, a partial scan + back-button trip
+  // leaves yesterday's candidates in state — when the user returns,
+  // the list looks live but the data is from a stale session and the
+  // user may import outdated rows. Refetch status on re-focus too so
+  // a Gmail disconnect from another tab/device shows up.
+  useFocusEffect(
+    useCallback(() => {
+      void status.refetch();
+      return () => {
+        // Bump scanIdRef so any in-flight scan resolution that lands
+        // after we leave the screen doesn't repopulate state on a
+        // fresh entry.
+        scanIdRef.current += 1;
+        setCandidates([]);
+        setSelected(new Set());
+      };
+    }, [status]),
+  );
 
   const handleConnect = useCallback(async () => {
     try {
