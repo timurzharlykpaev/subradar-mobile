@@ -6,6 +6,29 @@ try {
   Purchases = rc.default || rc;
 } catch {}
 
+type DriftResult = {
+  ran: boolean;
+  // 'upgraded' added when backend infers a fresh INITIAL_PURCHASE /
+  // PRODUCT_CHANGE / RENEWAL from RC (e.g. user re-subscribed after grace
+  // or upgraded mid-cycle). Old clients only check `ran` so this is safe.
+  action?: 'noop' | 'cancel_at_period_end' | 'downgraded' | 'upgraded';
+};
+
+// Throttle the auto-fire callers (cold start, AppState foreground, screen
+// mounts, pull-to-refresh) so a heavy navigation session — or persistent
+// drift the server can't yet resolve — doesn't blast `/billing/reconcile`
+// past the server-side throttle (429 ThrottlerException). One reconcile
+// per ~30s is enough to converge real drift without hammering.
+const COOLDOWN_MS = 30_000;
+
+// When the server actually says we're throttled, back off long enough for
+// its rate-limit window to fully reset. Anything shorter risks immediately
+// re-tripping on the next AppState transition.
+const RATE_LIMITED_COOLDOWN_MS = 5 * 60_000;
+
+let cooldownUntil = 0;
+let inFlight: Promise<DriftResult> | null = null;
+
 /**
  * Detect and recover from RC ↔ backend drift. The classic shape:
  *
@@ -19,14 +42,35 @@ try {
  * Returns whether a reconcile was issued so callers can decide if the
  * billing query needs to be invalidated (avoids a refetch on the no-op
  * path, which is the common case).
+ *
+ * Concurrency-safe: if a check is already in flight, callers share the
+ * same promise. After completion a short cooldown prevents the 429 storm
+ * we hit in 1.3.22 when 4+ surfaces (cold start, AppState foreground,
+ * settings mount, plan mount, pull-to-refresh × 2) auto-fire in rapid
+ * succession.
  */
-export async function reconcileBillingDrift(): Promise<{
-  ran: boolean;
-  // 'upgraded' added when backend infers a fresh INITIAL_PURCHASE /
-  // PRODUCT_CHANGE / RENEWAL from RC (e.g. user re-subscribed after grace
-  // or upgraded mid-cycle). Old clients only check `ran` so this is safe.
-  action?: 'noop' | 'cancel_at_period_end' | 'downgraded' | 'upgraded';
-}> {
+export async function reconcileBillingDrift(): Promise<DriftResult> {
+  if (inFlight) return inFlight;
+  if (Date.now() < cooldownUntil) return { ran: false };
+
+  inFlight = runReconcileBillingDrift().finally(() => {
+    inFlight = null;
+    // Math.max so a 429-bumped 5-min cooldown isn't shortened back to 30s.
+    cooldownUntil = Math.max(cooldownUntil, Date.now() + COOLDOWN_MS);
+  });
+  return inFlight;
+}
+
+/**
+ * Test-only escape hatch. Lets the unit tests reset module-level cooldown
+ * state between cases without forcing a full module re-import.
+ */
+export function __resetReconcileBillingDriftForTests(): void {
+  cooldownUntil = 0;
+  inFlight = null;
+}
+
+async function runReconcileBillingDrift(): Promise<DriftResult> {
   try {
     const meRes = await billingApi.getMe();
     const me = meRes?.data;
@@ -135,7 +179,20 @@ export async function reconcileBillingDrift(): Promise<{
       me.effective.state,
       currentWillRenew,
     );
-    const res = await billingApi.reconcile();
+    let res;
+    try {
+      res = await billingApi.reconcile();
+    } catch (e: any) {
+      // Server's per-user throttle bucket is full — back off long enough
+      // for its window to reset. Without this we'd retry on the next
+      // AppState transition (often <30s away) and immediately re-trip.
+      if (e?.response?.status === 429) {
+        cooldownUntil = Date.now() + RATE_LIMITED_COOLDOWN_MS;
+        console.warn('[BillingDrift] reconcile rate-limited; backing off 5min');
+        return { ran: false };
+      }
+      throw e;
+    }
     const action = res?.data?.action ?? 'noop';
     console.log('[BillingDrift] reconcile result:', action, res?.data?.reason);
     return { ran: action !== 'noop', action };
