@@ -529,12 +529,24 @@ export default function GmailImportScreen() {
           currency: sub.currency || 'USD',
           billingPeriod: safeBilling,
           category: (sub.category || 'OTHER').toUpperCase(),
-          status: 'ACTIVE',
+          status: sub.isTrial ? 'TRIAL' : 'ACTIVE',
           ...(sub.nextPaymentDate ? { nextPaymentDate: sub.nextPaymentDate } : {}),
+          ...(sub.isTrial && sub.trialEndDate
+            ? { trialEndDate: sub.trialEndDate }
+            : {}),
           ...(sub.serviceUrl ? { serviceUrl: sub.serviceUrl } : {}),
           ...(sub.cancelUrl ? { cancelUrl: sub.cancelUrl } : {}),
           ...(sub.iconUrl ? { iconUrl: sub.iconUrl } : {}),
           ...(sub.currentPlan ? { currentPlan: sub.currentPlan } : {}),
+          ...(sub.tags && sub.tags.length > 0 ? { tags: sub.tags } : {}),
+          ...(sub.color ? { color: sub.color } : {}),
+          ...(sub.notes ? { notes: sub.notes } : {}),
+          ...(sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0
+            ? {
+                reminderDaysBefore: sub.reminderDaysBefore,
+                reminderEnabled: true,
+              }
+            : {}),
         });
         created++;
       } catch {

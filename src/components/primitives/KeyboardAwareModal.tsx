@@ -31,6 +31,20 @@ export interface KeyboardAwareModalProps extends Omit<ModalProps, 'children'> {
    * header → 0.
    */
   keyboardVerticalOffset?: number;
+  /**
+   * Override the KeyboardAvoidingView `behavior` prop. The default
+   * (`padding` on iOS, `height` on Android) double-handles keyboard
+   * avoidance when the children include a ScrollView with
+   * `automaticallyAdjustKeyboardInsets` — iOS adds the keyboard
+   * height via the AvoidingView's padding AND again via the inner
+   * UIScrollView's contentInset, pushing content twice as far as it
+   * should. Pass `'none'` here for those layouts so the inner
+   * ScrollView owns avoidance alone (KeyboardAvoidingView receives
+   * `behavior={undefined}` and becomes a passive flex wrapper).
+   * Defaults to the original Platform.OS-dependent value for
+   * back-compat with existing callers.
+   */
+  behavior?: 'padding' | 'height' | 'position' | 'none';
   contentContainerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
 }
@@ -44,6 +58,7 @@ export function KeyboardAwareModal({
   scrollable = true,
   dismissOnTapOutside = true,
   keyboardVerticalOffset = 0,
+  behavior,
   contentContainerStyle,
   style,
   ...modalProps
@@ -63,9 +78,18 @@ export function KeyboardAwareModal({
     <View style={[{ flex: 1 }, contentContainerStyle]}>{children}</View>
   );
 
+  // Resolve the avoidance behaviour. `'none'` opts the AvoidingView
+  // out entirely (becomes a passive flex wrapper) for layouts whose
+  // inner ScrollView already owns keyboard handling via
+  // `automaticallyAdjustKeyboardInsets`. Unset → original
+  // Platform.OS default for back-compat.
+  const resolvedBehavior: 'padding' | 'height' | 'position' | undefined =
+    behavior === 'none'
+      ? undefined
+      : (behavior ?? (Platform.OS === 'ios' ? 'padding' : 'height'));
   const body = (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={resolvedBehavior}
       keyboardVerticalOffset={keyboardVerticalOffset}
       style={[{ flex: 1 }, style]}
     >

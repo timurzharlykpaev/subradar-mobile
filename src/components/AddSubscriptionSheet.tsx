@@ -874,12 +874,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           currency: sub.currency || currency || 'USD',
           billingPeriod: (VALID_BILLING.includes(rawBill) ? rawBill : 'MONTHLY') as any,
           billingDay: sub.billingDay ?? 1,
-          status: 'ACTIVE',
+          status: sub.isTrial ? 'TRIAL' : 'ACTIVE',
           serviceUrl: sub.serviceUrl || undefined,
           cancelUrl: sub.cancelUrl || undefined,
           iconUrl: iconUrl || undefined,
           startDate: sub.startDate || todayStr,
           nextPaymentDate: sub.nextPaymentDate || undefined,
+          // BulkEditModal sets `trialEndDate` only when the toggle
+          // is on; only persist it in that combination so a user
+          // flipping the trial off mid-edit doesn't leave a stray
+          // end date pointing at "ACTIVE".
+          trialEndDate:
+            sub.isTrial && sub.trialEndDate ? sub.trialEndDate : undefined,
           notes: sub.notes || undefined,
           reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
           reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,

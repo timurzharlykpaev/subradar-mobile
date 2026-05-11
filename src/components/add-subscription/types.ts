@@ -45,4 +45,11 @@ export interface ParsedSub {
   color?: string;
   /** Plan name (e.g. "Premium", "Family") — matches backend `currentPlan`. */
   currentPlan?: string;
+  /** Free trial flag. When true the bulk-save path persists the sub
+   *  with `status: 'TRIAL'`; `trialEndDate` is required for the
+   *  reminder cron to behave correctly. */
+  isTrial?: boolean;
+  /** ISO-date (YYYY-MM-DD) for when the trial ends. Required when
+   *  `isTrial` is true. */
+  trialEndDate?: string;
 }

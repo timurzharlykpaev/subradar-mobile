@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../theme';
@@ -9,7 +9,40 @@ import { DoneAccessoryInput } from '../primitives/DoneAccessoryInput';
 import { DatePickerField } from '../DatePickerField';
 import { BillingDayPicker } from '../BillingDayPicker';
 import { NumericInput } from '../NumericInput';
+import { CurrencyPicker } from '../CurrencyPicker';
 import type { ParsedSub } from './types';
+
+// Same module-scope brand → domain dictionary as BulkConfirmView keeps —
+// we hit icon.horse with the resolved hostname so the editor banner
+// shows the same brand mark the row showed in the list, without
+// requiring the catalog to have enriched the candidate.
+const DOMAIN_MAP: Record<string, string> = {
+  chatgpt: 'openai.com', 'chatgpt plus': 'openai.com', openai: 'openai.com',
+  youtube: 'youtube.com', 'youtube premium': 'youtube.com',
+  netflix: 'netflix.com', spotify: 'spotify.com', 'spotify premium': 'spotify.com',
+  'apple tv+': 'tv.apple.com', 'apple music': 'music.apple.com',
+  icloud: 'icloud.com', 'disney+': 'disneyplus.com', 'hbo max': 'hbomax.com',
+  github: 'github.com', figma: 'figma.com', notion: 'notion.so', slack: 'slack.com',
+  adobe: 'adobe.com', midjourney: 'midjourney.com', claude: 'claude.ai',
+  nordvpn: 'nordvpn.com', '1password': '1password.com',
+  strava: 'strava.com', duolingo: 'duolingo.com',
+};
+
+function resolveIconUrl(sub: ParsedSub): string | null {
+  if (sub.iconUrl) return sub.iconUrl;
+  if (sub.serviceUrl) {
+    try {
+      const host = new URL(sub.serviceUrl).hostname.replace(/^www\./, '');
+      if (host) return `https://icon.horse/icon/${host}`;
+    } catch {
+      /* fall through */
+    }
+  }
+  const nameLower = (sub.name || '').toLowerCase().trim();
+  const mapped = DOMAIN_MAP[nameLower];
+  if (mapped) return `https://icon.horse/icon/${mapped}`;
+  return null;
+}
 
 interface Props {
   visible: boolean;
@@ -95,6 +128,10 @@ function BulkEditModalImpl({
   const currentPeriod = (sub.billingPeriod || 'MONTHLY').toUpperCase();
   const currentCategory = (sub.category || 'OTHER').toUpperCase();
   const currentReminder = sub.reminderDaysBefore ?? [3];
+  const currency = (sub.currency || 'USD').toUpperCase();
+  const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
+  const [iconError, setIconError] = useState(false);
+  const iconUrl = resolveIconUrl(sub);
 
   return (
     <KeyboardAwareModal
@@ -103,8 +140,12 @@ function BulkEditModalImpl({
       animationType="slide"
       onRequestClose={onClose}
       scrollable={false}
-      // Fullscreen layout with in-modal paddingTop for the notch — no extra
-      // KeyboardAvoidingView offset needed on iOS.
+      // Opt the AvoidingView out — the inner ScrollView below already
+      // handles keyboard insets via `automaticallyAdjustKeyboardInsets`
+      // and the previous default (`padding` on iOS) stacked another
+      // keyboard-height of padding on top, sending the focused input
+      // outside the visible area.
+      behavior="none"
       keyboardVerticalOffset={0}
       style={{ backgroundColor: colors.background }}
     >
@@ -148,6 +189,68 @@ function BulkEditModalImpl({
         automaticallyAdjustKeyboardInsets
         contentInsetAdjustmentBehavior="automatic"
       >
+        {/* Icon banner — visual confirmation of which row is being
+            edited. Falls back to a letter avatar when no icon URL
+            could be resolved (long-tail brand, image fetch error). */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 14,
+            padding: 16,
+            borderRadius: 16,
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          {iconUrl && !iconError ? (
+            <Image
+              source={{ uri: iconUrl }}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 14,
+                backgroundColor: colors.background,
+              }}
+              onError={() => setIconError(true)}
+            />
+          ) : (
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 14,
+                backgroundColor: colors.primary + '18',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 22, fontWeight: '800', color: colors.primary }}>
+                {(sub.name || '?').trim().charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{ fontSize: 17, fontWeight: '800', color: colors.text }}
+              numberOfLines={1}
+            >
+              {sub.name || t('common.untitled', 'Untitled')}
+            </Text>
+            <Text
+              style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}
+              numberOfLines={1}
+            >
+              {String(
+                t(`categories.${currentCategory.toLowerCase()}`, currentCategory),
+              )}
+              {' · '}
+              {String(t(`add.${currentPeriod.toLowerCase()}`, currentPeriod.toLowerCase()))}
+            </Text>
+          </View>
+        </View>
+
         {/* Name */}
         <View style={{ gap: 6 }}>
           <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
@@ -170,27 +273,54 @@ function BulkEditModalImpl({
           />
         </View>
 
-        {/* Amount */}
-        <View style={{ gap: 6 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
-            {t('add.amount', 'Amount')}
-          </Text>
-          <NumericInput
-            style={{
-              fontSize: 16,
-              fontWeight: '700',
-              color: colors.text,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 12,
-              padding: 14,
-              backgroundColor: colors.card,
-            }}
-            value={String(sub.amount || '')}
-            onChangeText={(v) => onUpdate({ amount: parseFloat(v) || 0 })}
-            keyboardType="decimal-pad"
-            accessoryId="bulk-amount"
-          />
+        {/* Amount + Currency on one row — currency picker matches
+            ManualFormView so the user can fix the AI's currency guess
+            without going through Edit-screen. */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+              {t('add.amount', 'Amount')}
+            </Text>
+            <NumericInput
+              style={{
+                fontSize: 16,
+                fontWeight: '700',
+                color: colors.text,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 12,
+                padding: 14,
+                backgroundColor: colors.card,
+              }}
+              value={String(sub.amount || '')}
+              onChangeText={(v) => onUpdate({ amount: parseFloat(v) || 0 })}
+              keyboardType="decimal-pad"
+              accessoryId="bulk-amount"
+            />
+          </View>
+          <View style={{ width: 110, gap: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+              {t('add.currency', 'Currency')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setCurrencyPickerVisible(true)}
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 12,
+                padding: 14,
+                backgroundColor: colors.card,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
+                {currency}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Billing Period */}
@@ -290,6 +420,59 @@ function BulkEditModalImpl({
               : t('add_flow.more_options', 'More options')}
           </Text>
         </TouchableOpacity>
+
+        {/* Trial toggle — moved out of `moreExpanded` because trial
+            status is high-impact (changes the lifecycle + reminders)
+            and the AI never has reliable signal on it from a billing
+            receipt; let the user flip it without hunting in More. */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: 14,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.card,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
+              {t('add.trial_period', 'Free trial')}
+            </Text>
+            <Text
+              style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}
+            >
+              {t('add.trial_desc', 'Not charging you yet')}
+            </Text>
+          </View>
+          <Switch
+            value={!!sub.isTrial}
+            onValueChange={(v) =>
+              onUpdate({
+                isTrial: v,
+                trialEndDate: v
+                  ? sub.trialEndDate ||
+                    new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+                  : '',
+              })
+            }
+            trackColor={{ false: colors.border, true: '#F59E0B' }}
+            thumbColor={sub.isTrial ? '#FFF' : '#999'}
+          />
+        </View>
+        {sub.isTrial && (
+          <View style={{ gap: 6 }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+              {t('add.trial_end_date', 'Trial ends')}
+            </Text>
+            <DatePickerField
+              label=""
+              value={sub.trialEndDate || ''}
+              onChange={(v) => onUpdate({ trialEndDate: v })}
+            />
+          </View>
+        )}
 
         {moreExpanded && (
           <View style={{ gap: 16 }}>
@@ -552,6 +735,17 @@ function BulkEditModalImpl({
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <CurrencyPicker
+        visible={currencyPickerVisible}
+        selected={currency}
+        onSelect={(c) => {
+          onUpdate({ currency: c });
+          setCurrencyPickerVisible(false);
+        }}
+        onClose={() => setCurrencyPickerVisible(false)}
+        title={t('add.currency', 'Currency')}
+      />
     </KeyboardAwareModal>
   );
 }
