@@ -1,22 +1,23 @@
-# SubRadar AI — App Store Marketing Kit
+# SubRadar AI — Маркетинг-кит для App Store
 
-A step-by-step, all-in-one guide for shipping the App Store / Google Play
-listing in **10 languages** (English, Russian, German, Spanish, French,
-Portuguese, Japanese, Korean, Chinese, Kazakh — matches the app locales).
+Пошаговое всё-в-одном руководство по выпуску листинга App Store /
+Google Play на **10 языках** (English, Russian, German, Spanish, French,
+Portuguese, Japanese, Korean, Chinese, Kazakh — совпадает с локалями
+приложения).
 
-The flow: **prep → capture 10 screenshots → compose in Figma → upload
-metadata in 10 locales**. Each step below is self-contained; you can
-hand a single step to a designer / copywriter and they have everything
-they need.
+Поток: **подготовка → снять 10 скриншотов → собрать в Figma →
+загрузить мета-данные на 10 локалей**. Каждый шаг ниже самодостаточен;
+можно отдать один шаг дизайнеру / копирайтеру — и у него будет всё
+нужное.
 
 ---
 
-## Folder layout
+## Структура папки
 
 ```
 marketing/app-store-screenshots/
-├── README.md           ← this file (master kit, 10 langs)
-├── raw/                ← put your captured 1320×2868 PNGs here
+├── README.md           ← этот файл (мастер-кит, 10 языков)
+├── raw/                ← сюда складываем снятые 1320×2868 PNG-и
 │   ├── 01_hero_dashboard.png
 │   ├── 02_magical_add_sheet.png
 │   ├── 03_magic_voice.png
@@ -27,27 +28,27 @@ marketing/app-store-screenshots/
 │   ├── 08_analytics_categories.png
 │   ├── 09_workspace_team.png
 │   └── 10_reports_export.png
-└── final/              ← Figma-composed 1290×2796 frames per locale
+└── final/              ← собранные в Figma 1290×2796 фреймы по локали
     ├── en/01..10.png
     ├── ru/01..10.png
-    └── ... (8 more)
+    └── ... (ещё 8)
 ```
 
 ---
 
-# STEP 1 — Pre-flight
+# ШАГ 1 — Подготовка (Pre-flight)
 
-Before you screenshot anything, get the device + account into a state
-that photographs well. Spending 5 min here saves you 50 minutes of
-"oh wait, the trial badge isn't visible, recapture all 10."
+Перед тем как что-то снимать, доведи устройство + аккаунт до состояния,
+в котором они хорошо фотографируются. 5 минут здесь сэкономят 50 минут
+"стоп, бейдж триала не виден, надо переснимать все 10".
 
-## 1.1 Device
+## 1.1 Устройство
 
-- **Target slot:** iPhone 17 Pro Max — Apple's 6.9″ slot demands
-  **1290 × 2796** portrait. Raw simulator output is 1320 × 2868 — crop
-  in Figma.
-- **Status bar:** must read **9:41, full battery, full signal**. On
-  simulator, run once:
+- **Целевой слот:** iPhone 17 Pro Max — Apple для 6.9″ слота требует
+  **1290 × 2796** в портрете. Симулятор по умолчанию выдаёт
+  1320 × 2868 — обрежешь в Figma.
+- **Статус-бар:** должен показывать **9:41, полный заряд, полный
+  сигнал**. На симуляторе один раз выполни:
 
   ```bash
   xcrun simctl status_bar <UDID> override \
@@ -59,103 +60,104 @@ that photographs well. Spending 5 min here saves you 50 minutes of
     --cellularMode active
   ```
 
-  On a real device, the App Store auto-redacts time/battery on submit,
-  but everything else stays — don't be on roaming, don't be at 9%.
+  На реальном устройстве App Store сам подправит время/батарею при
+  сабмите, но всё остальное остаётся — не будь в роуминге, не на 9%
+  заряда.
 
-- **Theme:** Light. Warmer, photographs better, and the brand primary
-  reads cleaner. If a dark second-pass is needed for parity, do it AFTER
-  the light set is locked.
+- **Тема:** светлая. Теплее, лучше фотографируется, brand primary
+  читается чище. Если нужен dark-проход для парности — делай ПОСЛЕ
+  того, как light-сет залочен.
 
-## 1.2 Account state
+## 1.2 Состояние аккаунта
 
-Sign into an account that has:
+Залогинься аккаунтом, в котором есть:
 
-- **5–8 active subscriptions** across at least 3 categories (e.g.,
+- **5–8 активных подписок** в минимум 3 категориях (например:
   Netflix · Streaming, Spotify · Streaming, ChatGPT Plus · AI Tools,
-  iCloud · Productivity, Notion · Productivity, FitBod · Fitness, a VPN).
-- **At least one TRIAL** subscription with a visible countdown
-  (≤ 7 days left). Use the add-sub flow and set "Trial ends in 3 days"
-  to bake this.
-- **At least one PAUSED** subscription.
-- **A populated dashboard** — total spend ≥ $40/mo so the forecast row
-  shows a real number, not zeros.
-- **Optional but recommended for screenshot 04:** connect Gmail and run
-  one scan so Magic Mail has cached candidates to display.
-- **Optional for screenshot 09:** create a workspace with 2–3 dummy
-  members so Team view isn't empty.
+  iCloud · Productivity, Notion · Productivity, FitBod · Fitness, VPN).
+- **Хотя бы одна TRIAL-подписка** с видимым обратным отсчётом
+  (≤ 7 дней). Используй обычный add-sub флоу и поставь "Trial ends in
+  3 days", чтобы запечь.
+- **Хотя бы одна PAUSED-подписка**.
+- **Заполненный дашборд** — total spend ≥ $40/мес, чтобы forecast row
+  показывал реальное число, а не нули.
+- **Опционально, но рекомендую для скрина 04:** подключи Gmail и
+  запусти один скан — тогда у Magic Mail будут кэшированные
+  кандидаты для показа.
+- **Опционально для скрина 09:** создай workspace с 2–3 dummy-членами,
+  чтобы Team-вью не был пустым.
 
-## 1.3 Kill the dev-mode chrome
+## 1.3 Убираем dev-mode украшения
 
-If you're capturing from a Debug build (the usual case for simulator):
+Если снимаешь с Debug-билда (обычный случай для симулятора):
 
-- Make sure the **Metro overlay** ("Downloading 100%…", "Refreshing…")
-  is gone — wait for the splash to finish.
-- Close the yellow **"Open debugger to view warnings"** toast (`X`
-  button bottom-right) if it appears.
-- Ideally use a build with `EXPO_PUBLIC_E2E_MODE=1` which uninstalls
-  LogBox entirely (see `app/_layout.tsx`).
+- Дождись, пока **Metro overlay** ("Downloading 100%…",
+  "Refreshing…") исчезнет — подожди завершения splash.
+- Закрой жёлтый тост **"Open debugger to view warnings"** (`X` справа
+  внизу), если появится.
+- В идеале — используй билд с `EXPO_PUBLIC_E2E_MODE=1`, который
+  полностью отключает LogBox (см. `app/_layout.tsx`).
 
-Production-style builds skip all of the above — if you have a
-TestFlight / Internal Distribution build available, prefer that.
-
----
-
-# STEP 1.5 — Overlay style (Inner Glow template)
-
-Every screenshot below uses the **Inner Glow template** style:
-
-- **3–5 word imperative headline** — never longer.
-- **Single accent word** at the very end of the headline — colored in
-  brand mint (#5FE3A1 or your design-system equivalent) in Figma. The
-  rest of the headline stays white.
-- **One short sub-line** (≤ 6 words) below the headline at 78 % opacity.
-- Dark gradient background per frame, soft mint glow ring around the
-  device.
-- Headline anchored top-left with 80 px margin. SF Pro Display Bold
-  @ 80 pt. Sub-line: SF Pro Display Regular @ 32 pt.
-
-Each per-screenshot table has an **Accent** column — that's the **only**
-word that gets the mint color. Don't paint the whole headline.
+Production-style билды (TestFlight / Internal Distribution) ничего
+из этого не показывают — если есть такой билд, лучше его.
 
 ---
 
-# STEP 2 — Capture the 10 screenshots
+# ШАГ 1.5 — Стиль оверлея (шаблон Inner Glow)
 
-10 frames, each selling exactly one feature. Sequence and content
-matters: App Store shows the first 3 frames above the fold, so 01 / 02 /
-03 carry the bulk of the conversion.
+Все скриншоты ниже используют стиль шаблона **Inner Glow**:
 
-> **Save them as:** `marketing/app-store-screenshots/raw/NN_slug.png`
-> with the exact slug from the headers below. The Figma pipeline picks
-> them up by filename.
+- **Заголовок 3–5 слов императивом** — не длиннее.
+- **Одно акцентное слово** в самом конце заголовка — красится в
+  фирменный мятный (#5FE3A1 или эквивалент из дизайн-системы) в
+  Figma. Остальное в заголовке — белое.
+- **Один короткий саб** (≤ 6 слов) под заголовком, прозрачность 78%.
+- Тёмный градиентный фон у каждого фрейма, мягкое мятное свечение
+  вокруг устройства.
+- Заголовок прижат к верхнему левому углу с отступом 80 px.
+  SF Pro Display Bold @ 80 pt. Саб: SF Pro Display Regular @ 32 pt.
+
+В каждой таблице ниже есть колонка **Accent** — это **то самое** слово,
+которое красится мятным. Не крась весь заголовок целиком.
+
+---
+
+# ШАГ 2 — Снять 10 скриншотов
+
+10 фреймов, каждый продаёт ровно одну фичу. Порядок и контент важны:
+App Store показывает первые 3 фрейма "above the fold", поэтому
+01 / 02 / 03 несут основную конверсию.
+
+> **Сохраняй как:** `marketing/app-store-screenshots/raw/NN_slug.png`
+> с точным slug-ом из заголовков ниже. Figma-пайплайн подхватывает
+> по имени файла.
 >
-> **Simulator capture:**
+> **Снять в симуляторе:**
 > `xcrun simctl io <UDID> screenshot ~/.../raw/01_hero_dashboard.png`
-> **Device capture:** Side button + Volume Up.
+> **Снять с устройства:** Side + Volume Up.
 
-Each block below has: (a) what to tap to get there, (b) what MUST be
-visible in the frame, (c) headline + sub-headline copy in all 10
-languages for the Figma overlay.
+В каждом блоке ниже: (a) что тапнуть чтобы туда попасть, (b) что
+**обязательно** должно быть видно в кадре, (c) headline +
+sub-headline на всех 10 языках для Figma-оверлея.
 
 ---
 
-## Screenshot 01 — `01_hero_dashboard.png`
+## Скриншот 01 — `01_hero_dashboard.png`
 
-**Killer feature:** Dashboard hero — the "wait, I really spend that
-much?" moment.
+**Киллер-фича:** Hero дашборда — момент «стоп, я и правда столько
+трачу?».
 
-**Navigation:** Launch the app on a logged-in account. You land on the
-**Home** tab automatically.
+**Навигация:** запусти приложение залогиненным аккаунтом. Автоматом
+попадаешь на таб **Home**.
 
-**What MUST be visible (above the fold, NO scrolling):**
-- The big total **monthly spend** number.
-- The **forecast row** (this month / next month / 12-month).
-- At least one **chart** — monthly bar chart or category mini-donut.
-- The top of the **upcoming renewals** list.
-- The brand `+` button in the centre of the tab bar.
+**Что ОБЯЗАТЕЛЬНО видно (above the fold, БЕЗ скролла):**
+- Большая сумма **месячных трат**.
+- **Forecast row** (этот месяц / следующий / 12 месяцев).
+- Хотя бы один **график** — monthly bar или мини-донат категорий.
+- Верх списка **upcoming renewals**.
+- Brand `+` кнопка по центру таб-бара.
 
-**Tone:** confidence. Slightly punchy. Specific dollar number is the
-hook.
+**Тон:** уверенность. Чуть дерзкий. Конкретное число — крючок.
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -172,23 +174,25 @@ hook.
 
 ---
 
-## Screenshot 02 — `02_magical_add_sheet.png`
+## Скриншот 02 — `02_magical_add_sheet.png`
 
-**Killer feature:** the "four magical ways to add" sheet — the strongest
-single-frame differentiator vs. Rocket Money / Bobby / Track My Subs.
+**Киллер-фича:** «четыре магических способа добавить» — самый сильный
+single-frame диффер от Rocket Money / Bobby / Track My Subs.
 
-**Navigation:** Tap the giant purple **`+`** in the centre of the tab
-bar from any tab. The Add Subscription sheet slides up.
+**Навигация:** тапни большую фиолетовую **`+`** по центру таб-бара
+с любого таба. Лист «Add Subscription» выезжает снизу.
 
-**What MUST be visible:**
-- The big centred **purple microphone sphere** with "Just say it" label.
-- The "Netflix 15 dollars monthly — and we add it. No typing." sub-text.
-- BOTH tiles below the OR divider: **Magic Image** (purple sparkle,
-  "Snap a receipt") AND **Magic Mail** (amber sparkle, "Scan inbox").
-- The sheet's drag handle at top — confirms this is the official add
-  flow, not a one-off modal.
+**Что ОБЯЗАТЕЛЬНО видно:**
+- Большая центрированная **фиолетовая сфера микрофона** с надписью
+  «Just say it».
+- Подтекст «Netflix 15 dollars monthly — and we add it. No typing.»
+- ОБЕ плитки под разделителем OR: **Magic Image** (фиолетовая
+  искорка, «Snap a receipt») И **Magic Mail** (янтарная искорка,
+  «Scan inbox»).
+- Хэндл листа вверху — подтверждает, что это официальный add-флоу,
+  не разовая модалка.
 
-**Tone:** magical, effortless, almost too-good-to-be-true.
+**Тон:** магия, без усилий, «слишком хорошо чтобы быть правдой».
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -205,24 +209,24 @@ bar from any tab. The Add Subscription sheet slides up.
 
 ---
 
-## Screenshot 03 — `03_magic_voice.png`
+## Скриншот 03 — `03_magic_voice.png`
 
-**Killer feature:** Magic Voice — most magical single AI moment in the
-app.
+**Киллер-фича:** Magic Voice — самый магический AI-момент в
+приложении.
 
-**Navigation:** Same sheet as #02. Tap the **big mic sphere**. Grant
-mic permission on first run. The mic turns **red**, two pulse rings
-expand outward, label switches to **"Listening…"** with a running
-`00:0X` timer.
+**Навигация:** тот же лист, что в #02. Тапни по **большой сфере
+микрофона**. Дай разрешение на микрофон при первом запуске. Сфера
+становится **красной**, две пульс-ринги расходятся наружу, лейбл
+переключается на **«Listening…»** с бегущим таймером `00:0X`.
 
-**What MUST be visible (capture WITHIN ~3 seconds of tapping):**
-- The mic in **RED** (not the idle purple).
-- At least one of the two **expanding pulse rings**.
-- The **"Listening…"** label.
-- The **running timer** with a red dot.
-- "Tap to stop" hint.
+**Что ОБЯЗАТЕЛЬНО видно (снимай В ТЕЧЕНИЕ ~3 секунд после тапа):**
+- Микрофон **КРАСНЫЙ** (не дефолтный фиолетовый).
+- Хотя бы одна из двух **расходящихся пульс-ринг**.
+- Лейбл **«Listening…»**.
+- **Бегущий таймер** с красной точкой.
+- Подсказка «Tap to stop».
 
-**Tone:** magic, almost a brag. "We can do this. They can't."
+**Тон:** магия, почти хвастовство. «Мы так умеем. Они — нет.»
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -239,24 +243,25 @@ expand outward, label switches to **"Listening…"** with a running
 
 ---
 
-## Screenshot 04 — `04_magic_mail_gmail.png`
+## Скриншот 04 — `04_magic_mail_gmail.png`
 
-**Killer feature:** Gmail bulk import (Magic Mail) — **no competitor
-has this**. This is the strongest moat shot in the kit.
+**Киллер-фича:** массовый импорт из Gmail (Magic Mail) — **ни у кого
+из конкурентов такого нет**. Самый сильный moat-кадр в наборе.
 
-**Navigation:** Same sheet (#02). Tap the **Magic Mail** tile (amber,
-mail icon, sparkle overlay). Either you land on the "Connect Gmail"
-intro (first time) or the **scan results** screen with candidate rows
-(if already connected and you've scanned).
+**Навигация:** тот же лист (#02). Тапни плитку **Magic Mail**
+(янтарная, иконка письма, искорка). Либо попадаешь на интро «Connect
+Gmail» (первый раз), либо на экран **результатов скана** со
+строками-кандидатами (если уже подключён и скан был).
 
-**What MUST be visible (prefer the second option):**
-- Either the **cosmic sweep loader** mid-scan (visually striking), OR
-- The **candidate list** with at least 3 detected subscriptions, each
-  with logo + amount + "verify" confidence badge.
-- The **monthly-total preview pill** at the top ("Found ≈ $87/mo").
-- The **scan period indicator** ("Last 90 days").
+**Что ОБЯЗАТЕЛЬНО видно (предпочитай второй вариант):**
+- Либо **«космический» свип-лоадер** во время скана (визуально
+  бьющий), ЛИБО
+- **Список кандидатов** минимум на 3 найденных подписки — с лого +
+  суммой + бейджем confidence («verify»).
+- **Пилюля месячного итога** наверху («Found ≈ $87/mo»).
+- **Индикатор периода скана** («Last 90 days»).
 
-**Tone:** unique. Confident. "Nobody else does this."
+**Тон:** уникальность. Уверенность. «Никто больше так не умеет.»
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -273,25 +278,24 @@ intro (first time) or the **scan results** screen with candidate rows
 
 ---
 
-## Screenshot 05 — `05_subscriptions_list.png`
+## Скриншот 05 — `05_subscriptions_list.png`
 
-**Killer feature:** the full list with **Trial Killer** countdowns —
-the "I'll never let a free trial silently become a paid charge" promise
-made concrete.
+**Киллер-фича:** полный список с обратными отсчётами **Trial Killer**
+— конкретная реализация обещания «бесплатный триал тихо не станет
+платным».
 
-**Navigation:** Bottom tab → **Subs** (list icon).
+**Навигация:** нижний таб → **Subs** (иконка списка).
 
-**What MUST be visible:**
-- At least **one TRIAL badge** with a countdown (e.g., "3 days left",
-  red or amber styling).
-- The **filter chips** at the top (All / Active / Trial / Paused /
-  Cancelled).
-- The **search icon** in the header.
-- A mix of statuses — at least one Active + one Trial visible.
-- **Bonus shot:** half-swipe one card to the left to reveal the
-  red trash action — captures the swipe-to-delete affordance.
+**Что ОБЯЗАТЕЛЬНО видно:**
+- Минимум **один TRIAL-бейдж** с обратным отсчётом (например,
+  «3 days left», красная или янтарная стилистика).
+- **Filter chips** сверху (All / Active / Trial / Paused / Cancelled).
+- **Иконка поиска** в хедере.
+- Микс статусов — хотя бы один Active + один Trial.
+- **Бонус:** наполовину свайпни карточку влево, чтобы открыть красный
+  trash-action — на скрине будет видна swipe-to-delete affordance.
 
-**Tone:** relief. Control. "I won't get burned."
+**Тон:** облегчение. Контроль. «Меня не нагреют.»
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -308,24 +312,24 @@ made concrete.
 
 ---
 
-## Screenshot 06 — `06_subscription_detail.png`
+## Скриншот 06 — `06_subscription_detail.png`
 
-**Killer feature:** subscription detail — "I can actually MANAGE this
-thing, not just track it."
+**Киллер-фича:** детальный экран подписки — «я могу реально
+УПРАВЛЯТЬ ей, а не просто наблюдать.»
 
-**Navigation:** From the Subs list, tap a meaty subscription with a
-recognisable brand (Netflix, ChatGPT Plus, Spotify — anything with
-a logo + amount + next-charge date).
+**Навигация:** из списка Subs тапни по жирной подписке с узнаваемым
+брендом (Netflix, ChatGPT Plus, Spotify — что-то с лого + суммой +
+next-charge date).
 
-**What MUST be visible:**
-- Brand **logo + name** at the top.
-- **Amount + billing cycle** + **next charge date**.
+**Что ОБЯЗАТЕЛЬНО видно:**
+- **Лого + название** бренда наверху.
+- **Сумма + цикл оплаты** + **дата следующего списания**.
 - Status pill (Active / Trial).
-- **Card mapping** (e.g., "Visa ·· 4242").
-- The **Pause / Cancel / Edit** action row.
-- (Bonus) the direct **Cancel link** to the service's cancellation URL.
+- **Привязка карты** (например, «Visa ·· 4242»).
+- Action row с **Pause / Cancel / Edit**.
+- (Бонус) прямая ссылка **Cancel** на URL отмены сервиса.
 
-**Tone:** empowering. "You're in control, not them."
+**Тон:** даёт силу. «Ты управляешь — не они.»
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -342,21 +346,21 @@ a logo + amount + next-charge date).
 
 ---
 
-## Screenshot 07 — `07_analytics_forecast.png`
+## Скриншот 07 — `07_analytics_forecast.png`
 
-**Killer feature:** forecast — the "next-month and next-year spend
-prediction" that no basic tracker offers.
+**Киллер-фича:** прогноз — «следующий месяц и следующий год по
+тратам», которого нет у обычного трекера.
 
-**Navigation:** Bottom tab → **Analytics** (bar-chart icon). Don't
-scroll.
+**Навигация:** нижний таб → **Analytics** (иконка bar-chart). Не
+скроль.
 
-**What MUST be visible (top of screen):**
-- The **forecast row**: this-month total, next-month forecast, 12-month
-  forecast — all three pills.
-- The **monthly bar chart** with the current month highlighted.
-- Real currency formatting (not "$NaN").
+**Что ОБЯЗАТЕЛЬНО видно (верх экрана):**
+- **Forecast row**: total этого месяца, прогноз следующего, прогноз
+  12 месяцев — все три пилюли.
+- **Monthly bar chart** с подсвеченным текущим месяцем.
+- Реальное форматирование валюты (не «$NaN»).
 
-**Tone:** data-driven, calm, confident.
+**Тон:** data-driven, спокойный, уверенный.
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -373,22 +377,22 @@ scroll.
 
 ---
 
-## Screenshot 08 — `08_analytics_categories.png`
+## Скриншот 08 — `08_analytics_categories.png`
 
-**Killer feature:** categories breakdown — the "OH that's where the
-money goes" insight.
+**Киллер-фича:** разбивка по категориям — инсайт «А-а, вот куда они
+уходят».
 
-**Navigation:** Same Analytics screen as #07. Scroll down ~one
-viewport.
+**Навигация:** тот же экран Analytics, что в #07. Проскроль вниз
+примерно на один экран.
 
-**What MUST be visible:**
-- The **category donut** (top 5 by spend) with category labels visible
-  and percentages.
-- At least **3 categories** populated (Streaming, AI Tools,
-  Productivity etc.) — otherwise the donut looks empty.
-- (Bonus) the **card breakdown** below it if your account has Pro.
+**Что ОБЯЗАТЕЛЬНО видно:**
+- **Donut категорий** (топ 5 по тратам) — с лейблами категорий и
+  процентами.
+- Заполнено минимум **3 категории** (Streaming, AI Tools,
+  Productivity и т.д.) — иначе donut выглядит пустым.
+- (Бонус) **card breakdown** ниже — если у аккаунта Pro.
 
-**Tone:** insight.
+**Тон:** инсайт.
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -405,24 +409,25 @@ viewport.
 
 ---
 
-## Screenshot 09 — `09_workspace_team.png`
+## Скриншот 09 — `09_workspace_team.png`
 
-**Killer feature:** workspace / team — family + small-team plan with
-AI duplicate detection.
+**Киллер-фича:** workspace / team — семейный + small-team план с
+AI-детекцией дубликатов.
 
-**Navigation:** Bottom tab → **Team** (people icon). Need a populated
-workspace — if solo, create one (one tap), generate an invite code,
-invite 2 dummy emails so the member list shows ≥ 2 rows.
+**Навигация:** нижний таб → **Team** (иконка людей). Нужен
+заполненный workspace — если соло, создай (один тап), сгенерируй
+invite-code, пригласи 2 dummy-имейла, чтобы member-список показывал
+≥ 2 строки.
 
-**What MUST be visible:**
-- The **member list** with at least 2 named members (avatars +
+**Что ОБЯЗАТЕЛЬНО видно:**
+- **Member list** минимум на 2 именованных участника (аватарки +
   monthly-spend per member).
-- The **team spend chart** OR the **savings badge**.
-- Ideally a **duplicate-detection callout** ("Notion · paid by 2
-  members") — this is the killer copy point.
-- The **invite-code** button or **Transfer ownership** row hint.
+- **Team spend chart** ИЛИ **savings badge**.
+- Идеально — **выноска duplicate-detection** («Notion · paid by 2
+  members») — это и есть killer copy point.
+- Кнопка **invite-code** или строка-подсказка **Transfer ownership**.
 
-**Tone:** smart. Social.
+**Тон:** умный. Социальный.
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -439,21 +444,21 @@ invite 2 dummy emails so the member list shows ≥ 2 rows.
 
 ---
 
-## Screenshot 10 — `10_reports_export.png`
+## Скриншот 10 — `10_reports_export.png`
 
-**Killer feature:** reports — PDF / CSV exports for personal, business
-or tax filing.
+**Киллер-фича:** отчёты — PDF / CSV экспорт для личных трат, бизнеса
+или сдачи в налоговую.
 
-**Navigation:** Bottom tab → **Settings** (gear icon) → scroll to
-**Reports & Data** section → tap **Reports**.
+**Навигация:** нижний таб → **Settings** (шестерёнка) →
+проскроль до секции **Reports & Data** → тапни **Reports**.
 
-**What MUST be visible:**
-- The **report-type selector**: Summary / Detailed / Tax / Period.
-- A **period pill** (This month / Quarter / Year).
-- The primary **Export** button (PDF and CSV options).
-- (Bonus) team / personal report toggle if your account is on Team.
+**Что ОБЯЗАТЕЛЬНО видно:**
+- **Селектор типа отчёта**: Summary / Detailed / Tax / Period.
+- **Period pill** (This month / Quarter / Year).
+- Primary-кнопка **Export** (опции PDF и CSV).
+- (Бонус) toggle team / personal report — если у аккаунта Team.
 
-**Tone:** pro-grade, professional.
+**Тон:** про-уровень, профессионально.
 
 | Locale | Headline | Accent | Sub-headline |
 |---|---|---|---|
@@ -470,12 +475,13 @@ or tax filing.
 
 ---
 
-# STEP 3 — Compose in Figma
+# ШАГ 3 — Сборка в Figma
 
-You now have ten PNGs in `raw/`. Now wrap each in an App-Store-ready
-frame with the localised headline + sub-headline overlay.
+Теперь в `raw/` у тебя десять PNG-ов. Заверни каждый в
+App-Store-ready фрейм с локализованным headline + sub-headline
+оверлеем.
 
-## 3.1 Frame skeleton (per locale × per screenshot = 100 frames)
+## 3.1 Скелет фрейма (локаль × скриншот = 100 фреймов)
 
 ```
 ┌─────────────────────────────────────┐ 1290 × 2796, gradient bg
@@ -493,18 +499,18 @@ frame with the localised headline + sub-headline overlay.
 └─────────────────────────────────────┘
 ```
 
-- **Headline font:** SF Pro Display Bold @ 80 pt, tracking -0.5,
-  line-height 88. Anchored top-left with 80 px margin.
+- **Шрифт заголовка:** SF Pro Display Bold @ 80 pt, tracking -0.5,
+  line-height 88. Прижат к верх-левому с margin 80 px.
 - **Sub-headline:** SF Pro Display Regular @ 32 pt, line-height 40,
-  opacity 78%. 16 px below headline.
-- **Device frame:** crop the simulator 1320×2868 → 1290×2796 first
-  (chop the home indicator + status-bar bleed), then optionally drop
-  inside an iPhone shell.
-- **Background gradient:** one distinct gradient per screenshot so the
-  10-frame set reads as a coherent series. Suggested palette:
+  opacity 78%. 16 px ниже заголовка.
+- **Device frame:** сначала обрежь симулятор 1320×2868 → 1290×2796
+  (отрежь home-indicator + утечку статус-бара), потом опционально
+  помести в iPhone-shell.
+- **Фоновый градиент:** один уникальный градиент на скриншот, чтобы
+  сет из 10 фреймов читался как единая серия. Палитра:
   - 01 hero — mint → emerald
-  - 02 add sheet — sky → indigo (mirrors brand)
-  - 03 voice — rose → coral (mirrors red mic)
+  - 02 add sheet — sky → indigo (отражает бренд)
+  - 03 voice — rose → coral (отражает красный мик)
   - 04 Magic Mail — amber → orange
   - 05 subs list — slate → midnight
   - 06 detail — teal → cyan
@@ -513,74 +519,75 @@ frame with the localised headline + sub-headline overlay.
   - 09 team — sky → cobalt
   - 10 reports — sage → forest
 
-## 3.2 Final dimensions per slot
+## 3.2 Финальные размеры по слотам Apple
 
-| Apple slot | Pixel size | Required? |
+| Apple slot | Pixel size | Обязательно? |
 |---|---|---|
-| **6.9″ iPhone 17 Pro Max** | 1290 × 2796 | ✅ master — required |
-| 6.7″ iPhone 16 Pro Max     | 1290 × 2796 | shares the 6.9″ asset |
-| 6.5″                       | 1242 × 2688 | derives from master |
-| 5.5″ (legacy)              | 1242 × 2208 | only if you target very old devices |
-| iPad 12.9″                 | 2048 × 2732 | only if iPad-marketed |
+| **6.9″ iPhone 17 Pro Max** | 1290 × 2796 | ✅ мастер — обязательно |
+| 6.7″ iPhone 16 Pro Max     | 1290 × 2796 | использует тот же ассет |
+| 6.5″                       | 1242 × 2688 | выводится из мастера |
+| 5.5″ (legacy)              | 1242 × 2208 | только если таргетишь старые девайсы |
+| iPad 12.9″                 | 2048 × 2732 | только если рекламируешь iPad |
 
-For v1 ship the 6.9″ slot only — Apple auto-derives the rest from it.
+Для v1 шиппи только 6.9″ — Apple автоматически выведет остальные.
 
-## 3.3 Sanity checks before export
+## 3.3 Sanity-проверка перед экспортом
 
-- [ ] 9:41, full battery, full signal — visible in EVERY frame.
-- [ ] No `undefined`, `NaN`, `$NaN`, "Render Error" anywhere in the
-      device-screen layer.
-- [ ] Brand `+` button visible on 01 — sells the magical add up-front.
-- [ ] Trial badge visible on 05.
-- [ ] All 10 headlines correctly localised — no English bleed into
-      non-EN locales.
-- [ ] Brand watermark / SubRadar AI wordmark NOT visible on hero
-      (Apple is suspicious of "obvious watermarks").
-- [ ] Export PNG at 24-bit, NOT WebP. Apple rejects WebP.
+- [ ] 9:41, полный заряд, полный сигнал — видно на КАЖДОМ фрейме.
+- [ ] Нигде нет `undefined`, `NaN`, `$NaN`, «Render Error» внутри
+      скриншота устройства.
+- [ ] Brand `+` кнопка видна на 01 — продаёт magical add сразу.
+- [ ] TRIAL-бейдж виден на 05.
+- [ ] Все 10 заголовков правильно локализованы — никакого английского
+      bleed в не-EN локалях.
+- [ ] Бренд-водяной знак / SubRadar AI wordmark НЕ виден на hero
+      (Apple подозрительно относится к «очевидным водяным знакам»).
+- [ ] Экспорт PNG 24-bit, НЕ WebP. Apple отклоняет WebP.
 
 ---
 
-# STEP 4 — Upload to App Store Connect
+# ШАГ 4 — Загрузка в App Store Connect
 
-Once you have 10 × 10 = 100 final PNGs (`final/<locale>/NN_slug.png`):
+Когда есть 10 × 10 = 100 финальных PNG (`final/<locale>/NN_slug.png`):
 
 1. **App Store Connect → My Apps → SubRadar AI → App Store → Default
    language version**.
-2. For each locale (set up under "Localizable Information"):
-   - Paste **App name** from Appendix A.
-   - Paste **Subtitle**, **Promotional text**, **Keywords**.
-   - Paste **Description**.
-   - Upload the **10 screenshots in order** under the 6.9″ slot.
-   - Repeat per locale.
-3. Set a **release date** (manual release recommended for the v1 push
-   so you can synchronise with a social post).
+2. Для каждой локали (настраивается в «Localizable Information»):
+   - Вставь **App name** из Appendix A.
+   - Вставь **Subtitle**, **Promotional text**, **Keywords**.
+   - Вставь **Description**.
+   - Загрузи **10 скриншотов по порядку** в 6.9″ слот.
+   - Повтори на каждую локаль.
+3. Поставь **дату релиза** (manual release рекомендую для v1 — чтобы
+   синхронизировать с соц-постом).
 4. Submit for review.
 
-## Apple review notes (read once)
+## Заметки по Apple-ревью (прочитай один раз)
 
-- **Trademark caveat:** the brand catalog screen (subs list with
-  Netflix / Spotify / etc.) is fine to show as ambient content, but
-  the App Store description must include the disclaimer line (already
-  baked into every locale's Description in Appendix A):
-  *"SubRadar AI is not affiliated with Apple, Google, Netflix, …"*.
-- **Pricing claims:** if you use a specific dollar amount in a
-  headline ("Find $300…"), Apple will ask "where does this number come
-  from?". Have a source ready (e.g.,
+- **Trademark caveat:** brand-каталог (subs-list с Netflix / Spotify /
+  и т.д.) — ок показывать как ambient content, но App Store
+  description должен включать дисклеймер (уже запечён в Description
+  каждой локали в Appendix A):
+  *«SubRadar AI is not affiliated with Apple, Google, Netflix, …»*.
+- **Pricing claims:** если используешь конкретное число долларов в
+  заголовке («Find $300…»), Apple спросит «откуда это число?».
+  Подготовь источник (например,
   https://www.cnet.com/personal-finance/the-average-american-pays-for-12-subscriptions/
-  or your own user research).
-- **Trial Killer wording:** Apple is strict about implying subscription
-  cancellation flows. "Trial countdowns" is safe; "auto-cancel" /
-  "cancel your subscription" implies you do it FOR them, which we
-  don't. Keep the copy to "warn you" / "track" / "alert".
+  или собственное user research).
+- **Формулировки про Trial Killer:** Apple строго реагирует на
+  намёки про авто-отмену подписок. «Trial countdowns» безопасно;
+  «auto-cancel» / «cancel your subscription» подразумевает что мы
+  делаем это ЗА юзера — а мы не делаем. Держи копию в «warn you» /
+  «track» / «alert».
 
 ---
 
-# APPENDIX A — Full App Store listing copy in 10 languages
+# APPENDIX A — Полная копия App Store на 10 языках
 
-> Apple lets you localise: **name**, **subtitle**, **promotional text**,
-> **description**, **keywords**, **"What's New"**, and the **screenshot
-> set itself**. The strings below are ready-to-paste into App Store
-> Connect for each locale.
+> Apple позволяет локализовать: **name**, **subtitle**,
+> **promotional text**, **description**, **keywords**, **«What's New»**
+> и **сам набор скриншотов**. Строки ниже готовы к копи-пасту в App
+> Store Connect для каждой локали.
 
 ### 🇬🇧 English (en) — master
 
@@ -1212,50 +1219,54 @@ Once you have 10 × 10 = 100 final PNGs (`final/<locale>/NN_slug.png`):
 
 ---
 
-# APPENDIX B — "What's New" template
+# APPENDIX B — Шаблон «What's New»
 
-Re-localise this for every release. Keep under 6 bullets; users only
-read the first 2-3.
+Перелокализуй на каждый релиз. Держи ≤ 6 буллетов; пользователи
+читают первые 2-3.
 
 ```
 What's New in v1.X.X
 
-- {Top 3 user-visible improvements, lead with the most magical}
-- {Performance / stability fix that affects most users}
-- {A small delightful detail to make the changelog feel polished}
+- {3 самых заметных улучшения, начни с самого магического}
+- {Performance / stability фикс, который касается большинства}
+- {Маленькая приятная деталь, чтобы changelog выглядел отполированным}
 ```
 
-Example v1.3.36 (latest at time of writing):
+Пример v1.3.36 (последний на момент написания):
 
-> - Magic Mail just got an inbox-sweep loader you'll want to watch.
-> - Swipe-left on any subscription card to delete in one motion.
-> - Refund banner support across all 10 languages.
-> - Faster, snappier dashboard chart labels for high-spend users.
-> - Polished trial-offer flow — clearer, shorter, less interruptive.
+> - У Magic Mail теперь есть inbox-sweep лоадер, на который хочется
+>   смотреть.
+> - Swipe-влево по карточке подписки удаляет одним движением.
+> - Refund-баннер поддерживается на всех 10 языках.
+> - Быстрее и аккуратнее лейблы графиков на дашборде для high-spend
+>   юзеров.
+> - Отполированный trial-offer флоу — чище, короче, менее назойливо.
 
 ---
 
-# APPENDIX C — Why this kit is structured the way it is
+# APPENDIX C — Почему документ устроен именно так
 
-A few design decisions worth knowing if you're going to fork or extend:
+Несколько дизайн-решений на случай, если будешь форкать или
+расширять:
 
-1. **One file, not ten.** Every shipping doc the marketing team needs
-   lives in this README. Splitting across `headlines.csv`,
-   `descriptions/*.md`, etc. seems clean but in practice creates
-   sync drift — copy lives in one place or it doesn't.
-2. **Per-screenshot tables, not per-locale tables.** A designer
-   composing one screenshot needs all 10 languages in front of them.
-   Inverting the layout (per-locale screenshot list) would force them
-   to scroll 10× longer to find the four strings they need.
-3. **Concrete dollar amounts in headlines.** `$300` outperforms "a lot"
-   by 1.4× in App Store A/B tests (Apple's own data, WWDC 2023). The
-   source for the claim ("avg person pays for 12 subs and forgets 3")
-   is referenced in the listing body — Apple reviewers care.
-4. **Sub-headlines stay short.** Apple's overlay safe zone on the
-   1290×2796 frame is ~1150 px wide. SF Pro Display Regular 32 pt
-   gives ~28 chars/line — keep subs ≤ 56 chars or wrap to a third
-   line and lose air.
-5. **Disclaimer baked in every description.** Apple's review team
-   sometimes pulls listings that reference Netflix / Spotify / OpenAI
-   without the "not affiliated" line. Including it everywhere is
-   cheaper than getting pulled mid-launch.
+1. **Один файл, а не десять.** Любая shipping-копия живёт в этом
+   README. Сплит на `headlines.csv`, `descriptions/*.md` и т.д.
+   выглядит чисто, но на практике рождает sync drift — копия живёт
+   в одном месте или нигде.
+2. **Таблицы по скриншоту, а не по локали.** Дизайнер, который
+   собирает один скриншот, хочет видеть все 10 языков перед собой.
+   Инвертированная раскладка (per-locale список скринов) заставит
+   его скроллить в 10 раз больше, чтобы найти 4 нужные строки.
+3. **Конкретные числа в заголовках.** «$300» бьёт «a lot» в 1.4×
+   на App Store A/B-тестах (данные Apple, WWDC 2023). Источник для
+   утверждения («среднестатистический человек платит за 12 подписок
+   и забывает про 3») есть в теле листинга — ревьюеры Apple это
+   проверяют.
+4. **Саб-заголовки остаются короткими.** Safe-zone оверлея на
+   1290×2796 ~ 1150 px шириной. SF Pro Display Regular 32 pt даёт
+   ~28 chars/line — держи сабы ≤ 56 chars, иначе оборачиваются на
+   третью строку и теряют воздух.
+5. **Дисклеймер запечён в каждое описание.** Apple-ревью иногда
+   снимает листинги, где упомянуты Netflix / Spotify / OpenAI без
+   строки «not affiliated». Включать его везде дешевле, чем
+   сниматься mid-launch.
