@@ -41,6 +41,51 @@ marketing/app-store-screenshots/
 
 ---
 
+## 0. Manual capture guide — what to tap, where to stop, when to press the screenshot button
+
+Before you start: log into the app as a user with a populated dashboard
+(5–8 realistic subs across Streaming / Productivity / AI / Fitness, with at
+least one Trial-status sub and one paused sub). Empty-state screens look
+anaemic and don't sell.
+
+> **Simulator capture:** `xcrun simctl io <UDID> screenshot ~/Desktop/01_hero_dashboard.png` (run while the relevant screen is showing).
+> **Device capture:** Side button + Volume Up, then AirDrop the PNG to your Mac.
+> Either way drop the final PNGs into `marketing/app-store-screenshots/raw/` so the design pass picks them up.
+
+| # | Screen to capture | Exact navigation |
+|---|---|---|
+| 01 | **Dashboard hero** | Launch app on a logged-in account. Land on the **Home** tab. Make sure the **monthly total**, the **forecast row**, and at least one **chart** (monthly bar or category donut) are all visible above the fold. **Don't scroll** — the first viewport is the hero. Screenshot. |
+| 02 | **Magical add sheet (idle)** | From any tab, tap the big purple **`+`** in the centre of the tab bar. Wait for the sheet to settle — you should see the giant centred **microphone** (purple sphere) with "Just say it" + the two tiles below: **Magic Image** (purple sparkle, "Snap a receipt") and **Magic Mail** (amber sparkle, "Scan inbox"). Screenshot. |
+| 03 | **Magic Voice — listening state** | Same sheet as #02. Tap the **big mic**. Grant mic permission if asked. You'll see the **mic turn red**, two pulse rings expand outward, label switches to **"Listening…"** with a running 00:03 timer. Screenshot within ~3s while pulses are visible. Tap mic again to stop. |
+| 04 | **Magic Mail (Gmail import)** | Same sheet. Tap the **Magic Mail** tile (amber, mail icon). You'll either see the connect-Gmail screen or — if already connected — the **scan results** with candidates and confidence badges. The "cosmic sweep" loader during a fresh scan is the most visually striking; the populated review list ("3 new subscriptions found") is the most informative. Screenshot whichever you prefer. |
+| 05 | **Subscriptions list (Trial Killer)** | Bottom tab: **Subs** (list icon). Make sure the list shows **at least one trial countdown badge** ("3 days left"), one Active, and the **filter chips** ("All / Active / Trial / Paused") at the top. **Optional bonus:** half-swipe one card to the left to reveal the red trash action — captures the swipe-to-delete affordance. Screenshot. |
+| 06 | **Subscription detail** | From the Subs list, tap a meaty subscription (Netflix, ChatGPT Plus, anything with a logo + price). The detail should show: **brand logo + name + amount**, **next charge date**, **card mapping**, **status pill**, and the **Pause / Cancel / Edit** action row. Screenshot the top of the screen. |
+| 07 | **Analytics — forecast & monthly trend** | Bottom tab: **Analytics** (bar-chart icon). Don't scroll — top of the screen shows **forecast row** (this month / next month / 12-mo) + **monthly bar chart**. Screenshot. |
+| 08 | **Analytics — categories breakdown** | Same screen, scroll down ~1 viewport. You should see the **category donut** (top 5 by spend) and the **all-subs breakdown**. Screenshot. |
+| 09 | **Workspace / Team** | Bottom tab: **Team** (people icon). On a populated account this shows **member list + team spend chart + savings badge + duplicate warnings**. If your account is solo, create a workspace (one tap), add 2 dummy members via invite code, and use that for the screenshot. Screenshot. |
+| 10 | **Reports / PDF export** | Bottom tab: **Settings** (gear icon). Scroll to **"Reports & Data"** section → tap **Reports**. The Reports screen shows: **type selector** (Summary / Detailed / Tax / Period), **period pill**, and the primary **Export** button. Screenshot. |
+
+### Pre-flight checklist (before you start tapping)
+- [ ] Status bar shows **9:41**, full battery, full signal. (iOS Simulator: `xcrun simctl status_bar <UDID> override --time 9:41 --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4`.)
+- [ ] Logged in as a user with at least 5 active subs, 1 trial, and ≥3 categories used.
+- [ ] iPhone 17 Pro Max simulator (or device) — Apple wants 1290 × 2796.
+- [ ] Light theme (warmer, photographs better). If dark is essential for the brand, do a second pass.
+- [ ] No dev-mode banners visible (no "Open debugger to view warnings" toast, no "Refreshing…" pill).
+
+### What MUST be visible in the frame (or the screenshot doesn't earn its slot)
+- **01 Dashboard:** the big total spend number.
+- **02 Add sheet:** all three input tiles (Voice / Magic Image / Magic Mail) in one shot.
+- **03 Voice:** the red pulse + "Listening…" label (NOT the idle mic).
+- **04 Magic Mail:** either the cosmic sweep loader OR a populated candidate list — never an empty connect screen.
+- **05 Subs list:** at least one **TRIAL** badge with a countdown.
+- **06 Detail:** the **Pause / Cancel / Edit** action row.
+- **07 Analytics:** forecast row.
+- **08 Analytics:** the donut.
+- **09 Workspace:** member rows (not the empty-state CTA).
+- **10 Reports:** type selector + primary Export button.
+
+---
+
 ## 1. Screenshot-by-screenshot — English brief
 
 Each block is the marketing brief Daisy (or any designer) needs to compose
