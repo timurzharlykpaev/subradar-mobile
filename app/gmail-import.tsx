@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
-  FlatList,
   Image,
   Linking,
   Modal,
@@ -39,9 +38,14 @@ import {
   useGmailScanJob,
 } from '../src/hooks/useGmail';
 import { useCreateSubscription } from '../src/hooks/useSubscriptions';
-import type { GmailScanCandidate, GmailScanResult } from '../src/api/gmail';
+import type { GmailScanResult } from '../src/api/gmail';
 import { analytics } from '../src/services/analytics';
 import { SafeLinearGradient } from '../src/components/SafeLinearGradient';
+import { BulkConfirmView } from '../src/components/add-subscription/BulkConfirmView';
+import { BulkEditModal } from '../src/components/add-subscription/BulkEditModal';
+import type { ParsedSub } from '../src/components/add-subscription/types';
+import { subscriptionsApi } from '../src/api/subscriptions';
+import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
 
 /**
  * Gmail bulk-import screen — Pro/Team gated end to end:
@@ -107,8 +111,17 @@ export default function GmailImportScreen() {
     return () => clearTimeout(id);
   }, [notice]);
 
-  const [candidates, setCandidates] = useState<GmailScanCandidate[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Bulk-confirm state — keeps `bulkItems` and `bulkChecked` in
+  // lockstep so per-row removals shift both arrays together. The same
+  // dual-array pattern AddSubscriptionSheet uses; sharing the shape
+  // lets us drop the bespoke FlatList/CandidateRow and reuse
+  // BulkConfirmView + BulkEditModal so we get free localised
+  // category/period tags, per-row edit + delete, and the
+  // icon.horse / DOMAIN_MAP icon fallback.
+  const [bulkItems, setBulkItems] = useState<ParsedSub[]>([]);
+  const [bulkChecked, setBulkChecked] = useState<boolean[]>([]);
+  const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
+  const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
   const [importing, setImporting] = useState(false);
   // True when the backend's scan result reports it couldn't read the
   // whole inbox in one go. Render a banner inviting the user to
@@ -167,8 +180,8 @@ export default function GmailImportScreen() {
         // after we leave the screen doesn't repopulate state on a
         // fresh entry.
         scanIdRef.current += 1;
-        setCandidates([]);
-        setSelected(new Set());
+        setBulkItems([]);
+        setBulkChecked([]);
       };
     }, []),
   );
@@ -207,8 +220,8 @@ export default function GmailImportScreen() {
     analytics.track('gmail.disconnect.confirm');
     setDisconnectVisible(false);
     await disconnect.mutateAsync();
-    setCandidates([]);
-    setSelected(new Set());
+    setBulkItems([]);
+    setBulkChecked([]);
   }, [disconnect]);
 
   const applyScanResult = useCallback(
@@ -221,26 +234,49 @@ export default function GmailImportScreen() {
         scanned: result.scanned,
         candidates: result.candidates.length,
       });
-      // Auto-select rule: high-confidence recurring rows AND
-      // medium-confidence rows that the catalog enriched (iconUrl set
-      // → brand was matched in our catalog → it's almost certainly a
-      // real subscription even if the AI's signal was muddier).
-      // Cancellations and clearly non-recurring stay unchecked.
-      const auto = new Set<string>();
-      for (const c of result.candidates) {
-        if (!c.isRecurring || c.isCancellation) continue;
-        // Parens matter: without them `?? 0 > 0` parses as
-        // `?? (0 > 0)` (`>` binds tighter than `??`) which evaluates
-        // to `?? false`. The truthy/falsy outcome happened to match
-        // intent here but the expression read wrong; spell it out.
+      // Map candidates → the shared ParsedSub shape so we can hand
+      // them straight to BulkConfirmView + BulkEditModal (same shape
+      // used by voice / screenshot bulk-add). serviceUrl falls back
+      // to a `<brand>.com` guess when the catalog didn't enrich the
+      // row — the icon.horse + DOMAIN_MAP lookup chain inside
+      // BulkConfirmView then surfaces an icon for the long tail of
+      // SaaS brands that own their .com (≈90% of real subscriptions).
+      const items: ParsedSub[] = result.candidates.map((c) => {
+        const cleanedName = (c.name || '').trim();
+        const slug = cleanedName
+          .toLowerCase()
+          .replace(/\+/g, 'plus')
+          .replace(/[^a-z0-9]/g, '');
+        const fallbackServiceUrl =
+          !c.serviceUrl && slug.length >= 2
+            ? `https://${slug}.com`
+            : undefined;
+        return {
+          name: cleanedName || undefined,
+          amount: c.amount,
+          currency: c.currency,
+          billingPeriod: c.billingPeriod as ParsedSub['billingPeriod'],
+          category: c.category,
+          iconUrl: c.iconUrl,
+          serviceUrl: c.serviceUrl ?? fallbackServiceUrl,
+          cancelUrl: c.cancelUrl,
+          nextPaymentDate: c.nextPaymentDate,
+          currentPlan: undefined,
+        };
+      });
+      // Auto-check rule (same logic as the previous Set<string>
+      // version): high-confidence recurring rows + medium-confidence
+      // rows the catalog enriched. Cancellations and clearly
+      // non-recurring stay unchecked but visible — the user can
+      // toggle them on if our classifier was wrong.
+      const checked = result.candidates.map((c) => {
+        if (!c.isRecurring || c.isCancellation) return false;
         const hasPlans = (c.availablePlans?.length ?? 0) > 0;
         const enriched = !!c.iconUrl || hasPlans;
-        if (c.confidence >= 0.7 || (c.confidence >= 0.5 && enriched)) {
-          auto.add(c.sourceMessageId);
-        }
-      }
-      setCandidates(result.candidates);
-      setSelected(auto);
+        return c.confidence >= 0.7 || (c.confidence >= 0.5 && enriched);
+      });
+      setBulkItems(items);
+      setBulkChecked(checked);
       setTruncated(!!result.truncated);
       setScanSummary(result.summary ?? null);
       setScanFromCache(!!result.cached);
@@ -267,8 +303,8 @@ export default function GmailImportScreen() {
       // "scan failed" error with no obvious path forward.
       if (httpStatus === 401) {
         analytics.track('gmail.scan.expired');
-        setCandidates([]);
-        setSelected(new Set());
+        setBulkItems([]);
+        setBulkChecked([]);
         await queryClient.invalidateQueries({ queryKey: ['gmail', 'status'] });
         setNotice({
           kind: 'warn',
@@ -342,8 +378,8 @@ export default function GmailImportScreen() {
     async (opts?: { force?: boolean }) => {
       scanIdRef.current += 1;
       analytics.track('gmail.scan.tap');
-      setCandidates([]);
-      setSelected(new Set());
+      setBulkItems([]);
+      setBulkChecked([]);
       setTruncated(false);
       setScanSummary(null);
       setScanFromCache(false);
@@ -426,89 +462,45 @@ export default function GmailImportScreen() {
     resumeRef.current(incomingJobId);
   }, [searchParams.jobId, scan.jobId]);
 
-  const toggleSelect = useCallback((id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  // Bulk-confirm row handlers — identical pattern to
+  // AddSubscriptionSheet's voice/screenshot flow so BulkConfirmView's
+  // contract sees the same shape both places.
+  const handleBulkToggle = useCallback((index: number) => {
+    setBulkChecked((prev) => prev.map((v, i) => (i === index ? !v : v)));
   }, []);
-
-  // Monthly-equivalent total of the candidates the user has selected,
-  // so the import CTA can advertise "Import 3 · $12.45/mo" instead of
-  // an opaque "Import 3 selected" — gives the user a sense of the
-  // monthly impact before committing.
-  //
-  // Mixed-currency selections show no total (any single conversion
-  // would be a guess — different services bill in their native
-  // currency and we don't apply FX here). LIFETIME / ONE_TIME items
-  // don't contribute since they have no monthly amortisation.
-  const importPreview = useMemo(() => {
-    const picked = candidates.filter((c) => selected.has(c.sourceMessageId));
-    if (picked.length === 0) {
-      return { count: 0, currency: null as string | null, monthly: 0 };
-    }
-    const currencies = new Set(picked.map((p) => (p.currency || '').toUpperCase()));
-    if (currencies.size > 1) {
-      return { count: picked.length, currency: null, monthly: 0 };
-    }
-    // Defensive: the backend type says `currency: string` but null/empty
-    // values have slipped through in the past; a literal `.toUpperCase()`
-    // call here without the guard would throw TypeError → useMemo crash
-    // → blank screen on the review sheet.
-    const currency = (picked[0].currency || '').toUpperCase();
-    if (!currency) {
-      return { count: picked.length, currency: null, monthly: 0 };
-    }
-    let monthly = 0;
-    for (const c of picked) {
-      if (!c.amount || c.amount <= 0) continue;
-      switch (c.billingPeriod) {
-        case 'MONTHLY':
-          monthly += c.amount;
-          break;
-        case 'YEARLY':
-          monthly += c.amount / 12;
-          break;
-        case 'QUARTERLY':
-          monthly += c.amount / 3;
-          break;
-        case 'WEEKLY':
-          monthly += c.amount * 4.345;
-          break;
-        // LIFETIME / ONE_TIME — no monthly equivalent.
-        default:
-          break;
-      }
-    }
-    return { count: picked.length, currency, monthly };
-  }, [candidates, selected]);
-
-  const importCtaLabel = useMemo(() => {
-    if (importPreview.count === 0) {
-      return t('gmail.cta.import_empty', 'Select to import');
-    }
-    if (importPreview.monthly > 0 && importPreview.currency) {
-      // Round to whole units past $100/mo (the cents stop adding signal
-      // and just crowd the button); keep 2 decimals below that.
-      const amt =
-        importPreview.monthly >= 100
-          ? Math.round(importPreview.monthly).toString()
-          : importPreview.monthly.toFixed(2);
-      return t('gmail.cta.import_with_total', 'Import {{n}} · {{cur}} {{amt}}/mo', {
-        n: importPreview.count,
-        cur: importPreview.currency,
-        amt,
+  const handleBulkEdit = useCallback((index: number) => {
+    setBulkEditIdx(index);
+  }, []);
+  const handleBulkRemove = useCallback((index: number) => {
+    setBulkItems((prev) => prev.filter((_, i) => i !== index));
+    setBulkChecked((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+  const handleBulkEditClose = useCallback(() => {
+    setBulkEditIdx(null);
+    setBulkMoreExpanded(false);
+  }, []);
+  const updateBulkSub = useCallback(
+    (patch: Partial<ParsedSub>) => {
+      setBulkItems((prev) => {
+        if (bulkEditIdx === null) return prev;
+        const next = [...prev];
+        next[bulkEditIdx] = { ...next[bulkEditIdx], ...patch };
+        return next;
       });
-    }
-    return t('gmail.cta.import', 'Import {{n}} selected', {
-      n: importPreview.count,
-    });
-  }, [importPreview, t]);
+    },
+    [bulkEditIdx],
+  );
+  const deleteBulkSub = useCallback(() => {
+    if (bulkEditIdx === null) return;
+    const idx = bulkEditIdx;
+    setBulkItems((prev) => prev.filter((_, i) => i !== idx));
+    setBulkChecked((prev) => prev.filter((_, i) => i !== idx));
+    setBulkEditIdx(null);
+    setBulkMoreExpanded(false);
+  }, [bulkEditIdx]);
 
-  const handleImport = useCallback(async () => {
-    const picked = candidates.filter((c) => selected.has(c.sourceMessageId));
+  const handleBulkSaveAll = useCallback(async () => {
+    const picked = bulkItems.filter((_, i) => bulkChecked[i]);
     if (picked.length === 0) return;
     setImporting(true);
     let created = 0;
@@ -517,31 +509,55 @@ export default function GmailImportScreen() {
     // server-side advisory lock around free-plan limit a chance to
     // serialise legitimately. Parallel `Promise.all` would fight the
     // lock and waste roundtrips.
-    for (const c of picked) {
+    const VALID_BILLING = [
+      'WEEKLY',
+      'MONTHLY',
+      'QUARTERLY',
+      'YEARLY',
+      'LIFETIME',
+      'ONE_TIME',
+    ] as const;
+    for (const sub of picked) {
       try {
+        const rawBilling = (sub.billingPeriod || 'MONTHLY').toUpperCase();
+        const safeBilling = (
+          VALID_BILLING.includes(rawBilling as any) ? rawBilling : 'MONTHLY'
+        ) as (typeof VALID_BILLING)[number];
         await createSub.mutateAsync({
-          name: c.name,
-          amount: c.amount,
-          currency: c.currency,
-          billingPeriod: c.billingPeriod,
-          category: c.category,
-          status: c.status,
-          ...(c.nextPaymentDate ? { nextPaymentDate: c.nextPaymentDate } : {}),
-          ...(c.trialEndDate ? { trialEndDate: c.trialEndDate } : {}),
+          name: sub.name || 'Subscription',
+          amount: sub.amount ?? 0,
+          currency: sub.currency || 'USD',
+          billingPeriod: safeBilling,
+          category: (sub.category || 'OTHER').toUpperCase(),
+          status: 'ACTIVE',
+          ...(sub.nextPaymentDate ? { nextPaymentDate: sub.nextPaymentDate } : {}),
+          ...(sub.serviceUrl ? { serviceUrl: sub.serviceUrl } : {}),
+          ...(sub.cancelUrl ? { cancelUrl: sub.cancelUrl } : {}),
+          ...(sub.iconUrl ? { iconUrl: sub.iconUrl } : {}),
+          ...(sub.currentPlan ? { currentPlan: sub.currentPlan } : {}),
         });
         created++;
       } catch {
         failed++;
       }
     }
+    // Refresh local store so the dashboard reflects the new rows
+    // immediately when the user lands back on /(tabs).
+    subscriptionsApi
+      .getAll({ displayCurrency: undefined })
+      .then((r) => {
+        useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+      })
+      .catch(() => {});
     setImporting(false);
     analytics.track('gmail.import.complete', { created, failed });
-    // Surface the outcome inline, then navigate after the success notice
-    // has had time to register. Auto-bouncing to /(tabs) without any
-    // confirmation read as "did it work?" → the brief banner replaces
-    // the modal nag while still giving feedback.
     setNotice({
-      kind: created > 0 && failed === 0 ? 'success' : failed > 0 ? 'warn' : 'info',
+      kind:
+        created > 0 && failed === 0
+          ? 'success'
+          : failed > 0
+            ? 'warn'
+            : 'info',
       title: t('gmail.import.doneTitle', 'Imported'),
       body: t('gmail.import.doneBody', '{{ok}} added, {{fail}} skipped.', {
         ok: created,
@@ -549,7 +565,19 @@ export default function GmailImportScreen() {
       }),
     });
     setTimeout(() => router.replace('/(tabs)'), 1200);
-  }, [candidates, selected, createSub, router, t]);
+  }, [bulkItems, bulkChecked, createSub, router, t]);
+
+  const handleBulkCancel = useCallback(() => {
+    // BulkConfirmView's Back button — drop the result list and return
+    // to the pre-scan "Scan inbox" state.
+    setBulkItems([]);
+    setBulkChecked([]);
+    setScanRanOnce(false);
+    setScanSummary(null);
+    setTruncated(false);
+    setScanFromCache(false);
+    scan.reset();
+  }, [scan]);
 
   const isLoading = status.isLoading;
   const isConnected = !!status.data?.connected;
@@ -676,7 +704,7 @@ export default function GmailImportScreen() {
             </TouchableOpacity>
           </View>
 
-          {candidates.length === 0 && !isScanInProgress && !scanRanOnce && (
+          {bulkItems.length === 0 && !isScanInProgress && !scanRanOnce && (
             <Text style={[styles.fineprint, { color: colors.textSecondary }]}>
               {t(
                 'gmail.fineprint.scan',
@@ -691,7 +719,7 @@ export default function GmailImportScreen() {
               "scan failed". Falls back to a generic message when the
               backend doesn't ship `summary` yet (old deploy / dev
               behind main). */}
-          {candidates.length === 0 && !isScanInProgress && scanRanOnce && (
+          {bulkItems.length === 0 && !isScanInProgress && scanRanOnce && (
             <View
               style={[
                 loaderStyles.banner,
@@ -751,12 +779,12 @@ export default function GmailImportScreen() {
             </View>
           )}
 
-          {candidates.length > 0 && (
+          {bulkItems.length > 0 && (
             <>
               <View style={styles.resultsHeaderRow}>
                 <Text style={[styles.listHeader, { color: colors.text }]}>
                   {t('gmail.list.found', 'Found {{n}} subscriptions', {
-                    n: candidates.length,
+                    n: bulkItems.length,
                   })}
                 </Text>
                 {scanFromCache && (
@@ -784,32 +812,22 @@ export default function GmailImportScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-              <FlatList
-                data={candidates}
-                keyExtractor={(c) => c.sourceMessageId}
-                contentContainerStyle={styles.listContent}
-                renderItem={({ item }) => (
-                  <CandidateRow
-                    item={item}
-                    selected={selected.has(item.sourceMessageId)}
-                    onToggle={() => toggleSelect(item.sourceMessageId)}
-                  />
-                )}
-              />
-              <TouchableOpacity
-                style={[
-                  styles.primaryBtn,
-                  { backgroundColor: colors.primary, opacity: selected.size === 0 ? 0.4 : 1 },
-                ]}
-                onPress={handleImport}
-                disabled={selected.size === 0 || importing}
-              >
-                {importing ? (
-                  <ActivityIndicator color="#FFF" />
-                ) : (
-                  <Text style={styles.primaryBtnText}>{importCtaLabel}</Text>
-                )}
-              </TouchableOpacity>
+              {/* Shared bulk-confirm UI — same as the voice / screenshot
+                  add-flow. Brings free localised category + period tags,
+                  icon.horse-backed icon fallback, per-row Edit and
+                  Delete buttons. The local CandidateRow has been retired. */}
+              <View style={{ marginTop: 8 }}>
+                <BulkConfirmView
+                  items={bulkItems}
+                  checked={bulkChecked}
+                  saving={importing}
+                  onToggle={handleBulkToggle}
+                  onEdit={handleBulkEdit}
+                  onRemove={handleBulkRemove}
+                  onSave={handleBulkSaveAll}
+                  onCancel={handleBulkCancel}
+                />
+              </View>
             </>
           )}
         </View>
@@ -828,6 +846,16 @@ export default function GmailImportScreen() {
         visible={disconnectVisible}
         onCancel={() => setDisconnectVisible(false)}
         onConfirm={handleDisconnectConfirm}
+      />
+
+      <BulkEditModal
+        visible={bulkEditIdx !== null}
+        sub={bulkEditIdx !== null ? bulkItems[bulkEditIdx] ?? null : null}
+        onClose={handleBulkEditClose}
+        onUpdate={updateBulkSub}
+        onDelete={deleteBulkSub}
+        moreExpanded={bulkMoreExpanded}
+        setMoreExpanded={setBulkMoreExpanded}
       />
     </SafeAreaView>
   );
@@ -1451,163 +1479,6 @@ const loaderStyles = StyleSheet.create({
   },
 });
 
-function CandidateRow({
-  item,
-  selected,
-  onToggle,
-}: {
-  item: GmailScanCandidate;
-  selected: boolean;
-  onToggle: () => void;
-}) {
-  const { colors } = useTheme();
-  const { t } = useTranslation();
-  const lowConfidence = item.confidence < 0.6;
-  // Two distinct "amount needs verifying" cases:
-  //   - amountFromEmail=false: price came from the catalog (good
-  //     guess but not from the user's actual receipt). Show "≈".
-  //   - amountIsApproximate: catalog only stored a monthly figure
-  //     and we multiplied (12× for YEARLY). Real-world annual prices
-  //     usually discount the monthly × 12 by ~15–20%, so this is an
-  //     upper bound. Show a stronger "yr est." inline label.
-  const amountIsCatalogDefault =
-    item.amountFromEmail === false && item.amount > 0;
-  const amountIsApproximate = !!item.amountIsApproximate;
-  const [iconError, setIconError] = useState(false);
-  const showIcon = !!item.iconUrl && !iconError;
-  // Letter fallback when no icon URL or the image failed — uses the
-  // service's first letter on a neutral pill so the row never renders
-  // an empty rectangle.
-  const fallbackLetter = (item.name || '?').trim().charAt(0).toUpperCase();
-  return (
-    <TouchableOpacity onPress={onToggle} style={styles.candidateRow}>
-      <View
-        style={[
-          styles.checkbox,
-          {
-            borderColor: selected ? colors.primary : colors.border,
-            backgroundColor: selected ? colors.primary : 'transparent',
-          },
-        ]}
-      >
-        {selected && (
-          <Ionicons name="checkmark" size={16} color="#FFF" />
-        )}
-      </View>
-      {showIcon ? (
-        <Image
-          source={{ uri: item.iconUrl! }}
-          style={styles.candidateIcon}
-          onError={() => setIconError(true)}
-        />
-      ) : (
-        <View
-          style={[
-            styles.candidateIcon,
-            styles.candidateIconFallback,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
-          <Text style={[styles.candidateIconLetter, { color: colors.text }]}>
-            {fallbackLetter}
-          </Text>
-        </View>
-      )}
-      <View style={styles.candidateContent}>
-        <View style={styles.candidateLine}>
-          <Text style={[styles.candidateName, { color: colors.text }]} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text style={[styles.candidateAmount, { color: colors.text }]}>
-            {item.amount > 0
-              ? `${item.currency} ${item.amount.toFixed(2)}`
-              : '—'}
-          </Text>
-        </View>
-        <View style={styles.candidateLine}>
-          {/* Period pill — short, fixed-width visual marker that the
-              user can scan vertically down the list. YEARLY in green
-              (annual commitments stand out), MONTHLY in primary, the
-              rest in muted neutral. Trial pill (amber) replaces the
-              period one because trial period matters more than its
-              cadence at the review-stage. */}
-          {item.isTrial ? (
-            <View
-              style={[
-                styles.periodPill,
-                {
-                  backgroundColor: 'rgba(245,158,11,0.15)',
-                  borderColor: MAGIC_MAIL_AMBER,
-                },
-              ]}
-            >
-              <Text style={[styles.periodPillText, { color: MAGIC_MAIL_AMBER }]}>
-                {t('gmail.list.trial_pill', 'TRIAL').toUpperCase()}
-              </Text>
-            </View>
-          ) : (
-            <View
-              style={[
-                styles.periodPill,
-                item.billingPeriod === 'YEARLY'
-                  ? { backgroundColor: 'rgba(16,185,129,0.12)', borderColor: '#10B981' }
-                  : item.billingPeriod === 'MONTHLY'
-                    ? { backgroundColor: `${colors.primary}1F`, borderColor: colors.primary }
-                    : { backgroundColor: colors.background, borderColor: colors.border },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.periodPillText,
-                  {
-                    color:
-                      item.billingPeriod === 'YEARLY'
-                        ? '#10B981'
-                        : item.billingPeriod === 'MONTHLY'
-                          ? colors.primary
-                          : colors.textSecondary,
-                  },
-                ]}
-              >
-                {item.billingPeriod}
-              </Text>
-            </View>
-          )}
-          <Text
-            style={[styles.candidateMeta, { color: colors.textSecondary, flex: 1 }]}
-            numberOfLines={1}
-          >
-            {item.category && item.category !== 'OTHER'
-              ? item.category.toLowerCase()
-              : ''}
-            {item.isCancellation ? ' · cancelled' : ''}
-            {item.aggregatedFrom.length > 1
-              ? ` · ${item.aggregatedFrom.length} receipts`
-              : ''}
-          </Text>
-          {amountIsApproximate ? (
-            <Text
-              style={[styles.lowConfBadge, { color: colors.warning ?? MAGIC_MAIL_AMBER }]}
-            >
-              {t('gmail.approx_label', '≈ est.')}
-            </Text>
-          ) : amountIsCatalogDefault ? (
-            <Text
-              style={[styles.lowConfBadge, { color: colors.warning ?? MAGIC_MAIL_AMBER }]}
-            >
-              ≈
-            </Text>
-          ) : null}
-          {lowConfidence && (
-            <Text style={[styles.lowConfBadge, { color: colors.warning ?? MAGIC_MAIL_AMBER }]}>
-              ?
-            </Text>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
