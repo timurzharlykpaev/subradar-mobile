@@ -250,27 +250,49 @@ export default function PaywallScreen() {
           await queryClient.refetchQueries({ queryKey: ['billing'] });
           const billing = queryClient.getQueryData<BillingMeResponse>(['billing', 'me']);
           const plan = billing?.effective?.plan;
-          // The expected post-purchase plan derives from the productId we
-          // bought, NOT a generic "anything but free". The previous check
-          // (`plan !== 'free'`) bugged out on Pro→Team upgrades: the user
-          // was already on `plan='pro'`, the syncRetry returned true at
-          // attempt 1 even though the backend was still on Pro and the
-          // upgrade hadn't propagated yet.
+          // Treat plans as a tier hierarchy (free < pro < organization),
+          // not as a literal equality check. The user paying for Pro
+          // while ALREADY a team owner correctly resolves to
+          // effective.plan='organization' on the server (org plan
+          // outranks own pro plan in the effective-access merge);
+          // a literal equality `plan === 'pro'` then loops for the
+          // full 22-second retry budget because organization will
+          // never equal pro. Accepting "actual >= expected" matches
+          // user intent (they got AT LEAST what they paid for).
+          //
+          // The Pro→Team upgrade case the previous comment described
+          // is still covered: if you bought Team but the server is
+          // still showing Pro, expectedTier=2 > actualTier=1 → retry.
+          const planTier: Record<string, number> = {
+            free: 0,
+            pro: 1,
+            organization: 2,
+          };
           const expected: 'pro' | 'organization' = /team|org/i.test(productId)
             ? 'organization'
             : 'pro';
-          if (plan === expected) {
-            console.log('[Paywall] RC sync confirmed: plan =', plan);
+          const expectedTier = planTier[expected] ?? 1;
+          const actualTier = planTier[plan ?? 'free'] ?? -1;
+          if (actualTier > 0 && actualTier >= expectedTier) {
+            console.log(
+              '[Paywall] RC sync confirmed: plan =',
+              plan,
+              '(tier',
+              actualTier,
+              '>= expected',
+              expectedTier,
+              ')',
+            );
             analytics.syncRetrySucceeded(attempt + 1, productId);
             return true;
           }
-          lastError = `plan=${plan ?? 'null'} (expected ${expected})`;
+          lastError = `plan=${plan ?? 'null'} (expected ${expected} or higher)`;
           console.warn(
             '[Paywall] RC sync POST ok but plan still',
             plan,
             'expected',
             expected,
-            '— retrying',
+            'or higher — retrying',
           );
         } catch (e: any) {
           lastError = e?.message;

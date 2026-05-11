@@ -358,21 +358,64 @@ export default function GmailImportScreen() {
 
   // React to the scan job's terminal state. `applyScanResult` /
   // `applyScanError` keep the same UX as the previous sync flow.
-  // Captures the current scanIdRef value so a result that lands
-  // after the user kicked off a fresh scan doesn't clobber it.
+  //
+  // The two callbacks are stashed in refs so the effect doesn't
+  // re-fire every time one of THEIR transitive dependencies (e.g.
+  // useMutation results that get a fresh object on each render)
+  // changes identity — without the ref the result-applied effect
+  // entered an infinite loop on production: applyScanResult ran,
+  // its setCandidates triggered a re-render, applyScanError
+  // got a new identity (handleConnect → connect mutation handle),
+  // the effect saw new deps and re-ran, looping at ~20 Hz until
+  // React bailed with "Maximum update depth exceeded".
+  //
+  // The fix is to only depend on the SCAN STATE primitives. The
+  // callbacks are stable in their behaviour even when their
+  // identity flickers.
+  const applyResultRef = useRef(applyScanResult);
+  const applyErrorRef = useRef(applyScanError);
   useEffect(() => {
-    if (scan.status === 'completed' && scan.result) {
-      applyScanResult(scan.result, scanIdRef.current);
-    } else if (scan.status === 'failed' && scan.error) {
-      void applyScanError(scan.error);
+    applyResultRef.current = applyScanResult;
+  }, [applyScanResult]);
+  useEffect(() => {
+    applyErrorRef.current = applyScanError;
+  }, [applyScanError]);
+
+  // Last-handled marker so we never fire applyScanResult twice for
+  // the same job completion (e.g. on a focus refresh that re-runs
+  // the effect with identical scan state).
+  const lastHandledJobIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const jobId = scan.jobId;
+    if (!jobId) {
+      lastHandledJobIdRef.current = null;
+      return;
     }
-  }, [scan.status, scan.result, scan.error, applyScanResult, applyScanError]);
+    if (lastHandledJobIdRef.current === jobId && scan.status !== 'running') {
+      // Already dispatched the terminal event for this job.
+      return;
+    }
+    if (scan.status === 'completed' && scan.result) {
+      lastHandledJobIdRef.current = jobId;
+      applyResultRef.current(scan.result, scanIdRef.current);
+    } else if (scan.status === 'failed' && scan.error) {
+      lastHandledJobIdRef.current = jobId;
+      void applyErrorRef.current(scan.error);
+    }
+  }, [scan.status, scan.result, scan.error, scan.jobId]);
 
   // Push-notification deep link: when the backend finishes a scan
   // while the app was backgrounded, the tap on the notification
   // routes here with `?jobId=…`. We resume polling that job so the
   // user lands directly on the review sheet instead of having to
-  // re-scan.
+  // re-scan. `scan.resume` is stashed in a ref so the effect
+  // doesn't re-fire on every render — same reason as the terminal-
+  // state effect above (the spreaded `scan` object gets a fresh
+  // identity on each render even when nothing changed).
+  const resumeRef = useRef(scan.resume);
+  useEffect(() => {
+    resumeRef.current = scan.resume;
+  }, [scan.resume]);
   useEffect(() => {
     const incomingJobId = Array.isArray(searchParams.jobId)
       ? searchParams.jobId[0]
@@ -380,11 +423,8 @@ export default function GmailImportScreen() {
     if (!incomingJobId) return;
     if (scan.jobId === incomingJobId) return;
     scanIdRef.current += 1;
-    scan.resume(incomingJobId);
-    // The router param sticks around until the user navigates; we
-    // don't bother clearing it because the (jobId === scan.jobId)
-    // guard above debounces re-runs.
-  }, [searchParams.jobId, scan]);
+    resumeRef.current(incomingJobId);
+  }, [searchParams.jobId, scan.jobId]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelected((prev) => {
