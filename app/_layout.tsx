@@ -482,6 +482,18 @@ function PushSetup() {
         test: '/(tabs)/settings',
       };
 
+      // Gmail background-scan completion needs special routing: we
+      // pass through the `jobId` so the gmail-import screen can
+      // resume polling that specific job and skip the "start a new
+      // scan" path (no extra daily-quota burn, no extra wait).
+      if (type === 'gmail_scan_complete') {
+        const jobId = typeof data.jobId === 'string' ? data.jobId : null;
+        if (jobId) {
+          router.push(`/gmail-import?jobId=${encodeURIComponent(jobId)}` as any);
+          return;
+        }
+      }
+
       if (type && SCREEN_BY_TYPE[type]) {
         router.push(SCREEN_BY_TYPE[type] as any);
         return;

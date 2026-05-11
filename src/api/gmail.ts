@@ -110,7 +110,49 @@ export const gmailApi = {
    * When `force` is true, bypasses the backend's 10-minute result cache
    * and runs a real scan — used by the "Scan again" CTA after the user
    * reviewed a cached result.
+   *
+   * NOTE: this is the SYNC endpoint, kept for backward compat with
+   * older builds. New flows should use `startScan` + `getScanStatus`
+   * so the scan survives a backgrounded app.
    */
   scan: (locale?: string, force = false) =>
     apiClient.post<GmailScanResult>('/gmail/scan', { locale, force }),
+
+  /**
+   * Async scan — returns immediately with a jobId. The scan runs
+   * server-side regardless of whether the mobile keeps polling;
+   * when it finishes the user gets a push notification with the
+   * candidate count. The mobile either polls /status while the
+   * screen is open or opens the screen via the push deep-link.
+   *
+   * On a fresh-cached result the response comes back as
+   * `{ jobId, status: 'completed', cached: true }` — the mobile
+   * client should then call /status once and render immediately
+   * without ever showing the scan loader.
+   */
+  startScan: async (locale?: string, force = false) => {
+    const { data } = await apiClient.post<{
+      jobId: string;
+      status: 'pending' | 'running' | 'completed';
+      cached: boolean;
+    }>('/gmail/scan/start', { locale, force });
+    return data;
+  },
+
+  /**
+   * Poll for a scan job's state. Polling cadence is the caller's
+   * choice; backend rate-limits at 60 req/min/user, which is enough
+   * for a 2s poll for the full job lifetime.
+   */
+  getScanStatus: async (jobId: string) => {
+    const { data } = await apiClient.get<{
+      jobId: string;
+      status: 'pending' | 'running' | 'completed' | 'failed';
+      result?: GmailScanResult;
+      error?: { code?: string; message: string; statusCode?: number };
+      startedAt: string;
+      completedAt?: string;
+    }>(`/gmail/scan/status/${encodeURIComponent(jobId)}`);
+    return data;
+  },
 };

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useFocusEffect, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,7 @@ import {
   useGmailStatus,
   useGmailConnect,
   useGmailDisconnect,
-  useGmailScan,
+  useGmailScanJob,
 } from '../src/hooks/useGmail';
 import { useCreateSubscription } from '../src/hooks/useSubscriptions';
 import type { GmailScanCandidate, GmailScanResult } from '../src/api/gmail';
@@ -66,9 +66,21 @@ export default function GmailImportScreen() {
   const status = useGmailStatus();
   const connect = useGmailConnect();
   const disconnect = useGmailDisconnect();
-  const scan = useGmailScan();
+  // Background scan job (start + poll). Returns the same shape as
+  // the old sync hook once the job completes; surface-area for the
+  // UI is identical (`scan.status` covers what `isScanInProgress`
+  // used to). Critically, the scan keeps running server-side even
+  // if the user backgrounds the app — a push notification deep-
+  // links them back here with `?jobId=…` and we resume polling.
+  const scan = useGmailScanJob();
+  const isScanInProgress =
+    scan.status === 'pending' || scan.status === 'running';
   const createSub = useCreateSubscription();
   const queryClient = useQueryClient();
+  // Deep-link payload from the push notification: when present, we
+  // skip the "start a new scan" path and resume polling the existing
+  // job that completed while the user was offscreen.
+  const searchParams = useLocalSearchParams<{ jobId?: string }>();
 
   // Single in-screen notice slot. Replaces five separate `Alert.alert`
   // call sites (connect error, scan failed, daily-limit hit, import done,
@@ -199,16 +211,8 @@ export default function GmailImportScreen() {
     setSelected(new Set());
   }, [disconnect]);
 
-  const handleScan = useCallback(async (opts?: { force?: boolean }) => {
-    const myScanId = ++scanIdRef.current;
-    try {
-      analytics.track('gmail.scan.tap');
-      setCandidates([]);
-      setSelected(new Set());
-      setTruncated(false);
-      setScanSummary(null);
-      setScanFromCache(false);
-      const result = await scan.mutateAsync({ force: !!opts?.force });
+  const applyScanResult = useCallback(
+    (result: GmailScanResult, myScanId: number) => {
       // Bail if a newer scan was started after this one. Without this
       // a slow first scan that finishes after the user toggled some
       // checkboxes from a second scan would clobber their selections.
@@ -241,9 +245,14 @@ export default function GmailImportScreen() {
       setScanSummary(result.summary ?? null);
       setScanFromCache(!!result.cached);
       setScanRanOnce(true);
-    } catch (err: any) {
-      const code = err?.response?.data?.code;
-      const httpStatus = err?.response?.status;
+    },
+    [],
+  );
+
+  const applyScanError = useCallback(
+    async (err: any) => {
+      const code = err?.response?.data?.code ?? err?.code;
+      const httpStatus = err?.response?.status ?? err?.statusCode;
       if (code === 'PRO_PLAN_REQUIRED' || httpStatus === 402) {
         analytics.track('gmail.scan.paywall');
         router.push('/paywall?feature=magic_mail');
@@ -290,9 +299,7 @@ export default function GmailImportScreen() {
       // the daily-limit copy after 2 fast taps, which reads as a paid
       // feature regression.
       if (code === 'GMAIL_DAILY_LIMIT') {
-        analytics.track('gmail.scan.rate_limited', {
-          code,
-        });
+        analytics.track('gmail.scan.rate_limited', { code });
         const nextIso = err?.response?.data?.nextResetAt as string | undefined;
         let whenLabel = t('gmail.daily_limit_reset_tomorrow', 'tomorrow');
         if (nextIso) {
@@ -323,8 +330,61 @@ export default function GmailImportScreen() {
         body:
           err?.response?.data?.message ?? err?.message ?? String(err),
       });
+    },
+    [router, t, queryClient, handleConnect],
+  );
+
+  // Kick off a new background scan. The actual result lands via the
+  // useEffect below once the job completes server-side — we don't
+  // await it here, so the user can leave the screen / app and a
+  // push will bring them back.
+  const handleScan = useCallback(
+    async (opts?: { force?: boolean }) => {
+      scanIdRef.current += 1;
+      analytics.track('gmail.scan.tap');
+      setCandidates([]);
+      setSelected(new Set());
+      setTruncated(false);
+      setScanSummary(null);
+      setScanFromCache(false);
+      try {
+        await scan.start({ force: !!opts?.force });
+      } catch (err: any) {
+        await applyScanError(err);
+      }
+    },
+    [scan, applyScanError],
+  );
+
+  // React to the scan job's terminal state. `applyScanResult` /
+  // `applyScanError` keep the same UX as the previous sync flow.
+  // Captures the current scanIdRef value so a result that lands
+  // after the user kicked off a fresh scan doesn't clobber it.
+  useEffect(() => {
+    if (scan.status === 'completed' && scan.result) {
+      applyScanResult(scan.result, scanIdRef.current);
+    } else if (scan.status === 'failed' && scan.error) {
+      void applyScanError(scan.error);
     }
-  }, [scan, router, t, queryClient, handleConnect]);
+  }, [scan.status, scan.result, scan.error, applyScanResult, applyScanError]);
+
+  // Push-notification deep link: when the backend finishes a scan
+  // while the app was backgrounded, the tap on the notification
+  // routes here with `?jobId=…`. We resume polling that job so the
+  // user lands directly on the review sheet instead of having to
+  // re-scan.
+  useEffect(() => {
+    const incomingJobId = Array.isArray(searchParams.jobId)
+      ? searchParams.jobId[0]
+      : searchParams.jobId;
+    if (!incomingJobId) return;
+    if (scan.jobId === incomingJobId) return;
+    scanIdRef.current += 1;
+    scan.resume(incomingJobId);
+    // The router param sticks around until the user navigates; we
+    // don't bother clearing it because the (jobId === scan.jobId)
+    // guard above debounces re-runs.
+  }, [searchParams.jobId, scan]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelected((prev) => {
@@ -553,9 +613,9 @@ export default function GmailImportScreen() {
                 { backgroundColor: colors.primary },
               ]}
               onPress={() => handleScan()}
-              disabled={scan.isPending || importing}
+              disabled={isScanInProgress || importing}
             >
-              {scan.isPending ? (
+              {isScanInProgress ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <Text style={styles.primaryBtnText}>
@@ -576,7 +636,7 @@ export default function GmailImportScreen() {
             </TouchableOpacity>
           </View>
 
-          {candidates.length === 0 && !scan.isPending && !scanRanOnce && (
+          {candidates.length === 0 && !isScanInProgress && !scanRanOnce && (
             <Text style={[styles.fineprint, { color: colors.textSecondary }]}>
               {t(
                 'gmail.fineprint.scan',
@@ -591,7 +651,7 @@ export default function GmailImportScreen() {
               "scan failed". Falls back to a generic message when the
               backend doesn't ship `summary` yet (old deploy / dev
               behind main). */}
-          {candidates.length === 0 && !scan.isPending && scanRanOnce && (
+          {candidates.length === 0 && !isScanInProgress && scanRanOnce && (
             <View
               style={[
                 loaderStyles.banner,
@@ -625,9 +685,9 @@ export default function GmailImportScreen() {
             </View>
           )}
 
-          {scan.isPending && <ScanLoader />}
+          {isScanInProgress && <ScanLoader />}
 
-          {truncated && !scan.isPending && (
+          {truncated && !isScanInProgress && (
             <View
               style={[
                 loaderStyles.banner,
@@ -674,7 +734,7 @@ export default function GmailImportScreen() {
                 )}
                 <TouchableOpacity
                   onPress={() => handleScan({ force: true })}
-                  disabled={scan.isPending || importing}
+                  disabled={isScanInProgress || importing}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   style={styles.scanAgainBtn}
                 >
