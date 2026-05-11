@@ -1,112 +1,167 @@
 appId: com.goalin.subradar
-name: "99 - App Store Marketing Screenshots (English, full app tour)"
+name: "99 — App Store Marketing Screenshots (10 killer features, EN)"
 #
 # Captures the App Store / Google Play screenshot set in one run.
-# Output lands in ~/.maestro/screenshots/ as 99_marketing_*.png.
+# Output lands in ~/.maestro/screenshots/ as ms_*.png and is then copied
+# by scripts/collect-app-store-screenshots.sh into
+#   marketing/app-store-screenshots/raw/<NN>_<slug>.png
 #
 # Run on the largest device target Apple requires:
-#   xcrun simctl boot "iPhone 16 Pro Max"
-#   npx expo run:ios --device "iPhone 16 Pro Max"   # build + install
+#   xcrun simctl boot "iPhone 17 Pro Max"
+#   open -a Simulator
+#   EXPO_PUBLIC_API_URL=https://api-dev.subradar.ai/api/v1 \
+#     npx expo run:ios --device "iPhone 17 Pro Max"
 #   maestro test .maestro/99_marketing_screenshots.yaml
 #
-# After running, the screenshots can be used as:
-#   - direct uploads to App Store Connect (after status-bar cleanup), OR
-#   - source material for AI-generated marketing visuals (device frames
-#     + headlines composed on top).
+# Demo account: review@subradar.ai / OTP 000000.
+# Seed the dev DB with 4–8 realistic subscriptions BEFORE running so the
+# dashboard, trial badges, analytics and workspace screens look populated.
 ---
 - runFlow: ./00_onboarding_flow.yaml
 
-# ── 1. Dashboard hero ─────────────────────────────────────────────────────
-# Primary "what is this app" shot — total spend + active subs list.
+# ── 01 · Hero — Dashboard ────────────────────────────────────────────────
+# Primary "what is this app" shot — total spend + active subs + chart.
+# Headline overlay: "Find $300 you didn't know you were losing."
 - extendedWaitUntil:
     visible:
       id: "dashboard-screen"
     timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
-- takeScreenshot: 99_marketing_01_dashboard
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: ms_01_hero_dashboard
 
-# ── 2. Subscriptions list ─────────────────────────────────────────────────
+# ── 02 · Magical Add Sheet — three killer inputs in one screen ───────────
+# Voice (hero mic) + Magic Image + Magic Mail visible together.
+# Headline overlay: "Add any subscription in 2 seconds."
 - tapOn:
-    id: "tab-subs"
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 8000
+- runFlow: ./_dismiss_modals.yaml
+- takeScreenshot: ms_02_magical_add_sheet
+
+# ── 03 · Magic Voice — listening state ───────────────────────────────────
+# Tap the giant mic to enter recording state with the red pulse rings.
+# Headline overlay: "Say it. We track it."
+- tapOn:
+    id: "voice-hero"
+    optional: true
+# Native iOS mic-permission dialog — allow on first run.
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+- takeScreenshot: ms_03_magic_voice
+# Stop recording so the next steps land in a clean state.
+- tapOn:
+    id: "voice-hero"
+    optional: true
+
+# ── 04 · Magic Mail — Gmail bulk import (unique vs. all competitors) ─────
+# Headline overlay: "Scan your inbox. Find every forgotten charge."
+- tapOn:
+    id: "hero-magic-mail"
     optional: true
 - runFlow: ./_dismiss_modals.yaml
-- takeScreenshot: 99_marketing_02_subscriptions
-
-# ── 3. Add subscription — AI tab (the differentiator) ─────────────────────
+- takeScreenshot: ms_04_magic_mail_gmail
+# Back to the dashboard for the next group.
+- tapOn:
+    id: "gmail-back"
+    optional: true
+- back
 - tapOn:
     id: "tab-home"
     optional: true
-- tapOn:
-    id: "dashboard-quick-actions"
-    optional: true
-- tapOn:
-    id: "add-sub-sheet"
-    optional: true
-- runFlow: ./_dismiss_modals.yaml
-- takeScreenshot: 99_marketing_03_add_sheet_default
 
-# AI smart-input mode (voice / screenshot / text)
-- tapOn:
-    id: "tab-ai"
-    optional: true
-- takeScreenshot: 99_marketing_04_ai_smart_input
-
-# Voice tab
-- tapOn:
-    id: "tab-voice"
-    optional: true
-- takeScreenshot: 99_marketing_05_voice_input
-
-# Close add sheet
-- tapOn:
-    id: "btn-close-add-sheet"
-    optional: true
-- back
-
-# ── 4. Analytics ──────────────────────────────────────────────────────────
-- tapOn:
-    id: "tab-analytics"
-    optional: true
-- runFlow: ./_dismiss_modals.yaml
-- takeScreenshot: 99_marketing_06_analytics_overview
-
-# Try to scroll to forecasts / category breakdown
-- scroll
-- takeScreenshot: 99_marketing_07_analytics_categories
-
-# ── 5. Subscription detail ────────────────────────────────────────────────
+# ── 05 · Subscriptions list — Trial Killer badges + search/filter ────────
+# Headline overlay: "Never get blindsided by a renewal."
 - tapOn:
     id: "tab-subs"
     optional: true
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 8000
 - runFlow: ./_dismiss_modals.yaml
-# Tap the first subscription card if any exists
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: ms_05_subscriptions_list
+
+# ── 06 · Subscription detail — pause / cancel / edit ─────────────────────
+# Headline overlay: "Pause, cancel or edit — all in one tap."
 - tapOn:
     id: "subscription-card-0"
     optional: true
-# Fallback: tap any visible subscription row
 - tapOn:
     text: "Netflix"
     optional: true
-- takeScreenshot: 99_marketing_08_subscription_detail
-
-# Back to list
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 8000
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: ms_06_subscription_detail
 - back
 
-# ── 6. Workspace / Team ───────────────────────────────────────────────────
+# ── 07 · Analytics — forecast + monthly trend ────────────────────────────
+# Headline overlay: "See your next 12 months — before they hit your card."
+- tapOn:
+    id: "tab-analytics"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "analytics-screen"
+    timeout: 8000
+- runFlow: ./_dismiss_modals.yaml
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: ms_07_analytics_forecast
+
+# ── 08 · Analytics deeper — categories breakdown ─────────────────────────
+# Headline overlay: "See where every dollar goes."
+- scroll
+- scroll
+- takeScreenshot: ms_08_analytics_categories
+
+# ── 09 · Team / Workspace — split costs with family or team ──────────────
+# Headline overlay: "Stop paying twice for the same thing."
 - tapOn:
     id: "tab-workspace"
     optional: true
+- extendedWaitUntil:
+    visible:
+      id: "workspace-screen"
+    timeout: 8000
 - runFlow: ./_dismiss_modals.yaml
-- takeScreenshot: 99_marketing_09_workspace
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- takeScreenshot: ms_09_workspace_team
 
-# ── 7. Settings (proves the polish — billing card, plan badge, language) ──
+# ── 10 · Reports — PDF / CSV / tax-ready exports ─────────────────────────
+# Headline overlay: "Tax-ready reports in one tap."
 - tapOn:
     id: "tab-settings"
     optional: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 8000
 - runFlow: ./_dismiss_modals.yaml
-- takeScreenshot: 99_marketing_10_settings
+- tapOn:
+    text: "Reports"
+    optional: true
+- tapOn:
+    text: "Reports & Data"
+    optional: true
+- takeScreenshot: ms_10_reports_export
 
-# Sanity guards — never ship a screenshot with these visible
+# Sanity guards — never ship a screenshot with these visible.
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
 - assertNotVisible: "Render Error"

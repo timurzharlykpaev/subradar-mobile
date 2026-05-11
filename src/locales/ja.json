@@ -35,7 +35,8 @@
     "next": "次へ",
     "something_went_wrong": "問題が発生しました",
     "upgrade": "アップグレード",
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "service_unavailable": "サービス一時利用不可 — 再試行中…"
   },
   "tabs": {
     "home": "ホーム",

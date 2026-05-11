@@ -7,9 +7,12 @@ import { API_URL } from '../api/client';
 // Derive the base (strip /api/v1 suffix if present) and re-append health path
 const HEALTH_URL = `${API_URL.replace(/\/api\/v1\/?$/, '')}/api/v1/health`;
 
+type Reachability = 'ok' | 'service_down' | 'no_network';
+
 export function OfflineBanner() {
   const { t } = useTranslation();
-  const [isOffline, setIsOffline] = useState(false);
+  const [reach, setReach] = useState<Reachability>('ok');
+  const isOffline = reach !== 'ok';
   const retryRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
@@ -25,17 +28,26 @@ export function OfflineBanner() {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
         try {
-          await fetch(HEALTH_URL, {
+          const res = await fetch(HEALTH_URL, {
             method: 'HEAD',
             signal: controller.signal,
           });
-          if (!cancelled) setIsOffline(false);
+          // 5xx (typical during a blue-green redeploy window or backend
+          // crash-loop) means the SERVICE is unreachable even though the
+          // network is up. Differentiate from a real offline so we can show
+          // the right copy ("Service temporarily unavailable" vs "No
+          // internet connection").
+          const next: Reachability = res.status >= 500 ? 'service_down' : 'ok';
+          if (!cancelled) setReach(next);
+          if (next !== 'ok' && !cancelled) {
+            retryRef.current = setTimeout(checkConnection, 5000);
+          }
         } finally {
           clearTimeout(timeout);
         }
       } catch {
         if (!cancelled) {
-          setIsOffline(true);
+          setReach('no_network');
           // Retry after 5 seconds when offline
           retryRef.current = setTimeout(checkConnection, 5000);
         }
@@ -64,15 +76,22 @@ export function OfflineBanner() {
 
   if (!isOffline) return null;
 
+  const isServiceDown = reach === 'service_down';
   return (
     <View
-      style={styles.container}
+      style={[styles.container, isServiceDown && styles.containerWarning]}
       accessibilityRole="alert"
       accessibilityLabel={t('a11y.offline_banner', 'Offline banner')}
     >
-      <Ionicons name="cloud-offline-outline" size={16} color="#fff" />
+      <Ionicons
+        name={isServiceDown ? 'alert-circle-outline' : 'cloud-offline-outline'}
+        size={16}
+        color="#fff"
+      />
       <Text style={styles.text}>
-        {t('common.offline', 'No internet connection')}
+        {isServiceDown
+          ? t('common.service_unavailable', 'Service temporarily unavailable — retrying…')
+          : t('common.offline', 'No internet connection')}
       </Text>
     </View>
   );
@@ -88,5 +107,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
+  containerWarning: { backgroundColor: '#f59e0b' },
   text: { color: '#fff', fontSize: 13, fontWeight: '600' },
 });

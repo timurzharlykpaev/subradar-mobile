@@ -16,6 +16,8 @@ import {
   Platform,
   Dimensions,
   KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -505,6 +507,18 @@ export default function OnboardingScreen() {
   const setIcpSegment = useSettingsStore((s) => s.setIcpSegment);
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
+
+  // Hide the bottom dots / nav buttons when the keyboard is up so they stop
+  // colliding with the OTP inputs on shorter devices. Listening to keyboard
+  // events is cheap and only renders once on toggle.
+  const [keyboardShown, setKeyboardShown] = useState(false);
+  useEffect(() => {
+    const showEv = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEv = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const subShow = Keyboard.addListener(showEv, () => setKeyboardShown(true));
+    const subHide = Keyboard.addListener(hideEv, () => setKeyboardShown(false));
+    return () => { subShow.remove(); subHide.remove(); };
+  }, []);
 
   // Google OAuth via web browser redirect (works without native build)
   const googlePromptAsync = async () => {
@@ -1334,30 +1348,39 @@ export default function OnboardingScreen() {
       >
         {isDark ? <SunIcon size={18} color="#F59E0B" /> : <MoonIcon size={18} color="#6366F1" />}
       </TouchableOpacity>
-      <View style={styles.content}>{steps[step]}</View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.content}>{steps[step]}</View>
+      </TouchableWithoutFeedback>
 
-      <View style={styles.footer}>
-        <View style={styles.dots}>
-          {steps.map((_, i) => (
-            <View key={i} style={[styles.dot, { backgroundColor: colors.border }, step === i && [styles.dotActive, { backgroundColor: colors.primary }]]} />
-          ))}
-        </View>
-
-        {step > 0 && step !== 3 && step !== 4 && step !== 5 && (
-          <View style={styles.footerBtns}>
-            {step > 1 && (
-              <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
-                <Text style={[styles.backBtnText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
-              </TouchableOpacity>
-            )}
-            {step < steps.length - 1 && step !== 3 && (
-              <TouchableOpacity testID="btn-next" style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
-                <Text style={styles.nextBtnText}>{t('onboarding.next')}</Text>
-              </TouchableOpacity>
-            )}
+      {/* Hide the whole footer (pagination dots + back/next) while the
+          keyboard is up. On the OTP step the dots used to sit on top of the
+          verify button on shorter devices, and the number-pad has no Done
+          accessory — tapping outside is the only way to close it, so we
+          let the content area swallow taps. */}
+      {!keyboardShown && (
+        <View style={styles.footer}>
+          <View style={styles.dots}>
+            {steps.map((_, i) => (
+              <View key={i} style={[styles.dot, { backgroundColor: colors.border }, step === i && [styles.dotActive, { backgroundColor: colors.primary }]]} />
+            ))}
           </View>
-        )}
-      </View>
+
+          {step > 0 && step !== 3 && step !== 4 && step !== 5 && (
+            <View style={styles.footerBtns}>
+              {step > 1 && (
+                <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
+                  <Text style={[styles.backBtnText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
+                </TouchableOpacity>
+              )}
+              {step < steps.length - 1 && step !== 3 && (
+                <TouchableOpacity testID="btn-next" style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
+                  <Text style={styles.nextBtnText}>{t('onboarding.next')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Auth error toast */}
       <CountryPicker

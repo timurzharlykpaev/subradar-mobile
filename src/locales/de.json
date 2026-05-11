@@ -35,7 +35,8 @@
     "next": "Weiter",
     "something_went_wrong": "Etwas ist schiefgelaufen",
     "upgrade": "Upgrade",
-    "dismiss": "Schließen"
+    "dismiss": "Schließen",
+    "service_unavailable": "Dienst vorübergehend nicht verfügbar — Wiederholung…"
   },
   "tabs": {
     "home": "Start",

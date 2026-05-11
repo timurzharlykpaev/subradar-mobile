@@ -35,7 +35,8 @@
     "next": "Próximo",
     "something_went_wrong": "Algo deu errado",
     "upgrade": "Atualizar",
-    "dismiss": "Fechar"
+    "dismiss": "Fechar",
+    "service_unavailable": "Serviço indisponível — tentando novamente…"
   },
   "tabs": {
     "home": "Início",
