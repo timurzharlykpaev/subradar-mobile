@@ -1286,6 +1286,11 @@
     "try_restart": "Essayez de redémarrer l'application",
     "restart": "Redémarrer"
   },
+  "refund": {
+    "title": "Remboursement traité",
+    "subtitle": "Votre abonnement a été remboursé et l'accès retiré",
+    "cta": "S'abonner"
+  },
   "retention": {
     "cancel_intercept_title": "Êtes-vous sûr ?",
     "what_you_lose": "Vous perdrez l'accès à :",

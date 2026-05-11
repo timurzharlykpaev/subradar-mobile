@@ -1284,6 +1284,11 @@
     "try_restart": "请尝试重启应用",
     "restart": "重启"
   },
+  "refund": {
+    "title": "退款已处理",
+    "subtitle": "您的订阅已退款,访问权限已移除",
+    "cta": "订阅"
+  },
   "retention": {
     "cancel_intercept_title": "确定要取消吗？",
     "what_you_lose": "您将失去以下权限：",

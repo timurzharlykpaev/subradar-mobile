@@ -1284,6 +1284,11 @@
     "try_restart": "アプリを再起動してください",
     "restart": "再起動"
   },
+  "refund": {
+    "title": "返金が処理されました",
+    "subtitle": "サブスクリプションが返金され、アクセスが削除されました",
+    "cta": "登録する"
+  },
   "retention": {
     "cancel_intercept_title": "本当にキャンセルしますか？",
     "what_you_lose": "以下へのアクセスを失います：",

@@ -11,6 +11,7 @@ export type BannerPriority =
   | 'expiration'
   | 'double_pay'
   | 'annual_upgrade'
+  | 'refund'
   | 'win_back'
   | 'none';
 

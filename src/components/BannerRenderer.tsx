@@ -6,6 +6,7 @@ import ExpirationBanner from './ExpirationBanner';
 import { DoublePayBanner } from './DoublePayBanner';
 import AnnualUpgradeBanner from './AnnualUpgradeBanner';
 import WinBackBanner from './WinBackBanner';
+import RefundBanner from './RefundBanner';
 
 /**
  * Single entry point for rendering the highest-priority banner for the current user.
@@ -52,6 +53,8 @@ export function BannerRenderer() {
       return <DoublePayBanner payload={payload} />;
     case 'annual_upgrade':
       return <AnnualUpgradeBanner payload={payload} />;
+    case 'refund':
+      return <RefundBanner payload={payload} />;
     case 'win_back':
       return <WinBackBanner payload={payload} />;
     case 'none':

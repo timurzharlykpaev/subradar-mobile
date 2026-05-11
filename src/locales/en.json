@@ -1315,6 +1315,11 @@
     "more_options": "More options",
     "less_options": "Less"
   },
+  "refund": {
+    "title": "Refund processed",
+    "subtitle": "Your subscription was refunded and access removed",
+    "cta": "Subscribe"
+  },
   "retention": {
     "cancel_intercept_title": "Are you sure?",
     "what_you_lose": "You'll lose access to:",

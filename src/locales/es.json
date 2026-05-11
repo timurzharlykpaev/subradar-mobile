@@ -1286,6 +1286,11 @@
     "try_restart": "Intenta reiniciar la app",
     "restart": "Reiniciar"
   },
+  "refund": {
+    "title": "Reembolso procesado",
+    "subtitle": "Tu suscripción fue reembolsada y el acceso retirado",
+    "cta": "Suscribirse"
+  },
   "retention": {
     "cancel_intercept_title": "¿Estás seguro?",
     "what_you_lose": "Perderás acceso a:",

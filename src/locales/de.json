@@ -1286,6 +1286,11 @@
     "try_restart": "Versuchen Sie, die App neu zu starten",
     "restart": "Neu starten"
   },
+  "refund": {
+    "title": "Rückerstattung bearbeitet",
+    "subtitle": "Dein Abonnement wurde erstattet und der Zugriff entfernt",
+    "cta": "Abonnieren"
+  },
   "retention": {
     "cancel_intercept_title": "Bist du sicher?",
     "what_you_lose": "Du verlierst Zugang zu:",

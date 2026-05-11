@@ -1284,6 +1284,11 @@
     "try_restart": "앱을 다시 시작해 보세요",
     "restart": "다시 시작"
   },
+  "refund": {
+    "title": "환불이 처리되었습니다",
+    "subtitle": "구독이 환불되었으며 액세스가 제거되었습니다",
+    "cta": "구독하기"
+  },
   "retention": {
     "cancel_intercept_title": "정말 취소하시겠습니까?",
     "what_you_lose": "다음 접근 권한을 잃게 됩니다:",
