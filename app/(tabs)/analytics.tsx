@@ -168,13 +168,24 @@ function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string
                 const x = sidePad + i * slotW + (slotW - barW) / 2;
                 const y = chartAreaH - barH;
                 const isMax = d.total === maxVal && d.total > 0;
-                // Past 100k we abbreviate to "k" so the label still fits
-                // inside the slot; below that the full localized number
-                // reads better and there's room for it.
-                const valueLabel =
-                  d.total >= 100_000
-                    ? `${currencySymbol} ${(d.total / 1000).toFixed(0)}k`
-                    : `${currencySymbol} ${formatNum(d.total)}`;
+                // The Y-axis on the left already carries the currency
+                // symbol, so per-bar labels can stay symbol-less — that
+                // frees ~12-18px per slot (wide glyphs like ₸ / ₽ / ₩ /
+                // KZT eat real estate on the small 44px slot). Threshold
+                // lowered 100k → 10k so a 3-digit thousands value like
+                // "120 000" abbreviates to "120k" (4 chars, ~22px) rather
+                // than "120 000" (7 chars, ~38px) which collided with
+                // the adjacent slot. Millions use "M" with one decimal.
+                let valueLabel: string;
+                if (d.total >= 1_000_000) {
+                  valueLabel = `${(d.total / 1_000_000).toFixed(1)}M`;
+                } else if (d.total >= 10_000) {
+                  valueLabel = `${Math.round(d.total / 1_000)}k`;
+                } else if (d.total >= 1_000) {
+                  valueLabel = `${(d.total / 1_000).toFixed(1)}k`;
+                } else {
+                  valueLabel = formatNum(d.total);
+                }
                 return (
                   <React.Fragment key={i}>
                     <Rect

@@ -905,10 +905,17 @@ function MonthlyBarChart({
     );
   }
 
+  // No currency symbol over the bars — at the 32-44px slot widths used
+  // on this compact card, a long-glyph currency like KZT/RUB/JPY plus a
+  // 3-digit value ("KZT 250k", "₸ 999k") overflows the slot and
+  // collides with the neighbouring label. The hero card right above
+  // already shows the user's currency, so the chart can stand alone
+  // with bare numbers.
   const formatBarLabel = (val: number): string => {
-    if (val >= 1_000_000) return `${currencySymbol} ${(val / 1_000_000).toFixed(1)}M`;
-    if (val >= 1_000) return `${currencySymbol} ${(val / 1_000).toFixed(val < 10_000 ? 1 : 0)}k`;
-    return `${currencySymbol} ${val.toFixed(0)}`;
+    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+    if (val >= 10_000) return `${Math.round(val / 1_000)}k`;
+    if (val >= 1_000) return `${(val / 1_000).toFixed(1)}k`;
+    return `${val.toFixed(0)}`;
   };
 
   return (
