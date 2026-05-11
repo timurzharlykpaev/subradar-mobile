@@ -127,43 +127,75 @@ function GoogleIcon() {
 }
 
 // ─── Service SVG Icons ──────────────────────────────────────────────────────
-// Simple guaranteed-to-render brand icons
+// Rendered on a 30×30 coloured pill (iconBg in FLOAT_CARDS), so the SVG draws
+// only the white foreground glyph — no background plate. Kept deliberately
+// minimal: at this size complex paths blur, so each icon is the cleanest
+// recognisable silhouette of the brand mark rather than a literal reproduction.
 function NetflixIcon() {
+  // Two thick verticals + a corner-to-corner diagonal stroke between them.
+  // The previous single-path version stopped the diagonal 1.5px short of each
+  // corner, which read as a "broken" N at the 20px size.
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20">
-      <Path d="M4 2h3.5l5.5 14.5V2H16v16h-3.5L7 3.5V18H4V2z" fill="white" />
+    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+      <Rect x="4" y="2" width="3" height="16" fill="white" />
+      <Rect x="13" y="2" width="3" height="16" fill="white" />
+      <Path d="M5.5 2 L14.5 18" stroke="white" strokeWidth="3" strokeLinecap="butt" />
     </Svg>
   );
 }
 function SpotifyIcon() {
+  // Three concentric arcs curving downward, decreasing in length top→bottom.
+  // Previous version used quadratic-bezier "humps" that curved the wrong way
+  // and read as a stacked tilde rather than sound waves.
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20">
-      <Path d="M16 7.5C12.5 5.8 7.5 5.5 4 6.8l-.5-1.8C8 3.2 13.5 3.5 17.5 5.5L16 7.5z" fill="white" />
-      <Path d="M15.5 11C12.5 9.5 8 9.2 5 10.2l-.4-1.6c3.5-1.1 8.5-.8 12 1L15.5 11z" fill="white" />
-      <Path d="M14.5 14.5C12 13.2 8.5 13 6 13.8l-.3-1.4c3-1 7-.8 10 .8l-1.2 1.3z" fill="white" />
+    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+      <Path d="M3 7.5 Q10 4 17 7.8" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+      <Path d="M4 11 Q10 8 16 11.3" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+      <Path d="M5.5 14 Q10 11.8 14.5 14.3" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
     </Svg>
   );
 }
 function ICloudIcon() {
+  // Two-bump cloud silhouette via three arcs joining into a flat base. Reads
+  // as a cloud at any size, unlike the previous lopsided blob.
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20">
-      <Path d="M15.5 8.1A5 5 0 0010 4a5 5 0 00-4.8 3.6A4 4 0 005 15h10a4 4 0 00.5-6.9z" fill="white" />
+    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+      <Path
+        d="M14.5 14.5 a3 3 0 0 0 0.4 -5.95 a4 4 0 0 0 -7.7 -0.6 a3.4 3.4 0 0 0 -1.2 6.55 z"
+        fill="white"
+      />
     </Svg>
   );
 }
 function YoutubeIcon() {
+  // Just the white play triangle — the iconBg pill is already YouTube red,
+  // so the previous nested "white rect on red, red triangle on white" was a
+  // play-button-on-a-play-button visual stutter.
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20">
-      <Rect x="1" y="4" width="18" height="12" rx="3" fill="white" opacity="0.9" />
-      <Path d="M8 7.5l5 2.5-5 2.5V7.5z" fill="#FF0000" />
+    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+      <Path d="M6.5 5.5 L15 10 L6.5 14.5 Z" fill="white" />
     </Svg>
   );
 }
 function OpenAIIcon() {
+  // Double-hexagon knotwork — the closest a 20px silhouette gets to OpenAI's
+  // interlocking hex mark. Previous version drew a circle + 5-pointed star,
+  // which is not the OpenAI logo at all.
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20">
-      <Circle cx="10" cy="10" r="8" stroke="white" strokeWidth="1.5" fill="none" />
-      <Path d="M10 3l1.8 5.5H17l-4.5 3.3 1.7 5.2L10 14l-4.2 3 1.7-5.2L3 8.5h5.2L10 3z" fill="white" opacity="0.9" />
+    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+      <Path
+        d="M10 2.2 L16.8 6.1 V13.9 L10 17.8 L3.2 13.9 V6.1 Z"
+        stroke="white"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M10 6.6 L13.6 8.7 V12.3 L10 14.4 L6.4 12.3 V8.7 Z"
+        stroke="white"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+        opacity="0.65"
+      />
     </Svg>
   );
 }
