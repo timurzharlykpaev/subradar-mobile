@@ -10,6 +10,7 @@ import { DatePickerField } from '../DatePickerField';
 import { BillingDayPicker } from '../BillingDayPicker';
 import { NumericInput } from '../NumericInput';
 import { CurrencyPicker } from '../CurrencyPicker';
+import { usePaymentCardsStore } from '../../stores/paymentCardsStore';
 import type { ParsedSub } from './types';
 
 // Same module-scope brand → domain dictionary as BulkConfirmView keeps —
@@ -117,10 +118,20 @@ function BulkEditModalImpl({
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  // ALL hooks must run before any early return — React tracks them
+  // positionally and the previous version put `useState(false)` AFTER
+  // `if (!sub) return null`, which threw "Rendered more hooks than
+  // during the previous render" the first time `sub` flipped from
+  // null to a value (the prior render skipped the useStates, the new
+  // one called them, hook counts mismatched).
+  const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
+  const [iconError, setIconError] = useState(false);
+  const cards = usePaymentCardsStore((s) => s.cards);
 
-  // Guard: when bulkEditIdx flips to null the parent sets `sub` to null but
-  // the Modal animation may still be running. Render nothing when there's
-  // no sub — downstream code reads fields off `sub` unconditionally.
+  // Guard AFTER hooks: when bulkEditIdx flips to null the parent sets
+  // `sub` to null but the Modal animation may still be running. Render
+  // nothing when there's no sub — downstream code reads fields off
+  // `sub` unconditionally.
   if (!sub) {
     return null;
   }
@@ -129,8 +140,6 @@ function BulkEditModalImpl({
   const currentCategory = (sub.category || 'OTHER').toUpperCase();
   const currentReminder = sub.reminderDaysBefore ?? [3];
   const currency = (sub.currency || 'USD').toUpperCase();
-  const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
-  const [iconError, setIconError] = useState(false);
   const iconUrl = resolveIconUrl(sub);
 
   return (
@@ -560,6 +569,89 @@ function BulkEditModalImpl({
                 })}
               </View>
             </View>
+
+            {/* Payment card — matches ManualFormView's horizontal-chip
+                row. Only renders when the user has at least one card
+                saved; otherwise the section would be dead space. The
+                "No card" chip lets the user clear an AI/edit-suggested
+                card binding without having to remove + re-add. */}
+            {cards.length > 0 && (
+              <View style={{ gap: 6 }}>
+                <Text
+                  style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}
+                >
+                  {t('add.card', 'Payment card')}
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                        borderRadius: 10,
+                        borderWidth: 1.5,
+                        borderColor: !sub.paymentCardId
+                          ? colors.primary
+                          : colors.border,
+                        backgroundColor: !sub.paymentCardId
+                          ? colors.primary + '12'
+                          : colors.card,
+                      }}
+                      onPress={() => onUpdate({ paymentCardId: '' })}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: '600',
+                          color: !sub.paymentCardId
+                            ? colors.primary
+                            : colors.textSecondary,
+                        }}
+                      >
+                        {t('add.no_card', 'No card')}
+                      </Text>
+                    </TouchableOpacity>
+                    {cards.map((card) => {
+                      const isSelected = sub.paymentCardId === card.id;
+                      return (
+                        <TouchableOpacity
+                          key={card.id}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 10,
+                            borderRadius: 10,
+                            borderWidth: 1.5,
+                            borderColor: isSelected
+                              ? colors.primary
+                              : colors.border,
+                            backgroundColor: isSelected
+                              ? colors.primary + '12'
+                              : colors.card,
+                          }}
+                          onPress={() => onUpdate({ paymentCardId: card.id })}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 13,
+                              fontWeight: '600',
+                              color: isSelected
+                                ? colors.primary
+                                : colors.textSecondary,
+                            }}
+                          >
+                            ••••{card.last4} ({card.brand})
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
 
             {/* Tags — comma-separated; reuse the same UX as the Edit
                 form. Sent to backend as string[]. */}

@@ -894,6 +894,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           tags: sub.tags && sub.tags.length > 0 ? sub.tags : undefined,
           color: sub.color || undefined,
           currentPlan: sub.currentPlan || undefined,
+          paymentCardId: sub.paymentCardId || undefined,
           addedVia: source,
         });
         addSubscription(res.data);

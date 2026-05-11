@@ -538,6 +538,7 @@ export default function GmailImportScreen() {
           ...(sub.cancelUrl ? { cancelUrl: sub.cancelUrl } : {}),
           ...(sub.iconUrl ? { iconUrl: sub.iconUrl } : {}),
           ...(sub.currentPlan ? { currentPlan: sub.currentPlan } : {}),
+          ...(sub.paymentCardId ? { paymentCardId: sub.paymentCardId } : {}),
           ...(sub.tags && sub.tags.length > 0 ? { tags: sub.tags } : {}),
           ...(sub.color ? { color: sub.color } : {}),
           ...(sub.notes ? { notes: sub.notes } : {}),
