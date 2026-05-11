@@ -1333,8 +1333,8 @@
     "winback_d02_cta": "언제든 Pro로 복귀",
     "winback_d37_title": "{{count}}개의 구독이 기다리고 있어요",
     "winback_d37_cta": "무제한+AI 알림 해제",
-    "winback_d830_title": "돌아오세요 — 첫 달 50% 할인",
-    "winback_d830_cta": "돌아오는 사용자를 위한 최고 혜택",
+    "winback_d830_title": "Pro로 돌아오세요 — 연간이 가장 저렴",
+    "winback_d830_cta": "무제한 구독 + AI 갱신 알림",
     "ai_analyses": "AI 분석",
     "savings_found": "예상 절약액",
     "subs_tracked": "추적 중인 구독",
@@ -1355,7 +1355,7 @@
     "close": "닫기"
   },
   "annual_nudge": {
-    "title": "연간으로 전환 — $ 절약",
+    "title": "연간으로 전환 — 연 {{savings}} 절약",
     "subtitle": "동일한 Pro 기능. 매달이 아닌 한 번 결제."
   },
   "team_explainer": {

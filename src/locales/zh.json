@@ -1333,8 +1333,8 @@
     "winback_d02_cta": "随时回归Pro",
     "winback_d37_title": "{{count}}个订阅等待追踪",
     "winback_d37_cta": "解锁无限+AI续订提醒",
-    "winback_d830_title": "回归 — 首月5折",
-    "winback_d830_cta": "回归用户最佳优惠",
+    "winback_d830_title": "回归 Pro — 年付最省钱",
+    "winback_d830_cta": "无限订阅 + AI 续费提醒",
     "ai_analyses": "AI 分析",
     "savings_found": "潜在节省",
     "subs_tracked": "已追踪订阅",
@@ -1355,7 +1355,7 @@
     "close": "关闭"
   },
   "annual_nudge": {
-    "title": "切换到年付 — 节省$",
+    "title": "切换到年付 — 节省 {{savings}}/年",
     "subtitle": "相同Pro功能。一次付清,无需每月付费。"
   },
   "team_explainer": {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -6,6 +6,10 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme';
 import { analytics } from '../services/analytics';
+import { useRevenueCat } from '../hooks/useRevenueCat';
+import { useEffectiveAccess } from '../hooks/useEffectiveAccess';
+import { calcYearlySavings } from '../utils/calcYearlySavings';
+import { formatMoney } from '../utils/formatMoney';
 
 const DISMISS_KEY = 'subradar:annual-nudge-dismissed-at';
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -16,8 +20,10 @@ interface Props {
 
 export default function AnnualUpgradeBanner({ payload }: Props) {
   const { colors, isDark } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
+  const { offerings } = useRevenueCat();
+  const access = useEffectiveAccess();
 
   const plan = typeof payload.plan === 'string' ? payload.plan : 'pro';
 
@@ -34,6 +40,35 @@ export default function AnnualUpgradeBanner({ payload }: Props) {
     });
   }, []);
 
+  // Compute the actual savings from RC offerings in the user's local
+  // currency. Previously this was hardcoded as $11/yr — wrong for every
+  // non-USD market (KZT, RUB, EUR…) and even wrong for USD if RC prices
+  // shift. Falls back to the previous USD $11 hint when offerings
+  // haven't loaded yet, so the banner doesn't flash with no number.
+  const savingsLabel = useMemo(() => {
+    const monthlyId =
+      plan === 'organization'
+        ? access?.products?.team?.monthly
+        : access?.products?.pro?.monthly;
+    const yearlyId =
+      plan === 'organization'
+        ? access?.products?.team?.yearly
+        : access?.products?.pro?.yearly;
+    const pkgs = offerings?.current?.availablePackages ?? [];
+    const monthlyPkg = monthlyId
+      ? pkgs.find((p: any) => p.product?.identifier === monthlyId)
+      : undefined;
+    const yearlyPkg = yearlyId
+      ? pkgs.find((p: any) => p.product?.identifier === yearlyId)
+      : undefined;
+    const real = calcYearlySavings(monthlyPkg, yearlyPkg);
+    if (real) {
+      return formatMoney(real.amount, real.currency, i18n.language);
+    }
+    // Sensible fallback — Pro USD monthly $2.99 × 12 − yearly $24.99 ≈ $11
+    return formatMoney(11, 'USD', i18n.language);
+  }, [plan, access?.products, offerings, i18n.language]);
+
   useEffect(() => {
     if (loaded && !dismissedUntil) {
       analytics.track('banner_shown', { priority: 'annual_upgrade', plan });
@@ -42,9 +77,6 @@ export default function AnnualUpgradeBanner({ payload }: Props) {
   }, [loaded, dismissedUntil, plan]);
 
   if (!loaded || dismissedUntil) return null;
-
-  // Pro monthly $2.99 × 12 = $35.88; yearly $24.99 → save ~$11/yr
-  const savings = 11;
 
   const handleTap = () => {
     analytics.track('banner_action_tapped', { priority: 'annual_upgrade', plan });
@@ -69,10 +101,12 @@ export default function AnnualUpgradeBanner({ payload }: Props) {
         </View>
         <View style={styles.textWrap}>
           <Text style={[styles.title, { color: colors.text }]}>
-            {t('annual_nudge.title', { defaultValue: 'Switch to yearly — save $' }) + savings + '/yr'}
+            {t('annual_nudge.title', 'Switch to yearly — save {{savings}}/yr', {
+              savings: savingsLabel,
+            })}
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {t('annual_nudge.subtitle', { defaultValue: 'Same Pro features. Pay once, not every month.' })}
+            {t('annual_nudge.subtitle', 'Same Pro features. Pay once, not every month.')}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />

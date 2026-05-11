@@ -1335,8 +1335,8 @@
     "winback_d02_cta": "Revenez à Pro quand vous voulez",
     "winback_d37_title": "{{count}} abonnements à suivre",
     "winback_d37_cta": "Débloquez illimité + alertes IA",
-    "winback_d830_title": "Revenez — 50% sur votre premier mois",
-    "winback_d830_cta": "Meilleure offre pour les revenants",
+    "winback_d830_title": "Revenez à Pro — l'annuel économise le plus",
+    "winback_d830_cta": "Abonnements illimités + alertes AI",
     "ai_analyses": "Analyses AI",
     "savings_found": "Économies potentielles",
     "subs_tracked": "Abonnements suivis",
@@ -1358,7 +1358,7 @@
     "close": "Fermer"
   },
   "annual_nudge": {
-    "title": "Passez à l'annuel — économisez $",
+    "title": "Passez à l'annuel — économisez {{savings}}/an",
     "subtitle": "Mêmes fonctions Pro. Payez une fois, pas chaque mois."
   },
   "team_explainer": {

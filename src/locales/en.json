@@ -1364,8 +1364,8 @@
     "winback_d02_cta": "Come back to Pro anytime",
     "winback_d37_title": "{{count}} subscriptions waiting to be tracked",
     "winback_d37_cta": "Unlock unlimited + AI renewal alerts",
-    "winback_d830_title": "Come back — 50% off your first month",
-    "winback_d830_cta": "Best offer for returning users",
+    "winback_d830_title": "Come back to Pro — yearly saves you the most",
+    "winback_d830_cta": "Unlimited subscriptions + AI renewal alerts",
     "ai_analyses": "AI analyses",
     "savings_found": "Potential savings",
     "subs_tracked": "Subscriptions tracked",
@@ -1378,7 +1378,7 @@
     "sample_label": "Sample"
   },
   "annual_nudge": {
-    "title": "Switch to yearly — save $",
+    "title": "Switch to yearly — save {{savings}}/yr",
     "subtitle": "Same Pro features. Pay once, not every month."
   },
   "team_explainer": {

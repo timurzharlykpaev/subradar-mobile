@@ -36,7 +36,12 @@ export default function SubscriptionDetailScreen() {
 
   const { colors, isDark } = useTheme();
   const access = useEffectiveAccess();
-  const isPro = access?.plan === 'pro';
+  // `isPro` here means "has Pro-or-higher entitlement" — same semantics
+  // as everywhere else in the app (useEffectiveAccess.isPro returns
+  // true for both pro AND organization). The earlier strict
+  // `plan === 'pro'` check excluded Team users from Pro-only buttons
+  // on this screen, which contradicted every other gate in the app.
+  const isPro = access?.isPro ?? false;
   const isTeam = access?.plan === 'organization';
   const [editVisible, setEditVisible] = useState(false);
   const [iconError, setIconError] = useState(false);

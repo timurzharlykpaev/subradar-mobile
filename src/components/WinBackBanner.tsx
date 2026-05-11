@@ -82,9 +82,15 @@ export default function WinBackBanner({ payload }: Props) {
         bg: '#EC4899',
       };
     }
+    // Previous copy promised "50% off your first month" but we don't
+    // ship a real introductory discount through RC for returning
+    // subscribers — Apple Guideline 4.1 (misleading claims) + plain
+    // user expectation would not survive a hard look. Rewritten to
+    // emphasize the yearly value, which IS a real saving (monthly ×
+    // 12 vs yearly price on the same plan).
     return {
-      title: t('retention.winback_d830_title', { defaultValue: 'Come back — 50% off your first month' }),
-      subtitle: t('retention.winback_d830_cta', { defaultValue: 'Best offer for returning users' }),
+      title: t('retention.winback_d830_title', 'Come back to Pro — yearly saves you the most'),
+      subtitle: t('retention.winback_d830_cta', 'Unlimited subscriptions + AI renewal alerts'),
       icon: 'flame' as const,
       bg: '#EF4444',
     };

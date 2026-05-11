@@ -67,9 +67,21 @@ export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
       // prefer entitlements whose underlying subscription `willRenew=true`
       // (i.e. NOT scheduled for cancellation) and fall back to whatever's
       // active only if neither will renew.
-      const activeEntitlement = customerInfo?.entitlements?.active;
-      const teamEnt = activeEntitlement?.team;
-      const proEnt = activeEntitlement?.pro;
+      // RC entitlement keys are display names configured in the RC
+      // Dashboard ("SubRadar Pro" / "SubRadar Team"), not the literal
+      // strings "pro" / "team". Previous code looked them up by hard-
+      // coded keys → if the operator ever renamed an entitlement in
+      // RC, restore would tap through silently with productId=undefined
+      // and the backend never got the sync call. Same substring-match
+      // approach used in useRevenueCat (isPro/isTeam detection) so the
+      // two stay aligned.
+      const activeEntitlement = customerInfo?.entitlements?.active ?? {};
+      const allEnts = Object.values(activeEntitlement) as Array<{
+        identifier?: string;
+        productIdentifier?: string;
+      }>;
+      const teamEnt = allEnts.find((e) => /team|org/i.test(e?.identifier ?? ''));
+      const proEnt = allEnts.find((e) => /pro|premium/i.test(e?.identifier ?? ''));
       const subsMap: Record<string, any> =
         (customerInfo as any)?.subscriptionsByProductIdentifier ?? {};
       const willRenew = (productIdentifier?: string) =>
@@ -82,7 +94,11 @@ export function RestorePurchasesButton({ origin, styleLink = false }: Props) {
         (teamWillRenew && teamEnt?.productIdentifier) ||
         (proWillRenew && proEnt?.productIdentifier) ||
         teamEnt?.productIdentifier ||
-        proEnt?.productIdentifier;
+        proEnt?.productIdentifier ||
+        // Last-ditch fallback: any active entitlement at all. Better to
+        // sync the wrong-tier-but-real productId than skip sync entirely
+        // — the backend will then map productId→plan correctly.
+        allEnts[0]?.productIdentifier;
 
       if (success && productId) {
         try {

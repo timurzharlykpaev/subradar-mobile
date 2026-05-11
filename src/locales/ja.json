@@ -1333,8 +1333,8 @@
     "winback_d02_cta": "いつでもProに戻れます",
     "winback_d37_title": "{{count}}個のサブスクが待っています",
     "winback_d37_cta": "無制限+AI通知を解除",
-    "winback_d830_title": "戻ってきてください — 初月50%オフ",
-    "winback_d830_cta": "復帰者への最高オファー",
+    "winback_d830_title": "Pro に戻る — 年額が最もお得",
+    "winback_d830_cta": "サブスク無制限 + AI 更新通知",
     "ai_analyses": "AI 分析",
     "savings_found": "節約の見込み",
     "subs_tracked": "追跡中のサブスク",
@@ -1355,7 +1355,7 @@
     "close": "閉じる"
   },
   "annual_nudge": {
-    "title": "年額に切り替え — $節約",
+    "title": "年額に切り替え — 年 {{savings}} 節約",
     "subtitle": "同じPro機能。毎月ではなく一度だけ支払い。"
   },
   "team_explainer": {
