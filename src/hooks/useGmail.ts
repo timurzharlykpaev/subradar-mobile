@@ -100,8 +100,25 @@ export function useGmailScanJob() {
 
   useEffect(() => stopPolling, [stopPolling]);
 
+  // Adaptive polling backoff. The first ~15 s of a scan tend to be
+  // the fetch stage (fast updates land); we poll aggressively at
+  // 2 s. Once we cross into the AI-parse stage (~15-20 s in), the
+  // status changes more slowly so we ease off to 4 s, then 8 s
+  // past the 60 s mark. This cuts a typical 3-min poll burst from
+  // ~90 requests to ~32 — kinder to backend throttling and the
+  // device's radio + battery — without making the loader feel
+  // less responsive (a 4 s gap is imperceptible against the
+  // smoothly-incrementing email counter).
+  const pickPollInterval = (attemptsDone: number, elapsedMs: number) => {
+    if (elapsedMs < 15_000) return 2000;
+    if (elapsedMs < 60_000) return 4000;
+    return 8000;
+  };
+
   const poll = useCallback(
-    async (jobId: string, attemptsLeft: number) => {
+    async (jobId: string, attemptsLeft: number, startedAtMs?: number) => {
+      // First call doesn't have an anchor — start the clock here.
+      const anchor = startedAtMs ?? Date.now();
       try {
         const s = await gmailApi.getScanStatus(jobId);
         if (s.status === 'completed') {
@@ -139,9 +156,13 @@ export function useGmailScanJob() {
           // when it finishes. Caller renders a "still scanning" hint.
           return;
         }
+        const nextDelay = pickPollInterval(
+          90 - attemptsLeft,
+          Date.now() - anchor,
+        );
         pollTimer.current = setTimeout(
-          () => poll(jobId, attemptsLeft - 1),
-          2000,
+          () => poll(jobId, attemptsLeft - 1, anchor),
+          nextDelay,
         );
       } catch (err: any) {
         // 404 on the job means it expired or never existed (or another
