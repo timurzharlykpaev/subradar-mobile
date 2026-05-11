@@ -35,7 +35,8 @@
     "next": "Next",
     "something_went_wrong": "Something went wrong",
     "upgrade": "Upgrade",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "service_unavailable": "Service temporarily unavailable — retrying…"
   },
   "tabs": {
     "home": "Home",

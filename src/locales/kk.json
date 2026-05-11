@@ -35,7 +35,8 @@
     "next": "Келесі",
     "something_went_wrong": "Бірдеңе дұрыс болмады",
     "upgrade": "Жаңарту",
-    "dismiss": "Жабу"
+    "dismiss": "Жабу",
+    "service_unavailable": "Қызмет уақытша қолжетімсіз — қайталау…"
   },
   "tabs": {
     "home": "Басты",

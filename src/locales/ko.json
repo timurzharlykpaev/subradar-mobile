@@ -35,7 +35,8 @@
     "next": "다음",
     "something_went_wrong": "문제가 발생했습니다",
     "upgrade": "업그레이드",
-    "dismiss": "닫기"
+    "dismiss": "닫기",
+    "service_unavailable": "서비스 일시 중단 — 재시도 중…"
   },
   "tabs": {
     "home": "홈",

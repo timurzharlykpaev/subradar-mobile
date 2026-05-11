@@ -1,0 +1,122 @@
+appId: com.goalin.subradar
+name: "00 — Onboarding + Auth (marketing variant, dynamic OTP)"
+#
+# Identical to 00_onboarding_flow.yaml except the OTP is read live from
+# the dev API instead of using the fixed `000000` bypass — that bypass
+# requires the running backend image to include the review-account code
+# path, and the currently-deployed dev image doesn't.
+#
+# Side-effect: runs `runScript: _get_otp.js` AFTER the user taps "Send
+# Code" so the Redis OTP key is overwritten with a known value, which we
+# then type into the OTP inputs.
+---
+- clearState
+- launchApp
+- runFlow: ./_dismiss_logbox.yaml
+
+# Step 0: money hook
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
+- tapOn:
+    id: "btn-get-started"
+
+# Step 1: language
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-language"
+    timeout: 10000
+- tapOn:
+    id: "lang-en"
+    optional: true
+- tapOn:
+    id: "btn-next"
+
+# Step 2: currency
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-currency"
+    timeout: 10000
+- tapOn:
+    id: "btn-next"
+
+# Step 3: auth
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-auth"
+    timeout: 15000
+- tapOn:
+    id: "btn-email"
+
+- extendedWaitUntil:
+    visible:
+      id: "email-input"
+    timeout: 10000
+- tapOn:
+    id: "email-input"
+- inputText: "review@subradar.ai"
+- tapOn:
+    id: "btn-send-code"
+
+# Wait for the OTP screen, then overwrite the Redis OTP with a known
+# code and type it in.
+- extendedWaitUntil:
+    visible:
+      id: "otp-input-0"
+    timeout: 15000
+- runScript: ./_get_otp.js
+
+- tapOn:
+    id: "otp-input-0"
+- inputText: ${output.OTP_0}
+- tapOn:
+    id: "otp-input-1"
+- inputText: ${output.OTP_1}
+- tapOn:
+    id: "otp-input-2"
+- inputText: ${output.OTP_2}
+- tapOn:
+    id: "otp-input-3"
+- inputText: ${output.OTP_3}
+- tapOn:
+    id: "otp-input-4"
+- inputText: ${output.OTP_4}
+- tapOn:
+    id: "otp-input-5"
+- inputText: ${output.OTP_5}
+- tapOn:
+    id: "btn-verify"
+
+# iOS native permission dialog — truly conditional
+- tapOn:
+    text: "Don't Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Step 4: notifications — testID-based skip
+- tapOn:
+    id: "btn-notifications-skip"
+    optional: true
+
+# Step 5: first-sub — testID-based skip
+- tapOn:
+    id: "btn-first-sub-skip"
+    optional: true
+
+# Dismiss any post-onboarding modal
+- runFlow: ./_dismiss_modals.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

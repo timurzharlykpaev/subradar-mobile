@@ -35,7 +35,8 @@
     "next": "Далее",
     "something_went_wrong": "Что-то пошло не так",
     "upgrade": "Улучшить",
-    "dismiss": "Скрыть"
+    "dismiss": "Скрыть",
+    "service_unavailable": "Сервис временно недоступен — повтор…"
   },
   "a11y": {
     "subscription": "Подписка {{name}}",
