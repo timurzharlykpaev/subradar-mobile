@@ -315,7 +315,14 @@
     "daily_limit_title": "デイリースキャン上限に到達",
     "daily_limit_body": "本日のスキャンは使い切りました。{{when}}再度お試しください。",
     "daily_limit_reset_today": "本日中",
-    "daily_limit_reset_tomorrow": "明日"
+    "daily_limit_reset_tomorrow": "明日",
+    "errors": {
+      "expiredTitle": "Gmail接続の期限切れ",
+      "expiredBody": "Gmailの認証が無効になりました。受信トレイのスキャンを続けるには再接続してください。"
+    },
+    "cta": {
+      "reconnect": "再接続"
+    }
   },
   "settings": {
     "title": "設定",

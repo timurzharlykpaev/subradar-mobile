@@ -324,7 +324,14 @@
     "daily_limit_title": "Дневной лимит сканирования",
     "daily_limit_body": "Вы использовали все сканирования за сегодня. Попробуйте {{when}}.",
     "daily_limit_reset_today": "позже сегодня",
-    "daily_limit_reset_tomorrow": "завтра"
+    "daily_limit_reset_tomorrow": "завтра",
+    "errors": {
+      "expiredTitle": "Связь с Gmail истекла",
+      "expiredBody": "Доступ к Gmail больше не действителен. Переподключитесь, чтобы продолжить сканирование почты."
+    },
+    "cta": {
+      "reconnect": "Переподключить"
+    }
   },
   "settings": {
     "title": "Настройки",

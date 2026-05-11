@@ -330,7 +330,8 @@
       "connect": "Connect Gmail",
       "scan": "Scan inbox",
       "disconnect": "Disconnect",
-      "import": "Import {{n}} selected"
+      "import": "Import {{n}} selected",
+      "reconnect": "Reconnect"
     },
     "fineprint": {
       "connect": "SubRadar reads only billing receipts (last 90 days). We never store message bodies.",
@@ -350,7 +351,9 @@
     },
     "errors": {
       "connectTitle": "Connection failed",
-      "scanTitle": "Scan failed"
+      "scanTitle": "Scan failed",
+      "expiredTitle": "Gmail connection expired",
+      "expiredBody": "Your Gmail grant is no longer valid. Reconnect to keep scanning your inbox."
     },
     "privacyLink": "How we use Gmail data → Privacy Policy",
     "daily_limit_title": "Daily scan limit reached",

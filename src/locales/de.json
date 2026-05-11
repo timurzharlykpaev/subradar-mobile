@@ -315,7 +315,14 @@
     "daily_limit_title": "Tageslimit erreicht",
     "daily_limit_body": "Du hast alle Scans für heute aufgebraucht. Versuche es {{when}} erneut.",
     "daily_limit_reset_today": "später heute",
-    "daily_limit_reset_tomorrow": "morgen"
+    "daily_limit_reset_tomorrow": "morgen",
+    "errors": {
+      "expiredTitle": "Gmail-Verbindung abgelaufen",
+      "expiredBody": "Deine Gmail-Berechtigung ist nicht mehr gültig. Verbinde dich erneut, um dein Postfach weiterhin zu scannen."
+    },
+    "cta": {
+      "reconnect": "Erneut verbinden"
+    }
   },
   "settings": {
     "title": "Einstellungen",

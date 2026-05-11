@@ -1,17 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Easing,
   FlatList,
   Image,
   Linking,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -65,6 +67,32 @@ export default function GmailImportScreen() {
   const disconnect = useGmailDisconnect();
   const scan = useGmailScan();
   const createSub = useCreateSubscription();
+  const queryClient = useQueryClient();
+
+  // Single in-screen notice slot. Replaces five separate `Alert.alert`
+  // call sites (connect error, scan failed, daily-limit hit, import done,
+  // expired-connection auto-disconnect) with a slide-in banner that's
+  // visually consistent with the rest of the screen and doesn't yank the
+  // user out of context the way a system dialog does.
+  type NoticeKind = 'error' | 'warn' | 'success' | 'info';
+  interface Notice {
+    kind: NoticeKind;
+    title: string;
+    body?: string;
+    actionLabel?: string;
+    onAction?: () => void;
+  }
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [disconnectVisible, setDisconnectVisible] = useState(false);
+
+  // Auto-dismiss success/info notices after 4 s; errors and warnings stick
+  // until the user taps × so they don't disappear before being read.
+  useEffect(() => {
+    if (!notice) return;
+    if (notice.kind !== 'success' && notice.kind !== 'info') return;
+    const id = setTimeout(() => setNotice(null), 4000);
+    return () => clearTimeout(id);
+  }, [notice]);
 
   const [candidates, setCandidates] = useState<GmailScanCandidate[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -145,35 +173,25 @@ export default function GmailImportScreen() {
         analytics.track('gmail.connect.cancel');
       }
     } catch (err: any) {
-      Alert.alert(
-        t('gmail.errors.connectTitle', 'Connection failed'),
-        err?.message ?? String(err),
-      );
+      setNotice({
+        kind: 'error',
+        title: t('gmail.errors.connectTitle', 'Connection failed'),
+        body: err?.message ?? String(err),
+      });
     }
   }, [connect, status, t]);
 
   const handleDisconnect = useCallback(() => {
-    Alert.alert(
-      t('gmail.disconnect.title', 'Disconnect Gmail?'),
-      t(
-        'gmail.disconnect.body',
-        'SubRadar will stop scanning your inbox. The grant will be revoked on Google’s side immediately. You can reconnect at any time.',
-      ),
-      [
-        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
-        {
-          text: t('gmail.disconnect.confirm', 'Disconnect'),
-          style: 'destructive',
-          onPress: async () => {
-            analytics.track('gmail.disconnect.confirm');
-            await disconnect.mutateAsync();
-            setCandidates([]);
-            setSelected(new Set());
-          },
-        },
-      ],
-    );
-  }, [disconnect, t]);
+    setDisconnectVisible(true);
+  }, []);
+
+  const handleDisconnectConfirm = useCallback(async () => {
+    analytics.track('gmail.disconnect.confirm');
+    setDisconnectVisible(false);
+    await disconnect.mutateAsync();
+    setCandidates([]);
+    setSelected(new Set());
+  }, [disconnect]);
 
   const handleScan = useCallback(async () => {
     const myScanId = ++scanIdRef.current;
@@ -217,9 +235,40 @@ export default function GmailImportScreen() {
       setScanRanOnce(true);
     } catch (err: any) {
       const code = err?.response?.data?.code;
-      if (code === 'PRO_PLAN_REQUIRED' || err?.response?.status === 402) {
+      const httpStatus = err?.response?.status;
+      if (code === 'PRO_PLAN_REQUIRED' || httpStatus === 402) {
         analytics.track('gmail.scan.paywall');
         router.push('/paywall?feature=magic_mail');
+        return;
+      }
+      // 401 from /gmail/scan means the stored Google refresh token is
+      // dead (revoked grant, password change, 6-month inactivity). The
+      // server already cleared our tokens on its side — invalidate the
+      // status query so the UI flips back to "Connect Gmail" CTA, then
+      // surface a friendly notice with a one-tap reconnect action.
+      // Without this the user keeps hitting Scan and seeing a generic
+      // "scan failed" error with no obvious path forward.
+      if (httpStatus === 401) {
+        analytics.track('gmail.scan.expired');
+        setCandidates([]);
+        setSelected(new Set());
+        await queryClient.invalidateQueries({ queryKey: ['gmail', 'status'] });
+        setNotice({
+          kind: 'warn',
+          title: t(
+            'gmail.errors.expiredTitle',
+            'Gmail connection expired',
+          ),
+          body: t(
+            'gmail.errors.expiredBody',
+            'Your Gmail grant is no longer valid. Reconnect to keep scanning your inbox.',
+          ),
+          actionLabel: t('gmail.cta.reconnect', 'Reconnect'),
+          onAction: () => {
+            setNotice(null);
+            handleConnect();
+          },
+        });
         return;
       }
       // Friendly daily-cap message: backend returns 429 with a structured
@@ -249,20 +298,25 @@ export default function GmailImportScreen() {
             whenLabel = t('gmail.daily_limit_reset_today', 'later today');
           }
         }
-        Alert.alert(
-          t('gmail.daily_limit_title', 'Daily scan limit reached'),
-          t('gmail.daily_limit_body', "You've used all of your scans for today. Try again {{when}}.", {
-            when: whenLabel,
-          }),
-        );
+        setNotice({
+          kind: 'warn',
+          title: t('gmail.daily_limit_title', 'Daily scan limit reached'),
+          body: t(
+            'gmail.daily_limit_body',
+            "You've used all of your scans for today. Try again {{when}}.",
+            { when: whenLabel },
+          ),
+        });
         return;
       }
-      Alert.alert(
-        t('gmail.errors.scanTitle', 'Scan failed'),
-        err?.response?.data?.message ?? err?.message ?? String(err),
-      );
+      setNotice({
+        kind: 'error',
+        title: t('gmail.errors.scanTitle', 'Scan failed'),
+        body:
+          err?.response?.data?.message ?? err?.message ?? String(err),
+      });
     }
-  }, [scan, router, t]);
+  }, [scan, router, t, queryClient, handleConnect]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelected((prev) => {
@@ -302,19 +356,19 @@ export default function GmailImportScreen() {
     }
     setImporting(false);
     analytics.track('gmail.import.complete', { created, failed });
-    Alert.alert(
-      t('gmail.import.doneTitle', 'Imported'),
-      t('gmail.import.doneBody', '{{ok}} added, {{fail}} skipped.', {
+    // Surface the outcome inline, then navigate after the success notice
+    // has had time to register. Auto-bouncing to /(tabs) without any
+    // confirmation read as "did it work?" → the brief banner replaces
+    // the modal nag while still giving feedback.
+    setNotice({
+      kind: created > 0 && failed === 0 ? 'success' : failed > 0 ? 'warn' : 'info',
+      title: t('gmail.import.doneTitle', 'Imported'),
+      body: t('gmail.import.doneBody', '{{ok}} added, {{fail}} skipped.', {
         ok: created,
         fail: failed,
       }),
-      [
-        {
-          text: t('common.done', 'Done'),
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ],
-    );
+    });
+    setTimeout(() => router.replace('/(tabs)'), 1200);
   }, [candidates, selected, createSub, router, t]);
 
   const isLoading = status.isLoading;
@@ -370,6 +424,9 @@ export default function GmailImportScreen() {
         </Text>
         <View style={styles.topBarBtn} />
       </View>
+      {notice && (
+        <NoticeBanner notice={notice} onClose={() => setNotice(null)} />
+      )}
       <View style={styles.header}>
         <View style={styles.headerIconWrap}>
           <Ionicons name="mail-outline" size={28} color={colors.primary} />
@@ -564,9 +621,270 @@ export default function GmailImportScreen() {
           {t('gmail.privacyLink', 'How we use Gmail data → Privacy Policy')}
         </Text>
       </TouchableOpacity>
+
+      <DisconnectConfirmSheet
+        visible={disconnectVisible}
+        onCancel={() => setDisconnectVisible(false)}
+        onConfirm={handleDisconnectConfirm}
+      />
     </SafeAreaView>
   );
 }
+
+/**
+ * Slide-in banner that replaces the five system `Alert.alert` calls that
+ * previously interrupted the Gmail flow with native modals. Lives at the
+ * top of the screen so it never overlays the primary CTA; errors and
+ * warnings stay until dismissed, success/info auto-fade via the effect
+ * in the parent. Optional `actionLabel` + `onAction` render an inline
+ * link button — used for the "Reconnect" CTA on the expired-grant path
+ * so the user can fix it in one tap without navigating away.
+ */
+function NoticeBanner({
+  notice,
+  onClose,
+}: {
+  notice: {
+    kind: 'error' | 'warn' | 'success' | 'info';
+    title: string;
+    body?: string;
+    actionLabel?: string;
+    onAction?: () => void;
+  };
+  onClose: () => void;
+}) {
+  const { colors } = useTheme();
+  const translateY = useRef(new Animated.Value(-16)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [notice, translateY, opacity]);
+
+  const palette: Record<
+    'error' | 'warn' | 'success' | 'info',
+    { bg: string; border: string; icon: keyof typeof Ionicons.glyphMap; tint: string }
+  > = {
+    error: {
+      bg: 'rgba(239,68,68,0.10)',
+      border: '#EF4444',
+      icon: 'alert-circle',
+      tint: '#EF4444',
+    },
+    warn: {
+      bg: 'rgba(245,158,11,0.10)',
+      border: MAGIC_MAIL_AMBER,
+      icon: 'warning',
+      tint: MAGIC_MAIL_AMBER,
+    },
+    success: {
+      bg: 'rgba(16,185,129,0.10)',
+      border: '#10B981',
+      icon: 'checkmark-circle',
+      tint: '#10B981',
+    },
+    info: {
+      bg: 'rgba(59,130,246,0.10)',
+      border: '#3B82F6',
+      icon: 'information-circle',
+      tint: '#3B82F6',
+    },
+  };
+  const p = palette[notice.kind];
+
+  return (
+    <Animated.View
+      style={[
+        noticeStyles.banner,
+        {
+          backgroundColor: p.bg,
+          borderColor: p.border,
+          transform: [{ translateY }],
+          opacity,
+        },
+      ]}
+    >
+      <Ionicons name={p.icon} size={20} color={p.tint} style={{ marginTop: 1 }} />
+      <View style={{ flex: 1 }}>
+        <Text style={[noticeStyles.title, { color: colors.text }]} numberOfLines={2}>
+          {notice.title}
+        </Text>
+        {!!notice.body && (
+          <Text
+            style={[noticeStyles.body, { color: colors.textSecondary }]}
+            numberOfLines={3}
+          >
+            {notice.body}
+          </Text>
+        )}
+        {!!notice.actionLabel && !!notice.onAction && (
+          <TouchableOpacity
+            onPress={notice.onAction}
+            style={noticeStyles.actionBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={[noticeStyles.actionText, { color: p.tint }]}>
+              {notice.actionLabel}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <TouchableOpacity
+        onPress={onClose}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons name="close" size={18} color={colors.textSecondary} />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+/**
+ * Confirm-disconnect bottom sheet. Replaces the destructive-style
+ * system `Alert.alert` that used to ask this question; matches the
+ * rest of the screen's visual language and lets the body wrap freely
+ * (system Alerts on Android truncate long descriptions).
+ */
+function DisconnectConfirmSheet({
+  visible,
+  onCancel,
+  onConfirm,
+}: {
+  visible: boolean;
+  onCancel: () => void;
+  onConfirm: () => void | Promise<void>;
+}) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <Pressable style={sheetStyles.backdrop} onPress={onCancel}>
+        <Pressable
+          style={[sheetStyles.card, { backgroundColor: colors.surface }]}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View
+            style={[
+              sheetStyles.iconBubble,
+              { backgroundColor: 'rgba(239,68,68,0.12)' },
+            ]}
+          >
+            <Ionicons name="unlink-outline" size={28} color="#EF4444" />
+          </View>
+          <Text style={[sheetStyles.title, { color: colors.text }]}>
+            {t('gmail.disconnect.title', 'Disconnect Gmail?')}
+          </Text>
+          <Text style={[sheetStyles.body, { color: colors.textSecondary }]}>
+            {t(
+              'gmail.disconnect.body',
+              "SubRadar will stop scanning your inbox. The grant will be revoked on Google's side immediately. You can reconnect at any time.",
+            )}
+          </Text>
+          <View style={sheetStyles.row}>
+            <TouchableOpacity
+              style={[
+                sheetStyles.btn,
+                { backgroundColor: colors.background, borderColor: colors.border },
+              ]}
+              onPress={onCancel}
+            >
+              <Text style={[sheetStyles.btnText, { color: colors.text }]}>
+                {t('common.cancel', 'Cancel')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[sheetStyles.btn, { backgroundColor: '#EF4444' }]}
+              onPress={onConfirm}
+            >
+              <Text style={[sheetStyles.btnText, { color: '#FFF' }]}>
+                {t('gmail.disconnect.confirm', 'Disconnect')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+const noticeStyles = StyleSheet.create({
+  banner: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    marginHorizontal: 16,
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  title: { fontSize: 14, fontWeight: '700' },
+  body: { fontSize: 12, marginTop: 2, lineHeight: 16 },
+  actionBtn: { marginTop: 8, alignSelf: 'flex-start' },
+  actionText: { fontSize: 13, fontWeight: '700' },
+});
+
+const sheetStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  card: {
+    borderRadius: 20,
+    padding: 22,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 12,
+  },
+  iconBubble: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  title: { fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  body: {
+    fontSize: 14,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  row: { flexDirection: 'row', gap: 10, width: '100%' },
+  btn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    alignItems: 'center',
+  },
+  btnText: { fontSize: 15, fontWeight: '700' },
+});
 
 /**
  * "Cosmic Inbox Sweep" loader for the Gmail bulk-scan in flight.

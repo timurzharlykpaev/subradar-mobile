@@ -315,7 +315,14 @@
     "daily_limit_title": "Límite diario de escaneo alcanzado",
     "daily_limit_body": "Has usado todos tus escaneos de hoy. Inténtalo {{when}}.",
     "daily_limit_reset_today": "más tarde hoy",
-    "daily_limit_reset_tomorrow": "mañana"
+    "daily_limit_reset_tomorrow": "mañana",
+    "errors": {
+      "expiredTitle": "Conexión con Gmail caducada",
+      "expiredBody": "Tu autorización de Gmail ya no es válida. Vuelve a conectarte para seguir escaneando tu bandeja de entrada."
+    },
+    "cta": {
+      "reconnect": "Reconectar"
+    }
   },
   "settings": {
     "title": "Configuración",

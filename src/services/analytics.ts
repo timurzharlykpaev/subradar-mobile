@@ -160,6 +160,7 @@ export type AnalyticsEvent =
   | 'gmail.scan.success'
   | 'gmail.scan.paywall'
   | 'gmail.scan.rate_limited'
+  | 'gmail.scan.expired'
   | 'gmail.import.complete'
   | 'add.magic_mail.tap'
   | 'add.magic_mail.locked_tap'
