@@ -331,14 +331,19 @@
       "scan": "Scan inbox",
       "disconnect": "Disconnect",
       "import": "Import {{n}} selected",
-      "reconnect": "Reconnect"
+      "reconnect": "Reconnect",
+      "scan_again": "Scan again",
+      "import_empty": "Select to import",
+      "import_with_total": "Import {{n}} · {{cur}} {{amt}}/mo"
     },
     "fineprint": {
       "connect": "SubRadar reads only billing receipts (last 90 days). We never store message bodies.",
       "scan": "Tap “Scan inbox” to find subscriptions. The scan looks at receipts from the last 90 days; older mail is ignored."
     },
     "list": {
-      "found": "Found {{n}} subscriptions"
+      "found": "Found {{n}} subscriptions",
+      "cached": "Cached",
+      "trial_pill": "TRIAL"
     },
     "disconnect": {
       "title": "Disconnect Gmail?",

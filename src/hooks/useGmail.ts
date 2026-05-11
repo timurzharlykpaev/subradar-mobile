@@ -37,9 +37,13 @@ export function useGmailDisconnect() {
 }
 
 /** Pro/Team-gated bulk scan. Free users get a 402 PRO_PLAN_REQUIRED
- *  which the caller should map to the paywall route. */
+ *  which the caller should map to the paywall route. The mutation
+ *  arg controls whether to bypass the backend's 10-min result cache
+ *  (used by the "Scan again" CTA after reviewing a cached result).
+ */
 export function useGmailScan() {
-  return useMutation<GmailScanResult, Error>({
-    mutationFn: () => gmailApi.scan(currentLocale()).then((r) => r.data),
+  return useMutation<GmailScanResult, Error, { force?: boolean } | void>({
+    mutationFn: (args) =>
+      gmailApi.scan(currentLocale(), args?.force === true).then((r) => r.data),
   });
 }

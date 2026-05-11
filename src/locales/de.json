@@ -321,7 +321,14 @@
       "expiredBody": "Deine Gmail-Berechtigung ist nicht mehr gültig. Verbinde dich erneut, um dein Postfach weiterhin zu scannen."
     },
     "cta": {
-      "reconnect": "Erneut verbinden"
+      "reconnect": "Erneut verbinden",
+      "scan_again": "Erneut scannen",
+      "import_empty": "Auswählen zum Import",
+      "import_with_total": "{{n}} importieren · {{cur}} {{amt}}/Mon."
+    },
+    "list": {
+      "cached": "Aus Cache",
+      "trial_pill": "TRIAL"
     }
   },
   "settings": {

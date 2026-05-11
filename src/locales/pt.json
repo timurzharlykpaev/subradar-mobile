@@ -321,7 +321,14 @@
       "expiredBody": "Sua autorização do Gmail não é mais válida. Reconecte-se para continuar escaneando sua caixa de entrada."
     },
     "cta": {
-      "reconnect": "Reconectar"
+      "reconnect": "Reconectar",
+      "scan_again": "Escanear novamente",
+      "import_empty": "Selecione para importar",
+      "import_with_total": "Importar {{n}} · {{cur}} {{amt}}/mês"
+    },
+    "list": {
+      "cached": "Em cache",
+      "trial_pill": "TESTE"
     }
   },
   "settings": {

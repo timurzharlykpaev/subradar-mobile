@@ -321,7 +321,14 @@
       "expiredBody": "Gmail рұқсаты енді жарамсыз. Поштаны қарап шығу үшін қайта қосылыңыз."
     },
     "cta": {
-      "reconnect": "Қайта қосылу"
+      "reconnect": "Қайта қосылу",
+      "scan_again": "Қайта сканерлеу",
+      "import_empty": "Импорт үшін таңда",
+      "import_with_total": "{{n}} импорттау · {{cur}} {{amt}}/ай"
+    },
+    "list": {
+      "cached": "Кэштен",
+      "trial_pill": "ТРИАЛ"
     }
   },
   "periods": {

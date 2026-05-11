@@ -113,6 +113,11 @@ export default function GmailImportScreen() {
   // Drives the generic "no new subscriptions" empty state when the
   // backend doesn't ship the `summary` field yet (older deploy).
   const [scanRanOnce, setScanRanOnce] = useState(false);
+  // True when the most recent result was served from the backend's
+  // 10-min result cache. Surfaces a "Cached" badge next to the
+  // result header so the user understands why a 30-second scan just
+  // returned in 200ms.
+  const [scanFromCache, setScanFromCache] = useState(false);
   // Increments per scan attempt. The mutation's resolution checks this
   // against the value it captured at start; if the user kicked off a
   // newer scan in the meantime, the stale resolution is ignored. Without
@@ -194,7 +199,7 @@ export default function GmailImportScreen() {
     setSelected(new Set());
   }, [disconnect]);
 
-  const handleScan = useCallback(async () => {
+  const handleScan = useCallback(async (opts?: { force?: boolean }) => {
     const myScanId = ++scanIdRef.current;
     try {
       analytics.track('gmail.scan.tap');
@@ -202,7 +207,8 @@ export default function GmailImportScreen() {
       setSelected(new Set());
       setTruncated(false);
       setScanSummary(null);
-      const result = await scan.mutateAsync();
+      setScanFromCache(false);
+      const result = await scan.mutateAsync({ force: !!opts?.force });
       // Bail if a newer scan was started after this one. Without this
       // a slow first scan that finishes after the user toggled some
       // checkboxes from a second scan would clobber their selections.
@@ -233,6 +239,7 @@ export default function GmailImportScreen() {
       setSelected(auto);
       setTruncated(!!result.truncated);
       setScanSummary(result.summary ?? null);
+      setScanFromCache(!!result.cached);
       setScanRanOnce(true);
     } catch (err: any) {
       const code = err?.response?.data?.code;
@@ -327,6 +334,78 @@ export default function GmailImportScreen() {
       return next;
     });
   }, []);
+
+  // Monthly-equivalent total of the candidates the user has selected,
+  // so the import CTA can advertise "Import 3 · $12.45/mo" instead of
+  // an opaque "Import 3 selected" — gives the user a sense of the
+  // monthly impact before committing.
+  //
+  // Mixed-currency selections show no total (any single conversion
+  // would be a guess — different services bill in their native
+  // currency and we don't apply FX here). LIFETIME / ONE_TIME items
+  // don't contribute since they have no monthly amortisation.
+  const importPreview = useMemo(() => {
+    const picked = candidates.filter((c) => selected.has(c.sourceMessageId));
+    if (picked.length === 0) {
+      return { count: 0, currency: null as string | null, monthly: 0 };
+    }
+    const currencies = new Set(picked.map((p) => (p.currency || '').toUpperCase()));
+    if (currencies.size > 1) {
+      return { count: picked.length, currency: null, monthly: 0 };
+    }
+    // Defensive: the backend type says `currency: string` but null/empty
+    // values have slipped through in the past; a literal `.toUpperCase()`
+    // call here without the guard would throw TypeError → useMemo crash
+    // → blank screen on the review sheet.
+    const currency = (picked[0].currency || '').toUpperCase();
+    if (!currency) {
+      return { count: picked.length, currency: null, monthly: 0 };
+    }
+    let monthly = 0;
+    for (const c of picked) {
+      if (!c.amount || c.amount <= 0) continue;
+      switch (c.billingPeriod) {
+        case 'MONTHLY':
+          monthly += c.amount;
+          break;
+        case 'YEARLY':
+          monthly += c.amount / 12;
+          break;
+        case 'QUARTERLY':
+          monthly += c.amount / 3;
+          break;
+        case 'WEEKLY':
+          monthly += c.amount * 4.345;
+          break;
+        // LIFETIME / ONE_TIME — no monthly equivalent.
+        default:
+          break;
+      }
+    }
+    return { count: picked.length, currency, monthly };
+  }, [candidates, selected]);
+
+  const importCtaLabel = useMemo(() => {
+    if (importPreview.count === 0) {
+      return t('gmail.cta.import_empty', 'Select to import');
+    }
+    if (importPreview.monthly > 0 && importPreview.currency) {
+      // Round to whole units past $100/mo (the cents stop adding signal
+      // and just crowd the button); keep 2 decimals below that.
+      const amt =
+        importPreview.monthly >= 100
+          ? Math.round(importPreview.monthly).toString()
+          : importPreview.monthly.toFixed(2);
+      return t('gmail.cta.import_with_total', 'Import {{n}} · {{cur}} {{amt}}/mo', {
+        n: importPreview.count,
+        cur: importPreview.currency,
+        amt,
+      });
+    }
+    return t('gmail.cta.import', 'Import {{n}} selected', {
+      n: importPreview.count,
+    });
+  }, [importPreview, t]);
 
   const handleImport = useCallback(async () => {
     const picked = candidates.filter((c) => selected.has(c.sourceMessageId));
@@ -473,7 +552,7 @@ export default function GmailImportScreen() {
                 styles.flexBtn,
                 { backgroundColor: colors.primary },
               ]}
-              onPress={handleScan}
+              onPress={() => handleScan()}
               disabled={scan.isPending || importing}
             >
               {scan.isPending ? (
@@ -574,11 +653,37 @@ export default function GmailImportScreen() {
 
           {candidates.length > 0 && (
             <>
-              <Text style={[styles.listHeader, { color: colors.text }]}>
-                {t('gmail.list.found', 'Found {{n}} subscriptions', {
-                  n: candidates.length,
-                })}
-              </Text>
+              <View style={styles.resultsHeaderRow}>
+                <Text style={[styles.listHeader, { color: colors.text }]}>
+                  {t('gmail.list.found', 'Found {{n}} subscriptions', {
+                    n: candidates.length,
+                  })}
+                </Text>
+                {scanFromCache && (
+                  <View
+                    style={[
+                      styles.cachedBadge,
+                      { backgroundColor: 'rgba(245,158,11,0.12)', borderColor: MAGIC_MAIL_AMBER },
+                    ]}
+                  >
+                    <Ionicons name="time-outline" size={11} color={MAGIC_MAIL_AMBER} />
+                    <Text style={[styles.cachedBadgeText, { color: MAGIC_MAIL_AMBER }]}>
+                      {t('gmail.list.cached', 'Cached')}
+                    </Text>
+                  </View>
+                )}
+                <TouchableOpacity
+                  onPress={() => handleScan({ force: true })}
+                  disabled={scan.isPending || importing}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={styles.scanAgainBtn}
+                >
+                  <Ionicons name="refresh" size={14} color={colors.primary} />
+                  <Text style={[styles.scanAgainText, { color: colors.primary }]}>
+                    {t('gmail.cta.scan_again', 'Scan again')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <FlatList
                 data={candidates}
                 keyExtractor={(c) => c.sourceMessageId}
@@ -602,11 +707,7 @@ export default function GmailImportScreen() {
                 {importing ? (
                   <ActivityIndicator color="#FFF" />
                 ) : (
-                  <Text style={styles.primaryBtnText}>
-                    {t('gmail.cta.import', 'Import {{n}} selected', {
-                      n: selected.size,
-                    })}
-                  </Text>
+                  <Text style={styles.primaryBtnText}>{importCtaLabel}</Text>
                 )}
               </TouchableOpacity>
             </>
@@ -1324,15 +1425,61 @@ function CandidateRow({
           </Text>
         </View>
         <View style={styles.candidateLine}>
+          {/* Period pill — short, fixed-width visual marker that the
+              user can scan vertically down the list. YEARLY in green
+              (annual commitments stand out), MONTHLY in primary, the
+              rest in muted neutral. Trial pill (amber) replaces the
+              period one because trial period matters more than its
+              cadence at the review-stage. */}
+          {item.isTrial ? (
+            <View
+              style={[
+                styles.periodPill,
+                {
+                  backgroundColor: 'rgba(245,158,11,0.15)',
+                  borderColor: MAGIC_MAIL_AMBER,
+                },
+              ]}
+            >
+              <Text style={[styles.periodPillText, { color: MAGIC_MAIL_AMBER }]}>
+                {t('gmail.list.trial_pill', 'TRIAL').toUpperCase()}
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.periodPill,
+                item.billingPeriod === 'YEARLY'
+                  ? { backgroundColor: 'rgba(16,185,129,0.12)', borderColor: '#10B981' }
+                  : item.billingPeriod === 'MONTHLY'
+                    ? { backgroundColor: `${colors.primary}1F`, borderColor: colors.primary }
+                    : { backgroundColor: colors.background, borderColor: colors.border },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.periodPillText,
+                  {
+                    color:
+                      item.billingPeriod === 'YEARLY'
+                        ? '#10B981'
+                        : item.billingPeriod === 'MONTHLY'
+                          ? colors.primary
+                          : colors.textSecondary,
+                  },
+                ]}
+              >
+                {item.billingPeriod}
+              </Text>
+            </View>
+          )}
           <Text
-            style={[styles.candidateMeta, { color: colors.textSecondary }]}
+            style={[styles.candidateMeta, { color: colors.textSecondary, flex: 1 }]}
             numberOfLines={1}
           >
             {item.category && item.category !== 'OTHER'
-              ? `${item.category.toLowerCase()} · `
+              ? item.category.toLowerCase()
               : ''}
-            {item.billingPeriod.toLowerCase()}
-            {item.isTrial ? ' · trial' : ''}
             {item.isCancellation ? ' · cancelled' : ''}
             {item.aggregatedFrom.length > 1
               ? ` · ${item.aggregatedFrom.length} receipts`
@@ -1417,7 +1564,40 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: { fontSize: 14, fontWeight: '500' },
   fineprint: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
-  listHeader: { fontSize: 14, fontWeight: '600', marginTop: 8 },
+  listHeader: { fontSize: 14, fontWeight: '600' },
+  resultsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  cachedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  cachedBadgeText: { fontSize: 11, fontWeight: '700' },
+  scanAgainBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 'auto',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  scanAgainText: { fontSize: 13, fontWeight: '700' },
+  periodPill: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  periodPillText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.4 },
   listContent: { paddingBottom: 16, gap: 8 },
   candidateRow: {
     flexDirection: 'row',
@@ -1452,6 +1632,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 6,
   },
   candidateName: { fontSize: 16, fontWeight: '500' },
   candidateAmount: { fontSize: 16, fontWeight: '600' },

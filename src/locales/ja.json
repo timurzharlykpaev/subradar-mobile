@@ -321,7 +321,14 @@
       "expiredBody": "Gmailの認証が無効になりました。受信トレイのスキャンを続けるには再接続してください。"
     },
     "cta": {
-      "reconnect": "再接続"
+      "reconnect": "再接続",
+      "scan_again": "再スキャン",
+      "import_empty": "インポート対象を選択",
+      "import_with_total": "{{n}}件インポート · {{cur}} {{amt}}/月"
+    },
+    "list": {
+      "cached": "キャッシュ",
+      "trial_pill": "トライアル"
     }
   },
   "settings": {

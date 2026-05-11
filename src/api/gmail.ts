@@ -78,6 +78,12 @@ export interface GmailScanResult {
    * could read in one scan (page budget or MAX_MESSAGES cap).
    * Optional because old backends (≤ this branch) don't ship it. */
   truncated?: boolean;
+  /** True when this response was served from a cached prior scan
+   * (within the backend's 10-min cache window). Lets the UI swap
+   * the loader for the review sheet immediately and show a
+   * "Scan again" CTA next to the truncated banner. Old clients
+   * ignore the field. */
+  cached?: boolean;
   /** Funnel breakdown so the empty-state UI can explain WHY the
    * candidate list is empty. Optional because old backends don't
    * ship it. */
@@ -99,7 +105,12 @@ export const gmailApi = {
   disconnect: () =>
     apiClient.delete<{ revoked: boolean }>('/gmail/disconnect'),
 
-  /** Pro/Team-gated bulk scan. Returns candidates for the review sheet. */
-  scan: (locale?: string) =>
-    apiClient.post<GmailScanResult>('/gmail/scan', { locale }),
+  /**
+   * Pro/Team-gated bulk scan. Returns candidates for the review sheet.
+   * When `force` is true, bypasses the backend's 10-minute result cache
+   * and runs a real scan — used by the "Scan again" CTA after the user
+   * reviewed a cached result.
+   */
+  scan: (locale?: string, force = false) =>
+    apiClient.post<GmailScanResult>('/gmail/scan', { locale, force }),
 };

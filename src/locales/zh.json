@@ -321,7 +321,14 @@
       "expiredBody": "您的 Gmail 授权已失效。请重新连接以继续扫描收件箱。"
     },
     "cta": {
-      "reconnect": "重新连接"
+      "reconnect": "重新连接",
+      "scan_again": "重新扫描",
+      "import_empty": "选择要导入的",
+      "import_with_total": "导入 {{n}} · {{cur}} {{amt}}/月"
+    },
+    "list": {
+      "cached": "缓存",
+      "trial_pill": "试用"
     }
   },
   "settings": {
