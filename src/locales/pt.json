@@ -34,7 +34,8 @@
     "share": "Compartilhar",
     "next": "Próximo",
     "something_went_wrong": "Algo deu errado",
-    "upgrade": "Atualizar"
+    "upgrade": "Atualizar",
+    "dismiss": "Fechar"
   },
   "tabs": {
     "home": "Início",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}} e-mails"
       }
+    },
+    "banner": {
+      "running_title": "Escaneando sua caixa",
+      "running_default_sub": "Lendo recibos",
+      "completed_title": "Escaneamento pronto",
+      "completed_sub": "{{count}} encontrado — abrir",
+      "completed_empty": "Nenhuma nova assinatura",
+      "failed_title": "Falha no escaneamento",
+      "failed_sub": "Toque para tentar novamente",
+      "open": "Abrir"
     }
   },
   "settings": {

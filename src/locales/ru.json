@@ -34,7 +34,8 @@
     "share": "Поделиться",
     "next": "Далее",
     "something_went_wrong": "Что-то пошло не так",
-    "upgrade": "Улучшить"
+    "upgrade": "Улучшить",
+    "dismiss": "Скрыть"
   },
   "a11y": {
     "subscription": "Подписка {{name}}",
@@ -343,6 +344,16 @@
       "stage": {
         "count": "{{current}} из {{total}} писем"
       }
+    },
+    "banner": {
+      "running_title": "Сканируем почту",
+      "running_default_sub": "Читаем чеки",
+      "completed_title": "Сканирование готово",
+      "completed_sub": "Найдено {{count}} — открыть",
+      "completed_empty": "Новых подписок не найдено",
+      "failed_title": "Сканирование не удалось",
+      "failed_sub": "Нажмите чтобы повторить",
+      "open": "Открыть"
     }
   },
   "settings": {

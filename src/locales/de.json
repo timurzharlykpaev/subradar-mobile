@@ -34,7 +34,8 @@
     "share": "Teilen",
     "next": "Weiter",
     "something_went_wrong": "Etwas ist schiefgelaufen",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "dismiss": "Schließen"
   },
   "tabs": {
     "home": "Start",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}} E-Mails"
       }
+    },
+    "banner": {
+      "running_title": "Postfach wird gescannt",
+      "running_default_sub": "Belege werden gelesen",
+      "completed_title": "Gmail-Scan fertig",
+      "completed_sub": "{{count}} gefunden — öffnen",
+      "completed_empty": "Keine neuen Abos gefunden",
+      "failed_title": "Gmail-Scan fehlgeschlagen",
+      "failed_sub": "Tippen, um erneut zu versuchen",
+      "open": "Öffnen"
     }
   },
   "settings": {

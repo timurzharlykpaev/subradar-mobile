@@ -46,6 +46,7 @@ import Svg, {
 import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
+import { ActiveGmailScanBanner } from '../../src/components/ActiveGmailScanBanner';
 import { DashboardSkeleton } from '../../src/components/skeletons';
 import { analytics } from '../../src/services/analytics';
 import { parseBackendDate, daysUntilDate } from '../../src/utils/formatters';
@@ -330,6 +331,12 @@ export default function DashboardScreen() {
 
         {/* Single banner chosen by backend-resolved priority. */}
         <BannerRenderer />
+
+        {/* Mirrors any in-flight Gmail bulk scan so users who left the
+            gmail-import screen mid-scan can still see progress + tap to
+            open the result the moment it's ready. Self-hides when no
+            active jobId is persisted. */}
+        <ActiveGmailScanBanner />
 
         {/* ── AI Insights Widget ────────────────────────────────── */}
         {aiResult && isPro && (

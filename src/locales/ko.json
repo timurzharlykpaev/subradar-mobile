@@ -34,7 +34,8 @@
     "share": "공유",
     "next": "다음",
     "something_went_wrong": "문제가 발생했습니다",
-    "upgrade": "업그레이드"
+    "upgrade": "업그레이드",
+    "dismiss": "닫기"
   },
   "tabs": {
     "home": "홈",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}} 이메일"
       }
+    },
+    "banner": {
+      "running_title": "받은편지함 스캔 중",
+      "running_default_sub": "영수증 읽는 중",
+      "completed_title": "Gmail 스캔 완료",
+      "completed_sub": "{{count}}개 찾음 — 열기",
+      "completed_empty": "새 구독을 찾지 못했습니다",
+      "failed_title": "Gmail 스캔 실패",
+      "failed_sub": "탭하여 재시도",
+      "open": "열기"
     }
   },
   "settings": {

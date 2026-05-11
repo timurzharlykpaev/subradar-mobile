@@ -34,7 +34,8 @@
     "share": "共有",
     "next": "次へ",
     "something_went_wrong": "問題が発生しました",
-    "upgrade": "アップグレード"
+    "upgrade": "アップグレード",
+    "dismiss": "閉じる"
   },
   "tabs": {
     "home": "ホーム",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}}件のメール"
       }
+    },
+    "banner": {
+      "running_title": "受信箱をスキャン中",
+      "running_default_sub": "領収書を読み取り中",
+      "completed_title": "Gmail スキャン完了",
+      "completed_sub": "{{count}}件見つかりました — 開く",
+      "completed_empty": "新しいサブスクは見つかりませんでした",
+      "failed_title": "Gmail スキャン失敗",
+      "failed_sub": "タップして再試行",
+      "open": "開く"
     }
   },
   "settings": {

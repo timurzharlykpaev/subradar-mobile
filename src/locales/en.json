@@ -34,7 +34,8 @@
     "share": "Share",
     "next": "Next",
     "something_went_wrong": "Something went wrong",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "dismiss": "Dismiss"
   },
   "tabs": {
     "home": "Home",
@@ -369,6 +370,16 @@
       "stage": {
         "count": "{{current}} / {{total}} emails"
       }
+    },
+    "banner": {
+      "running_title": "Scanning your inbox",
+      "running_default_sub": "Reading receipts",
+      "completed_title": "Gmail scan ready",
+      "completed_sub": "Found {{count}} — tap to review",
+      "completed_empty": "No new subscriptions found",
+      "failed_title": "Gmail scan failed",
+      "failed_sub": "Tap to retry",
+      "open": "Open"
     }
   },
   "settings": {

@@ -34,7 +34,8 @@
     "share": "Partager",
     "next": "Suivant",
     "something_went_wrong": "Une erreur s'est produite",
-    "upgrade": "Améliorer"
+    "upgrade": "Améliorer",
+    "dismiss": "Fermer"
   },
   "tabs": {
     "home": "Accueil",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}} e-mails"
       }
+    },
+    "banner": {
+      "running_title": "Analyse de la boîte",
+      "running_default_sub": "Lecture des reçus",
+      "completed_title": "Scan Gmail terminé",
+      "completed_sub": "{{count}} trouvé — ouvrir",
+      "completed_empty": "Aucun nouvel abonnement",
+      "failed_title": "Échec du scan Gmail",
+      "failed_sub": "Toucher pour réessayer",
+      "open": "Ouvrir"
     }
   },
   "settings": {

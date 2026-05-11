@@ -34,7 +34,8 @@
     "share": "Compartir",
     "next": "Siguiente",
     "something_went_wrong": "Algo salió mal",
-    "upgrade": "Mejorar"
+    "upgrade": "Mejorar",
+    "dismiss": "Cerrar"
   },
   "tabs": {
     "home": "Inicio",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}} correos"
       }
+    },
+    "banner": {
+      "running_title": "Escaneando tu bandeja",
+      "running_default_sub": "Leyendo recibos",
+      "completed_title": "Escaneo de Gmail listo",
+      "completed_sub": "Encontrado {{count}} — abrir",
+      "completed_empty": "No se encontraron nuevas suscripciones",
+      "failed_title": "Escaneo de Gmail fallido",
+      "failed_sub": "Tocar para reintentar",
+      "open": "Abrir"
     }
   },
   "settings": {

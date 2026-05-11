@@ -34,7 +34,8 @@
     "share": "Бөлісу",
     "next": "Келесі",
     "something_went_wrong": "Бірдеңе дұрыс болмады",
-    "upgrade": "Жаңарту"
+    "upgrade": "Жаңарту",
+    "dismiss": "Жабу"
   },
   "tabs": {
     "home": "Басты",
@@ -334,6 +335,16 @@
       "stage": {
         "count": "{{current}} / {{total}} хат"
       }
+    },
+    "banner": {
+      "running_title": "Поштаны сканерлеудеміз",
+      "running_default_sub": "Чектерді оқып жатырмыз",
+      "completed_title": "Сканерлеу дайын",
+      "completed_sub": "{{count}} табылды — ашу",
+      "completed_empty": "Жаңа жазылымдар табылған жоқ",
+      "failed_title": "Сканерлеу сәтсіз",
+      "failed_sub": "Қайталау үшін түртіңіз",
+      "open": "Ашу"
     }
   },
   "periods": {
