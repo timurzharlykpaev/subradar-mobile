@@ -179,6 +179,24 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   useEffect(() => {
     if (visible) {
+      // Defensive reset on open: any non-idle flow that doesn't have
+      // its required state populated would render a blank ScrollView
+      // (e.g. flowState='confirm' with confirmData=null, or 'wizard'
+      // without bulkItems). Forcing back to idle on open also covers
+      // future close paths we don't add resetAll() to. It's idempotent
+      // when the sheet was previously closed via handleClose / swipe
+      // (which now both call resetAll already).
+      const hasStateForFlow =
+        (flowState === 'idle') ||
+        (flowState === 'loading') ||
+        (flowState === 'transcription' && !!transcribedText) ||
+        (flowState === 'confirm' && !!confirmData) ||
+        (flowState === 'bulk-confirm' && bulkItems.length > 0) ||
+        (flowState === 'wizard') ||
+        (flowState === 'manual');
+      if (!hasStateForFlow) {
+        resetAll();
+      }
       backdropOpacity.value = withTiming(1, { duration: 250 });
       translateY.value = withTiming(0, { duration: 300 });
       // Load regional catalog when sheet opens
@@ -254,9 +272,16 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     })
     .onEnd((event) => {
       if (event.translationY > 80 || event.velocityY > 500) {
+        // Swipe-down close must go through the same path as the
+        // ✕ button — otherwise flowState, confirmData, bulkItems,
+        // and form context survive the close, and the NEXT time the
+        // sheet opens it renders a stale view (e.g. flowState='wizard'
+        // with no bulkItems → blank ScrollView, exactly the "empty
+        // modal" symptom users reported).
         translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
           runOnJS(onClose)();
         });
+        runOnJS(resetAll)();
       } else {
         translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
       }
