@@ -960,7 +960,16 @@
     "team_report": "Team Report",
     "share_instructions": "Send this code to a teammate. Tap the code to copy, or use Share to send via Messages, WhatsApp, etc.",
     "tap_to_copy": "Tap to copy",
-    "subs_count": "{{count}} subscription(s) shown"
+    "subs_count": "{{count}} subscription(s) shown",
+    "transfer_ownership": "Transfer ownership",
+    "transfer_warning": "You will be demoted to admin. The new owner takes over billing and full team control. This action is irreversible.",
+    "transfer_pick_member": "Choose new owner",
+    "transfer_type_confirm": "Type TRANSFER to confirm",
+    "transfer_no_eligible": "No eligible members. Invite someone first.",
+    "transfer_btn": "Transfer",
+    "transfer_success_title": "Ownership transferred",
+    "transfer_success_body": "You are now an admin of this team.",
+    "error_transfer": "Failed to transfer ownership"
   },
   "paywall": {
     "choose_plan": "Choose a Plan",

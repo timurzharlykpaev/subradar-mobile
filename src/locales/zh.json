@@ -895,7 +895,16 @@
     "team_report": "团队报告",
     "share_instructions": "将此代码发送给队友。点按代码即可复制,或使用分享通过短信、WhatsApp 等发送。",
     "tap_to_copy": "点按以复制",
-    "subs_count": "显示 {{count}} 个订阅"
+    "subs_count": "显示 {{count}} 个订阅",
+    "transfer_ownership": "转让所有权",
+    "transfer_warning": "您将降级为管理员。新所有者将接管账单和团队的全部控制权。此操作不可撤销。",
+    "transfer_pick_member": "选择新所有者",
+    "transfer_type_confirm": "输入 TRANSFER 确认",
+    "transfer_no_eligible": "没有合适的成员。请先邀请他人。",
+    "transfer_btn": "转让",
+    "transfer_success_title": "所有权已转让",
+    "transfer_success_body": "您现在是此团队的管理员。",
+    "error_transfer": "转让所有权失败"
   },
   "paywall": {
     "choose_plan": "选择计划",

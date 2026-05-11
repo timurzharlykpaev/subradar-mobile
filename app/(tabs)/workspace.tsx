@@ -30,6 +30,8 @@ import TeamExplainerModal from '../../src/components/TeamExplainerModal';
 import { reconcileBillingDrift } from '../../src/utils/reconcileBillingDrift';
 import { convertAmount } from '../../src/services/fxCache';
 import { WorkspaceMembersSkeleton } from '../../src/components/skeletons';
+import { NoticeBanner, useNotice } from '../../src/components/NoticeBanner';
+import { TransferOwnershipSheet } from '../../src/components/TransferOwnershipSheet';
 
 export default function WorkspaceScreen() {
   const { colors, isDark } = useTheme();
@@ -66,6 +68,17 @@ export default function WorkspaceScreen() {
     queryClient.invalidateQueries({ queryKey: ['billing'] });
   }, []);
   const [wsName, setWsName] = useState('');
+  // Shared in-screen notice slot — replaces the four `Alert.alert`
+  // onError callbacks on the mutations below. System dialogs are
+  // overkill for "we couldn't reach the server" and inconsistent
+  // with the rest of the Magic Mail / Gmail screen design.
+  const [notice, setNotice] = useNotice();
+  // Transfer-ownership flow state. The two-step pattern (pick a
+  // target then type TRANSFER) matches the server's required
+  // confirmation literal exactly, so a confused tap or a stale
+  // re-submit can never rotate ownership accidentally.
+  const [transferTarget, setTransferTarget] = useState<any>(null);
+  const [transferConfirmText, setTransferConfirmText] = useState('');
 
   const { data: workspace, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['workspace'],
@@ -150,13 +163,23 @@ export default function WorkspaceScreen() {
       setShowCreate(false);
       setWsName('');
     },
-    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_create')),
+    onError: (e: any) =>
+      setNotice({
+        kind: 'error',
+        title: t('workspace.error_title'),
+        body: e?.response?.data?.message || t('workspace.error_create'),
+      }),
   });
 
   const removeMutation = useMutation({
     mutationFn: (memberId: string) => workspaceApi.removeMember(workspace.id, memberId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workspace'] }),
-    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_remove')),
+    onError: (e: any) =>
+      setNotice({
+        kind: 'error',
+        title: t('workspace.error_title'),
+        body: e?.response?.data?.message || t('workspace.error_remove'),
+      }),
   });
 
   const leaveMutation = useMutation({
@@ -165,7 +188,14 @@ export default function WorkspaceScreen() {
       queryClient.invalidateQueries({ queryKey: ['workspace'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
     },
-    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_leave', 'Failed to leave team')),
+    onError: (e: any) =>
+      setNotice({
+        kind: 'error',
+        title: t('workspace.error_title'),
+        body:
+          e?.response?.data?.message ||
+          t('workspace.error_leave', 'Failed to leave team'),
+      }),
   });
 
   const deleteMutation = useMutation({
@@ -174,7 +204,49 @@ export default function WorkspaceScreen() {
       queryClient.invalidateQueries({ queryKey: ['workspace'] });
       queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
     },
-    onError: (e: any) => Alert.alert(t('workspace.error_title'), e?.response?.data?.message || t('workspace.error_delete', 'Failed to delete team')),
+    onError: (e: any) =>
+      setNotice({
+        kind: 'error',
+        title: t('workspace.error_title'),
+        body:
+          e?.response?.data?.message ||
+          t('workspace.error_delete', 'Failed to delete team'),
+      }),
+  });
+
+  // Transfer-ownership mutation. Success → invalidate workspace +
+  // billing (paying owner row may flip in /billing/me). Errors go to
+  // the same in-screen notice slot.
+  const transferMutation = useMutation({
+    mutationFn: (args: { newOwnerMemberId: string; confirm: string }) =>
+      workspaceApi.transferOwnership(
+        workspace.id,
+        args.newOwnerMemberId,
+        args.confirm,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['billing'] });
+      setTransferTarget(null);
+      setTransferConfirmText('');
+      setNotice({
+        kind: 'success',
+        title: t('workspace.transfer_success_title', 'Ownership transferred'),
+        body: t(
+          'workspace.transfer_success_body',
+          'You are now an admin of this team.',
+        ),
+      });
+    },
+    onError: (e: any) =>
+      setNotice({
+        kind: 'error',
+        title: t('workspace.error_title'),
+        body:
+          e?.response?.data?.message ||
+          t('workspace.error_transfer', 'Failed to transfer ownership'),
+      }),
   });
 
   // ── No workspace yet ────────────────────────────────────────────────────
@@ -464,6 +536,9 @@ export default function WorkspaceScreen() {
 
   return (
     <SafeAreaView testID="workspace-screen" edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
+      {notice && (
+        <NoticeBanner notice={notice} onClose={() => setNotice(null)} />
+      )}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -878,6 +953,52 @@ export default function WorkspaceScreen() {
           )}
 
           {isOwner && (
+            <>
+              {workspace.members.some(
+                (m: any) =>
+                  m.role !== 'OWNER' &&
+                  m.status === 'ACTIVE' &&
+                  m.userId,
+              ) && (
+                <TouchableOpacity
+                  testID="btn-transfer-owner"
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    backgroundColor: colors.card,
+                    paddingVertical: 16,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    marginBottom: 12,
+                  }}
+                  onPress={() => {
+                    // Open the transfer picker by pre-selecting nothing —
+                    // the modal lists eligible members and the owner
+                    // taps one to mark as the transfer target.
+                    setTransferTarget({});
+                    setTransferConfirmText('');
+                  }}
+                >
+                  <Ionicons
+                    name="swap-horizontal"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      fontWeight: '700',
+                      fontSize: 15,
+                    }}
+                  >
+                    {t('workspace.transfer_ownership', 'Transfer ownership')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
             <TouchableOpacity
               testID="btn-delete-team"
               style={{
@@ -907,10 +1028,38 @@ export default function WorkspaceScreen() {
                 {t('workspace.delete_team', 'Delete Team')}
               </Text>
             </TouchableOpacity>
+            </>
           )}
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
+
+      <TransferOwnershipSheet
+        visible={transferTarget !== null}
+        members={(workspace?.members ?? []).filter(
+          (m: any) =>
+            m.role !== 'OWNER' && m.status === 'ACTIVE' && m.userId,
+        )}
+        selectedMemberId={transferTarget?.id ?? null}
+        onSelect={(member: any) => {
+          setTransferTarget(member);
+          setTransferConfirmText('');
+        }}
+        confirmText={transferConfirmText}
+        onConfirmTextChange={setTransferConfirmText}
+        onCancel={() => {
+          setTransferTarget(null);
+          setTransferConfirmText('');
+        }}
+        onConfirm={() =>
+          transferTarget?.id &&
+          transferMutation.mutate({
+            newOwnerMemberId: transferTarget.id,
+            confirm: transferConfirmText,
+          })
+        }
+        pending={transferMutation.isPending}
+      />
 
       {/* Member Detail Modal */}
       <MemberDetailSheet

@@ -895,7 +895,16 @@
     "team_report": "Team-Bericht",
     "share_instructions": "Senden Sie diesen Code an ein Teammitglied. Tippen Sie auf den Code zum Kopieren oder nutzen Sie Teilen für Nachrichten, WhatsApp usw.",
     "tap_to_copy": "Zum Kopieren tippen",
-    "subs_count": "{{count}} Abonnement(s) angezeigt"
+    "subs_count": "{{count}} Abonnement(s) angezeigt",
+    "transfer_ownership": "Eigentum übertragen",
+    "transfer_warning": "Du wirst zum Admin herabgestuft. Der neue Eigentümer übernimmt Abrechnung und volle Teamkontrolle. Diese Aktion ist unumkehrbar.",
+    "transfer_pick_member": "Neuen Eigentümer wählen",
+    "transfer_type_confirm": "TRANSFER eingeben zum Bestätigen",
+    "transfer_no_eligible": "Keine geeigneten Mitglieder. Lade zuerst jemanden ein.",
+    "transfer_btn": "Übertragen",
+    "transfer_success_title": "Eigentum übertragen",
+    "transfer_success_body": "Du bist jetzt Admin dieses Teams.",
+    "error_transfer": "Eigentumsübertragung fehlgeschlagen"
   },
   "paywall": {
     "choose_plan": "Plan wählen",

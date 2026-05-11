@@ -895,7 +895,16 @@
     "team_report": "Rapport d'équipe",
     "share_instructions": "Envoyez ce code à un coéquipier. Appuyez sur le code pour copier, ou utilisez Partager pour envoyer via Messages, WhatsApp, etc.",
     "tap_to_copy": "Appuyez pour copier",
-    "subs_count": "{{count}} abonnement(s) affiché(s)"
+    "subs_count": "{{count}} abonnement(s) affiché(s)",
+    "transfer_ownership": "Transférer la propriété",
+    "transfer_warning": "Vous deviendrez administrateur. Le nouveau propriétaire reprend la facturation et le contrôle complet de l'équipe. Cette action est irréversible.",
+    "transfer_pick_member": "Choisir le nouveau propriétaire",
+    "transfer_type_confirm": "Tapez TRANSFER pour confirmer",
+    "transfer_no_eligible": "Aucun membre éligible. Invitez d'abord quelqu'un.",
+    "transfer_btn": "Transférer",
+    "transfer_success_title": "Propriété transférée",
+    "transfer_success_body": "Vous êtes désormais administrateur de cette équipe.",
+    "error_transfer": "Échec du transfert de propriété"
   },
   "paywall": {
     "choose_plan": "Choisir un plan",

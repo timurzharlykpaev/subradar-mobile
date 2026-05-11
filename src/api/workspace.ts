@@ -42,6 +42,25 @@ export const workspaceApi = {
     return data;
   },
 
+  /**
+   * One-way ownership hand-off. The previous owner is demoted to ADMIN
+   * so they keep day-to-day powers minus owner-only operations
+   * (delete team, transfer again, generate team report). The server
+   * requires `confirm: 'TRANSFER'` literal — surface a confirm modal
+   * where the user types the word; do NOT auto-submit on tap.
+   */
+  transferOwnership: async (
+    workspaceId: string,
+    newOwnerMemberId: string,
+    confirm: string,
+  ) => {
+    const { data } = await apiClient.post(
+      `/workspace/${workspaceId}/transfer-owner`,
+      { newOwnerMemberId, confirm },
+    );
+    return data;
+  },
+
   getAnalysisLatest: async () => {
     const { data } = await apiClient.get('/workspace/me/analysis/latest');
     return data;

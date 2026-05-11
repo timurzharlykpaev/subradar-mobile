@@ -895,7 +895,16 @@
     "team_report": "チームレポート",
     "share_instructions": "このコードをチームメイトに送信してください。タップでコピー、または共有でメッセージ・WhatsApp 等から送信できます。",
     "tap_to_copy": "タップしてコピー",
-    "subs_count": "{{count}} 件のサブスクリプションを表示"
+    "subs_count": "{{count}} 件のサブスクリプションを表示",
+    "transfer_ownership": "所有権を移譲",
+    "transfer_warning": "あなたは管理者に降格されます。新しい所有者が請求とチーム全体の管理を引き継ぎます。この操作は元に戻せません。",
+    "transfer_pick_member": "新しい所有者を選択",
+    "transfer_type_confirm": "確認のため TRANSFER と入力",
+    "transfer_no_eligible": "対象のメンバーがいません。まず招待してください。",
+    "transfer_btn": "移譲する",
+    "transfer_success_title": "所有権を移譲しました",
+    "transfer_success_body": "あなたはこのチームの管理者になりました。",
+    "error_transfer": "所有権の移譲に失敗しました"
   },
   "paywall": {
     "choose_plan": "プランを選択",
