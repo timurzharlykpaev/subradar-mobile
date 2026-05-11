@@ -34,7 +34,15 @@ import { TrialOfferModal } from '../../src/components/TrialOfferModal';
 import { TeamUpsellModal } from '../../src/components/TeamUpsellModal';
 import { useUIStore } from '../../src/stores/uiStore';
 import { SubIcon } from '../../src/components/SubIcon';
-import Svg, { Path as SvgPath, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Line as SvgLine,
+  Path as SvgPath,
+  Rect,
+  Stop,
+  Text as SvgText,
+} from 'react-native-svg';
 import { TeamSavingsBadge } from '../../src/components/TeamSavingsBadge';
 import { useAnalysisLatest } from '../../src/hooks/useAnalysis';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
@@ -845,60 +853,132 @@ function StatCard({ icon, label, value, color }: { icon: string; label: string; 
   );
 }
 
-function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string; amount: number }[]; currencySymbol?: string }) {
+/**
+ * Compact dashboard variant of the bar chart. Sized for the home card
+ * (chartH = 130) so it sits beside the donut. Matches the analytics
+ * `MonthlyBarChart` visually — same purple → pink peak-month gradient,
+ * dim purple fill for the rest, scrollable when the slot count would
+ * otherwise crush each bar below 18px. Kept self-contained (no shared
+ * helper) because the analytics version owns a Y-axis + scroll-to-end
+ * behaviour the dashboard card doesn't need.
+ */
+function MonthlyBarChart({
+  data,
+  currencySymbol = '$',
+}: {
+  data: { month: string; amount: number }[];
+  currencySymbol?: string;
+}) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const chartW = screenWidth - 80;
+  const containerW = screenWidth - 80;
   const chartH = 130;
+  const topPadding = 24;
   const hasData = data.some((d) => Number(d.amount) > 0);
   const maxVal = Math.max(...data.map((d) => Number(d.amount) || 0), 1);
-  const barW = Math.max(8, chartW / Math.max(data.length, 1) - 8);
+
+  // Minimum slot so a 6-bar dashboard view still reads on small phones,
+  // and the `${sym} ${k}.${k}k` label has room above each bar without
+  // overlapping its neighbour. If the data set is wider than the
+  // container, the chart scrolls horizontally rather than crushing
+  // bars to 8px wide (the previous behaviour on long histories).
+  const slotW = Math.max(32, Math.floor(containerW / Math.max(data.length, 1)));
+  const barW = Math.min(slotW - 8, 26);
+  const innerW = Math.max(containerW, slotW * data.length);
+  const isScrollable = innerW > containerW + 1;
 
   if (!hasData) {
     return (
       <View style={{ height: chartH + 24, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 13, color: colors.textMuted }}>{t('common.no_data_period')}</Text>
+        <Text style={{ fontSize: 13, color: colors.textMuted }}>
+          {t('common.no_data_period')}
+        </Text>
       </View>
     );
   }
 
+  const formatBarLabel = (val: number): string => {
+    if (val >= 1_000_000) return `${currencySymbol} ${(val / 1_000_000).toFixed(1)}M`;
+    if (val >= 1_000) return `${currencySymbol} ${(val / 1_000).toFixed(val < 10_000 ? 1 : 0)}k`;
+    return `${currencySymbol} ${val.toFixed(0)}`;
+  };
+
   return (
-    <View>
-      <Svg width={chartW} height={chartH + 18}>
-        {(() => {
-          const values = data.map((d) => Number(d.amount) || 0);
-          const allSame = values.every((v) => v === values[0]);
-          const topPadding = 24;
-          return data.map((d, i) => {
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      bounces={false}
+      scrollEnabled={isScrollable}
+    >
+      <View>
+        <Svg width={innerW} height={chartH + 18}>
+          <Defs>
+            <SvgLinearGradient id="dashBarGrad" x1="0" y1="1" x2="0" y2="0">
+              <Stop offset="0" stopColor={colors.primary} stopOpacity="1" />
+              <Stop offset="1" stopColor="#EC4899" stopOpacity="1" />
+            </SvgLinearGradient>
+            <SvgLinearGradient id="dashBarGradDim" x1="0" y1="1" x2="0" y2="0">
+              <Stop offset="0" stopColor={colors.primary} stopOpacity="0.18" />
+              <Stop offset="1" stopColor={colors.primary} stopOpacity="0.55" />
+            </SvgLinearGradient>
+          </Defs>
+          {data.map((d, i) => {
             const val = Number(d.amount) || 0;
             const barH = Math.max(4, (val / maxVal) * (chartH - topPadding));
-            const x = i * (chartW / data.length) + (chartW / data.length - barW) / 2;
+            const x = i * slotW + (slotW - barW) / 2;
             const y = chartH - barH + 18;
-            const isMax = val === maxVal;
+            const isMax = val === maxVal && val > 0;
             return (
               <React.Fragment key={i}>
-                <Rect x={x} y={y} width={barW} height={barH} rx={5} fill={isMax ? colors.primary : `${colors.primary}55`} />
+                <Rect
+                  x={x}
+                  y={y}
+                  width={barW}
+                  height={barH}
+                  rx={5}
+                  fill={isMax ? 'url(#dashBarGrad)' : 'url(#dashBarGradDim)'}
+                />
                 {val > 0 && (
-                  <SvgText x={x + barW / 2} y={y - 6} fontSize={9} fontWeight="700" fill={isMax ? colors.primary : colors.textMuted} textAnchor="middle">
-                    {val >= 1000 ? `${currencySymbol} ${(val / 1000).toFixed(1)}k` : `${currencySymbol} ${val.toFixed(0)}`}
+                  <SvgText
+                    x={x + barW / 2}
+                    y={y - 6}
+                    fontSize={9}
+                    fontWeight={isMax ? '800' : '600'}
+                    fill={isMax ? colors.primary : colors.textMuted}
+                    textAnchor="middle"
+                  >
+                    {formatBarLabel(val)}
                   </SvgText>
                 )}
               </React.Fragment>
             );
-          });
-        })()}
-      </Svg>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 6 }}>
-        {data.map((d, i) => {
-          const monthStr = typeof d.month === 'string' ? d.month : String(d.month || '');
-          const parts = monthStr.split('-');
-          const monthNum = parts.length >= 2 ? parseInt(parts[1], 10) : parseInt(monthStr, 10);
-          const label = t(`months.${monthNum}`, { defaultValue: monthStr });
-          return <Text key={i} style={{ fontSize: 10, color: colors.textSecondary }}>{label}</Text>;
-        })}
+          })}
+        </Svg>
+        <View
+          style={{
+            flexDirection: 'row',
+            width: innerW,
+            marginTop: 6,
+          }}
+        >
+          {data.map((d, i) => {
+            const monthStr = typeof d.month === 'string' ? d.month : String(d.month || '');
+            const parts = monthStr.split('-');
+            const monthNum =
+              parts.length >= 2 ? parseInt(parts[1], 10) : parseInt(monthStr, 10);
+            const label = t(`months.${monthNum}`, { defaultValue: monthStr });
+            return (
+              <View key={i} style={{ width: slotW, alignItems: 'center' }}>
+                <Text style={{ fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>
+                  {label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -938,18 +1018,55 @@ function CategoryDonut({ categories }: { categories: { category: string; amount:
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {slices.map((slice, idx) => <SvgPath key={idx} d={slice.d} fill={slice.color} />)}
-      </Svg>
+      <View
+        style={{
+          // Subtle drop shadow under the donut — makes the chart sit on
+          // the card rather than feel pasted onto it. Native shadow on
+          // iOS; elevation on Android. Matches the lift of the dashboard
+          // hero card so the home page feels cohesive top-to-bottom.
+          shadowColor: '#000',
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 3,
+        }}
+      >
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {slices.map((slice, idx) => (
+            <SvgPath
+              key={idx}
+              d={slice.d}
+              fill={slice.color}
+              // Hairline dark separators between slices remove the
+              // anti-alias smear where adjacent segments meet at the
+              // donut outer edge. Reads as crisp segmentation rather
+              // than the previous "blurry pie" at small sizes.
+              stroke="rgba(0,0,0,0.08)"
+              strokeWidth={0.5}
+            />
+          ))}
+        </Svg>
+      </View>
       <View style={{ flex: 1, gap: 8 }}>
         {slices.map((slice, idx) => (
           <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: slice.color }} />
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: slice.color,
+              }}
+            />
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 }}>
               <CategoryIcon category={slice.categoryId} size={14} />
-              <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>{slice.label}</Text>
+              <Text style={{ fontSize: 13, color: colors.text, flex: 1 }} numberOfLines={1}>
+                {slice.label}
+              </Text>
             </View>
-            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary }}>{slice.pct}%</Text>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary }}>
+              {slice.pct}%
+            </Text>
           </View>
         ))}
       </View>

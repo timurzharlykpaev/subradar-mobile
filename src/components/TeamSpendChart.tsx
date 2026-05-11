@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import { formatMoney } from '../utils/formatMoney';
+import { SafeLinearGradient as LinearGradient } from './SafeLinearGradient';
 
 interface MemberSpend {
   name: string;
@@ -113,8 +114,18 @@ export function TeamSpendChart({ members, currency = 'USD' }: Props) {
                   )}
                 </View>
 
-                <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
-                  <View style={[styles.barFill, { width: `${widthPct}%`, backgroundColor: accent }]} />
+                <View
+                  style={[
+                    styles.barTrack,
+                    { backgroundColor: colors.border, height: isTop ? 8 : 6 },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={[accent, accent + 'AA']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.barFill, { width: `${widthPct}%` }]}
+                  />
                 </View>
 
                 <View style={styles.amountRow}>
