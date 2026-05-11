@@ -6,6 +6,7 @@ import {
   Pressable,
   Vibration,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { Image } from 'react-native';
 import Animated, {
@@ -16,7 +17,12 @@ import Animated, {
   withSpring,
   cancelAnimation,
   Easing,
+  interpolate,
+  Extrapolation,
+  type SharedValue,
 } from 'react-native-reanimated';
+import { Swipeable } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -42,7 +48,74 @@ function daysUntilString(date?: string | null): number | null {
   return daysUntilDate(date ? new Date(date) : null);
 }
 
-const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) => {
+/**
+ * Right-side delete action revealed by a leftward swipe on the card.
+ * Reanimated `progress` is provided by `Swipeable` and goes 0→1 as the
+ * panel slides in; we use it to grow the trash icon from 70%→100% so
+ * the affordance feels physical rather than popping in.
+ *
+ * We deliberately do NOT show a confirmation dialog — handleDelete()
+ * upstream already does an optimistic remove + 5s undo-toast, which is
+ * the iOS-native "delete and let me revert" pattern. Adding a modal
+ * confirm on top would double-friction the gesture.
+ */
+function RightDeleteAction({
+  progress,
+  swipeRef,
+  onDelete,
+  label,
+}: {
+  progress: SharedValue<number>;
+  swipeRef: React.RefObject<Swipeable | null>;
+  onDelete: () => void;
+  label: string;
+}) {
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: interpolate(progress.value, [0, 1], [0.7, 1], Extrapolation.CLAMP),
+      },
+    ],
+    opacity: interpolate(progress.value, [0, 0.5, 1], [0, 0.6, 1], Extrapolation.CLAMP),
+  }));
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={() => {
+        swipeRef.current?.close();
+        // Fire delete on the next tick so the close animation has a
+        // frame to start — visually nicer than instant disappearance.
+        setTimeout(onDelete, 80);
+      }}
+      style={deleteActionStyles.touchable}
+    >
+      <View style={deleteActionStyles.bg}>
+        <Animated.View style={iconStyle}>
+          <Ionicons name="trash" size={22} color="#FFF" />
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const deleteActionStyles = StyleSheet.create({
+  touchable: {
+    width: 76,
+    marginBottom: 10,
+  },
+  bg: {
+    flex: 1,
+    backgroundColor: '#EF4444',
+    borderRadius: 16,
+    marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+const SubscriptionCardInner: React.FC<Props> = ({ subscription, onSwipeDelete, onLongPress }) => {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -102,7 +175,9 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) =
     onLongPress?.();
   };
 
-  return (
+  const swipeRef = React.useRef<Swipeable>(null);
+
+  const cardNode = (
     <AnimatedPressable
       testID={`subscription-card-${subscription.id}`}
       style={[
@@ -244,6 +319,35 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onLongPress }) =
       </View>
     </AnimatedPressable>
   );
+
+  // When the parent screen wires up onSwipeDelete, wrap the card in a
+  // Swipeable so a leftward swipe reveals a red trash action on the
+  // right side. friction:2 makes the panel feel responsive but not
+  // jumpy; rightThreshold:40 means the user has to commit to the
+  // gesture before the panel snaps open. We never auto-delete on a
+  // full overswipe (overshootRight=false) — too easy to trigger by
+  // accident while scrolling the list horizontally on edge.
+  if (onSwipeDelete) {
+    return (
+      <Swipeable
+        ref={swipeRef}
+        friction={2}
+        rightThreshold={40}
+        overshootRight={false}
+        renderRightActions={(progress) => (
+          <RightDeleteAction
+            progress={progress as unknown as SharedValue<number>}
+            swipeRef={swipeRef}
+            onDelete={onSwipeDelete}
+            label={t('common.delete', 'Delete')}
+          />
+        )}
+      >
+        {cardNode}
+      </Swipeable>
+    );
+  }
+  return cardNode;
 };
 
 export const SubscriptionCard = React.memo(SubscriptionCardInner);
