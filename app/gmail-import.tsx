@@ -567,6 +567,23 @@ export default function GmailImportScreen() {
       .catch(() => {});
     setImporting(false);
     analytics.track('gmail.import.complete', { created, failed });
+    // Clear the candidate list + scan job state so reopening
+    // gmail-import (or coming back to dashboard) doesn't show the
+    // already-imported rows or a phantom "scan ready" banner. The
+    // scan.reset() in particular wipes the persisted
+    // `gmail:scan:active-jobId` AsyncStorage key — without it the
+    // dashboard's ActiveGmailScanBanner kept polling the completed
+    // job and stayed visible after the user had already imported.
+    // Mirrors handleBulkCancel's cleanup exactly.
+    if (created > 0 || failed === 0) {
+      setBulkItems([]);
+      setBulkChecked([]);
+      setScanRanOnce(false);
+      setScanSummary(null);
+      setTruncated(false);
+      setScanFromCache(false);
+      scan.reset();
+    }
     setNotice({
       kind:
         created > 0 && failed === 0
@@ -581,7 +598,7 @@ export default function GmailImportScreen() {
       }),
     });
     setTimeout(() => router.replace('/(tabs)'), 1200);
-  }, [bulkItems, bulkChecked, createSub, router, t]);
+  }, [bulkItems, bulkChecked, createSub, router, scan, t]);
 
   const handleBulkCancel = useCallback(() => {
     // BulkConfirmView's Back button — drop the result list and return
