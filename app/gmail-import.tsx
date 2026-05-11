@@ -41,6 +41,7 @@ import {
 import { useCreateSubscription } from '../src/hooks/useSubscriptions';
 import type { GmailScanCandidate, GmailScanResult } from '../src/api/gmail';
 import { analytics } from '../src/services/analytics';
+import { SafeLinearGradient } from '../src/components/SafeLinearGradient';
 
 /**
  * Gmail bulk-import screen — Pro/Team gated end to end:
@@ -1184,10 +1185,17 @@ function ScanLoader() {
           style={{
             height: 3,
             width: `${progress * 100}%`,
-            backgroundColor: MAGIC_MAIL_AMBER,
             borderRadius: 2,
+            overflow: 'hidden',
           }}
-        />
+        >
+          <SafeLinearGradient
+            colors={[MAGIC_MAIL_AMBER, '#EC4899']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </View>
       </View>
     </View>
   );

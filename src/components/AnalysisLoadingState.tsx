@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme';
 import type { AnalysisStatusResponse } from '../types';
+import { SafeLinearGradient as LinearGradient } from './SafeLinearGradient';
 
 interface Props {
   status: AnalysisStatusResponse | null;
@@ -30,6 +31,16 @@ export default function AnalysisLoadingState({ status }: Props) {
     ? stages.findIndex((s) => progress[s.key] === 'pending')
     : 0;
 
+  // Show overall completion fraction as a thin gradient bar at the top.
+  // The previous pure-spinner loader gave no signal that *forward
+  // motion* was happening — users assumed the AI was stuck if a single
+  // stage took 8–10 s. A bar that creeps forward as each stage flips
+  // to "done" makes a slow run feel intentional instead of frozen.
+  const completedCount = progress
+    ? stages.filter((s) => progress[s.key] === 'done').length
+    : 0;
+  const fraction = stages.length > 0 ? completedCount / stages.length : 0;
+
   return (
     <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
       {/* Header */}
@@ -38,6 +49,17 @@ export default function AnalysisLoadingState({ status }: Props) {
         <Text style={[styles.headerText, { color: colors.text }]}>
           {t('analysis.analyzing', 'AI is analyzing...')}
         </Text>
+      </View>
+
+      <View style={[styles.bar, { backgroundColor: colors.border }]}>
+        <View style={{ width: `${Math.max(fraction * 100, 6)}%`, height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+          <LinearGradient
+            colors={[colors.primary, '#EC4899']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </View>
       </View>
 
       {/* Stages */}
@@ -94,7 +116,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 12,
+  },
+  bar: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 18,
   },
   headerText: {
     fontSize: 16,

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { SafeLinearGradient as LinearGradient } from './SafeLinearGradient';
 
 interface Props {
   message: string;
@@ -57,7 +58,14 @@ export function UndoToast({ message, duration = 5000, onUndo, onDismiss }: Props
           styles.progressBar,
           { width: progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
         ]}
-      />
+      >
+        <LinearGradient
+          colors={['#7c3aed', '#EC4899']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
     </View>
   );
 }
@@ -67,5 +75,5 @@ const styles = StyleSheet.create({
   content: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
   message: { color: '#fff', fontSize: 15, flex: 1, marginRight: 12 },
   undoText: { color: '#7c3aed', fontSize: 15, fontWeight: '700' },
-  progressBar: { height: 3, backgroundColor: '#7c3aed' },
+  progressBar: { height: 3, overflow: 'hidden' },
 });

@@ -19,6 +19,23 @@ import { useSettingsStore } from '../src/stores/settingsStore';
 import { calcYearlySavings } from '../src/utils/calcYearlySavings';
 import { formatMoney } from '../src/utils/formatMoney';
 import i18n from '../src/i18n';
+import { SafeLinearGradient as LinearGradient } from '../src/components/SafeLinearGradient';
+
+// Three-tier gradient palette for usage/quota bars. The previous solid
+// `#F87171` past 90 % and flat white below felt either alarmist or
+// invisible; a graduated colour ramp gives the user an at-a-glance
+// sense of how close they are to the limit while reading the same on
+// either side of the threshold.
+const QUOTA_GRADIENT = {
+  safe: ['#22C55E', '#10B981'],
+  warn: ['#F59E0B', '#EF4444'],
+  danger: ['#EF4444', '#F472B6'],
+} as const;
+function quotaGradient(pct: number): readonly [string, string] {
+  if (pct >= 90) return QUOTA_GRADIENT.danger;
+  if (pct >= 70) return QUOTA_GRADIENT.warn;
+  return QUOTA_GRADIENT.safe;
+}
 
 const PLAN_DISPLAY: Record<string, { name: string; icon: string; color: string }> = {
   free:         { name: 'Free',  icon: 'leaf-outline',    color: '#6B7280' },
@@ -349,7 +366,12 @@ export default function SubscriptionPlanScreen() {
                   <Text style={styles.usageValue}>{subsUsed}/{subsLimit == null ? '∞' : subsLimit}</Text>
                 </View>
                 <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${subsLimit ? subsPercent : 0}%`, backgroundColor: subsPercent >= 90 ? '#F87171' : 'rgba(255,255,255,0.8)' }]} />
+                  <LinearGradient
+                    colors={[...quotaGradient(subsLimit ? subsPercent : 0)]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.progressFill, { width: `${subsLimit ? subsPercent : 0}%` }]}
+                  />
                 </View>
               </View>
               <View style={styles.usageItem}>
@@ -358,7 +380,12 @@ export default function SubscriptionPlanScreen() {
                   <Text style={styles.usageValue}>{aiUsed}/{aiLimit ?? '∞'}</Text>
                 </View>
                 <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${aiPercent}%`, backgroundColor: aiPercent >= 90 ? '#F87171' : 'rgba(255,255,255,0.8)' }]} />
+                  <LinearGradient
+                    colors={[...quotaGradient(aiPercent)]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.progressFill, { width: `${aiPercent}%` }]}
+                  />
                 </View>
               </View>
             </View>
