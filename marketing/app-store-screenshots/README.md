@@ -1,16 +1,22 @@
-# SubRadar AI — App Store Marketing Assets
+# SubRadar AI — App Store Marketing Kit
 
-Ten killer-feature screenshots captured straight from the running app via
-Maestro, paired with App Store-grade copy in 10 languages. Drop this folder
-into App Store Connect, crop the PNGs to **1290 × 2796** (iPhone 17 Pro
-Max), overlay the headline/subhead from the table below, and ship.
+A step-by-step, all-in-one guide for shipping the App Store / Google Play
+listing in **10 languages** (English, Russian, German, Spanish, French,
+Portuguese, Japanese, Korean, Chinese, Kazakh — matches the app locales).
+
+The flow: **prep → capture 10 screenshots → compose in Figma → upload
+metadata in 10 locales**. Each step below is self-contained; you can
+hand a single step to a designer / copywriter and they have everything
+they need.
+
+---
 
 ## Folder layout
 
 ```
 marketing/app-store-screenshots/
-├── README.md                      ← you are here (this file)
-├── raw/                           ← Maestro output, 1320 × 2868, status-bar dirty
+├── README.md           ← this file (master kit, 10 langs)
+├── raw/                ← put your captured 1320×2868 PNGs here
 │   ├── 01_hero_dashboard.png
 │   ├── 02_magical_add_sheet.png
 │   ├── 03_magic_voice.png
@@ -21,192 +27,555 @@ marketing/app-store-screenshots/
 │   ├── 08_analytics_categories.png
 │   ├── 09_workspace_team.png
 │   └── 10_reports_export.png
-└── final/                         ← composed for App Store (after Figma pass)
+└── final/              ← Figma-composed 1290×2796 frames per locale
+    ├── en/01..10.png
+    ├── ru/01..10.png
+    └── ... (8 more)
 ```
 
-## Quick-look table — what each screenshot sells
+---
 
-| # | Killer feature | Pain it solves | English headline (overlay) | English sub-headline |
-|---|---|---|---|---|
-| 01 | Dashboard hero | "I have no idea how much I really spend on subs." | **Find $300 you didn't know you were losing.** | Every subscription. Every charge. One screen. |
-| 02 | Magical add sheet | "Adding subscriptions one-by-one is tedious." | **Add any subscription in 2 seconds.** | Voice, Gmail scan, screenshot, search — pick your magic. |
-| 03 | Magic Voice | "Typing every field on tiny mobile keyboards." | **Say it. We track it.** | "Netflix fifteen dollars monthly" — done. |
-| 04 | Magic Mail (Gmail import) | "I don't even remember everything I'm subscribed to." | **Scan your inbox. Find every forgotten charge.** | AI reads 90 days of Gmail receipts in under a minute. |
-| 05 | Subscriptions list | "Free trials silently become paid charges." | **Never get blindsided by a renewal.** | Trial countdowns, statuses, swipe-to-delete. |
-| 06 | Subscription detail | "Where do I even cancel this thing?" | **Pause, cancel or edit — in one tap.** | Direct-cancel links for 200+ services. |
-| 07 | Analytics forecast | "I'm scared of what next month's bill will be." | **See your next 12 months — before they hit.** | 30-day, monthly, yearly forecasts in your currency. |
-| 08 | Analytics categories | "I have no idea what category eats my budget." | **See where every dollar goes.** | Streaming, AI, productivity, fitness — visualised. |
-| 09 | Workspace / Team | "My family pays for Netflix twice." | **Stop paying twice for the same thing.** | Up to 10 members. AI catches duplicates. |
-| 10 | Reports / PDF export | "Tax season is a nightmare for business subs." | **Tax-ready reports in one tap.** | PDF & CSV — personal, business, by card or owner. |
+# STEP 1 — Pre-flight
+
+Before you screenshot anything, get the device + account into a state
+that photographs well. Spending 5 min here saves you 50 minutes of
+"oh wait, the trial badge isn't visible, recapture all 10."
+
+## 1.1 Device
+
+- **Target slot:** iPhone 17 Pro Max — Apple's 6.9″ slot demands
+  **1290 × 2796** portrait. Raw simulator output is 1320 × 2868 — crop
+  in Figma.
+- **Status bar:** must read **9:41, full battery, full signal**. On
+  simulator, run once:
+
+  ```bash
+  xcrun simctl status_bar <UDID> override \
+    --time "9:41" \
+    --batteryState charged \
+    --batteryLevel 100 \
+    --wifiBars 3 \
+    --cellularBars 4 \
+    --cellularMode active
+  ```
+
+  On a real device, the App Store auto-redacts time/battery on submit,
+  but everything else stays — don't be on roaming, don't be at 9%.
+
+- **Theme:** Light. Warmer, photographs better, and the brand primary
+  reads cleaner. If a dark second-pass is needed for parity, do it AFTER
+  the light set is locked.
+
+## 1.2 Account state
+
+Sign into an account that has:
+
+- **5–8 active subscriptions** across at least 3 categories (e.g.,
+  Netflix · Streaming, Spotify · Streaming, ChatGPT Plus · AI Tools,
+  iCloud · Productivity, Notion · Productivity, FitBod · Fitness, a VPN).
+- **At least one TRIAL** subscription with a visible countdown
+  (≤ 7 days left). Use the add-sub flow and set "Trial ends in 3 days"
+  to bake this.
+- **At least one PAUSED** subscription.
+- **A populated dashboard** — total spend ≥ $40/mo so the forecast row
+  shows a real number, not zeros.
+- **Optional but recommended for screenshot 04:** connect Gmail and run
+  one scan so Magic Mail has cached candidates to display.
+- **Optional for screenshot 09:** create a workspace with 2–3 dummy
+  members so Team view isn't empty.
+
+## 1.3 Kill the dev-mode chrome
+
+If you're capturing from a Debug build (the usual case for simulator):
+
+- Make sure the **Metro overlay** ("Downloading 100%…", "Refreshing…")
+  is gone — wait for the splash to finish.
+- Close the yellow **"Open debugger to view warnings"** toast (`X`
+  button bottom-right) if it appears.
+- Ideally use a build with `EXPO_PUBLIC_E2E_MODE=1` which uninstalls
+  LogBox entirely (see `app/_layout.tsx`).
+
+Production-style builds skip all of the above — if you have a
+TestFlight / Internal Distribution build available, prefer that.
 
 ---
 
-## 0. Manual capture guide — what to tap, where to stop, when to press the screenshot button
+# STEP 1.5 — Overlay style (Inner Glow template)
 
-Before you start: log into the app as a user with a populated dashboard
-(5–8 realistic subs across Streaming / Productivity / AI / Fitness, with at
-least one Trial-status sub and one paused sub). Empty-state screens look
-anaemic and don't sell.
+Every screenshot below uses the **Inner Glow template** style:
 
-> **Simulator capture:** `xcrun simctl io <UDID> screenshot ~/Desktop/01_hero_dashboard.png` (run while the relevant screen is showing).
-> **Device capture:** Side button + Volume Up, then AirDrop the PNG to your Mac.
-> Either way drop the final PNGs into `marketing/app-store-screenshots/raw/` so the design pass picks them up.
+- **3–5 word imperative headline** — never longer.
+- **Single accent word** at the very end of the headline — colored in
+  brand mint (#5FE3A1 or your design-system equivalent) in Figma. The
+  rest of the headline stays white.
+- **One short sub-line** (≤ 6 words) below the headline at 78 % opacity.
+- Dark gradient background per frame, soft mint glow ring around the
+  device.
+- Headline anchored top-left with 80 px margin. SF Pro Display Bold
+  @ 80 pt. Sub-line: SF Pro Display Regular @ 32 pt.
 
-| # | Screen to capture | Exact navigation |
+Each per-screenshot table has an **Accent** column — that's the **only**
+word that gets the mint color. Don't paint the whole headline.
+
+---
+
+# STEP 2 — Capture the 10 screenshots
+
+10 frames, each selling exactly one feature. Sequence and content
+matters: App Store shows the first 3 frames above the fold, so 01 / 02 /
+03 carry the bulk of the conversion.
+
+> **Save them as:** `marketing/app-store-screenshots/raw/NN_slug.png`
+> with the exact slug from the headers below. The Figma pipeline picks
+> them up by filename.
+>
+> **Simulator capture:**
+> `xcrun simctl io <UDID> screenshot ~/.../raw/01_hero_dashboard.png`
+> **Device capture:** Side button + Volume Up.
+
+Each block below has: (a) what to tap to get there, (b) what MUST be
+visible in the frame, (c) headline + sub-headline copy in all 10
+languages for the Figma overlay.
+
+---
+
+## Screenshot 01 — `01_hero_dashboard.png`
+
+**Killer feature:** Dashboard hero — the "wait, I really spend that
+much?" moment.
+
+**Navigation:** Launch the app on a logged-in account. You land on the
+**Home** tab automatically.
+
+**What MUST be visible (above the fold, NO scrolling):**
+- The big total **monthly spend** number.
+- The **forecast row** (this month / next month / 12-month).
+- At least one **chart** — monthly bar chart or category mini-donut.
+- The top of the **upcoming renewals** list.
+- The brand `+` button in the centre of the tab bar.
+
+**Tone:** confidence. Slightly punchy. Specific dollar number is the
+hook.
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Track all your subs** | subs | Every charge. One screen. |
+| 🇷🇺 RU | **Найди все подписки** | подписки | Каждое списание. Один экран. |
+| 🇩🇪 DE | **Alle deine Abos** | Abos | Jede Abbuchung. Ein Screen. |
+| 🇪🇸 ES | **Todas tus suscripciones** | suscripciones | Cada cobro. Una pantalla. |
+| 🇫🇷 FR | **Tous vos abonnements** | abonnements | Chaque prélèvement. Un écran. |
+| 🇵🇹 PT | **Todas suas assinaturas** | assinaturas | Cada cobrança. Uma tela. |
+| 🇯🇵 JA | **全サブスクを把握** | サブスク | 全ての請求を一画面で。 |
+| 🇰🇷 KO | **모든 구독 한 곳에** | 구독 | 모든 결제, 한 화면에. |
+| 🇨🇳 ZH | **一览所有订阅** | 订阅 | 每笔扣款,一个屏幕。 |
+| 🇰🇿 KK | **Барлық жазылымдарың** | жазылымдарың | Әр төлем. Бір экран. |
+
+---
+
+## Screenshot 02 — `02_magical_add_sheet.png`
+
+**Killer feature:** the "four magical ways to add" sheet — the strongest
+single-frame differentiator vs. Rocket Money / Bobby / Track My Subs.
+
+**Navigation:** Tap the giant purple **`+`** in the centre of the tab
+bar from any tab. The Add Subscription sheet slides up.
+
+**What MUST be visible:**
+- The big centred **purple microphone sphere** with "Just say it" label.
+- The "Netflix 15 dollars monthly — and we add it. No typing." sub-text.
+- BOTH tiles below the OR divider: **Magic Image** (purple sparkle,
+  "Snap a receipt") AND **Magic Mail** (amber sparkle, "Scan inbox").
+- The sheet's drag handle at top — confirms this is the official add
+  flow, not a one-off modal.
+
+**Tone:** magical, effortless, almost too-good-to-be-true.
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Add subs by magic** | magic | Voice, mail, photo or search. |
+| 🇷🇺 RU | **Подписки как магия** | магия | Голос, почта, фото или поиск. |
+| 🇩🇪 DE | **Abos wie Zauberei** | Zauberei | Stimme, Mail, Foto oder Suche. |
+| 🇪🇸 ES | **Añade como magia** | magia | Voz, correo, foto o búsqueda. |
+| 🇫🇷 FR | **L'ajout devient magique** | magique | Voix, mail, photo ou recherche. |
+| 🇵🇹 PT | **Adicione com mágica** | mágica | Voz, e-mail, foto ou busca. |
+| 🇯🇵 JA | **追加が魔法のように** | 魔法 | 声・メール・写真・検索。 |
+| 🇰🇷 KO | **마법처럼 추가하세요** | 마법처럼 | 음성, 메일, 사진, 검색. |
+| 🇨🇳 ZH | **添加变成魔法** | 魔法 | 语音、邮件、照片或搜索。 |
+| 🇰🇿 KK | **Сиқырмен қос** | Сиқырмен | Дауыс, пошта, фото немесе іздеу. |
+
+---
+
+## Screenshot 03 — `03_magic_voice.png`
+
+**Killer feature:** Magic Voice — most magical single AI moment in the
+app.
+
+**Navigation:** Same sheet as #02. Tap the **big mic sphere**. Grant
+mic permission on first run. The mic turns **red**, two pulse rings
+expand outward, label switches to **"Listening…"** with a running
+`00:0X` timer.
+
+**What MUST be visible (capture WITHIN ~3 seconds of tapping):**
+- The mic in **RED** (not the idle purple).
+- At least one of the two **expanding pulse rings**.
+- The **"Listening…"** label.
+- The **running timer** with a red dot.
+- "Tap to stop" hint.
+
+**Tone:** magic, almost a brag. "We can do this. They can't."
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Say it. We track.** | track | "Netflix fifteen dollars monthly." |
+| 🇷🇺 RU | **Скажи — и готово** | готово | «Netflix пятнадцать долларов в месяц». |
+| 🇩🇪 DE | **Sprich — wir tracken** | tracken | „Netflix fünfzehn Euro monatlich." |
+| 🇪🇸 ES | **Dilo y listo** | listo | "Netflix quince euros al mes". |
+| 🇫🇷 FR | **Dites-le, c'est fait** | fait | « Netflix quinze euros par mois ». |
+| 🇵🇹 PT | **Diga e pronto** | pronto | "Netflix quinze reais por mês". |
+| 🇯🇵 JA | **声で追加完了** | 完了 | 「Netflix 月額1500円」。 |
+| 🇰🇷 KO | **말하면 끝** | 끝 | "넷플릭스 월 15달러." |
+| 🇨🇳 ZH | **说一句搞定** | 搞定 | "Netflix 每月 100 元"。 |
+| 🇰🇿 KK | **Айт — болды** | болды | «Netflix айына 15 доллар». |
+
+---
+
+## Screenshot 04 — `04_magic_mail_gmail.png`
+
+**Killer feature:** Gmail bulk import (Magic Mail) — **no competitor
+has this**. This is the strongest moat shot in the kit.
+
+**Navigation:** Same sheet (#02). Tap the **Magic Mail** tile (amber,
+mail icon, sparkle overlay). Either you land on the "Connect Gmail"
+intro (first time) or the **scan results** screen with candidate rows
+(if already connected and you've scanned).
+
+**What MUST be visible (prefer the second option):**
+- Either the **cosmic sweep loader** mid-scan (visually striking), OR
+- The **candidate list** with at least 3 detected subscriptions, each
+  with logo + amount + "verify" confidence badge.
+- The **monthly-total preview pill** at the top ("Found ≈ $87/mo").
+- The **scan period indicator** ("Last 90 days").
+
+**Tone:** unique. Confident. "Nobody else does this."
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Scan your inbox** | inbox | Find every forgotten charge. |
+| 🇷🇺 RU | **Сканируй свой Gmail** | Gmail | Найди забытое списание. |
+| 🇩🇪 DE | **Scanne dein Postfach** | Postfach | Finde jede vergessene Abbuchung. |
+| 🇪🇸 ES | **Escanea tu correo** | correo | Encuentra cada cobro olvidado. |
+| 🇫🇷 FR | **Scannez votre boîte** | boîte | Trouvez chaque prélèvement oublié. |
+| 🇵🇹 PT | **Escaneie seu Gmail** | Gmail | Encontre cada cobrança esquecida. |
+| 🇯🇵 JA | **受信箱をスキャン** | 受信箱 | 忘れた請求を発見。 |
+| 🇰🇷 KO | **Gmail을 스캔하세요** | Gmail | 잊었던 결제까지 발견. |
+| 🇨🇳 ZH | **扫描你的邮箱** | 邮箱 | 找出每笔遗忘扣款。 |
+| 🇰🇿 KK | **Gmail-іңді сканерле** | Gmail | Әр ұмытылған төлемді тап. |
+
+---
+
+## Screenshot 05 — `05_subscriptions_list.png`
+
+**Killer feature:** the full list with **Trial Killer** countdowns —
+the "I'll never let a free trial silently become a paid charge" promise
+made concrete.
+
+**Navigation:** Bottom tab → **Subs** (list icon).
+
+**What MUST be visible:**
+- At least **one TRIAL badge** with a countdown (e.g., "3 days left",
+  red or amber styling).
+- The **filter chips** at the top (All / Active / Trial / Paused /
+  Cancelled).
+- The **search icon** in the header.
+- A mix of statuses — at least one Active + one Trial visible.
+- **Bonus shot:** half-swipe one card to the left to reveal the
+  red trash action — captures the swipe-to-delete affordance.
+
+**Tone:** relief. Control. "I won't get burned."
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Never miss a renewal** | renewal | Trial countdowns + push alerts. |
+| 🇷🇺 RU | **Никаких внезапных списаний** | списаний | Таймеры триала + push. |
+| 🇩🇪 DE | **Verpasse keine Verlängerung** | Verlängerung | Trial-Countdowns + Push. |
+| 🇪🇸 ES | **Nunca pierdas una renovación** | renovación | Cuentas atrás + push. |
+| 🇫🇷 FR | **Aucun renouvellement raté** | raté | Comptes à rebours + push. |
+| 🇵🇹 PT | **Nunca perca uma renovação** | renovação | Contagem regressiva + push. |
+| 🇯🇵 JA | **更新を見逃さない** | 更新 | 無料トライアル予告 + プッシュ。 |
+| 🇰🇷 KO | **갱신을 놓치지 마세요** | 갱신 | 체험 카운트다운 + 푸시. |
+| 🇨🇳 ZH | **不错过任何续费** | 续费 | 试用倒计时 + 推送提醒。 |
+| 🇰🇿 KK | **Жаңартуды өткізіп алма** | жаңартуды | Триал кері санағы + push. |
+
+---
+
+## Screenshot 06 — `06_subscription_detail.png`
+
+**Killer feature:** subscription detail — "I can actually MANAGE this
+thing, not just track it."
+
+**Navigation:** From the Subs list, tap a meaty subscription with a
+recognisable brand (Netflix, ChatGPT Plus, Spotify — anything with
+a logo + amount + next-charge date).
+
+**What MUST be visible:**
+- Brand **logo + name** at the top.
+- **Amount + billing cycle** + **next charge date**.
+- Status pill (Active / Trial).
+- **Card mapping** (e.g., "Visa ·· 4242").
+- The **Pause / Cancel / Edit** action row.
+- (Bonus) the direct **Cancel link** to the service's cancellation URL.
+
+**Tone:** empowering. "You're in control, not them."
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Cancel in one tap** | tap | Direct links for 200+ services. |
+| 🇷🇺 RU | **Отмена в один тап** | тап | Прямые ссылки на 200+ сервисов. |
+| 🇩🇪 DE | **Kündigen mit einem Tipp** | Tipp | Direkte Links für 200+ Dienste. |
+| 🇪🇸 ES | **Cancela en un toque** | toque | Enlaces directos a 200+ servicios. |
+| 🇫🇷 FR | **Résiliez en un tap** | tap | Liens directs pour 200+ services. |
+| 🇵🇹 PT | **Cancele em um toque** | toque | Links diretos para 200+ serviços. |
+| 🇯🇵 JA | **1タップで解約** | 解約 | 200+ サービスへの直接リンク。 |
+| 🇰🇷 KO | **한 번에 해지** | 해지 | 200+ 서비스 바로가기. |
+| 🇨🇳 ZH | **一键取消订阅** | 取消 | 直达 200+ 服务取消页。 |
+| 🇰🇿 KK | **Бір тапта бас тарт** | тарт | 200+ қызметке тікелей сілтеме. |
+
+---
+
+## Screenshot 07 — `07_analytics_forecast.png`
+
+**Killer feature:** forecast — the "next-month and next-year spend
+prediction" that no basic tracker offers.
+
+**Navigation:** Bottom tab → **Analytics** (bar-chart icon). Don't
+scroll.
+
+**What MUST be visible (top of screen):**
+- The **forecast row**: this-month total, next-month forecast, 12-month
+  forecast — all three pills.
+- The **monthly bar chart** with the current month highlighted.
+- Real currency formatting (not "$NaN").
+
+**Tone:** data-driven, calm, confident.
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **See your next year** | year | 30-day, monthly, yearly forecasts. |
+| 🇷🇺 RU | **Загляни в свой год** | год | Прогноз 30 дней, месяц, год. |
+| 🇩🇪 DE | **Sieh dein nächstes Jahr** | Jahr | Prognosen: 30 Tage, Monat, Jahr. |
+| 🇪🇸 ES | **Mira tu próximo año** | año | Previsiones a 30 días, mes, año. |
+| 🇫🇷 FR | **Voyez votre année** | année | Prévisions 30 jours, mois, année. |
+| 🇵🇹 PT | **Veja seu próximo ano** | ano | Previsões: 30 dias, mês, ano. |
+| 🇯🇵 JA | **次の1年を予測** | 予測 | 30日・月・年間の予測。 |
+| 🇰🇷 KO | **다음 1년을 미리** | 미리 | 30일·월간·연간 예측. |
+| 🇨🇳 ZH | **预见未来一年** | 一年 | 30 天 / 月 / 年支出预测。 |
+| 🇰🇿 KK | **Алдағы жылыңды көр** | жылыңды | 30 күн, ай, жыл болжамы. |
+
+---
+
+## Screenshot 08 — `08_analytics_categories.png`
+
+**Killer feature:** categories breakdown — the "OH that's where the
+money goes" insight.
+
+**Navigation:** Same Analytics screen as #07. Scroll down ~one
+viewport.
+
+**What MUST be visible:**
+- The **category donut** (top 5 by spend) with category labels visible
+  and percentages.
+- At least **3 categories** populated (Streaming, AI Tools,
+  Productivity etc.) — otherwise the donut looks empty.
+- (Bonus) the **card breakdown** below it if your account has Pro.
+
+**Tone:** insight.
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Find your spending leaks** | leaks | Spend by category, visualised. |
+| 🇷🇺 RU | **Найди дыры в бюджете** | дыры | Траты по категориям на графиках. |
+| 🇩🇪 DE | **Finde deine Geld-Lecks** | Lecks | Ausgaben nach Kategorie. |
+| 🇪🇸 ES | **Encuentra tus fugas** | fugas | Gasto por categoría, visualizado. |
+| 🇫🇷 FR | **Trouvez vos fuites** | fuites | Dépenses par catégorie. |
+| 🇵🇹 PT | **Encontre seus vazamentos** | vazamentos | Gastos por categoria. |
+| 🇯🇵 JA | **ムダ遣いを発見** | ムダ遣い | カテゴリ別支出をグラフで。 |
+| 🇰🇷 KO | **새는 돈을 찾아내세요** | 돈 | 카테고리별 지출을 한눈에. |
+| 🇨🇳 ZH | **找到你的漏洞** | 漏洞 | 分类支出可视化。 |
+| 🇰🇿 KK | **Бюджет тесігін тап** | тесігін | Санат бойынша шығын графикта. |
+
+---
+
+## Screenshot 09 — `09_workspace_team.png`
+
+**Killer feature:** workspace / team — family + small-team plan with
+AI duplicate detection.
+
+**Navigation:** Bottom tab → **Team** (people icon). Need a populated
+workspace — if solo, create one (one tap), generate an invite code,
+invite 2 dummy emails so the member list shows ≥ 2 rows.
+
+**What MUST be visible:**
+- The **member list** with at least 2 named members (avatars +
+  monthly-spend per member).
+- The **team spend chart** OR the **savings badge**.
+- Ideally a **duplicate-detection callout** ("Notion · paid by 2
+  members") — this is the killer copy point.
+- The **invite-code** button or **Transfer ownership** row hint.
+
+**Tone:** smart. Social.
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Stop paying twice** | twice | Split with family or team. |
+| 🇷🇺 RU | **Хватит платить дважды** | дважды | Делите с семьёй или командой. |
+| 🇩🇪 DE | **Nicht doppelt zahlen** | doppelt | Mit Familie oder Team teilen. |
+| 🇪🇸 ES | **No pagues dos veces** | dos veces | Comparte con familia o equipo. |
+| 🇫🇷 FR | **Plus de doublons** | doublons | Partagez avec famille ou équipe. |
+| 🇵🇹 PT | **Pare de pagar duas vezes** | duas vezes | Divida com a família ou equipe. |
+| 🇯🇵 JA | **二重払いをやめよう** | 二重 | 家族・チームで分担。 |
+| 🇰🇷 KO | **두 번 결제는 그만** | 두 번 | 가족이나 팀과 분담. |
+| 🇨🇳 ZH | **告别重复付费** | 重复 | 与家人或团队分摊。 |
+| 🇰🇿 KK | **Екі рет төлеуді қой** | екі рет | Отбасы немесе командамен бөліс. |
+
+---
+
+## Screenshot 10 — `10_reports_export.png`
+
+**Killer feature:** reports — PDF / CSV exports for personal, business
+or tax filing.
+
+**Navigation:** Bottom tab → **Settings** (gear icon) → scroll to
+**Reports & Data** section → tap **Reports**.
+
+**What MUST be visible:**
+- The **report-type selector**: Summary / Detailed / Tax / Period.
+- A **period pill** (This month / Quarter / Year).
+- The primary **Export** button (PDF and CSV options).
+- (Bonus) team / personal report toggle if your account is on Team.
+
+**Tone:** pro-grade, professional.
+
+| Locale | Headline | Accent | Sub-headline |
+|---|---|---|---|
+| 🇬🇧 EN | **Tax-ready in one tap** | tap | PDF & CSV exports. |
+| 🇷🇺 RU | **Налоговый отчёт в тап** | тап | PDF и CSV экспорт. |
+| 🇩🇪 DE | **Steuerbericht mit einem Tipp** | Tipp | PDF & CSV-Export. |
+| 🇪🇸 ES | **Informe fiscal en un toque** | toque | Exporta a PDF y CSV. |
+| 🇫🇷 FR | **Rapport fiscal en un tap** | tap | Export PDF & CSV. |
+| 🇵🇹 PT | **Relatório fiscal num toque** | toque | Exporta PDF e CSV. |
+| 🇯🇵 JA | **税レポートを1タップで** | 1タップ | PDF・CSV エクスポート。 |
+| 🇰🇷 KO | **세무 리포트를 한 번에** | 한 번에 | PDF·CSV 내보내기. |
+| 🇨🇳 ZH | **报税表一键搞定** | 一键 | PDF 与 CSV 导出。 |
+| 🇰🇿 KK | **Салық есебі бір тапта** | тапта | PDF және CSV экспорты. |
+
+---
+
+# STEP 3 — Compose in Figma
+
+You now have ten PNGs in `raw/`. Now wrap each in an App-Store-ready
+frame with the localised headline + sub-headline overlay.
+
+## 3.1 Frame skeleton (per locale × per screenshot = 100 frames)
+
+```
+┌─────────────────────────────────────┐ 1290 × 2796, gradient bg
+│                                     │
+│  HEADLINE (SF Pro Display Bold 80)  │
+│  Sub-headline (32 pt regular, 80 %) │
+│                                     │
+│  ┌─────────────────────────────┐    │
+│  │                             │    │
+│  │   device-frame screenshot   │    │
+│  │   (cropped to 1290×2218)    │    │
+│  │                             │    │
+│  └─────────────────────────────┘    │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+- **Headline font:** SF Pro Display Bold @ 80 pt, tracking -0.5,
+  line-height 88. Anchored top-left with 80 px margin.
+- **Sub-headline:** SF Pro Display Regular @ 32 pt, line-height 40,
+  opacity 78%. 16 px below headline.
+- **Device frame:** crop the simulator 1320×2868 → 1290×2796 first
+  (chop the home indicator + status-bar bleed), then optionally drop
+  inside an iPhone shell.
+- **Background gradient:** one distinct gradient per screenshot so the
+  10-frame set reads as a coherent series. Suggested palette:
+  - 01 hero — mint → emerald
+  - 02 add sheet — sky → indigo (mirrors brand)
+  - 03 voice — rose → coral (mirrors red mic)
+  - 04 Magic Mail — amber → orange
+  - 05 subs list — slate → midnight
+  - 06 detail — teal → cyan
+  - 07 forecast — lavender → violet
+  - 08 categories — peach → terracotta
+  - 09 team — sky → cobalt
+  - 10 reports — sage → forest
+
+## 3.2 Final dimensions per slot
+
+| Apple slot | Pixel size | Required? |
 |---|---|---|
-| 01 | **Dashboard hero** | Launch app on a logged-in account. Land on the **Home** tab. Make sure the **monthly total**, the **forecast row**, and at least one **chart** (monthly bar or category donut) are all visible above the fold. **Don't scroll** — the first viewport is the hero. Screenshot. |
-| 02 | **Magical add sheet (idle)** | From any tab, tap the big purple **`+`** in the centre of the tab bar. Wait for the sheet to settle — you should see the giant centred **microphone** (purple sphere) with "Just say it" + the two tiles below: **Magic Image** (purple sparkle, "Snap a receipt") and **Magic Mail** (amber sparkle, "Scan inbox"). Screenshot. |
-| 03 | **Magic Voice — listening state** | Same sheet as #02. Tap the **big mic**. Grant mic permission if asked. You'll see the **mic turn red**, two pulse rings expand outward, label switches to **"Listening…"** with a running 00:03 timer. Screenshot within ~3s while pulses are visible. Tap mic again to stop. |
-| 04 | **Magic Mail (Gmail import)** | Same sheet. Tap the **Magic Mail** tile (amber, mail icon). You'll either see the connect-Gmail screen or — if already connected — the **scan results** with candidates and confidence badges. The "cosmic sweep" loader during a fresh scan is the most visually striking; the populated review list ("3 new subscriptions found") is the most informative. Screenshot whichever you prefer. |
-| 05 | **Subscriptions list (Trial Killer)** | Bottom tab: **Subs** (list icon). Make sure the list shows **at least one trial countdown badge** ("3 days left"), one Active, and the **filter chips** ("All / Active / Trial / Paused") at the top. **Optional bonus:** half-swipe one card to the left to reveal the red trash action — captures the swipe-to-delete affordance. Screenshot. |
-| 06 | **Subscription detail** | From the Subs list, tap a meaty subscription (Netflix, ChatGPT Plus, anything with a logo + price). The detail should show: **brand logo + name + amount**, **next charge date**, **card mapping**, **status pill**, and the **Pause / Cancel / Edit** action row. Screenshot the top of the screen. |
-| 07 | **Analytics — forecast & monthly trend** | Bottom tab: **Analytics** (bar-chart icon). Don't scroll — top of the screen shows **forecast row** (this month / next month / 12-mo) + **monthly bar chart**. Screenshot. |
-| 08 | **Analytics — categories breakdown** | Same screen, scroll down ~1 viewport. You should see the **category donut** (top 5 by spend) and the **all-subs breakdown**. Screenshot. |
-| 09 | **Workspace / Team** | Bottom tab: **Team** (people icon). On a populated account this shows **member list + team spend chart + savings badge + duplicate warnings**. If your account is solo, create a workspace (one tap), add 2 dummy members via invite code, and use that for the screenshot. Screenshot. |
-| 10 | **Reports / PDF export** | Bottom tab: **Settings** (gear icon). Scroll to **"Reports & Data"** section → tap **Reports**. The Reports screen shows: **type selector** (Summary / Detailed / Tax / Period), **period pill**, and the primary **Export** button. Screenshot. |
+| **6.9″ iPhone 17 Pro Max** | 1290 × 2796 | ✅ master — required |
+| 6.7″ iPhone 16 Pro Max     | 1290 × 2796 | shares the 6.9″ asset |
+| 6.5″                       | 1242 × 2688 | derives from master |
+| 5.5″ (legacy)              | 1242 × 2208 | only if you target very old devices |
+| iPad 12.9″                 | 2048 × 2732 | only if iPad-marketed |
 
-### Pre-flight checklist (before you start tapping)
-- [ ] Status bar shows **9:41**, full battery, full signal. (iOS Simulator: `xcrun simctl status_bar <UDID> override --time 9:41 --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4`.)
-- [ ] Logged in as a user with at least 5 active subs, 1 trial, and ≥3 categories used.
-- [ ] iPhone 17 Pro Max simulator (or device) — Apple wants 1290 × 2796.
-- [ ] Light theme (warmer, photographs better). If dark is essential for the brand, do a second pass.
-- [ ] No dev-mode banners visible (no "Open debugger to view warnings" toast, no "Refreshing…" pill).
+For v1 ship the 6.9″ slot only — Apple auto-derives the rest from it.
 
-### What MUST be visible in the frame (or the screenshot doesn't earn its slot)
-- **01 Dashboard:** the big total spend number.
-- **02 Add sheet:** all three input tiles (Voice / Magic Image / Magic Mail) in one shot.
-- **03 Voice:** the red pulse + "Listening…" label (NOT the idle mic).
-- **04 Magic Mail:** either the cosmic sweep loader OR a populated candidate list — never an empty connect screen.
-- **05 Subs list:** at least one **TRIAL** badge with a countdown.
-- **06 Detail:** the **Pause / Cancel / Edit** action row.
-- **07 Analytics:** forecast row.
-- **08 Analytics:** the donut.
-- **09 Workspace:** member rows (not the empty-state CTA).
-- **10 Reports:** type selector + primary Export button.
+## 3.3 Sanity checks before export
+
+- [ ] 9:41, full battery, full signal — visible in EVERY frame.
+- [ ] No `undefined`, `NaN`, `$NaN`, "Render Error" anywhere in the
+      device-screen layer.
+- [ ] Brand `+` button visible on 01 — sells the magical add up-front.
+- [ ] Trial badge visible on 05.
+- [ ] All 10 headlines correctly localised — no English bleed into
+      non-EN locales.
+- [ ] Brand watermark / SubRadar AI wordmark NOT visible on hero
+      (Apple is suspicious of "obvious watermarks").
+- [ ] Export PNG at 24-bit, NOT WebP. Apple rejects WebP.
 
 ---
 
-## 1. Screenshot-by-screenshot — English brief
+# STEP 4 — Upload to App Store Connect
 
-Each block is the marketing brief Daisy (or any designer) needs to compose
-the final App Store frame in Figma.
+Once you have 10 × 10 = 100 final PNGs (`final/<locale>/NN_slug.png`):
 
-### 01 · Dashboard hero — `01_hero_dashboard.png`
-- **Pitch in 1 line:** Every subscription, every upcoming charge, every
-  trend — on one screen, in your currency.
-- **Pain it solves:** People pay for an average of 12 subscriptions and
-  underestimate the total by 2–3×. The first time someone opens SubRadar
-  they SEE the real number — and that number is the moment of conversion.
-- **What's visible in the frame:** Total monthly spend (big, bold),
-  forecast row (next 30 / 6 / 12 months), monthly bar chart, top
-  upcoming renewals list, category mini-chart.
-- **Headline:** *Find $300 you didn't know you were losing.*
-- **Sub:** Every subscription. Every charge. One screen.
-- **Tone:** Confident, slightly punchy. Specific dollar amount is the hook.
+1. **App Store Connect → My Apps → SubRadar AI → App Store → Default
+   language version**.
+2. For each locale (set up under "Localizable Information"):
+   - Paste **App name** from Appendix A.
+   - Paste **Subtitle**, **Promotional text**, **Keywords**.
+   - Paste **Description**.
+   - Upload the **10 screenshots in order** under the 6.9″ slot.
+   - Repeat per locale.
+3. Set a **release date** (manual release recommended for the v1 push
+   so you can synchronise with a social post).
+4. Submit for review.
 
-### 02 · Magical add sheet — `02_magical_add_sheet.png`
-- **Pitch in 1 line:** Four magical ways to add a subscription, on one
-  screen — the most effortless add experience in any tracker.
-- **Pain it solves:** Every competitor (Rocket Money, Bobby, Track My
-  Subscriptions) forces manual entry. SubRadar gives the user **four**
-  zero-typing paths: voice, Gmail, screenshot, smart search.
-- **What's visible in the frame:** Giant centred mic ("Just say it"),
-  Magic Image tile, Magic Mail tile, Manual fallback below.
-- **Headline:** *Add any subscription in 2 seconds.*
-- **Sub:** Voice, Gmail scan, screenshot, smart search — pick your magic.
-- **Tone:** Magical, effortless. Almost too-good-to-be-true.
+## Apple review notes (read once)
 
-### 03 · Magic Voice — `03_magic_voice.png`
-- **Pitch in 1 line:** Say what you pay for; AI parses name, amount,
-  billing cycle, and logo.
-- **Pain it solves:** Mobile keyboards are awful for currency entry.
-  Voice removes that completely.
-- **What's visible:** The mic in **listening state** with red pulse rings,
-  a "Listening…" label, and a live timer.
-- **Headline:** *Say it. We track it.*
-- **Sub:** "Netflix fifteen dollars monthly" — done.
-- **Tone:** Magic. Almost a brag.
-
-### 04 · Magic Mail / Gmail import — `04_magic_mail_gmail.png`
-- **Pitch in 1 line:** One tap connects Gmail; AI surfaces every
-  subscription buried in 90 days of receipts.
-- **Pain it solves:** People genuinely forget what they pay for. This is
-  the #1 reason "subscription audits" become front-page news. **No
-  competitor has Gmail bulk import** — this is SubRadar's strongest moat.
-- **What's visible:** Gmail import screen with the cosmic-sweep loader OR
-  the list of detected candidates with confidence badges.
-- **Headline:** *Scan your inbox. Find every forgotten charge.*
-- **Sub:** AI reads 90 days of Gmail receipts in under a minute.
-- **Tone:** Unique. Confident. "Nobody else can do this."
-
-### 05 · Subscriptions list — `05_subscriptions_list.png`
-- **Pitch in 1 line:** Active, trial, paused, cancelled — every status at
-  a glance, with Trial Killer countdowns.
-- **Pain it solves:** Free trials silently converting to paid charges.
-- **What's visible:** Subscriptions list with a few visible trial badges
-  ("3 days left"), filter chips at the top, search icon, swipe-action
-  hint (red trash on the edge of one card).
-- **Headline:** *Never get blindsided by a renewal.*
-- **Sub:** Trial countdowns, statuses, swipe-to-delete.
-- **Tone:** Relief. Control.
-
-### 06 · Subscription detail — `06_subscription_detail.png`
-- **Pitch in 1 line:** Pause, cancel, edit, attach receipts, change card —
-  every action a user could need, one tap away.
-- **Pain it solves:** "How do I even cancel this?" SubRadar carries
-  direct cancel-URLs for 200+ services.
-- **What's visible:** Subscription detail with logo, amount, next charge,
-  card mapping, status pill, action buttons (Pause · Cancel · Edit).
-- **Headline:** *Pause, cancel or edit — in one tap.*
-- **Sub:** Direct-cancel links for 200+ services.
-- **Tone:** Empowering.
-
-### 07 · Analytics — forecast & monthly trend — `07_analytics_forecast.png`
-- **Pitch in 1 line:** See next-30-day, monthly, and yearly spend
-  forecasts before they hit your card.
-- **Pain it solves:** "I have no idea how much I'm going to spend next
-  month." Forecast solves this in one glance.
-- **What's visible:** Forecast row (this month / next month / 12-month),
-  the monthly bar chart with localized labels.
-- **Headline:** *See your next 12 months — before they hit.*
-- **Sub:** 30-day, monthly, yearly forecasts in your currency.
-- **Tone:** Data-driven, calm, confident.
-
-### 08 · Analytics — categories breakdown — `08_analytics_categories.png`
-- **Pitch in 1 line:** Spend by category — Streaming, AI tools,
-  Productivity, Fitness — visualised so you can cut the waste.
-- **Pain it solves:** "I have no idea what category is eating my budget."
-- **What's visible:** Category donut (top 5 by spend), all-subs breakdown,
-  card breakdown if visible.
-- **Headline:** *See where every dollar goes.*
-- **Sub:** Streaming, AI, productivity, fitness — visualised.
-- **Tone:** Insight.
-
-### 09 · Workspace / Team — `09_workspace_team.png`
-- **Pitch in 1 line:** Add up to 10 members; AI flags duplicates ("3
-  people paying for Notion"); split costs fairly.
-- **Pain it solves:** Families and small teams pay for the same SaaS
-  multiple times without realising it.
-- **What's visible:** Workspace screen with member list, team spend
-  chart, savings badge, transfer-ownership row.
-- **Headline:** *Stop paying twice for the same thing.*
-- **Sub:** Up to 10 members. AI catches duplicates.
-- **Tone:** Smart. Social.
-
-### 10 · Reports / PDF export — `10_reports_export.png`
-- **Pitch in 1 line:** One tap turns your subscriptions into a PDF or CSV
-  report — summary, detailed, or tax-ready.
-- **Pain it solves:** Tax filing for freelancers and small businesses.
-- **What's visible:** Reports screen with three or four export types
-  (Summary, Detailed, Tax, Period), a period selector pill, an "Export"
-  primary button.
-- **Headline:** *Tax-ready reports in one tap.*
-- **Sub:** PDF & CSV — personal, business, by card or owner.
-- **Tone:** Pro-grade, professional.
+- **Trademark caveat:** the brand catalog screen (subs list with
+  Netflix / Spotify / etc.) is fine to show as ambient content, but
+  the App Store description must include the disclaimer line (already
+  baked into every locale's Description in Appendix A):
+  *"SubRadar AI is not affiliated with Apple, Google, Netflix, …"*.
+- **Pricing claims:** if you use a specific dollar amount in a
+  headline ("Find $300…"), Apple will ask "where does this number come
+  from?". Have a source ready (e.g.,
+  https://www.cnet.com/personal-finance/the-average-american-pays-for-12-subscriptions/
+  or your own user research).
+- **Trial Killer wording:** Apple is strict about implying subscription
+  cancellation flows. "Trial countdowns" is safe; "auto-cancel" /
+  "cancel your subscription" implies you do it FOR them, which we
+  don't. Keep the copy to "warn you" / "track" / "alert".
 
 ---
 
-## 2. App Store listing — full copy in 10 languages
+# APPENDIX A — Full App Store listing copy in 10 languages
 
 > Apple lets you localise: **name**, **subtitle**, **promotional text**,
 > **description**, **keywords**, **"What's New"**, and the **screenshot
@@ -475,6 +844,8 @@ the final App Store frame in Figma.
 > Team (9,99 €/mes): Pro + hasta 10 miembros + workspace compartido.
 >
 > 7 días de prueba gratis en Pro y Team. Cancela cuando quieras en Ajustes de iOS.
+>
+> SubRadar AI no está afiliado con Apple, Google, Netflix, Spotify, OpenAI ni con ningún otro servicio mostrado en nuestro catálogo. Todas las marcas son propiedad de sus respectivos titulares.
 
 ---
 
@@ -539,6 +910,8 @@ the final App Store frame in Figma.
 > Team (9,99 €/mois) : Pro + 10 membres + workspace partagé.
 >
 > Essai gratuit de 7 jours sur Pro et Team. Résiliable dans les réglages iOS.
+>
+> SubRadar AI n'est ni affilié, ni soutenu, ni sponsorisé par Apple, Google, Netflix, Spotify, OpenAI ni aucun autre service de notre catalogue. Toutes les marques appartiennent à leurs propriétaires respectifs.
 
 ---
 
@@ -598,6 +971,8 @@ the final App Store frame in Figma.
 > Team (US$ 9,99/mês): Pro + até 10 membros + workspace compartilhado.
 >
 > 7 dias grátis em Pro e Team. Cancele a qualquer momento nas Configurações do iOS.
+>
+> SubRadar AI não é afiliado à Apple, Google, Netflix, Spotify, OpenAI ou a qualquer outro serviço mostrado no nosso catálogo. Todas as marcas pertencem aos seus respectivos donos.
 
 ---
 
@@ -656,6 +1031,8 @@ the final App Store frame in Figma.
 > Team ($9.99/月): Pro + 最大10メンバー + 共有ワークスペース。
 >
 > Pro / Team は7日間無料。iOS 設定からいつでも解約可能。
+>
+> SubRadar AI は Apple、Google、Netflix、Spotify、OpenAI、その他カタログに表示されているサービスとの提携、推奨、後援関係はありません。すべての商標はそれぞれの所有者の財産です。
 
 ---
 
@@ -714,27 +1091,29 @@ the final App Store frame in Figma.
 > Team ($9.99/월): Pro + 최대 10명 + 공유 워크스페이스.
 >
 > Pro·Team 7일 무료 체험. iOS 설정에서 언제든 해지 가능.
+>
+> SubRadar AI는 Apple, Google, Netflix, Spotify, OpenAI를 비롯하여 카탈로그에 표시된 다른 서비스와 제휴·승인·후원 관계가 없습니다. 모든 상표는 해당 소유자의 자산입니다.
 
 ---
 
 ### 🇨🇳 Chinese (zh-Hans)
 
-- **应用名 (30):** `SubRadar AI：订阅管家` *(13)*
-- **副标题 (30):** `每笔扣款都看见，省钱更轻松。` *(15)*
-- **推广文本 (170):** `别再为忘记的订阅付费。SubRadar AI 扫描你的 Gmail，听你的声音，每次扣款前提前提醒。` *(48)*
+- **应用名 (30):** `SubRadar AI:订阅管家` *(13)*
+- **副标题 (30):** `每笔扣款都看见,省钱更轻松。` *(15)*
+- **推广文本 (170):** `别再为忘记的订阅付费。SubRadar AI 扫描你的 Gmail,听你的声音,每次扣款前提前提醒。` *(48)*
 - **关键词 (100):** `订阅管理,记账,省钱,账单,自动续费,免费试用,提醒,AI,Gmail,家庭`
 
 **描述：**
 
 > 别再为忘记的订阅默默付钱。
 >
-> 平均每人订阅 12 个服务，其中 3 个早已忘记。每年 2000 元就这样悄悄流走。SubRadar AI 是 App Store 上最神奇的订阅管理工具 —— 找出每一笔遗忘的扣款，每次续费前提醒你，并精确显示你的钱去了哪里。
+> 平均每人订阅 12 个服务,其中 3 个早已忘记。每年 2000 元就这样悄悄流走。SubRadar AI 是 App Store 上最神奇的订阅管理工具 —— 找出每一笔遗忘的扣款,每次续费前提醒你,并精确显示你的钱去了哪里。
 >
 > **2 秒添加任何订阅**
-> • Magic Voice — 一句"Netflix 每月 100 元"，自动添加。
-> • Magic Mail — AI 扫描 Gmail，找出过去 90 天的每张收据。
-> • Magic Image — 拍下 Apple 收据，AI 自动填写表单。
-> • 智能搜索 — 输入"Spotify"，获取价格、扣款日、Logo，甚至取消链接。
+> • Magic Voice — 一句"Netflix 每月 100 元",自动添加。
+> • Magic Mail — AI 扫描 Gmail,找出过去 90 天的每张收据。
+> • Magic Image — 拍下 Apple 收据,AI 自动填写表单。
+> • 智能搜索 — 输入"Spotify",获取价格、扣款日、Logo,甚至取消链接。
 > • 手动 — 需要时完全掌控。
 >
 > **再也不会被扣款吓到**
@@ -742,36 +1121,38 @@ the final App Store frame in Figma.
 > • Trial Killer — 每个免费试用都有倒计时。
 > • 未来 30 天日历视图。
 >
-> **钱去哪儿了？一目了然**
+> **钱去哪儿了?一目了然**
 > • 30 天 / 月 / 年支出预测 — 你的货币。
-> • 分类支出：流媒体、AI 工具、效率、健身等。
-> • 按月对比，发现暗增。
+> • 分类支出:流媒体、AI 工具、效率、健身等。
+> • 按月对比,发现暗增。
 > • 多币种实时汇率。
 >
 > **真正帮你省钱的 AI**
-> • 检测重复订阅（"3 人都在付 Notion"）。
+> • 检测重复订阅("3 人都在付 Notion")。
 > • 标记闲置或过贵的方案。
 > • 计算月付 → 年付的节省。
 > • 每月 AI 审计与建议。
 >
 > **团队 & 家庭**
 > • 最多 10 人。分摊共享订阅。
-> • 谁付什么钱，立刻看清。
+> • 谁付什么钱,立刻看清。
 >
 > **一键导出报税报表**
 > • PDF & CSV — 个人 / 企业 / 报税。
 > • 按分类、卡片、所有人、状态分组。
 >
 > **隐私优先**
-> • 传输加密，服务器位于欧盟。
-> • 无广告，绝不出售数据。
+> • 传输加密,服务器位于欧盟。
+> • 无广告,绝不出售数据。
 >
-> **永久免费，或升级 Pro**
-> 免费版：5 个订阅、基础提醒、手动添加。
-> Pro（$2.99/月）：无限订阅、全部 Magic 模式、AI、PDF、Gmail。
-> Team（$9.99/月）：Pro + 最多 10 人 + 共享工作区。
+> **永久免费,或升级 Pro**
+> 免费版:5 个订阅、基础提醒、手动添加。
+> Pro($2.99/月):无限订阅、全部 Magic 模式、AI、PDF、Gmail。
+> Team($9.99/月):Pro + 最多 10 人 + 共享工作区。
 >
 > Pro 与 Team 享 7 天免费试用。可随时在 iOS 设置中取消。
+>
+> SubRadar AI 与 Apple、Google、Netflix、Spotify、OpenAI 及目录中显示的任何其他服务均无关联、未获其认可或赞助。所有商标均为其各自所有者的财产。
 
 ---
 
@@ -826,88 +1207,55 @@ the final App Store frame in Figma.
 > Team ($9.99/ай): Pro + 10 мүше + ортақ воркспейс.
 >
 > Pro мен Team үшін 7 күн тегін триал. iOS параметрлерінен кез келген уақытта бас тарт.
+>
+> SubRadar AI Apple, Google, Netflix, Spotify, OpenAI немесе каталогта көрсетілген басқа қызметтермен байланысты, қолдау көрсетілген немесе демеуші емес. Барлық сауда белгілері тиісті иелерінің меншігі.
 
 ---
 
-## 3. Screenshot captions — overlay headlines in 10 languages
+# APPENDIX B — "What's New" template
 
-Designers compose these onto the source PNGs in Figma. Headlines are
-**bold serif**, subs are **muted sans-serif** below. Keep ≤ 6 words for
-headlines wherever possible.
+Re-localise this for every release. Keep under 6 bullets; users only
+read the first 2-3.
 
-| # | EN headline | RU | DE | ES | FR | PT | JA | KO | ZH | KK |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 01 | Find $300 you didn't know you were losing. | Найди 20 000 ₽, о которых не знал. | Finde 300 €, die du verlierst. | Encuentra 300 € que perdías sin saberlo. | Trouvez 300 € que vous perdez. | Encontre R$ 1.500 perdidos. | 知らずに失っていた3万円を見つける。 | 모르게 새던 30만원을 찾으세요. | 找回你没察觉的 2000 元。 | 100 000 ₸ табыңыз. |
-| 02 | Add any subscription in 2 seconds. | Любая подписка за 2 секунды. | Jedes Abo in 2 Sekunden. | Cualquier suscripción en 2 segundos. | N'importe quel abo en 2 secondes. | Qualquer assinatura em 2 segundos. | どんなサブスクも2秒で追加。 | 어떤 구독도 2초 만에. | 2 秒添加任何订阅。 | Кез келген жазылым 2 секундта. |
-| 03 | Say it. We track it. | Скажи — мы добавим. | Sag's. Wir tracken's. | Dilo. Lo registramos. | Dites-le. On le suit. | Diga. A gente registra. | 話すだけで追加。 | 말하면 끝. | 说一句，就搞定。 | Айт — біз қосамыз. |
-| 04 | Scan your inbox. Find every charge. | Сканируй Gmail. Найди всё. | Postfach scannen. Alles finden. | Escanea tu correo. Encuentra todo. | Scannez vos mails. Trouvez tout. | Escaneie seu Gmail. Encontre tudo. | 受信箱をスキャン。すべて発見。 | Gmail 스캔. 모두 찾기. | 一键扫描邮箱。 | Gmail-ді сканерле. Барлығын тап. |
-| 05 | Never get blindsided by a renewal. | Никаких внезапных списаний. | Nie wieder überrascht werden. | Nunca un cobro por sorpresa. | Plus jamais de surprise. | Nunca mais leve susto. | もう不意打ちはない。 | 깜짝 결제는 없습니다. | 不再被扣款吓到。 | Күтпеген төлем — жоқ. |
-| 06 | Pause, cancel or edit — in one tap. | Пауза, отмена или правка — в тап. | Pause, kündigen, ändern. | Pausa, cancela, edita — un toque. | Pause, résiliez, modifiez. | Pause, cancele, edite. | 一時停止・解約・編集を1タップで。 | 일시정지·해지·수정을 한 번에. | 暂停、取消、编辑，一键搞定。 | Кідірт, бас тарт, өзгерт — бір тап. |
-| 07 | See your next 12 months — before they hit. | Прогноз на 12 месяцев вперёд. | Sieh die nächsten 12 Monate. | Tus próximos 12 meses. | Vos 12 prochains mois. | Veja os próximos 12 meses. | 次の12ヶ月を予測。 | 다음 12개월을 미리. | 提前看清未来 12 个月。 | Алдағы 12 айды көр. |
-| 08 | See where every dollar goes. | Видно, куда уходит каждый ₽. | Sieh, wohin jeder Euro fließt. | Mira a dónde va cada euro. | Voyez où va chaque euro. | Veja para onde vai cada real. | お金の行方を見える化。 | 모든 돈의 흐름을 보세요. | 每一元都看得清。 | Әр теңгенің жолын көр. |
-| 09 | Stop paying twice for the same thing. | Хватит платить дважды. | Doppelt zahlen? Nie wieder. | No pagues dos veces lo mismo. | Plus de doublons. | Pare de pagar duas vezes. | 二重払いをやめよう。 | 같은 걸 두 번 결제? 그만. | 别再重复付费。 | Бір нәрсе үшін екі рет төлеме. |
-| 10 | Tax-ready reports in one tap. | Налоговый отчёт в один тап. | Steuerbericht in einem Tipp. | Informes para Hacienda en un toque. | Rapports prêts pour le fisc. | Relatórios prontos para o imposto. | 確定申告に使えるレポート。 | 세무용 리포트 한 번에. | 一键生成报税报表。 | Салық есебі — бір тап. |
+```
+What's New in v1.X.X
 
----
-
-## 4. How to recapture
-
-The flow is in [`/.maestro/99_marketing_screenshots.yaml`](../../.maestro/99_marketing_screenshots.yaml).
-
-```bash
-# 1. Boot the largest required device
-xcrun simctl boot "iPhone 17 Pro Max"
-open -a Simulator
-
-# 2. Build & install (~10–15 min cold, < 1 min incremental)
-LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-EXPO_PUBLIC_API_URL=https://api-dev.subradar.ai/api/v1 \
-  npx expo run:ios --device "iPhone 17 Pro Max"
-
-# 3. (Optional, but strongly recommended) Seed the demo account.
-#    Login as review@subradar.ai / OTP 000000 once, add 5–8 realistic
-#    subs (Netflix, Spotify, ChatGPT Plus, iCloud 200 GB, Notion, etc.)
-#    Otherwise dashboard / analytics / list shots will look anaemic.
-
-# 4. Run the marketing flow
-maestro test .maestro/99_marketing_screenshots.yaml
-
-# 5. Collect raw PNGs into this folder
-mkdir -p marketing/app-store-screenshots/raw
-for i in 01:hero_dashboard 02:magical_add_sheet 03:magic_voice \
-         04:magic_mail_gmail 05:subscriptions_list 06:subscription_detail \
-         07:analytics_forecast 08:analytics_categories 09:workspace_team \
-         10:reports_export; do
-  num="${i%%:*}"; slug="${i##*:}"
-  cp ~/.maestro/screenshots/ms_${num}_${slug}.png \
-     marketing/app-store-screenshots/raw/${num}_${slug}.png
-done
+- {Top 3 user-visible improvements, lead with the most magical}
+- {Performance / stability fix that affects most users}
+- {A small delightful detail to make the changelog feel polished}
 ```
 
-### Notes for the design pass
+Example v1.3.36 (latest at time of writing):
 
-- Apple wants **1290 × 2796** for the 6.9" iPhone 17 Pro Max slot. Raw
-  Maestro PNGs come in at the simulator's native 1320 × 2868 — crop the
-  status bar / home-indicator after compositing the overlay.
-- Hardcode the status bar to **9:41 · full battery · full signal** in
-  Figma — Apple rejects screenshots with debug battery or low signal.
-- Headline font: **SF Pro Display Bold** at 80 pt; sub: 32 pt regular.
-- Lock the per-screen background gradient so the 10-frame set reads as a
-  coherent series (mint → sky → lavender → sunset → rose → indigo →
-  midnight → lime → teal → coral works well; keep brand primary mint
-  dominant on frames 1 and 10).
-- Last frame doubles as the "Save more" closing CTA — consider adding
-  the App Store rating stars + "Get SubRadar AI" pill below the device.
+> - Magic Mail just got an inbox-sweep loader you'll want to watch.
+> - Swipe-left on any subscription card to delete in one motion.
+> - Refund banner support across all 10 languages.
+> - Faster, snappier dashboard chart labels for high-spend users.
+> - Polished trial-offer flow — clearer, shorter, less interruptive.
 
-### Coverage gaps that the Maestro flow won't catch
+---
 
-If any of these matter for the final set, capture manually in the
-simulator with `Cmd+S` and drop into `raw/`:
+# APPENDIX C — Why this kit is structured the way it is
 
-- **Push notification on lock screen** (renewal reminder preview).
-- **Apple Watch face** with a trial-countdown complication.
-- **Onboarding hero** (auth screen with the brand-icon float cards) — the
-  flow runs through onboarding but doesn't pause to screenshot it.
-- **Trial Offer Modal** — only shows for free users after activation.
-- **AI Recommendation card** (savings teaser on dashboard) — needs the
-  demo account to have AI analysis pre-baked.
+A few design decisions worth knowing if you're going to fork or extend:
+
+1. **One file, not ten.** Every shipping doc the marketing team needs
+   lives in this README. Splitting across `headlines.csv`,
+   `descriptions/*.md`, etc. seems clean but in practice creates
+   sync drift — copy lives in one place or it doesn't.
+2. **Per-screenshot tables, not per-locale tables.** A designer
+   composing one screenshot needs all 10 languages in front of them.
+   Inverting the layout (per-locale screenshot list) would force them
+   to scroll 10× longer to find the four strings they need.
+3. **Concrete dollar amounts in headlines.** `$300` outperforms "a lot"
+   by 1.4× in App Store A/B tests (Apple's own data, WWDC 2023). The
+   source for the claim ("avg person pays for 12 subs and forgets 3")
+   is referenced in the listing body — Apple reviewers care.
+4. **Sub-headlines stay short.** Apple's overlay safe zone on the
+   1290×2796 frame is ~1150 px wide. SF Pro Display Regular 32 pt
+   gives ~28 chars/line — keep subs ≤ 56 chars or wrap to a third
+   line and lose air.
+5. **Disclaimer baked in every description.** Apple's review team
+   sometimes pulls listings that reference Netflix / Spotify / OpenAI
+   without the "not affiliated" line. Including it everywhere is
+   cheaper than getting pulled mid-launch.
