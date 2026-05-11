@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { AppState } from 'react-native';
+import { AppState, DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   gmailApi,
@@ -16,6 +16,15 @@ import i18n from '../i18n';
 // candidates or hits the Back button in the review sheet (so the
 // next visit starts clean).
 const ACTIVE_SCAN_STORAGE_KEY = 'gmail:scan:active-jobId';
+
+// Broadcast event fired when the active scan pointer is cleared (after a
+// successful import or an explicit reset). The dashboard banner uses a
+// separate hook (useActiveGmailScan) with its own AsyncStorage-cached
+// jobId — without this event it only re-reads on focus / foreground,
+// so the "scan ready" banner could linger on the dashboard until the
+// next time the user tabbed away and back. The event is fire-and-
+// forget; listeners just call their reloadJobId() once.
+export const GMAIL_SCAN_CLEARED_EVENT = 'gmail.scan.cleared';
 
 const currentLocale = () => (i18n.language || 'en').split('-')[0];
 
@@ -337,6 +346,9 @@ export function useGmailScanJob() {
     AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY).catch(() => {
       /* best-effort */
     });
+    // Tell the dashboard banner (useActiveGmailScan) to drop its cached
+    // jobId immediately instead of waiting for the next focus event.
+    DeviceEventEmitter.emit(GMAIL_SCAN_CLEARED_EVENT);
     setState({
       jobId: null,
       status: 'idle',

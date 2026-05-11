@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, DeviceEventEmitter } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { gmailApi } from '../api/gmail';
+import { GMAIL_SCAN_CLEARED_EVENT } from './useGmail';
 
 const ACTIVE_SCAN_STORAGE_KEY = 'gmail:scan:active-jobId';
 
@@ -54,8 +55,26 @@ export function useActiveGmailScan() {
     const sub = AppState.addEventListener('change', (next) => {
       if (next === 'active') void reloadJobId();
     });
-    return () => sub.remove();
-  }, [reloadJobId]);
+    // gmail-import's scan.reset() fires this event after a successful
+    // import. Without it the banner can linger on the dashboard until
+    // the user tabs away + back, because useFocusEffect only fires on
+    // navigation focus and the banner shares no React state with the
+    // hook that did the reset.
+    const clearedSub = DeviceEventEmitter.addListener(
+      GMAIL_SCAN_CLEARED_EVENT,
+      () => {
+        void reloadJobId();
+        // Also kill any cached query data so the banner doesn't briefly
+        // re-render the "completed" card before the activeJobId state
+        // settles to null on the next paint.
+        qc.removeQueries({ queryKey: ['gmail', 'scan', 'active'] });
+      },
+    );
+    return () => {
+      sub.remove();
+      clearedSub.remove();
+    };
+  }, [reloadJobId, qc]);
 
   useFocusEffect(
     useCallback(() => {

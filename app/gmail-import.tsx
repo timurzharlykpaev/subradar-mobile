@@ -571,19 +571,22 @@ export default function GmailImportScreen() {
     // gmail-import (or coming back to dashboard) doesn't show the
     // already-imported rows or a phantom "scan ready" banner. The
     // scan.reset() in particular wipes the persisted
-    // `gmail:scan:active-jobId` AsyncStorage key — without it the
-    // dashboard's ActiveGmailScanBanner kept polling the completed
-    // job and stayed visible after the user had already imported.
-    // Mirrors handleBulkCancel's cleanup exactly.
-    if (created > 0 || failed === 0) {
-      setBulkItems([]);
-      setBulkChecked([]);
-      setScanRanOnce(false);
-      setScanSummary(null);
-      setTruncated(false);
-      setScanFromCache(false);
-      scan.reset();
-    }
+    // `gmail:scan:active-jobId` AsyncStorage key AND broadcasts a
+    // DeviceEvent so the dashboard banner drops its cached jobId
+    // immediately instead of waiting for the next focus.
+    //
+    // Always clear, even if some inserts failed: leaving stale
+    // candidates after a partially-successful import confuses users
+    // more than it helps (the failed rows can be re-added manually via
+    // the AI wizard if they really matter, and the notice below tells
+    // them how many succeeded vs skipped).
+    setBulkItems([]);
+    setBulkChecked([]);
+    setScanRanOnce(false);
+    setScanSummary(null);
+    setTruncated(false);
+    setScanFromCache(false);
+    scan.reset();
     setNotice({
       kind:
         created > 0 && failed === 0
