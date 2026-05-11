@@ -7,11 +7,13 @@ import {
   Linking,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -66,6 +68,7 @@ export default function GmailImportScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const status = useGmailStatus();
   const connect = useGmailConnect();
@@ -655,6 +658,20 @@ export default function GmailImportScreen() {
       {notice && (
         <NoticeBanner notice={notice} onClose={() => setNotice(null)} />
       )}
+      {/* Single page-level ScrollView so a long bulk-confirm list (27+
+          candidates on a heavy Gmail) actually scrolls. Without this the
+          flat layout left the list overflowing past the screen bottom
+          (the user's screenshot showed the Privacy Policy footer
+          floating mid-list and the last items unreachable).
+          BulkConfirmView is intentionally non-scrolling internally —
+          its rows must live INSIDE this outer scroll, never nest a
+          second VirtualizedList here. */}
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 40 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.header}>
         <View style={styles.headerIconWrap}>
           <Ionicons name="mail-outline" size={28} color={colors.primary} />
@@ -907,6 +924,7 @@ export default function GmailImportScreen() {
           {t('gmail.privacyLink', 'How we use Gmail data → Privacy Policy')}
         </Text>
       </TouchableOpacity>
+      </ScrollView>
 
       <DisconnectConfirmSheet
         visible={disconnectVisible}
@@ -1659,7 +1677,12 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 22, fontWeight: '600' },
   headerSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
   ctaBlock: { paddingHorizontal: 24, gap: 16 },
-  connectedBlock: { flex: 1, paddingHorizontal: 24, gap: 16 },
+  // `flex: 1` here is a legacy of the pre-ScrollView flat layout. Now
+  // that the whole page lives inside a vertical ScrollView, flex:1 on
+  // a content block makes the height ambiguous (parent main axis is
+  // unbounded inside a ScrollView). Removed so the block sizes to its
+  // own content and the ScrollView handles overflow correctly.
+  connectedBlock: { paddingHorizontal: 24, gap: 16 },
   row: { flexDirection: 'row', gap: 12 },
   primaryBtn: {
     paddingVertical: 14,
