@@ -23,6 +23,16 @@ export interface GmailStatus {
   email: string | null;
   connectedAt: string | null;
   scopes: string[];
+  /** Per-plan daily scan budget. `null` for Free (no Gmail scan access)
+   * and for older backends that don't ship this field. Mobile UI uses
+   * it to render an "X of Y scans left today" pill + disable the Scan
+   * CTA preemptively when the cap is hit. */
+  dailyScans?: {
+    used: number;
+    cap: number;
+    /** ISO timestamp — next UTC midnight when the counter resets. */
+    resetAt: string;
+  } | null;
 }
 
 export interface GmailCandidatePlan {

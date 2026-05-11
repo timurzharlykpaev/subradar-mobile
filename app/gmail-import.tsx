@@ -595,6 +595,13 @@ export default function GmailImportScreen() {
   const isLoading = status.isLoading;
   const isConnected = !!status.data?.connected;
   const linkedEmail = status.data?.email ?? null;
+  // Per-plan daily scan budget. Old backends don't ship this field — when
+  // it's missing we silently skip the pill rather than rendering an empty
+  // "0 / 0" badge that looks like an error to the user.
+  const dailyScans = status.data?.dailyScans ?? null;
+  const quotaExhausted = !!(
+    dailyScans && dailyScans.cap > 0 && dailyScans.used >= dailyScans.cap
+  );
 
   const headerSubtitle = useMemo(() => {
     if (isLoading) return t('gmail.subtitle.loading', 'Checking Gmail…');
@@ -686,15 +693,61 @@ export default function GmailImportScreen() {
 
       {isConnected && (
         <View style={styles.connectedBlock}>
+          {dailyScans && (
+            <View
+              style={[
+                styles.quotaPill,
+                {
+                  backgroundColor: quotaExhausted
+                    ? colors.error + '15'
+                    : colors.primary + '12',
+                  borderColor: quotaExhausted
+                    ? colors.error + '40'
+                    : colors.primary + '30',
+                },
+              ]}
+            >
+              <Ionicons
+                name={quotaExhausted ? 'lock-closed' : 'flash-outline'}
+                size={14}
+                color={quotaExhausted ? colors.error : colors.primary}
+              />
+              <Text
+                style={[
+                  styles.quotaPillText,
+                  {
+                    color: quotaExhausted ? colors.error : colors.primary,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {quotaExhausted
+                  ? t(
+                      'gmail.daily_quota.exhausted',
+                      'Daily scan limit reached — resets at midnight UTC',
+                    )
+                  : t('gmail.daily_quota.label', '{{used}} / {{cap}} scans today', {
+                      used: dailyScans.used,
+                      cap: dailyScans.cap,
+                    })}
+              </Text>
+            </View>
+          )}
+
           <View style={styles.row}>
             <TouchableOpacity
               style={[
                 styles.primaryBtn,
                 styles.flexBtn,
-                { backgroundColor: colors.primary },
+                {
+                  backgroundColor: quotaExhausted
+                    ? colors.textMuted
+                    : colors.primary,
+                  opacity: quotaExhausted ? 0.6 : 1,
+                },
               ]}
               onPress={() => handleScan()}
-              disabled={isScanInProgress || importing}
+              disabled={isScanInProgress || importing || quotaExhausted}
             >
               {isScanInProgress ? (
                 <ActivityIndicator color="#FFF" />
@@ -1627,6 +1680,18 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: { fontSize: 14, fontWeight: '500' },
   fineprint: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  quotaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    maxWidth: '100%',
+  },
+  quotaPillText: { fontSize: 12, fontWeight: '700', flexShrink: 1 },
   listHeader: { fontSize: 14, fontWeight: '600' },
   resultsHeaderRow: {
     flexDirection: 'row',

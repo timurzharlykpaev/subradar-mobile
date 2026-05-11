@@ -317,6 +317,10 @@
     "daily_limit_body": "Бүгінгі барлық сканерлеулерді пайдаландыңыз. {{when}} қайталап көріңіз.",
     "daily_limit_reset_today": "кейінірек бүгін",
     "daily_limit_reset_tomorrow": "ертең",
+    "daily_quota": {
+      "label": "Бүгін {{used}} / {{cap}} сканерлеу",
+      "exhausted": "Бүгінгі лимит таусылды — UTC түн ортасында жаңарады"
+    },
     "errors": {
       "expiredTitle": "Gmail байланысы аяқталды",
       "expiredBody": "Gmail рұқсаты енді жарамсыз. Поштаны қарап шығу үшін қайта қосылыңыз."

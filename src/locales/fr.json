@@ -317,6 +317,10 @@
     "daily_limit_body": "Vous avez utilisé tous vos scans du jour. Réessayez {{when}}.",
     "daily_limit_reset_today": "plus tard aujourd'hui",
     "daily_limit_reset_tomorrow": "demain",
+    "daily_quota": {
+      "label": "{{used}} / {{cap}} scans aujourd'hui",
+      "exhausted": "Limite quotidienne atteinte — réinitialisée à minuit UTC"
+    },
     "errors": {
       "expiredTitle": "Connexion Gmail expirée",
       "expiredBody": "Votre autorisation Gmail n'est plus valide. Reconnectez-vous pour continuer à analyser votre boîte de réception."

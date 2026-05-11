@@ -317,6 +317,10 @@
     "daily_limit_body": "您今天的扫描次数已用完。请{{when}}再试。",
     "daily_limit_reset_today": "稍后",
     "daily_limit_reset_tomorrow": "明天",
+    "daily_quota": {
+      "label": "今日 {{used}} / {{cap}} 次扫描",
+      "exhausted": "今日扫描次数已达上限 — UTC 午夜重置"
+    },
     "errors": {
       "expiredTitle": "Gmail 连接已过期",
       "expiredBody": "您的 Gmail 授权已失效。请重新连接以继续扫描收件箱。"
