@@ -1,7 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { gmailApi, GmailStatus, GmailScanResult } from '../api/gmail';
+import { AppState } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  gmailApi,
+  GmailStatus,
+  GmailScanResult,
+  GmailScanProgress,
+} from '../api/gmail';
 import i18n from '../i18n';
+
+// Persisted jobId so the user can navigate away, lock the phone, or
+// fully background the app mid-scan and still come back to the same
+// running/completed job. Cleared explicitly when the user saves all
+// candidates or hits the Back button in the review sheet (so the
+// next visit starts clean).
+const ACTIVE_SCAN_STORAGE_KEY = 'gmail:scan:active-jobId';
 
 const currentLocale = () => (i18n.language || 'en').split('-')[0];
 
@@ -67,12 +81,14 @@ export function useGmailScanJob() {
     result: GmailScanResult | null;
     error: { code?: string; message: string; statusCode?: number } | null;
     cached: boolean;
+    progress: GmailScanProgress | null;
   }>({
     jobId: null,
     status: 'idle',
     result: null,
     error: null,
     cached: false,
+    progress: null,
   });
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopPolling = useCallback(() => {
@@ -95,6 +111,7 @@ export function useGmailScanJob() {
             result: s.result ?? null,
             error: null,
             cached: !!s.result?.cached,
+            progress: null,
           });
           return;
         }
@@ -105,10 +122,17 @@ export function useGmailScanJob() {
             result: null,
             error: s.error ?? { message: 'Scan failed' },
             cached: false,
+            progress: null,
           });
           return;
         }
-        // Still pending/running.
+        // Still pending/running — bubble live progress to the UI.
+        setState((prev) => ({
+          ...prev,
+          jobId,
+          status: s.status,
+          progress: s.progress ?? prev.progress,
+        }));
         if (attemptsLeft <= 0) {
           // Bail to UI so the user isn't left with an infinite spinner
           // — the scan still runs server-side and the push will fire
@@ -133,11 +157,19 @@ export function useGmailScanJob() {
             message: err?.message ?? 'Scan poll failed',
           },
           cached: false,
+          progress: null,
         });
       }
     },
     [],
   );
+
+  // Polling cap covers ~3 min wall-clock, which fits the worst-case
+  // 3000-msg scan from the largest inboxes we see. Past that we stop
+  // polling but DON'T mark failed — the scan still runs server-side
+  // and the push notification will fire when it completes, deep-
+  // linking the user back to the same jobId.
+  const POLL_ATTEMPTS = 90;
 
   const start = useCallback(
     async (opts?: { force?: boolean }) => {
@@ -148,9 +180,20 @@ export function useGmailScanJob() {
         result: null,
         error: null,
         cached: false,
+        progress: null,
       });
       try {
         const job = await gmailApi.startScan(currentLocale(), opts?.force === true);
+        // Persist the jobId immediately so a hard-kill of the app
+        // mid-scan can resume on next launch. Cached results don't
+        // get persisted because they're already terminal.
+        if (job.status !== 'completed') {
+          AsyncStorage.setItem(ACTIVE_SCAN_STORAGE_KEY, job.jobId).catch(
+            () => {
+              /* best-effort */
+            },
+          );
+        }
         // Cached results come back already completed → fetch the
         // status row immediately and render without ever showing a
         // loader. Saves one extra interactive frame.
@@ -162,6 +205,7 @@ export function useGmailScanJob() {
             result: status.result ?? null,
             error: null,
             cached: !!status.result?.cached,
+            progress: null,
           });
           return job;
         }
@@ -171,11 +215,7 @@ export function useGmailScanJob() {
           status: job.status,
           cached: job.cached,
         }));
-        // 45 attempts × 2s = 90s, enough for the slowest realistic
-        // scan today (~30s). After that we stop polling but the push
-        // path still fires; the user comes back into a state where
-        // the screen mount can re-fetch the same jobId.
-        pollTimer.current = setTimeout(() => poll(job.jobId, 45), 2000);
+        pollTimer.current = setTimeout(() => poll(job.jobId, POLL_ATTEMPTS), 2000);
         return job;
       } catch (err: any) {
         setState({
@@ -188,6 +228,7 @@ export function useGmailScanJob() {
             code: err?.response?.data?.code,
           },
           cached: false,
+          progress: null,
         });
         throw err;
       }
@@ -204,6 +245,13 @@ export function useGmailScanJob() {
         result: null,
         error: null,
         cached: false,
+        progress: null,
+      });
+      // Re-persist so a future cold launch picks up the same job
+      // (the previous persistence might have been wiped by a
+      // memory-pressure kill that didn't run our reset path).
+      AsyncStorage.setItem(ACTIVE_SCAN_STORAGE_KEY, jobId).catch(() => {
+        /* best-effort */
       });
       try {
         const status = await gmailApi.getScanStatus(jobId);
@@ -214,6 +262,7 @@ export function useGmailScanJob() {
             result: status.result ?? null,
             error: null,
             cached: !!status.result?.cached,
+            progress: null,
           });
           return;
         }
@@ -224,11 +273,28 @@ export function useGmailScanJob() {
             result: null,
             error: status.error ?? { message: 'Scan failed' },
             cached: false,
+            progress: null,
           });
           return;
         }
-        pollTimer.current = setTimeout(() => poll(jobId, 45), 2000);
+        // Still pending/running — surface any progress data we
+        // already have so the loader picks up mid-scan numbers.
+        setState((prev) => ({
+          ...prev,
+          jobId,
+          status: status.status,
+          progress: status.progress ?? prev.progress,
+        }));
+        pollTimer.current = setTimeout(() => poll(jobId, POLL_ATTEMPTS), 2000);
       } catch (err: any) {
+        // A 404 on resume means the job expired (>30 min TTL) or was
+        // never the user's — drop the persisted pointer so a fresh
+        // visit doesn't re-attempt the same dead jobId. Other errors
+        // keep the persisted pointer so a transient network hiccup
+        // doesn't lose the in-flight scan.
+        if (err?.response?.status === 404) {
+          AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY).catch(() => {});
+        }
         setState({
           jobId,
           status: 'failed',
@@ -238,6 +304,7 @@ export function useGmailScanJob() {
             message: err?.message ?? 'Scan poll failed',
           },
           cached: false,
+          progress: null,
         });
       }
     },
@@ -246,14 +313,56 @@ export function useGmailScanJob() {
 
   const reset = useCallback(() => {
     stopPolling();
+    AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY).catch(() => {
+      /* best-effort */
+    });
     setState({
       jobId: null,
       status: 'idle',
       result: null,
       error: null,
       cached: false,
+      progress: null,
     });
   }, [stopPolling]);
+
+  // Auto-recover the previously-running scan on mount + whenever
+  // the app returns to the foreground. This is what makes the
+  // "leave the screen, get a coffee, come back" UX work: regardless
+  // of which screen the user navigates from, opening gmail-import
+  // picks up the in-flight job instead of forcing a new scan.
+  const recoverOnce = useRef(false);
+  useEffect(() => {
+    if (recoverOnce.current) return;
+    recoverOnce.current = true;
+    AsyncStorage.getItem(ACTIVE_SCAN_STORAGE_KEY)
+      .then((storedJobId) => {
+        if (storedJobId) {
+          void resume(storedJobId);
+        }
+      })
+      .catch(() => {
+        /* recovery is best-effort */
+      });
+  }, [resume]);
+
+  // App-state recovery: when the user toggles back from
+  // backgrounded → active, refresh the poll. Without this the
+  // polling chain might have been cut by AppState going inactive
+  // (setTimeout pauses in the background on iOS), leaving the
+  // user with stale state on return.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') {
+        AsyncStorage.getItem(ACTIVE_SCAN_STORAGE_KEY)
+          .then((storedJobId) => {
+            if (storedJobId) void resume(storedJobId);
+          })
+          .catch(() => {});
+      }
+    });
+    return () => sub.remove();
+  }, [resume]);
 
   return { ...state, start, resume, reset };
 }

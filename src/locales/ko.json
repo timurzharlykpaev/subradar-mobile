@@ -329,6 +329,11 @@
     "list": {
       "cached": "캐시됨",
       "trial_pill": "체험"
+    },
+    "scan": {
+      "stage": {
+        "count": "{{current}} / {{total}} 이메일"
+      }
     }
   },
   "settings": {

@@ -329,6 +329,11 @@
     "list": {
       "cached": "キャッシュ",
       "trial_pill": "トライアル"
+    },
+    "scan": {
+      "stage": {
+        "count": "{{current}} / {{total}}件のメール"
+      }
     }
   },
   "settings": {

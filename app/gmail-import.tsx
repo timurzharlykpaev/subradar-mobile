@@ -766,7 +766,7 @@ export default function GmailImportScreen() {
             </View>
           )}
 
-          {isScanInProgress && <ScanLoader />}
+          {isScanInProgress && <ScanLoader progress={scan.progress} />}
 
           {truncated && !isScanInProgress && (
             <View
@@ -1152,7 +1152,11 @@ const sheetStyles = StyleSheet.create({
  * here ties the loader visually back to the entry point and reads as
  * a sibling to the voice hero (which uses the primary color).
  */
-function ScanLoader() {
+function ScanLoader({
+  progress: liveProgress,
+}: {
+  progress?: import('../src/api/gmail').GmailScanProgress | null;
+}) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const startedAtRef = useRef(Date.now());
@@ -1165,13 +1169,15 @@ function ScanLoader() {
 
   const elapsed = (now - startedAtRef.current) / 1000;
 
-  // Stage definitions. `at` is the elapsed-time threshold to enter
-  // the stage. The final stage stays sticky once entered so a scan
-  // that runs longer than expected doesn't bounce text around.
+  // Stage definitions — same five phases the backend now reports.
+  // When the server tells us which stage we're in via `liveProgress`
+  // we use that directly; otherwise we fall back to the old elapsed-
+  // time heuristic so the loader doesn't go blank for the brief
+  // window before the first progress update lands.
   const stages = useMemo(
     () => [
       {
-        key: 'linking',
+        key: 'listing',
         label: t('gmail.scan.stage.linking', 'Linking up'),
         subtitle: t(
           'gmail.scan.stage.linking_sub',
@@ -1179,7 +1185,7 @@ function ScanLoader() {
         ),
       },
       {
-        key: 'sifting',
+        key: 'fetching',
         label: t('gmail.scan.stage.sifting', 'Sifting through receipts'),
         subtitle: t(
           'gmail.scan.stage.sifting_sub',
@@ -1187,7 +1193,7 @@ function ScanLoader() {
         ),
       },
       {
-        key: 'ai',
+        key: 'parsing',
         label: t('gmail.scan.stage.ai', 'AI on the case'),
         subtitle: t(
           'gmail.scan.stage.ai_sub',
@@ -1195,7 +1201,7 @@ function ScanLoader() {
         ),
       },
       {
-        key: 'crossref',
+        key: 'enriching',
         label: t('gmail.scan.stage.crossref', 'Cross-referencing'),
         subtitle: t(
           'gmail.scan.stage.crossref_sub',
@@ -1203,7 +1209,7 @@ function ScanLoader() {
         ),
       },
       {
-        key: 'finishing',
+        key: 'filtering',
         label: t('gmail.scan.stage.finishing', 'Almost there'),
         subtitle: t(
           'gmail.scan.stage.finishing_sub',
@@ -1213,10 +1219,68 @@ function ScanLoader() {
     ],
     [t],
   );
-  const stageIdx =
-    elapsed < 2 ? 0 : elapsed < 6 ? 1 : elapsed < 14 ? 2 : elapsed < 22 ? 3 : 4;
+  // Prefer the real backend stage when we have one. Falls back to
+  // elapsed-time guess for the first ~1-2 s before the first
+  // progress poll lands so the orb doesn't render against an
+  // empty subtitle.
+  const stageKeyToIdx: Record<string, number> = {
+    listing: 0,
+    fetching: 1,
+    parsing: 2,
+    enriching: 3,
+    filtering: 4,
+  };
+  const stageIdx = liveProgress
+    ? stageKeyToIdx[liveProgress.stage] ?? 0
+    : elapsed < 2
+      ? 0
+      : elapsed < 6
+        ? 1
+        : elapsed < 14
+          ? 2
+          : elapsed < 22
+            ? 3
+            : 4;
   const current = stages[stageIdx];
-  const progress = Math.min(0.95, elapsed / 25);
+
+  // Build a live count line ("123 / 500 emails") when the backend
+  // gave us total. Falls through to a blank when only `stage` is
+  // known (early in the scan or post-listing transitions).
+  const liveCountText = useMemo(() => {
+    if (
+      liveProgress &&
+      typeof liveProgress.current === 'number' &&
+      typeof liveProgress.total === 'number' &&
+      liveProgress.total > 0
+    ) {
+      return t(
+        'gmail.scan.stage.count',
+        '{{current}} / {{total}} emails',
+        { current: liveProgress.current, total: liveProgress.total },
+      );
+    }
+    return null;
+  }, [liveProgress, t]);
+
+  // True progress when the server told us current/total; otherwise
+  // fall back to elapsed-time-against-25s heuristic. Capped at 0.95
+  // so the bar never reads "100% but still loading".
+  const progress = useMemo(() => {
+    if (
+      liveProgress &&
+      typeof liveProgress.current === 'number' &&
+      typeof liveProgress.total === 'number' &&
+      liveProgress.total > 0
+    ) {
+      // Map stage index + within-stage progress onto a single bar.
+      // Each stage gets an even slice of the bar (1/5), and we
+      // interpolate within the slice based on current/total.
+      const stagePortion = 1 / stages.length;
+      const within = liveProgress.current / liveProgress.total;
+      return Math.min(0.97, stageIdx * stagePortion + within * stagePortion);
+    }
+    return Math.min(0.95, elapsed / 25);
+  }, [liveProgress, stageIdx, stages.length, elapsed]);
 
   // Animated values. Persistent across renders via useRef so we
   // don't restart the loops every 250 ms tick.
@@ -1420,6 +1484,21 @@ function ScanLoader() {
         <Text style={[loaderStyles.subtitle, { color: colors.textSecondary }]}>
           {current.subtitle}
         </Text>
+        {liveCountText && (
+          <Text
+            style={[
+              loaderStyles.subtitle,
+              {
+                color: colors.text,
+                fontWeight: '700',
+                marginTop: 4,
+                fontVariant: ['tabular-nums'],
+              },
+            ]}
+          >
+            {liveCountText}
+          </Text>
+        )}
       </Animated.View>
 
       <View style={[loaderStyles.bar, { backgroundColor: colors.border }]}>

@@ -329,6 +329,11 @@
     "list": {
       "cached": "En cache",
       "trial_pill": "ESSAI"
+    },
+    "scan": {
+      "stage": {
+        "count": "{{current}} / {{total}} e-mails"
+      }
     }
   },
   "settings": {

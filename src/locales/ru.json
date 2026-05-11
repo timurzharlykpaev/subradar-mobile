@@ -338,6 +338,11 @@
     "list": {
       "cached": "Кэш",
       "trial_pill": "ТРИАЛ"
+    },
+    "scan": {
+      "stage": {
+        "count": "{{current}} из {{total}} писем"
+      }
     }
   },
   "settings": {

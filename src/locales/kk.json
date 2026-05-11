@@ -329,6 +329,11 @@
     "list": {
       "cached": "Кэштен",
       "trial_pill": "ТРИАЛ"
+    },
+    "scan": {
+      "stage": {
+        "count": "{{current}} / {{total}} хат"
+      }
     }
   },
   "periods": {

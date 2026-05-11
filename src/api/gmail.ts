@@ -143,6 +143,10 @@ export const gmailApi = {
    * Poll for a scan job's state. Polling cadence is the caller's
    * choice; backend rate-limits at 60 req/min/user, which is enough
    * for a 2s poll for the full job lifetime.
+   *
+   * The `progress` field tracks live stage + email counts during a
+   * `running` scan so the mobile loader can render "X of Y emails"
+   * instead of an opaque spinner.
    */
   getScanStatus: async (jobId: string) => {
     const { data } = await apiClient.get<{
@@ -152,7 +156,21 @@ export const gmailApi = {
       error?: { code?: string; message: string; statusCode?: number };
       startedAt: string;
       completedAt?: string;
+      progress?: GmailScanProgress;
     }>(`/gmail/scan/status/${encodeURIComponent(jobId)}`);
     return data;
   },
 };
+
+export type GmailScanProgressStage =
+  | 'listing'
+  | 'fetching'
+  | 'parsing'
+  | 'enriching'
+  | 'filtering';
+
+export interface GmailScanProgress {
+  stage: GmailScanProgressStage;
+  current?: number;
+  total?: number;
+}

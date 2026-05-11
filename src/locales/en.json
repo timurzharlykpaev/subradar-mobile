@@ -364,7 +364,12 @@
     "daily_limit_title": "Daily scan limit reached",
     "daily_limit_body": "You've used all of your scans for today. Try again {{when}}.",
     "daily_limit_reset_today": "later today",
-    "daily_limit_reset_tomorrow": "tomorrow"
+    "daily_limit_reset_tomorrow": "tomorrow",
+    "scan": {
+      "stage": {
+        "count": "{{current}} / {{total}} emails"
+      }
+    }
   },
   "settings": {
     "title": "Settings",
