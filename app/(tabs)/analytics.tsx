@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import i18n from '../../src/i18n';
 import { CATEGORIES } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { CategoryIcon } from '../../src/components/icons';
+import { SafeLinearGradient } from '../../src/components/SafeLinearGradient';
 import ProFeatureModal from '../../src/components/ProFeatureModal';
 import { usePaymentCardsStore } from '../../src/stores/paymentCardsStore';
 import { useAnalysisFlow } from '../../src/hooks/useAnalysis';
@@ -50,21 +51,42 @@ function formatNum(n: number | string | undefined | null, decimals = 0): string 
 }
 
 // ─── Custom MonthlyBarChart ──────────────────────────────────────────────────
+// Y-axis is a fixed pane on the left; bars live inside a horizontal ScrollView
+// so non-USD totals (e.g. ₸ 250,000) get the room to render fully without
+// clipping neighbouring labels. Each bar gets a generous slot (44px) so the
+// value above it can render as a full localized number, abbreviating to "k"
+// only past 100k.
 function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string; total: number }[]; currencySymbol?: string }) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
   const maxVal = Math.max(...data.map((d) => d.total), 1);
-  const yAxisW = 40;
-  const chartW = screenWidth - 80;
-  const barsW = chartW - yAxisW;
-  const barW = Math.max(16, barsW / data.length - 6);
+  // Was 40 — too narrow for KZT/RUB totals which need ~50px of label width
+  // plus a 4px gap from the gridline. 56 fits every locale we ship.
+  const yAxisW = 56;
+  // Per-month slot width. Tuned so up-to-6-digit values like "₸ 99 999"
+  // fit above the bar at fontSize 10 without colliding with neighbours,
+  // and ~7 bars stay visible on an iPhone 14 (390px). Past that → scroll.
+  const slotW = 44;
+  const barW = 30;
+  const sidePad = 6;
+  const innerW = data.length * slotW + sidePad * 2;
   const chartAreaH = CHART_HEIGHT - 30;
   const totalH = CHART_HEIGHT + 20;
 
+  // Y-axis labels stay short ("12k", "1.2M") so the currency prefix isn't
+  // clipped on locales whose symbol is rendered as a wide glyph (₸, ₽, ₩).
+  // The full localized number still lives above each bar — Y-axis only
+  // needs to convey order of magnitude.
+  const formatYLabel = (n: number): string => {
+    if (n >= 1_000_000) return `${currencySymbol} ${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${currencySymbol} ${Math.round(n / 1_000)}k`;
+    return `${currencySymbol} ${formatNum(n)}`;
+  };
+
   const gridLines = [0.25, 0.5, 0.75].map((frac) => ({
     y: chartAreaH - frac * chartAreaH,
-    label: `${currencySymbol} ${formatNum(Math.round(maxVal * frac))}`,
+    label: formatYLabel(Math.round(maxVal * frac)),
   }));
 
   const getMonthLabel = (monthStr: string) => {
@@ -74,47 +96,145 @@ function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string
     return monthStr.slice(-2);
   };
 
+  // Approximate visible viewport (parent padding ≈ 40 + yAxisW). Used only
+  // to decide whether the "more →" fade hint should render; getting it
+  // slightly off is harmless (the fade is decorative).
+  const isScrollable = innerW > screenWidth - 40 - yAxisW;
+
+  // The right edge of the timeline is "now" — by default we want users to
+  // see the most recent months without having to swipe. ScrollView starts
+  // at x=0, so after each content size change (initial render + data
+  // refresh) we jump to the end. User swiping left to inspect history is
+  // preserved until the next content size change.
+  const scrollRef = useRef<ScrollView>(null);
+  const handleContentSizeChange = useCallback(() => {
+    scrollRef.current?.scrollToEnd({ animated: false });
+  }, []);
+
   return (
-    <View style={{ height: totalH }}>
-      <Svg width={chartW} height={totalH}>
-        <Defs>
-          <LinearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.35" />
-            <Stop offset="1" stopColor={colors.primary} stopOpacity="1" />
-          </LinearGradient>
-          <LinearGradient id="barGradDim" x1="0" y1="1" x2="0" y2="0">
-            <Stop offset="0" stopColor={colors.primary} stopOpacity="0.15" />
-            <Stop offset="1" stopColor={colors.primary} stopOpacity="0.7" />
-          </LinearGradient>
-        </Defs>
+    <View style={{ height: totalH, flexDirection: 'row' }}>
+      <Svg width={yAxisW} height={totalH}>
         {gridLines.map((line, i) => (
-          <React.Fragment key={`grid-${i}`}>
-            <Line x1={yAxisW} y1={line.y} x2={chartW} y2={line.y} stroke={colors.text} strokeWidth={0.5} strokeOpacity={0.08} />
-            <SvgText x={yAxisW - 4} y={line.y + 3} fontSize={9} fill={colors.textMuted} textAnchor="end">{line.label}</SvgText>
-          </React.Fragment>
+          <SvgText
+            key={`y-${i}`}
+            x={yAxisW - 4}
+            y={line.y + 3}
+            fontSize={10}
+            fontWeight="600"
+            fill={colors.textMuted}
+            textAnchor="end"
+          >
+            {line.label}
+          </SvgText>
         ))}
-        {data.map((d, i) => {
-          const ratio = d.total / maxVal;
-          const barH = d.total > 0 ? Math.max(6, ratio * chartAreaH) : 2;
-          const x = yAxisW + i * (barsW / data.length) + (barsW / data.length - barW) / 2;
-          const y = chartAreaH - barH;
-          const isMax = d.total === maxVal && d.total > 0;
-          return (
-            <React.Fragment key={i}>
-              <Rect x={x} y={y} width={barW} height={barH} rx={barW / 4} fill={isMax ? 'url(#barGrad)' : 'url(#barGradDim)'} />
-              {d.total > 0 && (
-                <SvgText x={x + barW / 2} y={y - 5} fontSize={10} fontWeight={isMax ? '700' : '500'} fill={isMax ? colors.primary : colors.textMuted} textAnchor="middle" opacity={isMax ? 1 : 0.7}>
-                  {d.total >= 1000 ? `${currencySymbol} ${(d.total / 1000).toFixed(1)}k` : `${currencySymbol} ${d.total.toFixed(0)}`}
-                </SvgText>
-              )}
-            </React.Fragment>
-          );
-        })}
       </Svg>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', paddingLeft: yAxisW, marginTop: -14 }}>
-        {data.map((d, i) => (
-          <Text key={i} style={{ fontSize: 9, color: colors.textMuted, textAlign: 'center', flex: 1 }}>{getMonthLabel(d.month)}</Text>
-        ))}
+
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          onContentSizeChange={handleContentSizeChange}
+        >
+          <View>
+            <Svg width={innerW} height={totalH}>
+              <Defs>
+                {/* Max bar — purple → pink, the "peak month" hot accent. */}
+                <LinearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+                  <Stop offset="0" stopColor={colors.primary} stopOpacity="1" />
+                  <Stop offset="1" stopColor="#EC4899" stopOpacity="1" />
+                </LinearGradient>
+                <LinearGradient id="barGradDim" x1="0" y1="1" x2="0" y2="0">
+                  <Stop offset="0" stopColor={colors.primary} stopOpacity="0.15" />
+                  <Stop offset="1" stopColor={colors.primary} stopOpacity="0.6" />
+                </LinearGradient>
+              </Defs>
+              {gridLines.map((line, i) => (
+                <Line
+                  key={`grid-${i}`}
+                  x1={0}
+                  y1={line.y}
+                  x2={innerW}
+                  y2={line.y}
+                  stroke={colors.text}
+                  strokeWidth={0.5}
+                  strokeOpacity={0.08}
+                />
+              ))}
+              {data.map((d, i) => {
+                const ratio = d.total / maxVal;
+                const barH = d.total > 0 ? Math.max(6, ratio * chartAreaH) : 2;
+                const x = sidePad + i * slotW + (slotW - barW) / 2;
+                const y = chartAreaH - barH;
+                const isMax = d.total === maxVal && d.total > 0;
+                // Past 100k we abbreviate to "k" so the label still fits
+                // inside the slot; below that the full localized number
+                // reads better and there's room for it.
+                const valueLabel =
+                  d.total >= 100_000
+                    ? `${currencySymbol} ${(d.total / 1000).toFixed(0)}k`
+                    : `${currencySymbol} ${formatNum(d.total)}`;
+                return (
+                  <React.Fragment key={i}>
+                    <Rect
+                      x={x}
+                      y={y}
+                      width={barW}
+                      height={barH}
+                      rx={6}
+                      fill={isMax ? 'url(#barGrad)' : 'url(#barGradDim)'}
+                    />
+                    {d.total > 0 && (
+                      <SvgText
+                        x={x + barW / 2}
+                        y={y - 6}
+                        fontSize={10}
+                        fontWeight={isMax ? '700' : '500'}
+                        fill={isMax ? colors.primary : colors.textMuted}
+                        textAnchor="middle"
+                        opacity={isMax ? 1 : 0.85}
+                      >
+                        {valueLabel}
+                      </SvgText>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </Svg>
+            <View
+              style={{
+                flexDirection: 'row',
+                width: innerW,
+                paddingHorizontal: sidePad,
+                marginTop: -14,
+              }}
+            >
+              {data.map((d, i) => (
+                <View key={i} style={{ width: slotW, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 10, fontWeight: '500', color: colors.textMuted }}>
+                    {getMonthLabel(d.month)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+        {isScrollable && (
+          <SafeLinearGradient
+            colors={['transparent', colors.surface]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 16,
+              right: 0,
+              width: 24,
+            }}
+          />
+        )}
       </View>
     </View>
   );
@@ -173,19 +293,35 @@ function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
         {slices.map((slice, idx) => (
           <SvgPath key={idx} d={slice.d} fill={slice.color} />
         ))}
-        {slices.filter((s) => s.showLabel).map((slice, idx) => (
-          <SvgText
-            key={`lbl-${idx}`}
-            x={slice.labelX}
-            y={slice.labelY + 5}
-            fontSize={12}
-            fontWeight="900"
-            fill="#FFF"
-            textAnchor="middle"
-          >
-            {slice.pct}%
-          </SvgText>
-        ))}
+        {slices
+          .filter((s) => s.showLabel)
+          .map((slice, idx) => (
+            // Dark offset behind the white label — gives the % readable
+            // contrast on top of light category colours (e.g. yellow,
+            // mint) without forcing a per-slice text colour switch.
+            <React.Fragment key={`lbl-${idx}`}>
+              <SvgText
+                x={slice.labelX}
+                y={slice.labelY + 6}
+                fontSize={12}
+                fontWeight="900"
+                fill="rgba(0,0,0,0.25)"
+                textAnchor="middle"
+              >
+                {slice.pct}%
+              </SvgText>
+              <SvgText
+                x={slice.labelX}
+                y={slice.labelY + 5}
+                fontSize={12}
+                fontWeight="900"
+                fill="#FFF"
+                textAnchor="middle"
+              >
+                {slice.pct}%
+              </SvgText>
+            </React.Fragment>
+          ))}
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
         {/*
