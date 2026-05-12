@@ -581,11 +581,39 @@ export default function DashboardScreen() {
                 <TouchableOpacity
                   testID={`dashboard-trial-${sub.id}`}
                   key={sub.id}
-                  style={[styles.trialCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[
+                    styles.trialCard,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                    sub.color ? { borderLeftWidth: 3, borderLeftColor: sub.color } : null,
+                  ]}
                   onPress={() => router.push(`/subscription/${sub.id}` as any)}
                   activeOpacity={0.8}
                 >
-                  <View style={[styles.trialDot, { backgroundColor: dotColor }]} />
+                  {/* Same SubIcon (image with letter fallback) the active
+                      list uses, so trial rows aren't a visual second class.
+                      The urgency colour now rides on a small dot pinned to
+                      the icon's top-right corner instead of replacing the
+                      icon — preserves the "ends in <3d → red" signal that
+                      the old leading dot carried. */}
+                  <View style={{ position: 'relative' }}>
+                    <SubIcon
+                      iconUrl={sub.iconUrl}
+                      name={sub.name}
+                      category={sub.category}
+                      imageStyle={styles.subIcon}
+                      placeholderStyle={[
+                        styles.subIconPlaceholder,
+                        { backgroundColor: sub.color ? sub.color + '22' : colors.primaryLight },
+                      ]}
+                      textStyle={[styles.subIconText, { color: sub.color || colors.primary }]}
+                    />
+                    <View
+                      style={[
+                        styles.trialUrgencyDot,
+                        { backgroundColor: dotColor, borderColor: colors.card },
+                      ]}
+                    />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.trialName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
                     <Text style={[styles.trialMeta, { color: colors.textSecondary }]}>
@@ -1152,7 +1180,17 @@ const styles = StyleSheet.create({
 
   // Trials
   trialCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 14, marginBottom: 8, borderWidth: 1 },
-  trialDot: { width: 10, height: 10, borderRadius: 5 },
+  // 2px borderColor matches the card background so the dot reads as a
+  // standalone pill on the avatar regardless of theme.
+  trialUrgencyDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+  },
   trialName: { fontSize: 15, fontWeight: '700' },
   trialMeta: { fontSize: 12, marginTop: 2 },
   trialPrice: { fontSize: 14, fontWeight: '700' },
