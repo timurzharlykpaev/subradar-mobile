@@ -19,9 +19,21 @@ import Animated, {
   Easing,
   interpolate,
   Extrapolation,
+  FadeOut,
+  LinearTransition,
   type SharedValue,
 } from 'react-native-reanimated';
-import { Swipeable } from 'react-native-gesture-handler';
+// IMPORTANT: ReanimatedSwipeable (not legacy `Swipeable` from the package
+// root) — the legacy version exposes `progress` as a RN Animated
+// AnimatedInterpolation, which crashes the UI/worklets runtime if read
+// from `useAnimatedStyle` (Proxy guard in worklets/serializable.ts hits
+// `new WorkletsError(...)` whose constructor isn't on the worklet
+// runtime → terminates the whole app via watchdog). ReanimatedSwipeable
+// passes `progress: SharedValue<number>`, which is what useAnimatedStyle
+// expects.
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -66,7 +78,7 @@ function RightDeleteAction({
   label,
 }: {
   progress: SharedValue<number>;
-  swipeRef: React.RefObject<Swipeable | null>;
+  swipeRef: React.RefObject<SwipeableMethods | null>;
   onDelete: () => void;
   label: string;
 }) {
@@ -175,7 +187,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onSwipeDelete, o
     onLongPress?.();
   };
 
-  const swipeRef = React.useRef<Swipeable>(null);
+  const swipeRef = React.useRef<SwipeableMethods>(null);
 
   const cardNode = (
     <AnimatedPressable
@@ -327,27 +339,41 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onSwipeDelete, o
   // gesture before the panel snaps open. We never auto-delete on a
   // full overswipe (overshootRight=false) — too easy to trigger by
   // accident while scrolling the list horizontally on edge.
-  if (onSwipeDelete) {
-    return (
-      <Swipeable
-        ref={swipeRef}
-        friction={2}
-        rightThreshold={40}
-        overshootRight={false}
-        renderRightActions={(progress) => (
-          <RightDeleteAction
-            progress={progress as unknown as SharedValue<number>}
-            swipeRef={swipeRef}
-            onDelete={onSwipeDelete}
-            label={t('common.delete', 'Delete')}
-          />
-        )}
-      >
-        {cardNode}
-      </Swipeable>
-    );
-  }
-  return cardNode;
+  // Outer wrapper owns the exit/layout animation so the row fades out
+  // smoothly (FadeOut) and the rows below slide up to fill the gap
+  // (LinearTransition) when handleDelete removes the item from the list.
+  // Without this, FlatList unmounts the row immediately and the list
+  // snaps — which is what the user reported as "no smooth removal".
+  // marginBottom moved here so the gap collapses as part of the layout
+  // animation instead of staying frozen on the inner Pressable.
+  return (
+    <Animated.View
+      exiting={FadeOut.duration(180)}
+      layout={LinearTransition.springify().damping(22).stiffness(220).mass(0.7)}
+      style={{ marginBottom: 10 }}
+    >
+      {onSwipeDelete ? (
+        <ReanimatedSwipeable
+          ref={swipeRef}
+          friction={2}
+          rightThreshold={40}
+          overshootRight={false}
+          renderRightActions={(progress) => (
+            <RightDeleteAction
+              progress={progress}
+              swipeRef={swipeRef}
+              onDelete={onSwipeDelete}
+              label={t('common.delete', 'Delete')}
+            />
+          )}
+        >
+          {cardNode}
+        </ReanimatedSwipeable>
+      ) : (
+        cardNode
+      )}
+    </Animated.View>
+  );
 };
 
 export const SubscriptionCard = React.memo(SubscriptionCardInner);
@@ -357,14 +383,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 16,
     padding: 14,
-    marginBottom: 10,
     alignItems: 'center',
     gap: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
   },
   left: {},
   logo: { width: 44, height: 44, borderRadius: 12 },

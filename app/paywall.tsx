@@ -332,67 +332,19 @@ export default function PaywallScreen() {
       if (!proceed) return;
     }
 
-    // Pro→Team upgrade requires App Store Connect subscription group ranks to be
-    // configured (Team levels above Pro). When ranks are misconfigured, Apple
-    // silently renews the existing Pro subscription instead of upgrading to
-    // Team — receipt comes back with `productId: pro.yearly`, RC stores the old
-    // entitlement, backend's `/billing/sync-revenuecat` rejects with 403
-    // because no Team entitlement was ever granted.
+    // Pro→Team and period-swap upgrades are handled natively by Apple when
+    // all products share one Subscription Group in App Store Connect and
+    // Team is ranked above Pro: tapping Team while on Pro triggers the
+    // system "Confirm Subscription Change" sheet with proration. We used
+    // to gate this flow client-side ("Cancel Pro first") as a defence
+    // against misconfigured ranks, but that prevented the very upgrade
+    // Apple is ready to perform and forced users into a manual cancel /
+    // wait / re-subscribe loop. The post-purchase replay detector below
+    // (replayedDifferentPlan) is the safety net: if ranks ever regress
+    // and Apple silently renews Pro instead of switching to Team, the
+    // user gets a clear "Pro is already active" alert with a path to
+    // resolve it. No pre-purchase gate is needed in steady state.
     //
-    // BUT: skip the block when the user has already cancelled
-    // (`cancelAtPeriodEnd === true`) — at that point Apple itself will
-    // handle the upgrade gracefully (it knows Pro won't renew). And the
-    // most common stuck-state we see in production is "user cancelled in
-    // Apple Settings, EXPIRATION webhook never reached our backend, the
-    // gate keeps blocking forever and the Manage Subscription deep-link
-    // shows nothing because Apple already removed the row." We add an
-    // explicit "I already cancelled" escape hatch that runs `reconcile`
-    // and retries automatically.
-    const proStillRenewing =
-      selected === 'org' &&
-      access?.plan === 'pro' &&
-      access?.hasOwnPaidPlan === true &&
-      access?.flags?.cancelAtPeriodEnd !== true;
-    if (proStillRenewing) {
-      Alert.alert(
-        t('paywall.pro_to_team_blocked_title', 'Cancel Pro first'),
-        t(
-          'paywall.pro_to_team_blocked_msg',
-          "Apple won't let you upgrade Pro → Team directly. Cancel your Pro subscription in iOS Settings → Subscriptions, wait for the current period to end, then come back to buy Team.",
-        ),
-        [
-          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
-          {
-            text: t('paywall.already_cancelled', 'I already cancelled'),
-            onPress: async () => {
-              try {
-                await billingApi.reconcile();
-              } catch {
-                /* reconcile is best-effort */
-              }
-              await queryClient.invalidateQueries({ queryKey: ['billing'] });
-              Alert.alert(
-                t('paywall.reconciled_title', 'Refreshed'),
-                t(
-                  'paywall.reconciled_msg',
-                  'Subscription state refreshed. If your Pro is now cancelled, tap Subscribe again.',
-                ),
-              );
-            },
-          },
-          {
-            text: t('paywall.manage_subscription', 'Manage Subscription'),
-            onPress: () => {
-              Linking.openURL('https://apps.apple.com/account/subscriptions').catch(() => {
-                /* Older iOS or no Apple ID linked — silently no-op. */
-              });
-            },
-          },
-        ],
-      );
-      return;
-    }
-
     // Find RC package by product identifier
     const pkg = findPackage(selected, billingPeriod);
     console.log('[Paywall] selected:', selected, 'period:', billingPeriod, 'pkg found:', !!pkg, 'available:', offerings?.current?.availablePackages?.length ?? 0);

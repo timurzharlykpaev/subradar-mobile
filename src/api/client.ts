@@ -7,12 +7,15 @@ import i18n from '../i18n';
 import { useAuthStore } from '../stores/authStore';
 import { reportError } from '../utils/errorReporter';
 import { isUserNotFoundError } from './staleAuth';
+import { API_URL } from './config';
+
+// Re-exported so existing consumers keep working.
+export { API_URL };
 
 // TODO(security): add certificate pinning for api.subradar.ai.
 // Requires a native library (e.g. react-native-pinch or @mattrglobal/pin) and
 // therefore EAS Build (not Expo Go). Pin the public key of the api.subradar.ai
 // leaf cert + a backup. Plan: docs/superpowers/specs/2026-04-16-cert-pinning-todo.md
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.subradar.ai/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_URL,

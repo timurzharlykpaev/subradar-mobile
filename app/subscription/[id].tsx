@@ -241,9 +241,19 @@ export default function SubscriptionDetailScreen() {
                 const d = new Date((subscription as any).trialEndDate);
                 const days = Math.ceil((d.getTime() - Date.now()) / 86400000);
                 const col = days <= 0 ? colors.error : days <= 3 ? '#F59E0B' : colors.text;
+                // flexDirection / flex:0 are explicit on purpose. The shared
+                // `styles.detailValue` carries `flex: 1` for the single-Text
+                // rows below (so long values wrap inside the value cell),
+                // but here we have two stacked Texts in a column wrapper —
+                // and `flex: 1` on the first Text inside an unconstrained
+                // column made Yoga stretch the row to ~screen height, which
+                // pushed the billing-day/reminder rows off-screen and made
+                // the screen look like one huge empty card with broken
+                // scroll. Locking the column and dropping flex on the inner
+                // Texts keeps the row at its natural height.
                 return (
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[styles.detailValue, { color: col }]}>
+                  <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <Text style={[styles.detailValue, { color: col, flex: 0 }]}>
                       {d.toLocaleDateString(i18n.language || 'en', { day: 'numeric', month: 'long' })}
                     </Text>
                     <Text style={{ fontSize: 11, color: col, fontWeight: '700', marginTop: 2 }}>

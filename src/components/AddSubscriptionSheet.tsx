@@ -335,7 +335,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         cancelUrl: form.cancelUrl || undefined,
         iconUrl: iconUrl || undefined,
         notes: form.notes || undefined,
-        trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : undefined,
+        // Always pair status:'TRIAL' with a real trialEndDate. Without
+        // it the backend persists TRIAL + null and SubscriptionCard
+        // renders neither the trial badge nor the next-payment row
+        // because `trialDays === null` short-circuits the trial branch
+        // and the trial branch suppresses the next-payment fallback.
+        // Default to +7d (matches what the toggle pre-fills) so the
+        // user always gets a working trial card even if they cleared
+        // the date field by accident.
+        trialEndDate: form.isTrial
+          ? (form.trialEndDate ||
+              new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
+          : undefined,
         startDate: form.startDate || undefined,
         nextPaymentDate: form.nextPaymentDate || undefined,
         reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
@@ -905,12 +916,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           iconUrl: iconUrl || undefined,
           startDate: sub.startDate || todayStr,
           nextPaymentDate: sub.nextPaymentDate || undefined,
-          // BulkEditModal sets `trialEndDate` only when the toggle
-          // is on; only persist it in that combination so a user
-          // flipping the trial off mid-edit doesn't leave a stray
-          // end date pointing at "ACTIVE".
-          trialEndDate:
-            sub.isTrial && sub.trialEndDate ? sub.trialEndDate : undefined,
+          // Mirror the manual-save guard: always pair TRIAL with a real
+          // end date (default +7d) so the card never lands in the broken
+          // "status:TRIAL + trialEndDate:null" state where neither the
+          // trial badge nor the next-payment row render.
+          trialEndDate: sub.isTrial
+            ? (sub.trialEndDate ||
+                new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
+            : undefined,
           notes: sub.notes || undefined,
           reminderDaysBefore: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? sub.reminderDaysBefore : undefined,
           reminderEnabled: sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0 ? true : undefined,

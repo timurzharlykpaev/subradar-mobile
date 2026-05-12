@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import axios from 'axios';
-import { API_URL } from '../api/client';
+import { API_URL } from '../api/config';
 import { Sentry } from '../services/sentry';
 
 const DEDUP_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes

@@ -585,19 +585,20 @@ function ManualFormViewImpl({
             </View>
 
             {form.isTrial && (
-              <>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginTop: 14, marginBottom: 2 }}>
-                  {t('add.trial_end_date')}
-                </Text>
-                <DoneAccessoryInput
-                  style={inputStyle}
+              <View style={{ marginTop: 12 }}>
+                {/* Native-style picker — replaces the raw YYYY-MM-DD text
+                    input that left users typing "19.05.2026" (or nothing
+                    at all when they assumed the toggle alone was enough)
+                    and silently saved status:TRIAL with no end date, so
+                    the card showed neither a trial badge nor a billing
+                    date. Same component the Edit sheet has used since
+                    day one. */}
+                <DatePickerField
+                  label={t('add.trial_end_date', 'Trial ends on')}
                   value={form.trialEndDate}
-                  onChangeText={(v) => setF('trialEndDate', v)}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={colors.textMuted}
-                  accessoryId="manual-trial-end"
+                  onChange={(v) => setF('trialEndDate', v)}
                 />
-              </>
+              </View>
             )}
           </View>
         </View>
