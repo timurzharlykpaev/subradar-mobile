@@ -179,24 +179,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   useEffect(() => {
     if (visible) {
-      // Defensive reset on open: any non-idle flow that doesn't have
-      // its required state populated would render a blank ScrollView
-      // (e.g. flowState='confirm' with confirmData=null, or 'wizard'
-      // without bulkItems). Forcing back to idle on open also covers
-      // future close paths we don't add resetAll() to. It's idempotent
-      // when the sheet was previously closed via handleClose / swipe
-      // (which now both call resetAll already).
-      const hasStateForFlow =
-        (flowState === 'idle') ||
-        (flowState === 'loading') ||
-        (flowState === 'transcription' && !!transcribedText) ||
-        (flowState === 'confirm' && !!confirmData) ||
-        (flowState === 'bulk-confirm' && bulkItems.length > 0) ||
-        (flowState === 'wizard') ||
-        (flowState === 'manual');
-      if (!hasStateForFlow) {
-        resetAll();
-      }
+      // ALWAYS reset to idle on open. The previous version tried to
+      // preserve "mid-flow" state across re-renders, but in practice
+      // every close path is supposed to end the flow — and the guard's
+      // per-flow state checks had a hole: `wizard` / `manual` always
+      // passed even when their supporting state (wizardStore /
+      // formCtx) was already torn down by a prior swipe / backdrop /
+      // app-suspend close path. Result: ScrollView rendered the
+      // matching branch with no inner state and the user saw the
+      // sheet open with only the title visible, scroll effectively
+      // dead because the body had zero content. Unconditional reset
+      // eliminates the entire class of bugs and matches the user's
+      // mental model (tapping "Add" = fresh start).
+      resetAll();
       backdropOpacity.value = withTiming(1, { duration: 250 });
       translateY.value = withTiming(0, { duration: 300 });
       // Load regional catalog when sheet opens
