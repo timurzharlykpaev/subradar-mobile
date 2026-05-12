@@ -309,23 +309,16 @@ export default function DashboardScreen() {
       <ScrollView
         testID="dashboard-scroll"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingTop: 12, paddingBottom: 100 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchSubscriptions(true); fetchAnalytics(); queryClient.invalidateQueries({ queryKey: ['billing'] }); }} />
         }
       >
-        <View style={{ paddingHorizontal: 20, paddingTop: 12, flexDirection: 'row', justifyContent: 'flex-end' }}>
-          <TouchableOpacity
-            onPress={() => router.push('/subscription-plan' as any)}
-            activeOpacity={0.7}
-            style={[styles.planBadge, { backgroundColor: isPro ? colors.primary + '20' : colors.textMuted + '20' }]}
-          >
-            <Ionicons name={isPro ? 'diamond' : 'person-outline'} size={12} color={isPro ? colors.primary : colors.textMuted} />
-            <Text style={[styles.planBadgeText, { color: isPro ? colors.primary : colors.textMuted }]}>
-              {planLabel}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Plan badge moved into the hero card (see top-right of
+            "Total this month" row below). Keeps a single anchor in the
+            top-right corner the user can tap to jump to plan management
+            without leaving a separate header strip that broke the
+            vertical rhythm with the rest of the dashboard. */}
 
         <TeamSavingsBadge />
 
@@ -345,7 +338,7 @@ export default function DashboardScreen() {
             activeOpacity={0.7}
             style={{
               marginHorizontal: 20,
-              marginTop: 8,
+              marginTop: 16,
               padding: 16,
               borderRadius: 14,
               backgroundColor: colors.card,
@@ -385,7 +378,7 @@ export default function DashboardScreen() {
             activeOpacity={0.7}
             style={{
               marginHorizontal: 20,
-              marginTop: 8,
+              marginTop: 16,
               padding: 14,
               borderRadius: 14,
               backgroundColor: '#7c3aed' + '10',
@@ -417,7 +410,7 @@ export default function DashboardScreen() {
             activeOpacity={0.7}
             style={{
               marginHorizontal: 20,
-              marginTop: 8,
+              marginTop: 16,
               padding: 14,
               borderRadius: 14,
               backgroundColor: '#3B82F6' + '10',
@@ -451,12 +444,43 @@ export default function DashboardScreen() {
         >
           <View style={styles.heroDecor1} />
           <View style={styles.heroDecor2} />
-          <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
+          {/* Title row: label on the left, Plan badge (Pro/Team) pinned
+              right so the user has a single tap-target to jump to plan
+              management. Used to live in a separate header strip above
+              the hero — pulling it in here keeps the dashboard's
+              vertical rhythm clean and frees one row of vertical space. */}
+          <View style={styles.heroTitleRow}>
+            <Text style={styles.heroLabel}>{t('dashboard.total_month')}</Text>
+            <TouchableOpacity
+              testID="dashboard-plan-badge"
+              onPress={() => router.push('/subscription-plan' as any)}
+              activeOpacity={0.7}
+              style={styles.heroPlanBadge}
+              accessibilityRole="button"
+              accessibilityLabel={planLabel}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name={isPro ? 'diamond' : 'person-outline'}
+                size={11}
+                color="#FFFFFF"
+              />
+              <Text style={styles.heroPlanBadgeText}>{planLabel}</Text>
+            </TouchableOpacity>
+          </View>
           {/* Amount sits on its own row now. Previously the delta badge
               was inline and got cropped on long-locale currency strings
               (KZT/JPY: "120 000,00 ₸"). Splitting them lets each take
-              full width regardless of locale. */}
-          <Text style={styles.heroAmount}>
+              full width regardless of locale. `adjustsFontSizeToFit` is
+              the second line of defence — if a really long localised
+              amount still wouldn't fit in one row (Japanese ¥ amounts in
+              the millions), it shrinks down to 70% before wrapping. */}
+          <Text
+            style={styles.heroAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
+          >
             {formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}
           </Text>
           {hasPrevMonth && Math.abs(delta) >= 1 && (
@@ -1124,9 +1148,36 @@ const styles = StyleSheet.create({
   // Header
   planBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
   planBadgeText: { fontSize: 11, fontWeight: '800' },
+  // Hero-card variant — semi-transparent white pill that pops on the
+  // purple gradient regardless of theme. Same dimensions as the plain
+  // planBadge so the tap-target stays comfortable on small screens.
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  heroPlanBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  heroPlanBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
 
   // Hero card
-  heroCard: { marginHorizontal: 20, marginTop: 8, borderRadius: 24, padding: 22, gap: 4, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10, overflow: 'hidden' },
+  // Compact-ish padding (18 vs old 22) + the unified 16px inter-block
+  // spacing make the dashboard fit more rows above the tab bar without
+  // sacrificing the hero's visual weight.
+  heroCard: { marginHorizontal: 20, marginTop: 16, borderRadius: 24, padding: 18, gap: 4, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10, overflow: 'hidden' },
   heroDecor1: { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(255,255,255,0.06)', top: -60, right: -30 },
   heroDecor2: { position: 'absolute', width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.04)', bottom: -40, left: -20 },
   heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
@@ -1148,14 +1199,17 @@ const styles = StyleSheet.create({
   heroMetaText: { fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
 
   // Stats
-  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 16 },
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 16, marginTop: 0 },
   statCard: { flex: 1, borderRadius: 16, padding: 12, alignItems: 'center', gap: 4, borderWidth: 1 },
   statIconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 20, fontWeight: '900' },
   statLabel: { fontSize: 11, fontWeight: '600' },
 
   // Section
-  section: { paddingHorizontal: 20, paddingTop: 20 },
+  // Unified inter-block spacing: 16px between every dashboard section /
+  // banner / card. Previously the rhythm was 8 → 16 → 20 across banners /
+  // statsRow / sections, which looked uneven on long scrolls.
+  section: { paddingHorizontal: 20, paddingTop: 16 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionTitle: { fontSize: 17, fontWeight: '800' },
   sectionCount: { fontSize: 14, fontWeight: '700' },
