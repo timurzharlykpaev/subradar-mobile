@@ -580,7 +580,9 @@ export default function DashboardScreen() {
 
         {/* ── Forecast ────────────────────────────────────────── */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.forecast_title')}</Text>
+          </View>
           <View testID="dashboard-forecast-row" style={styles.forecastRow}>
             <ForecastBox icon="calendar" label={t('dashboard.next_30_days')} amount={formatMoney(forecast30, effectiveCurrency, i18n.language)} sub={`${upcomingNext30.length} ${t('dashboard.subscriptions_label')}`} color={colors.primary} />
             <ForecastBox icon="trending-up" label={`6 ${t('paywall.month', 'mo')}`} amount={formatMoney(totalMonthly * 6, effectiveCurrency, i18n.language)} sub={t('dashboard.forecast_title')} color={colors.success} />
@@ -751,7 +753,9 @@ export default function DashboardScreen() {
         {/* ── Monthly Trend ─────────────────────────────────── */}
         {monthlyTrend.length > 0 && monthlyTrend.some(d => d.amount > 0) && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.monthly_trend')}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.monthly_trend')}</Text>
+            </View>
             <View testID="dashboard-monthly-chart" style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <MonthlyBarChart data={monthlyTrend} currencySymbol={currencySymbol} />
             </View>
@@ -761,7 +765,9 @@ export default function DashboardScreen() {
         {/* ── Category Breakdown ─────────────────────────────── */}
         {categoryData.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.by_category')}</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.by_category')}</Text>
+            </View>
             {categoryData.length > 0 && (
               <View style={{ marginBottom: 8 }}>
                 <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 8 }}>
@@ -812,7 +818,9 @@ export default function DashboardScreen() {
 
         {/* ── Quick Actions ──────────────────────────────────── */}
         <View style={[styles.section, { paddingBottom: 20 }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.quick_actions')}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.quick_actions')}</Text>
+          </View>
           <View testID="dashboard-quick-actions" style={styles.actionsRow}>
             <QuickAction icon="add-circle-outline" label={t('dashboard.add_subscription')} onPress={() => useUIStore.getState().openAddSheet()} color={colors.primary} />
             <QuickAction icon="document-text-outline" label={t('dashboard.generate_report')} onPress={() => router.push('/reports')} color={colors.success} />
