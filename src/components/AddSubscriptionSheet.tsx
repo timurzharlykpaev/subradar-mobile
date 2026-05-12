@@ -168,6 +168,18 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [idleSeed, setIdleSeed] = useState<string>('');
   const [idleKey, setIdleKey] = useState(0);
 
+  // ── ScrollView remount nonce ────────────────────────────────────────────
+  // Bumped on every open so the native UIScrollView is torn down and
+  // re-created instead of being reused across sessions. Without this, iOS
+  // kept the previous session's `contentOffset.y` AND the inflated
+  // `contentSize` measured against a tall flow (ManualFormView / WizardView),
+  // so the user reopened the sheet, saw the short IdleView at the top, but
+  // could still rubber-scroll into empty space below it (the "infinite
+  // scroll down" report). Tied to `visible` instead of `idleKey` because
+  // resetAll already bumps idleKey for other reasons (transcription
+  // fallback) — those paths must not pay the ScrollView remount cost.
+  const [scrollNonce, setScrollNonce] = useState(0);
+
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const backdropOpacity = useSharedValue(0);
 
@@ -192,6 +204,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       // eliminates the entire class of bugs and matches the user's
       // mental model (tapping "Add" = fresh start).
       resetAll();
+      // Force UIScrollView remount so the previous session's contentOffset
+      // and (stale) contentSize don't leak into this open. See scrollNonce
+      // declaration above for the full rationale.
+      setScrollNonce((n) => n + 1);
       backdropOpacity.value = withTiming(1, { duration: 250 });
       translateY.value = withTiming(0, { duration: 300 });
       // Load regional catalog when sheet opens
@@ -1159,6 +1175,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           </View>
 
           <ScrollView
+            key={scrollNonce}
             style={styles.content}
             // Bottom padding = (home-indicator inset) + (40px buffer so the
             // Save button doesn't sit flush against the indicator). The
