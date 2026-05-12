@@ -147,6 +147,14 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
   // live-computed preview instead so they can sanity-check the pattern.
   const [overrideNextPayment, setOverrideNextPayment] = useState(false);
 
+  // Depend on subscription?.id rather than the whole object: the parent reads
+  // `subscription` from a Zustand selector (`subscriptions.find(...)`), which
+  // returns a fresh reference every time the store's array is replaced
+  // (background refetch, AddSheet save, DataLoader, etc.). Using the object
+  // itself as a dep made this effect fire on every store update — including
+  // while the user was typing — and re-seed `form` from the now-stale server
+  // copy, wiping in-flight edits. Reset only when the sheet opens or
+  // genuinely switches to a different subscription.
   useEffect(() => {
     if (visible && subscription) {
       const sub = subscription as any;
@@ -198,7 +206,8 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
       const computedStr = computed ? computed.toISOString().split('T')[0] : '';
       setOverrideNextPayment(!!stored && !!computedStr && stored !== computedStr);
     }
-  }, [visible, subscription]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, subscription?.id]);
 
   const handleSave = useCallback(async () => {
     if (!form.name.trim() || !form.amount.trim()) {
