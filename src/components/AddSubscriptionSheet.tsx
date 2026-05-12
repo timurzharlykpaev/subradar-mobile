@@ -203,6 +203,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       // dead because the body had zero content. Unconditional reset
       // eliminates the entire class of bugs and matches the user's
       // mental model (tapping "Add" = fresh start).
+      // Dismiss the keyboard BEFORE bumping scrollNonce. The remount tears
+      // down every TextInput inside the ScrollView, and if one was still
+      // focused (e.g. smart-input on idle), its blur event fires after the
+      // host object is gone → Fabric logs
+      //   "instanceHandle is null, event of type topBlur will be dropped"
+      // and iOS keyboard's RTI session loses its sessionID
+      //   "UIEmojiSearchOperations: no valid sessionID"
+      // Dismiss-then-remount lets iOS close the session cleanly first.
+      Keyboard.dismiss();
       resetAll();
       // Force UIScrollView remount so the previous session's contentOffset
       // and (stale) contentSize don't leak into this open. See scrollNonce
