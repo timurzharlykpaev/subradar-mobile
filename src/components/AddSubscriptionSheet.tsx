@@ -139,9 +139,26 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // ── Unified flow state ──────────────────────────────────────────────────
   const [flowState, _setFlowState] = useState<FlowState>('idle');
   const flowStateRef = React.useRef<FlowState>('idle');
+  // Sticky flag: did THIS open-session ever enter a flow whose rendered
+  // tree is taller than the sheet's ScrollView? Used by the open-useEffect
+  // to decide whether the next open needs a UIScrollView remount to flush
+  // stale contentSize. Sticky (not derived from current flowState) because
+  // `SuccessOverlay.onFinish` runs resetAll before handleClose, so by the
+  // time we reopen, flowStateRef is already 'idle' even though the
+  // PREVIOUS session rendered a tall form — and iOS still holds the
+  // bloated contentSize.
+  const sessionWasTallRef = React.useRef(false);
   const setFlowState = (state: FlowState) => {
     if (__DEV__) console.log('[AddSheet] flowState:', flowStateRef.current, '→', state);
     flowStateRef.current = state;
+    if (
+      state === 'manual' ||
+      state === 'wizard' ||
+      state === 'confirm' ||
+      state === 'bulk-confirm'
+    ) {
+      sessionWasTallRef.current = true;
+    }
     _setFlowState(state);
   };
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('thinking');
@@ -203,19 +220,15 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       // dead because the body had zero content. Unconditional reset
       // eliminates the entire class of bugs and matches the user's
       // mental model (tapping "Add" = fresh start).
-      // Capture the previous flow BEFORE resetAll wipes it. Only flows
-      // taller than the ScrollView (manual / wizard / bulk-confirm /
-      // confirm) leak a stale contentSize into iOS; reopening from an
-      // already-idle state has nothing to clean up, so we skip the
-      // expensive UIScrollView remount in that path. Keeps cold-start
-      // and rapid open/close from paying the remount cost — which was
-      // visible as a brief lag + keyboard flash on slower devices.
-      const prevFlow = flowStateRef.current;
-      const needsRemount =
-        prevFlow === 'manual' ||
-        prevFlow === 'wizard' ||
-        prevFlow === 'bulk-confirm' ||
-        prevFlow === 'confirm';
+      // Read the sticky session flag instead of the current flowState:
+      // SuccessOverlay.onFinish runs resetAll before handleClose, so by
+      // the time the sheet reopens, flowStateRef.current is back to
+      // 'idle' even though the PREVIOUS session rendered a tall form
+      // (manual/wizard/etc.) — iOS still holds that bloated contentSize.
+      // The sticky ref captures "did any tall flow render at all during
+      // the last session" and is reset right after we read it.
+      const needsRemount = sessionWasTallRef.current;
+      sessionWasTallRef.current = false;
       if (needsRemount) {
         // Dismiss the keyboard BEFORE the remount tears down every
         // TextInput inside the ScrollView. Otherwise the focused input's
