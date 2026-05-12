@@ -70,7 +70,12 @@ export default function EditProfileScreen() {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        // iOS: undefined — ScrollView's `automaticallyAdjustKeyboardInsets`
+        // already shifts the focused input above the keyboard. Adding
+        // KAV `behavior="padding"` here pushed it up twice and tucked
+        // inputs under the navigation header instead.
+        // Android: height — RN doesn't auto-adjust on Android.
+        behavior={Platform.OS === 'android' ? 'height' : undefined}
         keyboardVerticalOffset={0}
       >
         <ScrollView

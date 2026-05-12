@@ -203,20 +203,36 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       // dead because the body had zero content. Unconditional reset
       // eliminates the entire class of bugs and matches the user's
       // mental model (tapping "Add" = fresh start).
-      // Dismiss the keyboard BEFORE bumping scrollNonce. The remount tears
-      // down every TextInput inside the ScrollView, and if one was still
-      // focused (e.g. smart-input on idle), its blur event fires after the
-      // host object is gone → Fabric logs
-      //   "instanceHandle is null, event of type topBlur will be dropped"
-      // and iOS keyboard's RTI session loses its sessionID
-      //   "UIEmojiSearchOperations: no valid sessionID"
-      // Dismiss-then-remount lets iOS close the session cleanly first.
-      Keyboard.dismiss();
+      // Capture the previous flow BEFORE resetAll wipes it. Only flows
+      // taller than the ScrollView (manual / wizard / bulk-confirm /
+      // confirm) leak a stale contentSize into iOS; reopening from an
+      // already-idle state has nothing to clean up, so we skip the
+      // expensive UIScrollView remount in that path. Keeps cold-start
+      // and rapid open/close from paying the remount cost — which was
+      // visible as a brief lag + keyboard flash on slower devices.
+      const prevFlow = flowStateRef.current;
+      const needsRemount =
+        prevFlow === 'manual' ||
+        prevFlow === 'wizard' ||
+        prevFlow === 'bulk-confirm' ||
+        prevFlow === 'confirm';
+      if (needsRemount) {
+        // Dismiss the keyboard BEFORE the remount tears down every
+        // TextInput inside the ScrollView. Otherwise the focused input's
+        // blur event fires after its host object is gone → Fabric logs
+        //   "instanceHandle is null, event of type topBlur will be dropped"
+        // and iOS keyboard's RTI session loses its sessionID
+        //   "UIEmojiSearchOperations: no valid sessionID"
+        // Dismiss-then-remount lets iOS close the session cleanly first.
+        Keyboard.dismiss();
+      }
       resetAll();
-      // Force UIScrollView remount so the previous session's contentOffset
-      // and (stale) contentSize don't leak into this open. See scrollNonce
-      // declaration above for the full rationale.
-      setScrollNonce((n) => n + 1);
+      if (needsRemount) {
+        // Force UIScrollView remount so the previous session's
+        // contentOffset and (stale) contentSize don't leak into this
+        // open. See scrollNonce declaration above for the full rationale.
+        setScrollNonce((n) => n + 1);
+      }
       backdropOpacity.value = withTiming(1, { duration: 250 });
       translateY.value = withTiming(0, { duration: 300 });
       // Load regional catalog when sheet opens

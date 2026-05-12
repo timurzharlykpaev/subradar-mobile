@@ -82,7 +82,15 @@ function BulkEditStageImpl({ sub, onUpdate, onDone, onCancel }: Props) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      // Same rule as AddSubscriptionSheet / EditSubscriptionSheet:
+      //   iOS  → behavior undefined; the ScrollView's
+      //          `automaticallyAdjustKeyboardInsets` already shifts content
+      //          above the keyboard, so adding `behavior="padding"` here
+      //          double-pads and hides the focused input above the
+      //          visible area.
+      //   Android → keep `height`; RN doesn't auto-adjust keyboard insets
+      //          on Android, so KAV must shrink the container itself.
+      behavior={Platform.OS === 'android' ? 'height' : undefined}
       style={{ flex: 1 }}
     >
       {/* Back button — outside the ScrollView so it stays pinned */}
