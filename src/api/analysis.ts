@@ -2,8 +2,14 @@ import { apiClient } from './client';
 import type { AnalysisLatestResponse, AnalysisStatusResponse, AnalysisUsageResponse } from '../types';
 
 export const analysisApi = {
-  getLatest: async (): Promise<AnalysisLatestResponse> => {
-    const { data } = await apiClient.get('/analysis/latest');
+  getLatest: async (opts?: { displayCurrency?: string }): Promise<AnalysisLatestResponse> => {
+    // `displayCurrency` is sent so the backend converts amounts to the user's
+    // currently-selected UI currency. Omitting it (old client behaviour) is
+    // accepted by the server, which returns amounts in the result's original
+    // currency.
+    const params =
+      opts?.displayCurrency ? { displayCurrency: opts.displayCurrency.toUpperCase() } : undefined;
+    const { data } = await apiClient.get('/analysis/latest', params ? { params } : undefined);
     return data;
   },
   getStatus: async (jobId: string): Promise<AnalysisStatusResponse> => {

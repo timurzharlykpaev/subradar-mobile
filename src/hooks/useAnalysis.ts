@@ -1,20 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import i18n from '../i18n';
 import { analysisApi } from '../api/analysis';
 import { useSettingsStore } from '../stores/settingsStore';
 import type { AnalysisStatusResponse } from '../types';
 
 const ANALYSIS_KEYS = {
-  latest: ['analysis', 'latest'] as const,
+  // Currency is part of the key so switching currency re-fetches the backend's
+  // converted view rather than reusing the stale (wrong-currency) cache.
+  latest: (displayCurrency: string) => ['analysis', 'latest', displayCurrency] as const,
   status: (jobId: string) => ['analysis', 'status', jobId] as const,
   usage: ['analysis', 'usage'] as const,
 };
 
 export function useAnalysisLatest() {
+  const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   return useQuery({
-    queryKey: ANALYSIS_KEYS.latest,
-    queryFn: analysisApi.getLatest,
+    queryKey: ANALYSIS_KEYS.latest(displayCurrency),
+    queryFn: () => analysisApi.getLatest({ displayCurrency }),
     staleTime: 30_000,
     retry: false,
   });
@@ -45,7 +48,9 @@ export function useRunAnalysis() {
   return useMutation({
     mutationFn: () => analysisApi.run({ locale, currency, region }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
+      // Invalidate the whole `['analysis', 'latest', *]` family so the new
+      // result is re-fetched regardless of which currency the user is on.
+      queryClient.invalidateQueries({ queryKey: ['analysis', 'latest'] });
       queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.usage });
     },
   });
@@ -66,6 +71,10 @@ export function useAnalysisFlow() {
   const runAnalysis = useRunAnalysis();
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const { data: jobStatus } = useAnalysisStatus(activeJobId);
+  // Guards autoTrigger from firing twice under React Strict Mode (double-mount
+  // effects in dev) and from racing itself if the screen re-renders before the
+  // mutateAsync promise settles.
+  const autoTriggeredRef = useRef(false);
 
   useEffect(() => {
     if (latest?.job && latest.job.status !== 'COMPLETED' && latest.job.status !== 'FAILED') {
@@ -76,7 +85,7 @@ export function useAnalysisFlow() {
   useEffect(() => {
     if (jobStatus?.status === 'COMPLETED') {
       setActiveJobId(null);
-      queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
+      queryClient.invalidateQueries({ queryKey: ['analysis', 'latest'] });
     }
     if (jobStatus?.status === 'FAILED') {
       setActiveJobId(null);
@@ -84,9 +93,15 @@ export function useAnalysisFlow() {
   }, [jobStatus?.status, queryClient]);
 
   const autoTrigger = useCallback(async () => {
-    if (latest && !latest.result && !latest.job && latest.canRunManual) {
+    if (autoTriggeredRef.current) return;
+    if (!latest || latest.result || latest.job || !latest.canRunManual) return;
+    autoTriggeredRef.current = true;
+    try {
       const res = await runAnalysis.mutateAsync();
       if (res.jobId) setActiveJobId(res.jobId);
+    } catch {
+      // Reset so a subsequent legitimate retry isn't blocked by the guard.
+      autoTriggeredRef.current = false;
     }
   }, [latest, runAnalysis]);
 
@@ -97,7 +112,7 @@ export function useAnalysisFlow() {
         setActiveJobId(res.jobId);
       } else {
         // cached or instant result — just refresh the data
-        queryClient.invalidateQueries({ queryKey: ANALYSIS_KEYS.latest });
+        queryClient.invalidateQueries({ queryKey: ['analysis', 'latest'] });
       }
       return res;
     } catch (e: any) {

@@ -362,7 +362,7 @@ export default function DashboardScreen() {
               </Text>
               {Number(aiResult.totalMonthlySavings) > 0 && (
                 <Text style={{ fontSize: 13, color: '#22c55e', fontWeight: '600', marginTop: 2 }}>
-                  {t('dashboard.save_potential', 'Potential savings')}: {formatMoney(aiResult.totalMonthlySavings, currency, i18n.language)}/{t('add_flow.mo', 'mo')}
+                  {t('dashboard.save_potential', 'Potential savings')}: {formatMoney(aiResult.totalMonthlySavings, aiResult.currency || currency, i18n.language)}/{t('add_flow.mo', 'mo')}
                 </Text>
               )}
             </View>

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -359,11 +360,37 @@ function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
 
 // ─── AI Analysis Section ────────────────────────────────────────────────────
 function AIAnalysisSection({ isPro }: { isPro: boolean }) {
+  const { t } = useTranslation();
   const { result, job, isPlanRequired, canRunManual, isRunning, autoTrigger, manualRun } = useAnalysisFlow();
 
+  // `autoTrigger` is intentionally re-created when `latest` changes — re-running
+  // the effect lets it act on the freshly-loaded server state (e.g. result is
+  // null AND canRunManual flipped to true). The internal ref-guard prevents
+  // duplicate POSTs across Strict Mode double-mounts.
   React.useEffect(() => {
     if (isPro) autoTrigger();
-  }, [isPro]);
+  }, [isPro, autoTrigger]);
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      await manualRun();
+    } catch (e: any) {
+      const status = e?.response?.status;
+      const retryAfter = e?.response?.data?.retryAfter;
+      let message = t('analysis.refresh_failed', 'Could not refresh analysis. Please try again later.');
+      if (status === 429 || retryAfter) {
+        const mins = retryAfter
+          ? Math.max(1, Math.ceil(Number(retryAfter) / 60))
+          : null;
+        message = mins
+          ? t('analysis.cooldown_with_minutes', 'Next refresh available in {{count}} min', { count: mins })
+          : t('analysis.cooldown_generic', 'Analysis cooldown — try again later.');
+      } else if (status === 403) {
+        message = t('analysis.refresh_plan_required', 'AI analysis requires a Pro plan.');
+      }
+      Alert.alert(t('analysis.refresh_failed_title', 'Analysis'), message);
+    }
+  }, [manualRun, t]);
 
   if (!isPro || isPlanRequired) {
     return <AITeaser />;
@@ -383,7 +410,7 @@ function AIAnalysisSection({ isPro }: { isPro: boolean }) {
           createdAt={result.createdAt}
           canRunManual={canRunManual}
           isRunning={isRunning}
-          onRefresh={manualRun}
+          onRefresh={handleRefresh}
         />
         <AIRecommendationList recommendations={result.recommendations} currency={result.currency} />
         <AIDuplicateGroup groups={result.duplicates} currency={result.currency} />

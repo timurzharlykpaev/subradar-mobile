@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useTheme } from '../theme';
+import { formatMoney } from '../utils/formatMoney';
 
 interface Props {
   summary: string;
@@ -58,9 +60,8 @@ export default function AIAnalysisSummary({
         <View style={[styles.savingsRow, { backgroundColor: colors.success + '18' }]}>
           <Ionicons name="trending-down-outline" size={18} color={colors.success} />
           <Text style={[styles.savingsText, { color: colors.success }]}>
-            {t('analysis.potential_savings', 'Potential savings: {{amount}} {{currency}}/mo', {
-              amount: totalMonthlySavings.toFixed(2),
-              currency,
+            {t('analysis.potential_savings_inline', 'Potential savings: {{amount}}/mo', {
+              amount: formatMoney(totalMonthlySavings, currency, i18n.language),
             })}
           </Text>
         </View>
@@ -87,7 +88,7 @@ export default function AIAnalysisSummary({
           </TouchableOpacity>
         ) : (
           <Text style={[styles.updatedLabel, { color: colors.textMuted }]}>
-            {t('analysis.cooldown_hint', 'Updates daily')}
+            {t('analysis.cooldown_hint', 'Updates weekly')}
           </Text>
         )}
       </View>

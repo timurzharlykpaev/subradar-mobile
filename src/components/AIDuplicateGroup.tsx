@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useTheme } from '../theme';
+import { formatMoney } from '../utils/formatMoney';
 import type { DuplicateGroup } from '../types';
 
 interface Props {
@@ -45,7 +47,7 @@ export default function AIDuplicateGroup({ groups, currency }: Props) {
                   {sub.name}
                 </Text>
                 <Text style={[styles.subAmount, { color: colors.textSecondary }]}>
-                  {`${sub.amount.toFixed(2)} ${currency}`}
+                  {formatMoney(sub.amount, currency, i18n.language)}
                 </Text>
               </View>
             ))}
@@ -59,9 +61,8 @@ export default function AIDuplicateGroup({ groups, currency }: Props) {
           {/* Savings */}
           {group.estimatedSavingsMonthly > 0 && (
             <Text style={[styles.savings, { color: colors.success }]}>
-              {t('analysis.savings_mo', 'Save up to {{amount}} {{currency}}/mo', {
-                amount: group.estimatedSavingsMonthly.toFixed(2),
-                currency,
+              {t('analysis.savings_mo_inline', 'Save up to {{amount}}/mo', {
+                amount: formatMoney(group.estimatedSavingsMonthly, currency, i18n.language),
               })}
             </Text>
           )}
