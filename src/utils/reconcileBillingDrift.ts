@@ -153,16 +153,31 @@ async function runReconcileBillingDrift(): Promise<DriftResult> {
     //       This is the case the user hit in sandbox: Pro lifecycle
     //       lingered while a freshly-replayed Team became the only
     //       active entitlement on the same Apple ID.
+    //   (e) backend thinks `grace_pro` / `grace_team` but RC has an
+    //       active entitlement for the same tier. Caused by Apple
+    //       emitting EXPIRATION followed by RENEWAL when a retry charge
+    //       succeeds (common in billing-restricted regions), where the
+    //       RENEWAL webhook never lands or lands while backend still
+    //       refuses it. Reconcile forces backend to re-read RC and
+    //       emit INITIAL_PURCHASE/RENEWAL to exit grace.
     let driftReason:
       | 'no_rc'
       | 'should_cancel'
       | 'should_uncancel'
       | 'plan_mismatch'
+      | 'should_unexpire'
       | null = null;
+    const inGrace =
+      me.effective.state === 'grace_pro' || me.effective.state === 'grace_team';
     if (!rcActive) {
       driftReason = 'no_rc';
     } else if (rcTier !== 'free' && rcTier !== me.effective.plan) {
       driftReason = 'plan_mismatch';
+    } else if (inGrace) {
+      // RC has any active entitlement while we're in grace → backend is
+      // stuck. The tier check above already handles the cross-tier case;
+      // we only get here when tiers match (e.g. grace_pro + rcTier=pro).
+      driftReason = 'should_unexpire';
     } else if (me.effective.state === 'active' && currentWillRenew === false) {
       driftReason = 'should_cancel';
     } else if (
