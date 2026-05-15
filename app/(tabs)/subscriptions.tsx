@@ -148,14 +148,11 @@ export default function SubscriptionsScreen() {
   const setSubscriptions = useSubscriptionsStore((s) => s.setSubscriptions);
   const subscriptions = useSubscriptionsStore((s) => s.subscriptions);
 
-  // Local search input state — keystrokes only update local state,
-  // the debounced value is pushed to the store so the expensive
-  // FlatList filter runs at most once per 300ms.
-  const [localQuery, setLocalQuery] = useState(() => useSubscriptionsStore.getState().searchQuery);
-  const debouncedQuery = useDebouncedValue(localQuery, 300);
-  useEffect(() => {
-    setSearchQuery(debouncedQuery);
-  }, [debouncedQuery, setSearchQuery]);
+  // Search input state lives inside <SearchBar/> (a memoized child),
+  // so keystrokes don't re-render this 700-line screen + its FlatList
+  // filter on every character. The bar debounces internally and only
+  // calls `setSearchQuery` (zustand) after the user pauses typing.
+  const initialSearchQuery = useSubscriptionsStore.getState().searchQuery;
 
   const isProBilling = access?.plan === 'pro';
   const isTeam = access?.plan === 'organization';
@@ -452,23 +449,11 @@ export default function SubscriptionsScreen() {
 
         {/* ── Search ─────────────────────────────────────────── */}
         {showSearch && (
-          <View style={[styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
-            <Ionicons name="search" size={16} color={colors.textMuted} />
-            <DoneAccessoryInput
-              testID="search-input"
-              style={[styles.searchInput, { color: colors.text }]}
-              value={localQuery}
-              onChangeText={setLocalQuery}
-              placeholder={t('subscriptions.search')}
-              placeholderTextColor={colors.textMuted}
-              autoFocus
-            />
-            {localQuery ? (
-              <TouchableOpacity testID="btn-clear-search" onPress={() => setLocalQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close-circle" size={18} color={colors.textMuted} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
+          <SearchBar
+            initialValue={initialSearchQuery}
+            onDebouncedChange={setSearchQuery}
+            placeholder={t('subscriptions.search')}
+          />
         )}
 
         {/* ── Filters ────────────────────────────────────────── */}
@@ -655,6 +640,75 @@ export default function SubscriptionsScreen() {
     </SafeAreaView>
   );
 }
+
+// Extracted so typing in the search field doesn't re-render the
+// 700-line subscriptions screen (FlatList filter + sort + zustand
+// selectors) on every keystroke. The bar owns its own `query` state,
+// debounces internally, and only calls `onDebouncedChange` after a
+// 300ms pause. autoFocus is replaced with a manual ref.focus() after
+// mount to avoid the iOS RTIInputSystemClient sessionID warning (see
+// DoneAccessoryInput.tsx:54-59).
+interface SearchBarProps {
+  initialValue: string;
+  onDebouncedChange: (q: string) => void;
+  placeholder?: string;
+}
+
+const SearchBar = React.memo(function SearchBar({
+  initialValue,
+  onDebouncedChange,
+  placeholder,
+}: SearchBarProps) {
+  const { colors } = useTheme();
+  const [query, setQuery] = useState(initialValue);
+  const debounced = useDebouncedValue(query, 300);
+  const inputRef = useRef<any>(null);
+
+  useEffect(() => {
+    onDebouncedChange(debounced);
+  }, [debounced, onDebouncedChange]);
+
+  // Manual focus after the screen has settled — replaces TextInput.autoFocus,
+  // which kicked in before the surrounding scroll view finished laying out
+  // and corrupted the keyboard session on iOS.
+  useEffect(() => {
+    const id = setTimeout(() => inputRef.current?.focus(), 80);
+    return () => clearTimeout(id);
+  }, []);
+
+  const containerStyle = useMemo(
+    () => [styles.searchContainer, { backgroundColor: colors.surface2, borderColor: colors.border }],
+    [colors.surface2, colors.border],
+  );
+  const inputStyle = useMemo(
+    () => [styles.searchInput, { color: colors.text }],
+    [colors.text],
+  );
+
+  return (
+    <View style={containerStyle}>
+      <Ionicons name="search" size={16} color={colors.textMuted} />
+      <DoneAccessoryInput
+        ref={inputRef}
+        testID="search-input"
+        style={inputStyle}
+        value={query}
+        onChangeText={setQuery}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textMuted}
+      />
+      {query ? (
+        <TouchableOpacity
+          testID="btn-clear-search"
+          onPress={() => setQuery('')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+        </TouchableOpacity>
+      ) : null}
+    </View>
+  );
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

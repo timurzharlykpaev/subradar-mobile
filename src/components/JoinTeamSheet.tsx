@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Alert, KeyboardAvoidingView, Platform, Keyboard,
@@ -28,6 +28,14 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
   const queryClient = useQueryClient();
   const access = useEffectiveAccess();
   const [code, setCode] = useState('');
+  // Manual focus replaces autoFocus, which on iOS 18 kicked in before the
+  // sheet's enter animation finished and corrupted the keyboard session
+  // (RTIInputSystemClient warnings + visible input lag).
+  const codeInputRef = useRef<TextInput | null>(null);
+  useEffect(() => {
+    const id = setTimeout(() => codeInputRef.current?.focus(), 280);
+    return () => clearTimeout(id);
+  }, []);
   const [loading, setLoading] = useState(false);
 
   const canJoin = code.length >= 6 && !loading;
@@ -87,6 +95,7 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
             {t('workspace.enter_code', 'Enter invite code')}
           </Text>
           <TextInput
+            ref={codeInputRef}
             style={[styles.input, { color: colors.text, borderColor: canJoin ? colors.primary : colors.border, backgroundColor: colors.background }]}
             value={code}
             onChangeText={(val) => setCode(val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))}
@@ -94,7 +103,6 @@ export function JoinTeamSheet({ onSuccess, onClose }: Props) {
             placeholderTextColor={colors.textMuted}
             autoCapitalize="characters"
             maxLength={10}
-            autoFocus
             returnKeyType="join"
             onSubmitEditing={handleJoin}
             inputAccessoryViewID={Platform.OS === 'ios' ? INPUT_ACCESSORY_ID : undefined}

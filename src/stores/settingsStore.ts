@@ -57,6 +57,21 @@ interface SettingsState {
    * but does NOT push back to the server.
    */
   hydrateDisplayCurrencyFromServer: (currency: string) => void;
+  /**
+   * Hydrate user-scoped settings (currency, region, language) from a
+   * /users/me response on login. Does NOT push back to the server.
+   * Skips any field the server doesn't have (lets the local value win
+   * for fields the server doesn't know about).
+   */
+  hydrateFromUser: (user: { displayCurrency?: string | null; region?: string | null; country?: string | null; locale?: string | null }) => void;
+  /**
+   * Reset user-scoped settings to defaults on logout so the next
+   * account doesn't inherit the previous user's currency / region.
+   * UI-scoped fields (language, dateFormat, notifications toggles,
+   * analyticsOptOut) are kept — those are device preferences, not
+   * account preferences.
+   */
+  resetUserScoped: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -87,7 +102,15 @@ export const useSettingsStore = create<SettingsState>()(
         usersApi.updateMe({ displayCurrency: upper }).catch(() => {});
       },
       setCountry: (country) => set({ country, region: country }),
-      setRegion: (region) => set({ region: region.toUpperCase(), country: region.toUpperCase() }),
+      setRegion: (region) => {
+        const upper = region.toUpperCase();
+        set({ region: upper, country: upper });
+        // Mirror to backend so the user's saved region survives a
+        // re-install / new device. Server already validates ISO-3166
+        // alpha-2 and silently rejects malformed values. Fire-and-forget
+        // because auth may not be ready during onboarding.
+        usersApi.updateMe({ region: upper } as any).catch(() => {});
+      },
       setDisplayCurrency: (displayCurrency) => {
         const upper = displayCurrency.toUpperCase();
         set({ displayCurrency: upper, currency: upper, currencyExplicitlySet: true });
@@ -104,6 +127,48 @@ export const useSettingsStore = create<SettingsState>()(
       hydrateDisplayCurrencyFromServer: (displayCurrency) => {
         const upper = displayCurrency.toUpperCase();
         set({ displayCurrency: upper, currency: upper, currencyExplicitlySet: true });
+      },
+      hydrateFromUser: (user) => {
+        const next: Partial<SettingsState> = {};
+        const dc =
+          (typeof user.displayCurrency === 'string' && user.displayCurrency) || '';
+        if (dc) {
+          const upper = dc.toUpperCase();
+          next.displayCurrency = upper;
+          next.currency = upper;
+          next.currencyExplicitlySet = true;
+        }
+        const reg =
+          (typeof user.region === 'string' && user.region) ||
+          (typeof user.country === 'string' && user.country) ||
+          '';
+        if (reg) {
+          const upper = reg.toUpperCase();
+          next.region = upper;
+          next.country = upper;
+        }
+        const loc = typeof user.locale === 'string' && user.locale;
+        if (loc) {
+          // Strip region subtag (e.g. en-US → en) — i18n is keyed on language only.
+          const lang = loc.split('-')[0];
+          next.language = lang;
+          i18n.changeLanguage(lang).catch(() => {});
+        }
+        if (Object.keys(next).length > 0) set(next as SettingsState);
+      },
+      resetUserScoped: () => {
+        // Reset only fields tied to the user account. Device-scoped
+        // preferences (notifications toggles, dateFormat, language —
+        // user still wants the UI in their language even after logout)
+        // are preserved.
+        set({
+          currency: 'USD',
+          country: 'US',
+          region: 'US',
+          displayCurrency: 'USD',
+          currencyExplicitlySet: false,
+          icpSegment: null,
+        });
       },
       setLanguage: (language) => {
         i18n.changeLanguage(language);

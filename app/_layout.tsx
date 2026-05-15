@@ -151,6 +151,47 @@ function DataLoader() {
   const displayCurrency = useSettingsStore((s) => s.displayCurrency);
   const settingsRegion = useSettingsStore((s) => s.region);
 
+  // Drop every cached query response when the user logs out. Without
+  // this, account-A's `/billing/me` (banner, plan, limits) stays in the
+  // TanStack Query cache and is the FIRST thing account-B sees on the
+  // next launch — they get account-A's "Pro expiring" banner / plan
+  // badge for up to `staleTime` ms (60s for billing) until the refetch
+  // returns the new user's data. Same risk for subscriptions, cards,
+  // analytics, workspace, AI — anything keyed on the user implicitly.
+  const prevAuthRef = useRef(isAuthenticated);
+  useEffect(() => {
+    if (prevAuthRef.current && !isAuthenticated) {
+      queryClient.clear();
+      // Also wipe the local in-memory mirrors so the UI doesn't show
+      // the previous user's subscriptions for a frame before the new
+      // /subscriptions fetch returns.
+      useSubscriptionsStore.getState().setSubscriptions([]);
+      usePaymentCardsStore.getState().setCards([]);
+      // Drop user-scoped settings so account-A's currency / region
+      // doesn't get pushed onto account-B by CurrencySync on the next
+      // login (the local "explicit" flag would otherwise convince the
+      // sync that RUB/RU was account-B's choice).
+      useSettingsStore.getState().resetUserScoped();
+    }
+    prevAuthRef.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  // On login, mirror the just-arrived /users/me fields into the local
+  // settings store so the new account's saved currency / region /
+  // language take effect immediately — without waiting for the user to
+  // tap something or for CurrencySync to run a few seconds later.
+  const user = useAuthStore((s) => s.user);
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      useSettingsStore.getState().hydrateFromUser({
+        displayCurrency: user.displayCurrency ?? null,
+        region: (user as any).region ?? null,
+        country: user.country ?? null,
+        locale: user.locale ?? null,
+      });
+    }
+  }, [isAuthenticated, user?.id]);
+
   // Auto-detect region & display currency on first launch
   useEffect(() => {
     const settings = useSettingsStore.getState();

@@ -69,7 +69,11 @@ describe('useAuthStore', () => {
     expect(useAuthStore.getState().user).toBeNull();
   });
 
-  it('logout clears everything', () => {
+  it('logout clears auth but preserves isOnboarded', () => {
+    // isOnboarded survives logout so a returning user goes straight to
+    // the login step instead of re-watching the welcome slides they've
+    // already seen. The onboarding screen reads `isOnboarded` and skips
+    // directly to step 3 when true.
     const user = { id: '1', email: 'test@test.com', name: 'Test' };
     useAuthStore.getState().setUser(user, 'token', 'refresh');
     useAuthStore.getState().setOnboarded();
@@ -79,7 +83,7 @@ describe('useAuthStore', () => {
     expect(state.token).toBeNull();
     expect(state.refreshToken).toBeNull();
     expect(state.isAuthenticated).toBe(false);
-    expect(state.isOnboarded).toBe(false);
+    expect(state.isOnboarded).toBe(true);
   });
 
   it('setOnboarded sets isOnboarded to true', () => {

@@ -199,14 +199,19 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (data) =>
         set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
       logout: () => {
-        // Clear per-user flags so new account gets fresh experience
+        // Clear per-user flags so a new account doesn't inherit the
+        // previous user's trial/welcome state.
         AsyncStorage.multiRemove(['trial_offered', 'welcome_shown']).catch(() => {});
+        // Keep `isOnboarded` true on logout. The onboarding screen
+        // internally checks `isOnboarded` and jumps straight to the
+        // login step (see app/onboarding.tsx — `setStep(isOnboarded ? 3 : 0)`),
+        // so the user gets sent to the auth UI without re-watching the
+        // welcome slides they already saw.
         set({
           user: null,
           token: null,
           refreshToken: null,
           isAuthenticated: false,
-          isOnboarded: false,
         });
       },
       setOnboarded: () => set({ isOnboarded: true }),
