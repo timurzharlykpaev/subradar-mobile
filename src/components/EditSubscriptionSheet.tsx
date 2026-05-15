@@ -58,7 +58,7 @@ const REMINDER_OPTIONS = [1, 3, 7] as const;
 // preview.
 const COLOR_PALETTE = ['#3B82F6', '#10B981', '#EF4444', '#F59E0B', '#EC4899', '#06B6D4', '#6B7280'];
 
-export function EditSubscriptionSheet({ visible, onClose, subscription }: Props) {
+function EditSubscriptionSheetImpl({ visible, onClose, subscription }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { updateSubscription } = useSubscriptionsStore();
@@ -1035,6 +1035,17 @@ export function EditSubscriptionSheet({ visible, onClose, subscription }: Props)
     </Modal>
   );
 }
+
+// Memoized so a re-render of the parent screen (subscriptions tab,
+// (tabs)/subscriptions.tsx — 700 lines with FlatList) doesn't cascade
+// into this 1000-line sheet on every parent state change while the
+// sheet is open. The sheet has 3 props (visible / onClose /
+// subscription); the parent passes the same callback identities and
+// the same subscription reference between most renders, so React.memo
+// skips re-renders cleanly. Internal form state lives in `useForm`
+// (memoized form hook), so input keystrokes only re-render this sheet,
+// not the parent.
+export const EditSubscriptionSheet = React.memo(EditSubscriptionSheetImpl);
 
 const styles = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject },

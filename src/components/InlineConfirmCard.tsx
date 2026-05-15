@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -60,12 +60,50 @@ const REMINDER_OPTIONS = [
 ];
 const COLOR_PALETTE = ['#7c3aed', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#8B5CF6'];
 
-export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
+function InlineConfirmCardImpl({ data, onSave, onCancel, saving }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const displayCurrency = useSettingsStore((s) => s.displayCurrency || s.currency || 'USD');
   const cards = usePaymentCardsStore((s) => s.cards);
   const lang = i18n.language || 'en';
+
+  // Memoized input style objects. Without these, every keystroke in any
+  // field re-creates 5 style arrays + 5 inline-color objects, defeating
+  // React's prop diffing in DoneAccessoryInput and giving us laggy typing
+  // on iOS. Style identity now changes only when the theme palette flips.
+  const nameInputStyle = useMemo(
+    () => [styles.nameInput, { color: colors.text }],
+    [colors.text],
+  );
+  const fieldInputStyle = useMemo(
+    () => [styles.fieldInput, { color: colors.text, borderColor: colors.border }],
+    [colors.text, colors.border],
+  );
+  const notesInputStyle = useMemo(
+    () => [
+      styles.fieldInput,
+      { color: colors.text, borderColor: colors.border, minHeight: 60, textAlignVertical: 'top' as const },
+    ],
+    [colors.text, colors.border],
+  );
+
+  // Pre-compute plan rows once per (data.plans, displayCurrency) change.
+  // Previously each render did N convertAmount() calls inline inside an
+  // IIFE in the JSX — on a 3-plan service, that was 3 FX-cache lookups
+  // PER KEYSTROKE in any of the 5 inputs in this card.
+  const planRows = useMemo(() => {
+    if (!data.plans || data.plans.length === 0) return [];
+    return data.plans.map((plan) => {
+      const converted = convertAmount(plan.priceMonthly, plan.currency, displayCurrency);
+      return {
+        plan,
+        priceLabel:
+          converted !== null
+            ? `${formatMoney(converted, displayCurrency, lang)}/${t('add_flow.mo', 'mo')}`
+            : `${plan.priceMonthly.toFixed(2)} ${plan.currency}/${t('add_flow.mo', 'mo')}`,
+      };
+    });
+  }, [data.plans, displayCurrency, lang, t]);
   const [name, setName] = useState(data.name.value);
   // Seed the amount/currency in the user's display currency. The catalog
   // (and quick chips, which derive from a hardcoded USD price) feed raw
@@ -221,7 +259,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
         />
         <View style={{ flex: 1 }}>
           <DoneAccessoryInput
-            style={[styles.nameInput, { color: colors.text }]}
+            style={nameInputStyle}
             value={name}
             onChangeText={setName}
             placeholder={t('add_flow.service_name', 'Service name')}
@@ -237,7 +275,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
           <Text style={[styles.label, { color: colors.textSecondary }]}>
             {t('add_flow.select_plan', 'Plan')}
           </Text>
-          {data.plans.map((plan) => (
+          {planRows.map(({ plan, priceLabel }) => (
             <TouchableOpacity
               key={plan.name}
               style={[
@@ -250,12 +288,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               <View style={[styles.radio, selectedPlan === plan.name && styles.radioActive]} />
               <Text style={[styles.planName, { color: colors.text }]}>{t(`plans.${plan.name.toLowerCase().replace(/\s+/g, '_')}`, plan.name)}</Text>
               <Text style={[styles.planPrice, { color: colors.textSecondary }]}>
-                {(() => {
-                  const converted = convertAmount(plan.priceMonthly, plan.currency, displayCurrency);
-                  return converted !== null
-                    ? `${formatMoney(converted, displayCurrency, lang)}/${t('add_flow.mo', 'mo')}`
-                    : `${plan.priceMonthly.toFixed(2)} ${plan.currency}/${t('add_flow.mo', 'mo')}`;
-                })()}
+                {priceLabel}
               </Text>
             </TouchableOpacity>
           ))}
@@ -267,7 +300,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
         <Text style={[styles.label, { color: colors.textSecondary }]}>{t('add_flow.amount', 'Amount')}</Text>
         <View style={styles.fieldValue}>
           <NumericInput
-            style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+            style={fieldInputStyle}
             value={amount}
             onChangeText={handleAmountChange}
             keyboardType="decimal-pad"
@@ -494,7 +527,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               {t('add.notes', 'Notes')}
             </Text>
             <DoneAccessoryInput
-              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, minHeight: 60, textAlignVertical: 'top' }]}
+              style={notesInputStyle}
               value={notes}
               onChangeText={setNotes}
               placeholder={t('add.notes_placeholder', 'Additional notes...')}
@@ -509,7 +542,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               {t('add.tags', 'Tags')}
             </Text>
             <DoneAccessoryInput
-              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              style={fieldInputStyle}
               value={tags}
               onChangeText={setTags}
               placeholder={t('add.tags_placeholder', 'work, personal, shared')}
@@ -523,7 +556,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               {t('add.service_url', 'Service URL')}
             </Text>
             <DoneAccessoryInput
-              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              style={fieldInputStyle}
               value={serviceUrl}
               onChangeText={setServiceUrl}
               placeholder="https://service.com"
@@ -540,7 +573,7 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
               {t('add.cancel_url', 'Cancel URL')}
             </Text>
             <DoneAccessoryInput
-              style={[styles.fieldInput, { color: colors.text, borderColor: colors.border }]}
+              style={fieldInputStyle}
               value={cancelUrl}
               onChangeText={setCancelUrl}
               placeholder="https://service.com/cancel"
@@ -597,6 +630,13 @@ export function InlineConfirmCard({ data, onSave, onCancel, saving }: Props) {
     </View>
   );
 }
+
+// Memoized so a parent that doesn't change props (e.g. the AI confirm
+// screen re-rendering for a transient toast / focus event) doesn't
+// re-render this 600-line form. Custom prop comparison: `saving` and
+// the callbacks usually change identity, but `data` is the heavy one —
+// only re-render when its identity changes.
+export const InlineConfirmCard = React.memo(InlineConfirmCardImpl);
 
 const styles = StyleSheet.create({
   container: { borderRadius: 16, padding: 20, borderWidth: 1 },
