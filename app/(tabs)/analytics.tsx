@@ -15,7 +15,7 @@ import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { SubIcon } from '../../src/components/SubIcon';
-import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path as SvgPath, Rect, Text as SvgText, Line, Defs, LinearGradient, RadialGradient, Stop, Circle } from 'react-native-svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
@@ -72,7 +72,10 @@ function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string
   const barW = 30;
   const sidePad = 6;
   const innerW = data.length * slotW + sidePad * 2;
-  const chartAreaH = CHART_HEIGHT - 30;
+  // Headroom for the value label above the tallest bar. Without it the max
+  // bar reaches y=0 and its label (drawn at y-6) clips above the SVG.
+  const topPad = 14;
+  const chartAreaH = CHART_HEIGHT - 30 - topPad;
   const totalH = CHART_HEIGHT + 20;
 
   // Y-axis labels stay short ("12k", "1.2M") so the currency prefix isn't
@@ -86,7 +89,7 @@ function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string
   };
 
   const gridLines = [0.25, 0.5, 0.75].map((frac) => ({
-    y: chartAreaH - frac * chartAreaH,
+    y: topPad + chartAreaH - frac * chartAreaH,
     label: formatYLabel(Math.round(maxVal * frac)),
   }));
 
@@ -167,7 +170,7 @@ function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string
                 const ratio = d.total / maxVal;
                 const barH = d.total > 0 ? Math.max(6, ratio * chartAreaH) : 2;
                 const x = sidePad + i * slotW + (slotW - barW) / 2;
-                const y = chartAreaH - barH;
+                const y = topPad + chartAreaH - barH;
                 const isMax = d.total === maxVal && d.total > 0;
                 // The Y-axis on the left already carries the currency
                 // symbol, so per-bar labels can stay symbol-less — that
@@ -253,19 +256,18 @@ function MonthlyBarChart({ data, currencySymbol = '$' }: { data: { month: string
 }
 
 // ─── Custom CategoryDonutChart ───────────────────────────────────────────────
-function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
+function CategoryDonutChart({ categories, total }: {
   categories: { id: string; color: string; total: number; label?: string; categoryId?: string }[];
   total: number;
-  currencySymbol?: string;
 }) {
   const { colors } = useTheme();
-  const { t } = useTranslation();
   const size = 280;
   const radius = 125;
-  const innerRadius = 65;
   const cx = size / 2;
   const cy = size / 2;
-  const midRadius = (radius + innerRadius) / 2;
+  // For a solid pie (no inner hole), labels sit at ~62% of the radius —
+  // visually centered in each slice without crowding the apex.
+  const midRadius = radius * 0.62;
 
   if (!total || !isFinite(total)) return null;
 
@@ -281,13 +283,10 @@ function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
       const y1 = cy + radius * Math.sin(startAngle);
       const x2 = cx + radius * Math.cos(startAngle + sweep);
       const y2 = cy + radius * Math.sin(startAngle + sweep);
-      const ix1 = cx + innerRadius * Math.cos(startAngle + sweep);
-      const iy1 = cy + innerRadius * Math.sin(startAngle + sweep);
-      const ix2 = cx + innerRadius * Math.cos(startAngle);
-      const iy2 = cy + innerRadius * Math.sin(startAngle);
       const largeArc = sweep > Math.PI ? 1 : 0;
 
-      const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${ix2} ${iy2} Z`;
+      // Solid pie wedge: center → start of arc → arc → back to center.
+      const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 
       const midAngle = startAngle + sweep / 2;
       const pct = Math.round(fraction * 100);
@@ -295,16 +294,41 @@ function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
       const labelY = cy + midRadius * Math.sin(midAngle);
 
       startAngle += sweep;
-      // Only show label inside segment if >= 15% (enough space to not overlap)
+      // Hide labels on very thin slices (< 8%) — the glyph would crowd
+      // the apex and overlap neighbouring labels. The legend below the
+      // chart still exposes every %.
       return { d, color: cat.color, pct, labelX, labelY, showLabel: pct >= 8 };
     }).filter(Boolean) as { d: string; color: string; pct: number; labelX: number; labelY: number; showLabel: boolean }[];
 
   return (
     <View style={{ width: size, height: size, alignSelf: 'center', marginVertical: 8 }}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <Defs>
+          {/*
+            Radial "shine" overlaid on the whole pie. Bright at the top-left
+            apex, fading to a soft dark vignette near the rim. Gives the
+            flat slices a subtle 3D sheen without changing per-slice colours.
+          */}
+          <RadialGradient id="pieShine" cx="38%" cy="32%" r="70%">
+            <Stop offset="0" stopColor="#FFF" stopOpacity="0.32" />
+            <Stop offset="0.55" stopColor="#FFF" stopOpacity="0.04" />
+            <Stop offset="1" stopColor="#000" stopOpacity="0.18" />
+          </RadialGradient>
+        </Defs>
         {slices.map((slice, idx) => (
-          <SvgPath key={idx} d={slice.d} fill={slice.color} />
+          // stroke matches the card background → reads as a thin cut-out
+          // separator between adjacent slices in both light and dark themes.
+          <SvgPath
+            key={idx}
+            d={slice.d}
+            fill={slice.color}
+            stroke={colors.card}
+            strokeWidth={1}
+            strokeLinejoin="round"
+          />
         ))}
+        {/* Shine overlay covers the full disc; per-slice colours read through. */}
+        <Circle cx={cx} cy={cy} r={radius} fill="url(#pieShine)" pointerEvents="none" />
         {slices
           .filter((s) => s.showLabel)
           .map((slice, idx) => (
@@ -316,42 +340,35 @@ function CategoryDonutChart({ categories, total, currencySymbol = '$' }: {
                 x={slice.labelX}
                 y={slice.labelY + 6}
                 fontSize={12}
-                fontWeight="900"
-                fill="rgba(0,0,0,0.25)"
+                fontWeight="800"
+                letterSpacing={0.6}
+                fill="rgba(0,0,0,0.35)"
                 textAnchor="middle"
               >
-                {slice.pct}%
+                {`${slice.pct} %`}
               </SvgText>
               <SvgText
                 x={slice.labelX}
                 y={slice.labelY + 5}
                 fontSize={12}
-                fontWeight="900"
+                fontWeight="800"
+                letterSpacing={0.6}
                 fill="#FFF"
                 textAnchor="middle"
               >
-                {slice.pct}%
+                {`${slice.pct} %`}
               </SvgText>
             </React.Fragment>
           ))}
       </Svg>
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-        {/*
-          Inner hole = 2 * innerRadius (130px). Reserve padding so text never
-          touches the donut edge. `adjustsFontSizeToFit` + `numberOfLines={1}`
-          shrinks long currency totals (e.g. "₸ 1,234,567") to fit instead of
-          clipping or wrapping.
-        */}
-        <Text
-          style={{ fontSize: 22, fontWeight: '900', color: colors.text, maxWidth: innerRadius * 2 - 16, textAlign: 'center' }}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.5}
-        >
-          {currencySymbol} {formatNum(total)}
-        </Text>
-        <Text style={{ fontSize: 11, color: colors.textMuted }}>{t('analytics.total')}</Text>
-      </View>
+      {/*
+        Center label intentionally omitted. Wide currency totals (e.g.
+        "₸ 1 234 567") rendered inside the inner hole at fontSize 22 sat on
+        the same y-axis as the slice % labels at near-horizontal midAngles —
+        the two read as one merged blob. The same total is already visible
+        in the Summary Strip ("avg_month") above, so dropping it from the
+        chart removes the collision without losing information.
+      */}
     </View>
   );
 }
@@ -809,7 +826,7 @@ export default function AnalyticsScreen() {
           <View testID="analytics-category-chart" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {byCategory.length > 0 ? (
               <>
-                <CategoryDonutChart categories={byCategory} total={categoryTotal} currencySymbol={currencySymbol} />
+                <CategoryDonutChart categories={byCategory} total={categoryTotal} />
                 <View style={styles.legendContainer}>
                   {byCategory.map((cat, idx) => {
                     const pct = categoryTotal > 0 ? Math.round((cat.total / categoryTotal) * 100) : 0;
@@ -1257,7 +1274,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionTitle: { fontSize: 18, fontWeight: '800', flex: 1, marginBottom: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', flexShrink: 1 },
   sectionBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -1293,8 +1310,12 @@ const styles = StyleSheet.create({
   legendDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
   legendEmoji: { fontSize: 16, width: 22, textAlign: 'center' },
   legendLabel: { flex: 1, fontSize: 13, fontWeight: '600', flexShrink: 1 },
-  legendPercent: { fontSize: 12, minWidth: 40, textAlign: 'right', fontWeight: '700', flexShrink: 0 },
-  legendAmount: { fontSize: 13, fontWeight: '800', minWidth: 70, textAlign: 'right', flexShrink: 0 },
+  // The row uses gap: 8, but on long currency values like "₸ 1 234 567" the
+  // amount fills its minWidth and visually touches the percent. The extra
+  // marginRight on percent (+ a wider amount minWidth) enforces a readable
+  // separator between the two right-aligned numbers.
+  legendPercent: { fontSize: 12, minWidth: 40, textAlign: 'right', fontWeight: '700', flexShrink: 0, marginRight: 6 },
+  legendAmount: { fontSize: 13, fontWeight: '800', minWidth: 76, textAlign: 'right', flexShrink: 0 },
 
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
