@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Image,
   Alert, ActivityIndicator, RefreshControl, StyleSheet,
@@ -50,24 +50,11 @@ export default function WorkspaceScreen() {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showJoinTeam, setShowJoinTeam] = useState(false);
   const [showTeamExplainer, setShowTeamExplainer] = useState(false);
-  // Manual focus on the create-team field. Replaces TextInput's `autoFocus`,
-  // which on iOS 18+ kicked in BEFORE the surrounding ScrollView had
-  // settled `automaticallyAdjustKeyboardInsets`; the resulting layout shift
-  // tore the keyboard's session and emitted a stream of
-  // `RTIInputSystemClient … requires a valid sessionID` warnings — visually
-  // observable as a flickering / laggy input.
-  const wsNameRef = useRef<TextInput | null>(null);
-  useEffect(() => {
-    if (!showCreate) return;
-    const t = setTimeout(() => wsNameRef.current?.focus(), 80);
-    return () => clearTimeout(t);
-  }, [showCreate]);
 
   // Force billing refresh when workspace tab opens to get latest plan status
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['billing'] });
   }, []);
-  const [wsName, setWsName] = useState('');
   // Shared in-screen notice slot — replaces the four `Alert.alert`
   // onError callbacks on the mutations below. System dialogs are
   // overkill for "we couldn't reach the server" and inconsistent
@@ -157,11 +144,10 @@ export default function WorkspaceScreen() {
   const overlaps = analysisData?.result?.overlaps || [];
 
   const createMutation = useMutation({
-    mutationFn: () => workspaceApi.create(wsName.trim()),
+    mutationFn: (name: string) => workspaceApi.create(name.trim()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace'] });
       setShowCreate(false);
-      setWsName('');
     },
     onError: (e: any) =>
       setNotice({
@@ -401,82 +387,11 @@ export default function WorkspaceScreen() {
                 )}
               </>
             ) : showCreate ? (
-              <View style={{
-                backgroundColor: colors.card,
-                borderRadius: 20,
-                padding: 20,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 10 }}>
-                  {t('workspace.team_name_label')}
-                </Text>
-                <DoneAccessoryInput
-                  ref={wsNameRef}
-                  testID="input-workspace-name"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    borderRadius: 14,
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    fontSize: 16,
-                    backgroundColor: colors.background,
-                    color: colors.text,
-                  }}
-                  value={wsName}
-                  onChangeText={setWsName}
-                  placeholder={t('workspace.name_placeholder')}
-                  placeholderTextColor={colors.textMuted}
-                  returnKeyType="done"
-                  onSubmitEditing={() => {
-                    if (wsName.trim() && !createMutation.isPending) {
-                      createMutation.mutate();
-                    }
-                  }}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  textContentType="organizationName"
-                />
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
-                  <TouchableOpacity
-                    testID="btn-cancel-create-workspace"
-                    style={{
-                      flex: 1,
-                      borderRadius: 14,
-                      paddingVertical: 14,
-                      alignItems: 'center',
-                      backgroundColor: colors.surface,
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                    }}
-                    onPress={() => setShowCreate(false)}
-                  >
-                    <Text style={{ color: colors.textSecondary, fontWeight: '600', fontSize: 15 }}>
-                      {t('common.cancel')}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    testID="btn-confirm-create-workspace"
-                    style={{
-                      flex: 1.5,
-                      borderRadius: 14,
-                      paddingVertical: 14,
-                      alignItems: 'center',
-                      backgroundColor: colors.primary,
-                      opacity: (!wsName.trim() || createMutation.isPending) ? 0.5 : 1,
-                    }}
-                    onPress={() => createMutation.mutate()}
-                    disabled={!wsName.trim() || createMutation.isPending}
-                  >
-                    {createMutation.isPending
-                      ? <ActivityIndicator color="#FFF" size="small" />
-                      : <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 15 }}>
-                          {t('workspace.create_team')}
-                        </Text>}
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <CreateTeamForm
+                onCancel={() => setShowCreate(false)}
+                onSubmit={(name) => createMutation.mutate(name)}
+                isPending={createMutation.isPending}
+              />
             ) : (
               <>
                 <TouchableOpacity
@@ -1094,4 +1009,140 @@ export default function WorkspaceScreen() {
 
 const styles = StyleSheet.create({
   memberStatus: { fontSize: 10, fontWeight: '600', marginTop: 2 },
+});
+
+// Extracted so typing into the team-name field doesn't re-render the
+// whole 1000-line WorkspaceScreen on every keystroke. The screen reads
+// /workspace/me, /workspace/me/analytics, /workspace/me/analysis and
+// runs FX conversion on render — feeding `wsName` through its state was
+// invalidating all of that per character, which on iOS surfaced as
+// laggy typing + "RTI requires a valid sessionID" warnings as the
+// keyboard session got torn down on every render of the parent. Local
+// state + a stable callback/style identity isolates the input.
+interface CreateTeamFormProps {
+  onCancel: () => void;
+  onSubmit: (name: string) => void;
+  isPending: boolean;
+}
+
+const CreateTeamForm = React.memo(function CreateTeamForm({
+  onCancel,
+  onSubmit,
+  isPending,
+}: CreateTeamFormProps) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const [name, setName] = useState('');
+  const inputRef = useRef<TextInput | null>(null);
+
+  // Manual focus on mount (replaces TextInput.autoFocus, which kicks in
+  // before automaticallyAdjustKeyboardInsets settles and triggers
+  // RTIInputSystemClient sessionID warnings).
+  useEffect(() => {
+    const id = setTimeout(() => inputRef.current?.focus(), 80);
+    return () => clearTimeout(id);
+  }, []);
+
+  const containerStyle = useMemo(
+    () => ({
+      backgroundColor: colors.card,
+      borderRadius: 20,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    }),
+    [colors.card, colors.border],
+  );
+
+  const labelStyle = useMemo(
+    () => ({ fontSize: 15, fontWeight: '700' as const, color: colors.text, marginBottom: 10 }),
+    [colors.text],
+  );
+
+  const inputStyle = useMemo(
+    () => ({
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 16,
+      backgroundColor: colors.background,
+      color: colors.text,
+    }),
+    [colors.border, colors.background, colors.text],
+  );
+
+  const cancelStyle = useMemo(
+    () => ({
+      flex: 1,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center' as const,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    }),
+    [colors.surface, colors.border],
+  );
+
+  const trimmed = name.trim();
+  const submitDisabled = !trimmed || isPending;
+
+  const confirmStyle = useMemo(
+    () => ({
+      flex: 1.5,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center' as const,
+      backgroundColor: colors.primary,
+      opacity: submitDisabled ? 0.5 : 1,
+    }),
+    [colors.primary, submitDisabled],
+  );
+
+  const handleSubmit = useCallback(() => {
+    if (!submitDisabled) onSubmit(trimmed);
+  }, [submitDisabled, onSubmit, trimmed]);
+
+  return (
+    <View style={containerStyle}>
+      <Text style={labelStyle}>{t('workspace.team_name_label')}</Text>
+      <DoneAccessoryInput
+        ref={inputRef}
+        testID="input-workspace-name"
+        style={inputStyle}
+        value={name}
+        onChangeText={setName}
+        placeholder={t('workspace.name_placeholder')}
+        placeholderTextColor={colors.textMuted}
+        returnKeyType="done"
+        onSubmitEditing={handleSubmit}
+        autoCapitalize="words"
+        autoCorrect={false}
+        textContentType="organizationName"
+      />
+      <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+        <TouchableOpacity testID="btn-cancel-create-workspace" style={cancelStyle} onPress={onCancel}>
+          <Text style={{ color: colors.textSecondary, fontWeight: '600', fontSize: 15 }}>
+            {t('common.cancel')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="btn-confirm-create-workspace"
+          style={confirmStyle}
+          onPress={handleSubmit}
+          disabled={submitDisabled}
+        >
+          {isPending ? (
+            <ActivityIndicator color="#FFF" size="small" />
+          ) : (
+            <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 15 }}>
+              {t('workspace.create_team')}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 });
