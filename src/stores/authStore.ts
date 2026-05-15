@@ -6,6 +6,11 @@ import { User } from '../types';
 
 const SECURE_KEY = 'auth-storage';
 const ASYNC_FALLBACK_KEY = 'auth-storage-fallback';
+// Where the non-sensitive half of the auth blob (user profile, flags) lives.
+// Splitting it off keeps the SecureStore item small (just tokens) and avoids
+// the >2KB warning that newer expo-secure-store versions will turn into a
+// hard error.
+const ASYNC_PROFILE_KEY = 'auth-storage-profile';
 
 // SecureStore options:
 //   `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY` lets the Keychain item be read
@@ -30,42 +35,138 @@ const SECURE_OPTS = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
 } as const;
 
-const secureStorage = {
+async function secureGet(name: string): Promise<string | null> {
+  try {
+    const v = await SecureStore.getItemAsync(name, SECURE_OPTS);
+    if (v != null) return v;
+  } catch {}
+  try {
+    return await AsyncStorage.getItem(`${ASYNC_FALLBACK_KEY}:${name}`);
+  } catch {
+    return null;
+  }
+}
+
+async function secureSet(name: string, value: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(name, value, SECURE_OPTS);
+    // Mirror to AsyncStorage so a later SecureStore-down read still gets
+    // the freshest value. Cheap and removes a class of "token saved but
+    // unreadable next launch" bugs.
+    try { await AsyncStorage.setItem(`${ASYNC_FALLBACK_KEY}:${name}`, value); } catch {}
+    return;
+  } catch (e) {
+    if (__DEV__) {
+      console.warn('[authStore] SecureStore unavailable, using AsyncStorage:', e);
+    }
+    try {
+      await AsyncStorage.setItem(`${ASYNC_FALLBACK_KEY}:${name}`, value);
+    } catch (asyncErr) {
+      if (__DEV__) {
+        console.warn('[authStore] AsyncStorage fallback also failed:', asyncErr);
+      }
+    }
+  }
+}
+
+async function secureRemove(name: string): Promise<void> {
+  try { await SecureStore.deleteItemAsync(name, SECURE_OPTS); } catch {}
+  try { await AsyncStorage.removeItem(`${ASYNC_FALLBACK_KEY}:${name}`); } catch {}
+}
+
+// Split storage adapter:
+//   - tokens (small, sensitive)        → SecureStore (Keychain)
+//   - user profile + flags (large)     → AsyncStorage
+//
+// The Zustand `persist` middleware writes one JSON string per key. We
+// intercept that write, parse it, split into tokens / profile, and
+// recombine on read. Externally it still looks like a single key.
+//
+// Migration from the pre-split format (everything in SecureStore under
+// `auth-storage`) happens on first read: if the new split keys don't
+// exist but the legacy SecureStore item does, we read it once, split,
+// persist into the new shape, then delete the legacy item.
+const splitStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    try {
-      const v = await SecureStore.getItemAsync(name, SECURE_OPTS);
-      if (v != null) return v;
-    } catch {}
-    try {
-      return await AsyncStorage.getItem(`${ASYNC_FALLBACK_KEY}:${name}`);
-    } catch {
+    const [tokensRaw, profileRaw] = await Promise.all([
+      secureGet(name),
+      AsyncStorage.getItem(`${ASYNC_PROFILE_KEY}:${name}`).catch(() => null),
+    ]);
+
+    // Fresh install with neither half present.
+    if (tokensRaw == null && profileRaw == null) return null;
+
+    // Two cases when SecureStore has data but AsyncStorage doesn't:
+    //   1. Pre-split builds wrote the entire state under `name` in
+    //      SecureStore (the "legacy blob" — recognised by the presence
+    //      of `state.user` / `state.isAuthenticated`). Return it as-is;
+    //      Zustand's next setItem rewrites it into the new split shape.
+    //   2. Split-format data where the AsyncStorage half was wiped
+    //      independently (Android partial app-data clear, storage
+    //      corruption). Treat as no auth: leaving the tokens orphaned
+    //      would let Axios send a token while `isAuthenticated=false`,
+    //      causing a stream of 401s. One-time forced re-login is the
+    //      safer outcome.
+    if (tokensRaw && profileRaw == null) {
+      try {
+        const parsed = JSON.parse(tokensRaw);
+        const inner = parsed?.state;
+        if (inner && (inner.user !== undefined || inner.isAuthenticated !== undefined)) {
+          return tokensRaw;
+        }
+      } catch {}
+      // Split tokens without a profile → orphaned. Drop them.
+      await secureRemove(name);
       return null;
     }
+
+    let tokens: any = {};
+    let profile: any = {};
+    let version: number | undefined;
+    try {
+      const t = tokensRaw ? JSON.parse(tokensRaw) : null;
+      if (t?.state) tokens = t.state;
+      if (typeof t?.version === 'number') version = t.version;
+    } catch {}
+    try {
+      const p = profileRaw ? JSON.parse(profileRaw) : null;
+      if (p?.state) profile = p.state;
+      if (version === undefined && typeof p?.version === 'number') version = p.version;
+    } catch {}
+
+    return JSON.stringify({ state: { ...profile, ...tokens }, version });
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    try {
-      await SecureStore.setItemAsync(name, value, SECURE_OPTS);
-      // Mirror to AsyncStorage so a later SecureStore-down read still
-      // gets the freshest value. Cheap and removes a class of "token
-      // saved but unreadable next launch" bugs.
-      try { await AsyncStorage.setItem(`${ASYNC_FALLBACK_KEY}:${name}`, value); } catch {}
-      return;
-    } catch (e) {
-      if (__DEV__) {
-        console.warn('[authStore] SecureStore unavailable, using AsyncStorage:', e);
-      }
-      try {
-        await AsyncStorage.setItem(`${ASYNC_FALLBACK_KEY}:${name}`, value);
-      } catch (asyncErr) {
-        if (__DEV__) {
-          console.warn('[authStore] AsyncStorage fallback also failed:', asyncErr);
-        }
-      }
-    }
+    let wrapper: any = null;
+    try { wrapper = JSON.parse(value); } catch {}
+    const state = wrapper?.state ?? {};
+    const version = wrapper?.version;
+
+    const tokenSlice = {
+      token: state.token ?? null,
+      refreshToken: state.refreshToken ?? null,
+    };
+    const profileSlice = {
+      user: state.user ?? null,
+      isAuthenticated: !!state.isAuthenticated,
+      isOnboarded: !!state.isOnboarded,
+    };
+
+    await Promise.all([
+      secureSet(name, JSON.stringify({ state: tokenSlice, version })),
+      AsyncStorage.setItem(
+        `${ASYNC_PROFILE_KEY}:${name}`,
+        JSON.stringify({ state: profileSlice, version }),
+      ).catch((e) => {
+        if (__DEV__) console.warn('[authStore] profile AsyncStorage write failed:', e);
+      }),
+    ]);
   },
   removeItem: async (name: string): Promise<void> => {
-    try { await SecureStore.deleteItemAsync(name, SECURE_OPTS); } catch {}
-    try { await AsyncStorage.removeItem(`${ASYNC_FALLBACK_KEY}:${name}`); } catch {}
+    await Promise.all([
+      secureRemove(name),
+      AsyncStorage.removeItem(`${ASYNC_PROFILE_KEY}:${name}`).catch(() => {}),
+    ]);
   },
 };
 
@@ -112,7 +213,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: SECURE_KEY,
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => splitStorage),
       // Persist only the minimum required fields.
       // Large/derived state (e.g. _hasHydrated, actions) is excluded.
       partialize: (state) => ({

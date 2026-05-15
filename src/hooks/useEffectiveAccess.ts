@@ -53,10 +53,21 @@ function toDate(value: string | null | undefined): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-export function useEffectiveAccess(): EffectiveAccess | null {
-  const { data: b, isLoading } = useBillingStatus();
-  if (!b) return null;
+// Identity cache keyed by the BillingMeResponse object. TanStack Query
+// does structural sharing — when the server response is byte-equal, the
+// returned `data` object keeps the same reference across refetches. Map
+// that reference to a single mapped EffectiveAccess so consumers
+// (AddSubscriptionSheet, BannerRenderer, AIWizard, …) don't see a fresh
+// object — and a fresh chain of re-renders — on every render.
+//
+// Implemented with a module-level WeakMap instead of `useMemo` so the
+// hook stays callable as a plain function in unit tests (where there is
+// no React render context). WeakMap also lets us share the result
+// across multiple `useEffectiveAccess()` call sites in different
+// components — they all get the same reference.
+const accessCache = new WeakMap<object, EffectiveAccess>();
 
+function mapAccess(b: NonNullable<ReturnType<typeof useBillingStatus>['data']>, isLoading: boolean): EffectiveAccess {
   return {
     plan: b.effective.plan,
     source: b.effective.source,
@@ -85,4 +96,16 @@ export function useEffectiveAccess(): EffectiveAccess | null {
 
     isLoading,
   };
+}
+
+export function useEffectiveAccess(): EffectiveAccess | null {
+  const { data: b, isLoading } = useBillingStatus();
+  if (!b) return null;
+
+  const cached = accessCache.get(b);
+  if (cached && cached.isLoading === isLoading) return cached;
+
+  const result = mapAccess(b, isLoading);
+  accessCache.set(b, result);
+  return result;
 }

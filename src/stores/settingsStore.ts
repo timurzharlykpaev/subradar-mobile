@@ -25,6 +25,13 @@ interface SettingsState {
   analyticsOptOut: boolean;
   /** User-declared ICP segment — drives conditional copy and explainer triggers. */
   icpSegment: 'solo' | 'family' | 'team' | null;
+  /**
+   * True once the user (or a server-hydrated state) has set a currency.
+   * False means the current `displayCurrency` value came from an
+   * auto-detection / default and should NOT override the server value
+   * during CurrencySync on a fresh device.
+   */
+  currencyExplicitlySet: boolean;
   setCurrency: (currency: string) => void;
   setCountry: (country: string) => void;
   setRegion: (region: string) => void;
@@ -37,6 +44,19 @@ interface SettingsState {
   setDateFormat: (format: string) => void;
   setAnalyticsOptOut: (optOut: boolean) => void;
   setIcpSegment: (segment: 'solo' | 'family' | 'team' | null) => void;
+  /**
+   * Set displayCurrency WITHOUT marking it as an explicit user choice
+   * and WITHOUT pushing to the backend. For auto-detection from device
+   * locale on first launch — the server (if any) remains the source of
+   * truth and CurrencySync may overwrite this on login.
+   */
+  setDisplayCurrencyAutoDetected: (currency: string) => void;
+  /**
+   * Hydrate currency from the server response (e.g. after login). Marks
+   * the value as explicit (it represents the user's saved preference)
+   * but does NOT push back to the server.
+   */
+  hydrateDisplayCurrencyFromServer: (currency: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -54,9 +74,10 @@ export const useSettingsStore = create<SettingsState>()(
       dateFormat: 'DD/MM',
       analyticsOptOut: false,
       icpSegment: null,
+      currencyExplicitlySet: false,
       setCurrency: (currency) => {
         const upper = currency.toUpperCase();
-        set({ currency: upper, displayCurrency: upper });
+        set({ currency: upper, displayCurrency: upper, currencyExplicitlySet: true });
         // Backend is the source of truth for analytics / reports
         // currency conversion. Without this PATCH the user sees their
         // chosen currency on screen but the backend still computes
@@ -69,10 +90,20 @@ export const useSettingsStore = create<SettingsState>()(
       setRegion: (region) => set({ region: region.toUpperCase(), country: region.toUpperCase() }),
       setDisplayCurrency: (displayCurrency) => {
         const upper = displayCurrency.toUpperCase();
-        set({ displayCurrency: upper, currency: upper });
+        set({ displayCurrency: upper, currency: upper, currencyExplicitlySet: true });
         // Same rationale as setCurrency above — keep DB in sync so
         // server-side conversion uses the user's actual preference.
         usersApi.updateMe({ displayCurrency: upper }).catch(() => {});
+      },
+      setDisplayCurrencyAutoDetected: (displayCurrency) => {
+        const upper = displayCurrency.toUpperCase();
+        // No flag flip, no server push. Pure local guess until either
+        // the user picks something or the server hydrates.
+        set({ displayCurrency: upper, currency: upper });
+      },
+      hydrateDisplayCurrencyFromServer: (displayCurrency) => {
+        const upper = displayCurrency.toUpperCase();
+        set({ displayCurrency: upper, currency: upper, currencyExplicitlySet: true });
       },
       setLanguage: (language) => {
         i18n.changeLanguage(language);
@@ -92,7 +123,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'subradar-settings',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState: any, version: number) => {
         if (!persistedState) return persistedState;
         let next = persistedState;
@@ -118,6 +149,22 @@ export const useSettingsStore = create<SettingsState>()(
             (typeof next.currency === 'string' && next.currency) ||
             'USD';
           next = { ...next, displayCurrency: dc.toUpperCase(), currency: dc.toUpperCase() };
+        }
+        if (version < 4) {
+          // v4: introduce `currencyExplicitlySet`. Any user reaching this
+          // migration has a persisted settings store, meaning they have
+          // opened the app at least once and the current `displayCurrency`
+          // either passed through `setDisplayCurrency` (which already
+          // PATCH-ed the server) or matches the server's value. Either
+          // way, the local value is the user's de-facto choice — flagging
+          // it `false` would let CurrencySync overwrite it with stale
+          // server data on the next launch (the exact regression the flag
+          // was introduced to prevent, for users who picked USD).
+          //
+          // Auto-detect, which is the only case where we WANT
+          // `currencyExplicitlySet=false`, only runs on a truly fresh
+          // install — those users skip this migration entirely.
+          next = { ...next, currencyExplicitlySet: true };
         }
         return next;
       },

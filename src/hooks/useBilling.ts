@@ -15,8 +15,13 @@ export function useBillingStatus() {
         throw e;
       }
     },
-    staleTime: 10_000,
-    refetchOnMount: 'always',
+    // Billing state doesn't change on a second-by-second basis. A 60s
+    // staleTime is short enough for trial-end / cancel-at-period-end UI
+    // to update promptly, but long enough to coalesce the common
+    // "Home + AddSheet + BannerRenderer all mount at once" case into a
+    // single network call. Targeted invalidations (RC entitlement
+    // changes, post-purchase, post-cancel) still refresh immediately.
+    staleTime: 60_000,
     refetchOnWindowFocus: true,
     retry: 1,
   });

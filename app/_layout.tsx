@@ -161,7 +161,11 @@ function DataLoader() {
         settings.setRegion(detected);
         const suggestedCurrency = COUNTRY_DEFAULT_CURRENCY[detected];
         if (suggestedCurrency) {
-          settings.setDisplayCurrency(suggestedCurrency);
+          // Use the auto-detected setter: stores locally but does NOT
+          // push to the server and does NOT flip `currencyExplicitlySet`.
+          // CurrencySync (after login) is then free to pull the user's
+          // saved preference from the server without losing it.
+          settings.setDisplayCurrencyAutoDetected(suggestedCurrency);
         }
       }
     }
@@ -340,9 +344,20 @@ function DataLoader() {
         // still on the default (USD). Workspace analytics + team reports
         // run server-side conversion against the BACKEND value, so they
         // come back in dollars even though everything else in the app is
-        // in tenge. One-shot fix on startup: if the local choice differs
-        // from what the server has, push it once. Subsequent setDisplayCurrency
-        // calls keep them in sync going forward.
+        // in tenge.
+        //
+        // Conflict resolution depends on `currencyExplicitlySet`:
+        //   - true  → the local value is the user's real choice (set via
+        //             setDisplayCurrency or hydrated from a previous
+        //             server response). Push local → server.
+        //   - false → the local value is an auto-detected guess from the
+        //             device locale. The server's value (if any) wins,
+        //             because it represents the user's saved preference
+        //             from another device. Pull server → local.
+        //
+        // This prevents the regression where logging into an existing
+        // account on a new phone silently overwrites the saved currency
+        // with the detected device locale.
         if (!cancelled) {
           try {
             const { usersApi } = await import('../src/api/users');
@@ -350,23 +365,59 @@ function DataLoader() {
             const serverCurrency = (me?.data?.displayCurrency || me?.data?.currency || '')
               .toString()
               .toUpperCase();
-            const localCurrency = (
-              useSettingsStore.getState().displayCurrency || 'USD'
-            ).toUpperCase();
+            const settingsState = useSettingsStore.getState();
+            const localCurrency = (settingsState.displayCurrency || 'USD').toUpperCase();
+            const localExplicit = settingsState.currencyExplicitlySet;
+
             if (serverCurrency && localCurrency && serverCurrency !== localCurrency) {
-              if (__DEV__) {
-                console.log(
-                  '[CurrencySync] mismatch — local:',
-                  localCurrency,
-                  'server:',
-                  serverCurrency,
-                  '— pushing local',
-                );
+              if (!localExplicit) {
+                // Server wins — adopt the saved preference without pushing back.
+                if (__DEV__) {
+                  console.log(
+                    '[CurrencySync] mismatch — local:',
+                    localCurrency,
+                    '(auto-detected) server:',
+                    serverCurrency,
+                    '— pulling server',
+                  );
+                }
+                settingsState.hydrateDisplayCurrencyFromServer(serverCurrency);
+                queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
+                queryClient.invalidateQueries({ queryKey: ['analytics'] });
+                queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+              } else {
+                // Local is the explicit user choice — push to server.
+                if (__DEV__) {
+                  console.log(
+                    '[CurrencySync] mismatch — local:',
+                    localCurrency,
+                    '(explicit) server:',
+                    serverCurrency,
+                    '— pushing local',
+                  );
+                }
+                await usersApi.updateMe({ displayCurrency: localCurrency } as any);
+                queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
+                queryClient.invalidateQueries({ queryKey: ['analytics'] });
+                queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
               }
-              await usersApi.updateMe({ displayCurrency: localCurrency } as any);
-              queryClient.invalidateQueries({ queryKey: ['workspace-analytics'] });
-              queryClient.invalidateQueries({ queryKey: ['analytics'] });
-              queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+            } else if (serverCurrency && !localExplicit) {
+              // No conflict but the local value was never confirmed —
+              // mark it explicit now so future syncs know not to overwrite.
+              settingsState.hydrateDisplayCurrencyFromServer(serverCurrency);
+            } else if (!serverCurrency && localCurrency) {
+              // New account: server has no currency yet (empty user row).
+              // Push the current local value (auto-detected or default)
+              // so this becomes the account's saved preference and another
+              // device logging in later picks it up via the pull branch.
+              // Without this, `currencyExplicitlySet` stays `false` forever
+              // and CurrencySync re-runs the same no-op every launch.
+              try {
+                await usersApi.updateMe({ displayCurrency: localCurrency } as any);
+                settingsState.hydrateDisplayCurrencyFromServer(localCurrency);
+              } catch {
+                // Network/permission failure is fine — we'll retry next launch.
+              }
             }
           } catch (e: any) {
             if (__DEV__) console.warn('[CurrencySync] failed:', e?.message);
