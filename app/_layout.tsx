@@ -55,6 +55,7 @@ Text.defaultProps = Text.defaultProps || {};
 // @ts-ignore
 Text.defaultProps.style = { fontFamily: 'Inter-Medium' };
 import { analytics } from '../src/services/analytics';
+import { useReviewPromptStore } from '../src/stores/reviewPromptStore';
 analytics.init();
 import { loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
 import * as SecureStore from 'expo-secure-store';
@@ -687,14 +688,40 @@ export default function RootLayout() {
 
   // Session tracking — fire session_start on app resume (background → active)
   useEffect(() => {
+    const fireStreakReviewIfDue = () => {
+      // shouldPrompt internally checks the streak threshold and all other
+      // gates (install age, cooldown, blackout). If it returns true we
+      // surface the native dialog — but only after a beat so the prompt
+      // doesn't collide with the splash transition.
+      const store = useReviewPromptStore.getState();
+      if (!store.shouldPrompt('streak_5_days')) return;
+      setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { requestInAppReview } = require('../src/utils/requestInAppReview');
+        requestInAppReview()
+          .then((shown: boolean) => {
+            if (shown) useReviewPromptStore.getState().markPrompted();
+          })
+          .catch(() => {});
+      }, 1500);
+    };
+
     let previousState: AppStateStatus = AppState.currentState;
     const sub = AppState.addEventListener('change', (next) => {
       if (previousState.match(/inactive|background/) && next === 'active') {
         analytics.newSession();
         analytics.track('session_start');
+        // Update install-date + consecutive-day streak for the review prompt
+        // gate. Idempotent — running once per active transition is enough.
+        useReviewPromptStore.getState().recordAppOpen();
+        fireStreakReviewIfDue();
       }
       previousState = next;
     });
+    // Also tick the open recorder on cold start (no inactive→active edge fires
+    // until the user backgrounds the app, which would miss day-1).
+    useReviewPromptStore.getState().recordAppOpen();
+    fireStreakReviewIfDue();
     return () => sub.remove();
   }, []);
 

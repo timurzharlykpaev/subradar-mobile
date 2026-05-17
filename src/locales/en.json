@@ -498,6 +498,8 @@
     "help_support": "Help & Support",
     "contact_us": "Contact us",
     "faq": "FAQ",
+    "rate_app": "Rate SubRadar",
+    "rate_app_desc": "A few seconds, helps a lot",
     "mail_unavailable": "Could not open mail app",
     "delete_failed": "Failed to delete account. Please try again or contact support.",
     "display_currency": "Display currency",

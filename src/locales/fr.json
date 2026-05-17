@@ -461,6 +461,8 @@
     "help_support": "Aide & Support",
     "contact_us": "Nous contacter",
     "faq": "Questions fréquentes",
+    "rate_app": "Évaluer SubRadar",
+    "rate_app_desc": "Quelques secondes, ça nous aide beaucoup",
     "mail_unavailable": "Impossible d'ouvrir l'app Mail",
     "delete_failed": "Impossible de supprimer le compte. Veuillez réessayer ou contacter le support.",
     "display_currency": "Devise d'affichage",

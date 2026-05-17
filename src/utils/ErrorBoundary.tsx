@@ -4,6 +4,7 @@ import { reportError } from './errorReporter';
 import { Sentry } from '../services/sentry';
 import { WarningIcon } from '../components/icons';
 import i18n from '../i18n';
+import { useReviewPromptStore } from '../stores/reviewPromptStore';
 
 interface Props {
   children: React.ReactNode;
@@ -30,6 +31,12 @@ export class ErrorBoundary extends Component<Props, State> {
     } catch {
       // Never let monitoring crash the error boundary
     }
+    // Hard-blackout the review prompt for a few minutes — the user just
+    // hit a crash, asking them to rate the app right after would torpedo
+    // the score.
+    try {
+      useReviewPromptStore.getState().markNegative();
+    } catch {}
   }
 
   private handleRestart = () => {

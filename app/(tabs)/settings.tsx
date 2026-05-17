@@ -836,6 +836,31 @@ export default function SettingsScreen() {
                 Linking.openURL('https://subradar.ai').catch(() => {});
               });
             },
+            true,
+          )}
+          {/* Manual rating entry — opens the native review sheet directly.
+              Subject to the OS-level 3-per-365-day cap, so safe to leave
+              tappable even after the user already rated. */}
+          {renderSettingRow(
+            'star-outline',
+            '#F59E0B',
+            t('settings.rate_app', 'Rate SubRadar'),
+            t('settings.rate_app_desc', 'A few seconds, helps a lot'),
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />,
+            async () => {
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              const { requestInAppReview } = require('../../src/utils/requestInAppReview');
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              const { useReviewPromptStore } = require('../../src/stores/reviewPromptStore');
+              const shown = await requestInAppReview();
+              if (shown) useReviewPromptStore.getState().markPrompted();
+              // If the OS swallows the prompt (already shown 3x in 365 days
+              // on iOS, or unsupported platform) we deliberately don't open
+              // the App Store page — surfacing a "Rate" link that bounces
+              // out to Safari is worse UX than a silent no-op, and we have
+              // no numeric App Store ID hardcoded here to construct a
+              // reliable fallback URL.
+            },
             false,
           )}
         </View>

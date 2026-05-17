@@ -34,6 +34,7 @@ import { SubscriptionSkeleton } from '../../src/components/SubscriptionSkeleton'
 import { BannerRenderer } from '../../src/components/BannerRenderer';
 import { DoneAccessoryInput } from '../../src/components/primitives/DoneAccessoryInput';
 import { useDebouncedValue } from '../../src/hooks/useDebouncedValue';
+import { useReviewPrompt } from '../../src/hooks/useReviewPrompt';
 import { UndoToast } from '../../src/components/UndoToast';
 import i18n from '../../src/i18n';
 import type { Subscription } from '../../src/types';
@@ -95,6 +96,16 @@ export default function SubscriptionsScreen() {
       analytics.track('soft_limit_warning_shown');
     }
   }, [isPro, subsLimitReached, slotsLeft]);
+
+  // Hitting 3+ subscriptions is the "I'm getting value" milestone — gate the
+  // App Store review prompt on it. The hook self-throttles (install age,
+  // 120-day cooldown, negative-event blackout) so we don't pester users.
+  const { promptIfEligible } = useReviewPrompt();
+  useEffect(() => {
+    if (activeCount >= 3) {
+      promptIfEligible('subscription_added_3plus');
+    }
+  }, [activeCount, promptIfEligible]);
 
   // Always fetch when screen gains focus (back from detail, other tabs, etc.)
   useFocusEffect(

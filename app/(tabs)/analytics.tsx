@@ -33,6 +33,7 @@ import AITeaser from '../../src/components/AITeaser';
 import AIAnalysisSummary from '../../src/components/AIAnalysisSummary';
 import AIRecommendationList from '../../src/components/AIRecommendationList';
 import { analytics } from '../../src/services/analytics';
+import { useReviewPrompt } from '../../src/hooks/useReviewPrompt';
 import AIDuplicateGroup from '../../src/components/AIDuplicateGroup';
 import AnalysisLoadingState from '../../src/components/AnalysisLoadingState';
 import { AnalyticsSkeleton } from '../../src/components/skeletons';
@@ -474,6 +475,16 @@ export default function AnalyticsScreen() {
   const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => { analytics.track('analytics_viewed'); }, []);
+
+  // Wow-moment review prompt — fires once a user with real data has dwelt on
+  // the analytics tab long enough to actually read it. 3s dwell + at-least-
+  // one subscription filter out accidental swipes and empty-state visits.
+  const { promptIfEligible } = useReviewPrompt();
+  useEffect(() => {
+    if (!summary || (summary.activeCount ?? 0) < 1) return;
+    const t = setTimeout(() => promptIfEligible('analytics_viewed'), 3000);
+    return () => clearTimeout(t);
+  }, [summary, promptIfEligible]);
 
   const fetchAll = useCallback(async () => {
     let errors = 0;

@@ -42,6 +42,7 @@ import {
 import { useCreateSubscription } from '../src/hooks/useSubscriptions';
 import type { GmailScanResult } from '../src/api/gmail';
 import { analytics } from '../src/services/analytics';
+import { useReviewPrompt } from '../src/hooks/useReviewPrompt';
 import { SafeLinearGradient } from '../src/components/SafeLinearGradient';
 import { BulkConfirmView } from '../src/components/add-subscription/BulkConfirmView';
 import { BulkEditModal } from '../src/components/add-subscription/BulkEditModal';
@@ -69,6 +70,7 @@ export default function GmailImportScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { promptIfEligible } = useReviewPrompt();
 
   const status = useGmailStatus();
   const connect = useGmailConnect();
@@ -567,6 +569,11 @@ export default function GmailImportScreen() {
       .catch(() => {});
     setImporting(false);
     analytics.track('gmail.import.complete', { created, failed });
+    // A successful bulk import is the strongest "wow" moment in the app —
+    // user just watched dozens of subscriptions appear with one tap.
+    if (created > 0) {
+      promptIfEligible('gmail_import_complete');
+    }
     // Clear the candidate list + scan job state so reopening
     // gmail-import (or coming back to dashboard) doesn't show the
     // already-imported rows or a phantom "scan ready" banner. The

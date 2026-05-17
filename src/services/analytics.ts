@@ -78,6 +78,7 @@ export type AnalyticsEvent =
   | 'analytics_viewed'
   | 'report_generated'
   | 'data_exported'
+  | 'review_prompt_shown'
 
   // Team upsell
   | 'team_upsell_modal_shown'
@@ -318,6 +319,15 @@ class AnalyticsService {
     // purchase funnel collapses to a single 'feature_gate' bucket and
     // the headline-feature ROI question stays unanswerable.
     this.track('paywall_viewed', { source, feature: feature ?? null });
+    // Suppress the App Store review prompt for a few minutes — surfacing a
+    // paywall and a "rate us" sheet in the same flow torpedoes the rating.
+    // Lazy require to avoid a circular import (stores → services → stores).
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require('../stores/reviewPromptStore').useReviewPromptStore
+        .getState()
+        .markNegative();
+    } catch {}
   }
 
   paywallDismissed(afterSeconds: number, selectedPlan: string, period: string) {
