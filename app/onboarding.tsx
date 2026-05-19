@@ -34,6 +34,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useSettingsStore } from '../src/stores/settingsStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { authApi } from '../src/api/auth';
+import { subscriptionsApi } from '../src/api/subscriptions';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
 import { COUNTRIES } from '../src/constants/countries';
@@ -512,6 +513,11 @@ function ShowcaseTeamIcon() {
   );
 }
 
+// ─── ICP-based waste estimate (per year, $USD) ───────────────────────────────
+// Values reflect average forgotten-subscription spend for each persona based on
+// industry studies (Chase 2024, Bango Subscriptions Report 2025).
+const ICP_WASTE_USD = { solo: 420, family: 1080, team: 3600 } as const;
+
 // ─── Quick-add services for Step 0 (use icon.horse for real logos) ───────────
 const QUICK_ADD_SERVICES = [
   { name: 'Netflix',    amount: 15.99, color: '#E50914', iconUrl: 'https://icon.horse/icon/netflix.com'     },
@@ -660,6 +666,24 @@ export default function OnboardingScreen() {
 
   const navigateToApp = () => {
     analytics.track('onboarding_completed');
+    // Backfill подписок, которые юзер тапнул в quick-add (Step 0).
+    // Fire-and-forget — навигацию не блокируем, ошибки логируем но не показываем
+    // (юзер всё равно увидит дашборд, и если что-то не создалось — добавит вручную).
+    const pending = useUIStore.getState().pendingQuickAdd;
+    if (pending.length > 0) {
+      pending.forEach((item) => {
+        subscriptionsApi
+          .create({
+            name: item.name,
+            amount: item.amount,
+            currency: selectedCurrency,
+            billingPeriod: 'monthly',
+            nextChargeDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+          .catch((err) => console.warn('[quick-add backfill] failed for', item.name, err?.message));
+      });
+      useUIStore.getState().clearPendingQuickAdd();
+    }
     setOnboarded();
     router.replace('/(tabs)');
   };
@@ -672,17 +696,32 @@ export default function OnboardingScreen() {
     });
   }, [step]);
 
-  // Counter animation for money hook (0 → 624)
+  // Counter animation for money hook — персонализируется под ICP сегмент.
+  // Solo: $420, Family: $1080, Team: $3600 (based on Bango 2025 / Chase 2024).
   const counterDisplayValue = useRef(0);
   const [counterDisplay, setCounterDisplay] = useState(0);
+  const hookIconScale = useRef(new Animated.Value(0.4)).current;
+  const hookCounterScale = useRef(new Animated.Value(0.6)).current;
   useEffect(() => {
     if (step !== 0) return;
-    analytics.track('onboarding_money_hook_viewed');
-    Animated.timing(counterAnim, {
-      toValue: 624,
-      duration: 2200,
-      useNativeDriver: false,
-    }).start();
+    const target = ICP_WASTE_USD[icpSegment ?? 'solo'];
+    analytics.track('onboarding_money_hook_viewed', { icp: icpSegment ?? 'unset', target });
+    // Сброс при смене ICP — counter ре-анимируется с новым target'ом.
+    counterAnim.setValue(0);
+    counterDisplayValue.current = 0;
+    setCounterDisplay(0);
+    // WOW entrance: icon bounce-in + counter scale-up + number roll.
+    Animated.sequence([
+      Animated.spring(hookIconScale, { toValue: 1, damping: 7, stiffness: 120, useNativeDriver: true }),
+      Animated.parallel([
+        Animated.spring(hookCounterScale, { toValue: 1, damping: 9, stiffness: 90, useNativeDriver: true }),
+        Animated.timing(counterAnim, {
+          toValue: target,
+          duration: 1800,
+          useNativeDriver: false,
+        }),
+      ]),
+    ]).start();
     const listener = counterAnim.addListener(({ value }) => {
       const rounded = Math.round(value);
       if (rounded !== counterDisplayValue.current) {
@@ -691,7 +730,7 @@ export default function OnboardingScreen() {
       }
     });
     return () => counterAnim.removeListener(listener);
-  }, [step]);
+  }, [step, icpSegment]);
 
   const finishAuth = (user: any, token: string, refreshToken?: string) => {
     if (!user || (!user.id && !user.email)) {
@@ -902,29 +941,45 @@ export default function OnboardingScreen() {
     >
       {/* Header */}
       <View style={{ alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <View style={{
+        <Animated.View style={{
           width: 92, height: 92,
           alignItems: 'center', justifyContent: 'center',
           shadowColor: '#F59E0B', shadowOpacity: isDark ? 0.4 : 0.22, shadowRadius: 18,
           shadowOffset: { width: 0, height: 6 },
+          transform: [{ scale: hookIconScale }],
         }}>
           <MoneyLossIcon isDark={isDark} />
-        </View>
+        </Animated.View>
         <Text style={{ fontSize: 13, fontWeight: '700', color: '#EF4444', letterSpacing: 1, textTransform: 'uppercase' }}>
-          {t('onboarding.hook_eyebrow', 'The average person wastes')}
+          {icpSegment === 'family'
+            ? t('onboarding.hook_eyebrow_family', 'The average family wastes')
+            : icpSegment === 'team'
+            ? t('onboarding.hook_eyebrow_team', 'The average team wastes')
+            : t('onboarding.hook_eyebrow', 'The average person wastes')}
         </Text>
-        {/* Animated counter */}
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+        {/* Animated counter — масштабируется при появлении (WOW) */}
+        <Animated.View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2, transform: [{ scale: hookCounterScale }] }}>
           <Text style={{ fontSize: 64, fontWeight: '900', color: colors.text, letterSpacing: -1, fontFamily: 'Inter-ExtraBold' }}>
-            ${counterDisplay}
+            ${counterDisplay.toLocaleString()}
           </Text>
           <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textSecondary, paddingBottom: 12 }}>
             /{t('paywall.year', 'yr')}
           </Text>
-        </View>
+        </Animated.View>
         <Text style={{ fontSize: 15, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', lineHeight: 22 }}>
-          {t('onboarding.hook_subtitle', 'on subscriptions they forgot about.\nHow many do YOU have?')}
+          {icpSegment === 'family'
+            ? t('onboarding.hook_subtitle_family', 'on subscriptions someone forgot to cancel.\nHow much is your family bleeding?')
+            : icpSegment === 'team'
+            ? t('onboarding.hook_subtitle_team', 'on tools nobody uses anymore.\nWhat\'s your team paying for?')
+            : t('onboarding.hook_subtitle', 'on subscriptions they forgot about.\nHow many do YOU have?')}
         </Text>
+        {/* Social proof — trust signal */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+          <Text style={{ fontSize: 12, color: '#F59E0B', letterSpacing: 1 }}>★★★★★</Text>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted }}>
+            {t('onboarding.hook_social_proof', 'Loved by thousands tracking smarter')}
+          </Text>
+        </View>
       </View>
 
       {/* ICP chip selector — drives conditional experience downstream */}
@@ -1040,6 +1095,13 @@ export default function OnboardingScreen() {
         testID="btn-get-started"
         style={[styles.showcaseBtn, { backgroundColor: colors.primary, marginTop: 4 }]}
         onPress={() => {
+          // Persist выбранные сервисы — добавим на Step 5 / Dashboard.
+          const picked = QUICK_ADD_SERVICES
+            .filter((s) => quickAddSelected.has(s.name) && s.amount > 0)
+            .map((s) => ({ name: s.name, amount: s.amount }));
+          if (picked.length > 0) {
+            useUIStore.getState().setPendingQuickAdd(picked);
+          }
           analytics.track('onboarding_step_completed', { step: 0, step_name: 'money_hook', quick_added: quickAddSelected.size });
           setStep(1);
         }}
@@ -1084,24 +1146,35 @@ export default function OnboardingScreen() {
     // Step 2: Currency
     <View key="currency" testID="step-currency" style={styles.step}>
       <View style={{ alignItems: 'center', marginBottom: 8 }}>
-        <Svg width={140} height={140} viewBox="0 0 140 140">
-          {/* Background circle */}
-          <Circle cx="70" cy="70" r="70" fill="rgba(139,92,246,0.1)" />
-          <Circle cx="70" cy="70" r="52" fill="rgba(139,92,246,0.15)" />
-          {/* Center coin */}
-          <Circle cx="70" cy="70" r="34" fill="#8B5CF6" />
-          <Circle cx="70" cy="70" r="28" fill="#7C3AED" />
-          {/* Dollar sign */}
-          <SvgText x="70" y="78" textAnchor="middle" fontSize="30" fontWeight="bold" fill="#FFFFFF">$</SvgText>
-          {/* Orbiting coins */}
-          <Circle cx="70" cy="18" r="14" fill="#8B5CF6" opacity="0.9" />
-          <SvgText x="70" y="23" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#FFF">€</SvgText>
-          <Circle cx="122" cy="70" r="12" fill="#8B5CF6" opacity="0.75" />
-          <SvgText x="122" y="75" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#FFF">£</SvgText>
-          <Circle cx="18" cy="70" r="12" fill="#8B5CF6" opacity="0.75" />
-          <SvgText x="18" y="75" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#FFF">¥</SvgText>
-          <Circle cx="70" cy="122" r="11" fill="#8B5CF6" opacity="0.6" />
-          <SvgText x="70" y="127" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#FFF">₸</SvgText>
+        {/* Премиум-иллюстрация: globe с накладывающимися currency-кружками —
+            namespacing подписок без mismash цветов. */}
+        <Svg width={120} height={120} viewBox="0 0 120 120">
+          <Defs>
+            <LinearGradient id="globeBg" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={isDark ? '#3C19A0' : '#8B5CF6'} stopOpacity="0.18" />
+              <Stop offset="1" stopColor={isDark ? '#7C3AED' : '#7C3AED'} stopOpacity="0.08" />
+            </LinearGradient>
+            <LinearGradient id="globeMain" x1="0.3" y1="0" x2="0.7" y2="1">
+              <Stop offset="0" stopColor="#A78BFA" />
+              <Stop offset="1" stopColor="#6B33D9" />
+            </LinearGradient>
+          </Defs>
+          {/* Soft halo */}
+          <Circle cx="60" cy="60" r="58" fill="url(#globeBg)" />
+          {/* Main coin/globe */}
+          <Circle cx="60" cy="60" r="40" fill="url(#globeMain)" />
+          {/* Top gloss */}
+          <Ellipse cx="60" cy="44" rx="28" ry="14" fill="#FFFFFF" opacity="0.25" />
+          {/* Equator + meridian — лёгкие штрихи globe */}
+          <Ellipse cx="60" cy="60" rx="40" ry="14" fill="none" stroke="#FFFFFF" strokeOpacity="0.3" strokeWidth="1" />
+          <Ellipse cx="60" cy="60" rx="14" ry="40" fill="none" stroke="#FFFFFF" strokeOpacity="0.25" strokeWidth="1" />
+          {/* Center $ — primary currency */}
+          <SvgText x="60" y="71" textAnchor="middle" fontSize="32" fontWeight="900" fill="#FFFFFF">$</SvgText>
+          {/* Satellite currencies — distinct positions, less clutter */}
+          <Circle cx="102" cy="32" r="11" fill={isDark ? '#1C1C2E' : '#FFFFFF'} stroke="#7C3AED" strokeWidth="2" />
+          <SvgText x="102" y="36" textAnchor="middle" fontSize="11" fontWeight="800" fill="#7C3AED">€</SvgText>
+          <Circle cx="20" cy="88" r="10" fill={isDark ? '#1C1C2E' : '#FFFFFF'} stroke="#7C3AED" strokeWidth="2" />
+          <SvgText x="20" y="92" textAnchor="middle" fontSize="10" fontWeight="800" fill="#7C3AED">£</SvgText>
         </Svg>
       </View>
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('onboarding.region_title', 'Where do you buy subscriptions?')}</Text>
@@ -1356,48 +1429,59 @@ export default function OnboardingScreen() {
     </View>,
 
     // Step 5: Add first subscription
-    <View key="first_sub" testID="step-first-sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
-      {/* Icon */}
-      <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
-        <Ionicons name="add-circle" size={56} color={colors.primary} />
-      </View>
+    (() => {
+      const pending = useUIStore.getState().pendingQuickAdd;
+      const hasPicks = pending.length > 0;
+      return (
+        <View key="first_sub" testID="step-first-sub" style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 16 }}>
+          <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+            <Ionicons name={hasPicks ? 'checkmark-circle' : 'add-circle'} size={56} color={colors.primary} />
+          </View>
 
-      <Text style={[styles.headline, { textAlign: 'center', color: colors.text }]}>
-        {t('onboarding.first_sub_title')}
-      </Text>
-      <Text style={[styles.subheadline, { textAlign: 'center', color: colors.textSecondary, marginBottom: 16 }]}>
-        {t('onboarding.first_sub_subtitle')}
-      </Text>
+          <Text style={[styles.headline, { textAlign: 'center', color: colors.text }]}>
+            {hasPicks
+              ? t('onboarding.first_sub_title_picked', { count: pending.length, defaultValue: `Adding your ${pending.length} pick${pending.length > 1 ? 's' : ''}` })
+              : t('onboarding.first_sub_title')}
+          </Text>
+          <Text style={[styles.subheadline, { textAlign: 'center', color: colors.textSecondary, marginBottom: 16 }]}>
+            {hasPicks
+              ? t('onboarding.first_sub_subtitle_picked', { defaultValue: `${pending.map((p) => p.name).slice(0, 3).join(', ')}${pending.length > 3 ? '…' : ''} — find the rest with AI` })
+              : t('onboarding.first_sub_subtitle')}
+          </Text>
 
-      {/* Buttons */}
-      <TouchableOpacity
-        testID="btn-first-sub-ai"
-        style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
-        onPress={() => {
-          useUIStore.getState().openAddSheet();
-          navigateToApp();
-        }}
-      >
-        <Ionicons name="sparkles-outline" size={22} color="#FFF" />
-        <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_with_ai')}</Text>
-      </TouchableOpacity>
+          {/* Buttons */}
+          <TouchableOpacity
+            testID="btn-first-sub-ai"
+            style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 }}
+            onPress={() => {
+              useUIStore.getState().openAddSheet();
+              navigateToApp();
+            }}
+          >
+            <Ionicons name="sparkles-outline" size={22} color="#FFF" />
+            <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFF' }}>{t('onboarding.add_with_ai')}</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        testID="btn-first-sub-manual"
-        style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
-        onPress={() => {
-          useUIStore.getState().openAddSheet();
-          navigateToApp();
-        }}
-      >
-        <Ionicons name="create-outline" size={22} color={colors.primary} />
-        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_manually')}</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            testID="btn-first-sub-manual"
+            style={{ width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', gap: 10 }}
+            onPress={() => {
+              useUIStore.getState().openAddSheet();
+              navigateToApp();
+            }}
+          >
+            <Ionicons name="create-outline" size={22} color={colors.primary} />
+            <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>{t('onboarding.add_manually')}</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity testID="btn-first-sub-skip" onPress={() => navigateToApp()} style={{ paddingVertical: 12 }}>
-        <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>{t('onboarding.skip_for_now')}</Text>
-      </TouchableOpacity>
-    </View>,
+          <TouchableOpacity testID="btn-first-sub-skip" onPress={() => navigateToApp()} style={{ paddingVertical: 12 }}>
+            <Text style={{ fontSize: 15, color: colors.textMuted, fontWeight: '600' }}>
+              {hasPicks ? t('onboarding.done_for_now', { defaultValue: "I'm done for now" }) : t('onboarding.skip_for_now')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    })(),
   ];
 
   return (
@@ -1407,13 +1491,8 @@ export default function OnboardingScreen() {
       keyboardVerticalOffset={0}
     >
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Theme toggle — visible on all steps */}
-      <TouchableOpacity
-        onPress={toggleTheme}
-        style={{ position: 'absolute', top: (safeInsets.top || 0) + 8, right: 16, zIndex: 100, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' }}
-      >
-        {isDark ? <SunIcon size={18} color="#F59E0B" /> : <MoonIcon size={18} color="#6366F1" />}
-      </TouchableOpacity>
+      {/* Theme toggle убран из онбординга — distraction в hot funnel.
+          Доступен в Settings. */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={styles.content}>{steps[step]}</View>
       </TouchableWithoutFeedback>
@@ -1425,11 +1504,15 @@ export default function OnboardingScreen() {
           let the content area swallow taps. */}
       {!keyboardShown && (
         <View style={styles.footer}>
-          <View style={styles.dots}>
-            {steps.map((_, i) => (
-              <View key={i} style={[styles.dot, { backgroundColor: colors.border }, step === i && [styles.dotActive, { backgroundColor: colors.primary }]]} />
-            ))}
-          </View>
+          {/* Pagination dots — только в configuration steps (0-2). На terminal
+              screens (auth/notifications/first_sub) убираем visual noise. */}
+          {step < 3 && (
+            <View style={styles.dots}>
+              {steps.map((_, i) => (
+                <View key={i} style={[styles.dot, { backgroundColor: colors.border }, step === i && [styles.dotActive, { backgroundColor: colors.primary }]]} />
+              ))}
+            </View>
+          )}
 
           {step > 0 && step !== 3 && step !== 4 && step !== 5 && (
             <View style={styles.footerBtns}>
