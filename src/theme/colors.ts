@@ -1,6 +1,6 @@
 export const DarkTheme = {
-  primary: '#7C5CFF',
-  primaryLight: '#2D2060',
+  primary: '#6B33D9',
+  primaryLight: '#2D1066',
   secondary: '#FF6B6B',
   success: '#34D399',
   warning: '#FBBF24',
@@ -16,8 +16,8 @@ export const DarkTheme = {
 };
 
 export const LightTheme = {
-  primary: '#6C47FF',
-  primaryLight: '#EDE9FF',
+  primary: '#5A28C8',
+  primaryLight: '#EDE5FF',
   secondary: '#FF6B6B',
   success: '#059669',
   warning: '#D97706',

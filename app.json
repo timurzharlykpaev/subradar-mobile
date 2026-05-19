@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#11111F"
+      "backgroundColor": "#1E0950"
     },
     "scheme": "subradar",
     "ios": {
@@ -63,12 +63,12 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#6D28D9"
+        "backgroundColor": "#3F1A92"
       },
       "splash": {
         "image": "./assets/images/splash.png",
         "resizeMode": "cover",
-        "backgroundColor": "#11111F"
+        "backgroundColor": "#1E0950"
       },
       "package": "com.goalin.subradar",
       "intentFilters": [

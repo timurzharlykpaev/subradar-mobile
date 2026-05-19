@@ -1,8 +1,8 @@
 import { BillingPeriod, CardBrand } from '../types';
 
 export const COLORS = {
-  primary: '#7C5CFF',
-  primaryLight: '#2D2060',
+  primary: '#6B33D9',
+  primaryLight: '#2D1066',
   secondary: '#FF6B6B',
   success: '#34D399',
   warning: '#FBBF24',

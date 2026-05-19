@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import Svg, { Path, Circle, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Text as SvgText, G, Defs, LinearGradient, Stop, Ellipse } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { analytics } from '../src/services/analytics';
 import {
@@ -52,6 +52,67 @@ const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
 // iOS client ID (bundle: com.goalin.subradar)
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
   '1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com';
+
+// ─── Money Loss Icon (Step 0 hook) ───────────────────────────────────────────
+// Премиальная gold монета с $, glossy highlight и тенью. Tasteful, minimal —
+// в духе Stripe/Apple. Работает в обеих темах.
+function MoneyLossIcon({ isDark }: { isDark: boolean }) {
+  const rimDark = isDark ? '#92400E' : '#78350F';
+  const dollar = isDark ? '#7C2D12' : '#78350F';
+
+  return (
+    <Svg width={84} height={84} viewBox="0 0 84 84">
+      <Defs>
+        {/* Внешний золотой gradient — премиум depth */}
+        <LinearGradient id="coinFace" x1="0.3" y1="0" x2="0.7" y2="1">
+          <Stop offset="0" stopColor="#FDE68A" />
+          <Stop offset="0.45" stopColor="#FBBF24" />
+          <Stop offset="1" stopColor="#D97706" />
+        </LinearGradient>
+        {/* Внутренний highlight для 3D эффекта */}
+        <LinearGradient id="coinHighlight" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0.55" />
+          <Stop offset="0.6" stopColor="#FFFFFF" stopOpacity="0" />
+        </LinearGradient>
+      </Defs>
+
+      {/* Drop shadow */}
+      <Ellipse cx="42" cy="76" rx="26" ry="3.5" fill="#000000" opacity={isDark ? '0.45' : '0.18'} />
+
+      {/* Outer rim — насыщенный bronze */}
+      <Circle cx="42" cy="40" r="34" fill="#A16207" />
+
+      {/* Face — gold gradient */}
+      <Circle cx="42" cy="40" r="31" fill="url(#coinFace)" />
+
+      {/* Inner decorative ring */}
+      <Circle cx="42" cy="40" r="27" fill="none" stroke={rimDark} strokeOpacity="0.35" strokeWidth="0.8" />
+
+      {/* Top gloss highlight — даёт 3D ощущение */}
+      <Ellipse cx="42" cy="28" rx="22" ry="14" fill="url(#coinHighlight)" />
+
+      {/* $ символ */}
+      <SvgText
+        x="42"
+        y="53"
+        textAnchor="middle"
+        fontSize="38"
+        fontWeight="900"
+        fill={dollar}
+        fontFamily="Inter-ExtraBold"
+      >$</SvgText>
+
+      {/* Subtle bottom shading для depth */}
+      <Path
+        d="M 11 40 A 31 31 0 0 0 73 40"
+        fill="none"
+        stroke="#000000"
+        strokeOpacity="0.08"
+        strokeWidth="6"
+      />
+    </Svg>
+  );
+}
 
 // ─── Feature SVG Icons ───────────────────────────────────────────────────────
 function IconVoice() {
@@ -368,7 +429,7 @@ const AuthHero = React.memo(function AuthHero() {
         }} />
         {/* Иконка */}
         <View style={{
-          shadowColor: '#8B5CF6', shadowOpacity: 0.4, shadowRadius: 18,
+          shadowColor: '#5A28C8', shadowOpacity: 0.5, shadowRadius: 18,
           shadowOffset: { width: 0, height: 4 }, elevation: 14,
         }}>
           <Image
@@ -841,8 +902,13 @@ export default function OnboardingScreen() {
     >
       {/* Header */}
       <View style={{ alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#EF444415', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 32 }}>💸</Text>
+        <View style={{
+          width: 92, height: 92,
+          alignItems: 'center', justifyContent: 'center',
+          shadowColor: '#F59E0B', shadowOpacity: isDark ? 0.4 : 0.22, shadowRadius: 18,
+          shadowOffset: { width: 0, height: 6 },
+        }}>
+          <MoneyLossIcon isDark={isDark} />
         </View>
         <Text style={{ fontSize: 13, fontWeight: '700', color: '#EF4444', letterSpacing: 1, textTransform: 'uppercase' }}>
           {t('onboarding.hook_eyebrow', 'The average person wastes')}
