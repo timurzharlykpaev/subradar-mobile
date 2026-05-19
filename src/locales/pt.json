@@ -573,7 +573,19 @@
     "icp_team": "Nossa equipe",
     "trial_spend_hook": "Você rastreia {{amount}}/mês — veja o todo",
     "region_title": "Onde você compra assinaturas?",
-    "region_subtitle": "Para que os preços permaneçam precisos para você."
+    "region_subtitle": "Para que os preços permaneçam precisos para você.",
+    "hook_eyebrow_family": "A família média desperdiça",
+    "hook_eyebrow_team": "A equipa média desperdiça",
+    "hook_subtitle_family": "em assinaturas que alguém esqueceu de cancelar.\nQuanto a tua família está a perder?",
+    "hook_subtitle_team": "em ferramentas que ninguém usa.\nPor que está a tua equipa a pagar?",
+    "hook_social_proof": "Milhares já acompanham de forma mais inteligente",
+    "first_sub_title_picked": "A adicionar as tuas seleções",
+    "first_sub_subtitle_picked": "{{names}} — encontraremos o resto com IA",
+    "done_for_now": "Por agora chega",
+    "value_preview_title": "Tudo para parar o sangramento",
+    "value_preview_subtitle": "A IA acompanha cada assinatura, tu ficas com o dinheiro",
+    "value_preview_cta": "Soa bem — continuar",
+    "auth_perk_privacy": "Privacidade de nível bancário — os teus dados são teus"
   },
   "analytics": {
     "title": "Análises",

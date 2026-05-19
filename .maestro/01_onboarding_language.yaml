@@ -16,25 +16,22 @@ name: "01 - Onboarding Language Selection (v1.4.0)"
 - tapOn:
     id: "btn-get-started"
 
-# Step 1: Language selection
+# Step 1: value preview selection
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
-      id: "step-language"
+      id: "step-value-preview"
     timeout: 10000
 - takeScreenshot: 01_language_select
 - tapOn:
-    id: "lang-en"
-    optional: true
-- tapOn:
-    id: "btn-next"
+    id: "btn-value-preview-continue"
 
 # v1.4.0 has NO step-welcome; next step is step-currency
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "step-currency"
-    timeout: 10000
+    timeout: 3000
 - takeScreenshot: 01_after_language
 
 # Sanity checks

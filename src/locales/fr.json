@@ -573,7 +573,19 @@
     "icp_team": "Notre équipe",
     "trial_spend_hook": "Vous suivez {{amount}}/mois — voyez l'image complète",
     "region_title": "Où achetez-vous vos abonnements ?",
-    "region_subtitle": "Pour que les prix restent précis pour vous."
+    "region_subtitle": "Pour que les prix restent précis pour vous.",
+    "hook_eyebrow_family": "La famille moyenne gaspille",
+    "hook_eyebrow_team": "L'équipe moyenne gaspille",
+    "hook_subtitle_family": "sur des abonnements oubliés.\nCombien votre famille perd-elle ?",
+    "hook_subtitle_team": "sur des outils que personne n'utilise plus.\nPour quoi paie votre équipe ?",
+    "hook_social_proof": "Des milliers suivent déjà plus intelligemment",
+    "first_sub_title_picked": "Ajout de tes sélections",
+    "first_sub_subtitle_picked": "{{names}} — l'IA trouvera le reste",
+    "done_for_now": "C'est tout pour l'instant",
+    "value_preview_title": "Tout pour arrêter l'hémorragie",
+    "value_preview_subtitle": "L'IA suit chaque abonnement, vous gardez l'argent",
+    "value_preview_cta": "Ça marche — continuer",
+    "auth_perk_privacy": "Confidentialité bancaire — vos données restent les vôtres"
   },
   "analytics": {
     "title": "Analytique",

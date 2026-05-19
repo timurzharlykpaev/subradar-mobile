@@ -618,7 +618,19 @@
     "hook_annual": "= ${{amount}}/год",
     "hook_cta_selected": "Найти остальные →",
     "region_title": "Где вы покупаете подписки?",
-    "region_subtitle": "Чтобы цены были точными именно для вас."
+    "region_subtitle": "Чтобы цены были точными именно для вас.",
+    "hook_eyebrow_family": "Средняя семья теряет",
+    "hook_eyebrow_team": "Средняя команда теряет",
+    "hook_subtitle_family": "на подписки, которые кто-то забыл отменить.\nСколько теряет ваша семья?",
+    "hook_subtitle_team": "на инструменты, которыми никто не пользуется.\nЗа что платит ваша команда?",
+    "hook_social_proof": "Тысячи людей уже отслеживают умнее",
+    "first_sub_title_picked": "Добавляем ваши выборы",
+    "first_sub_subtitle_picked": "{{names}} — остальное найдёт ИИ",
+    "done_for_now": "Пока всё",
+    "value_preview_title": "Всё, чтобы перестать терять деньги",
+    "value_preview_subtitle": "ИИ следит за подписками — деньги остаются у вас",
+    "value_preview_cta": "Звучит хорошо — продолжить",
+    "auth_perk_privacy": "Банковский уровень приватности — данные ваши"
   },
   "analytics": {
     "title": "Аналитика",

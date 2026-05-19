@@ -646,7 +646,19 @@
     "hook_annual": "= ${{amount}}/year",
     "hook_cta_selected": "Find the rest →",
     "region_title": "Where do you buy subscriptions?",
-    "region_subtitle": "So prices stay accurate for you."
+    "region_subtitle": "So prices stay accurate for you.",
+    "hook_eyebrow_family": "The average family wastes",
+    "hook_eyebrow_team": "The average team wastes",
+    "hook_subtitle_family": "on subscriptions someone forgot to cancel.\nHow much is your family bleeding?",
+    "hook_subtitle_team": "on tools nobody uses anymore.\nWhat's your team paying for?",
+    "hook_social_proof": "Loved by thousands tracking smarter",
+    "first_sub_title_picked": "Adding your picks",
+    "first_sub_subtitle_picked": "{{names}} — and we'll find the rest with AI",
+    "done_for_now": "I'm done for now",
+    "value_preview_title": "Everything to stop the bleeding",
+    "value_preview_subtitle": "AI tracks every subscription, you keep the money",
+    "value_preview_cta": "Sounds good — continue",
+    "auth_perk_privacy": "Bank-grade privacy — your data is yours"
   },
   "analytics": {
     "title": "Analytics",

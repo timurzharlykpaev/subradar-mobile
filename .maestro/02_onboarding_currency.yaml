@@ -14,24 +14,21 @@ name: "02 - Onboarding Currency Selection (v1.4.0)"
 - tapOn:
     id: "btn-get-started"
 
-# Step 1: Language
+# Step 1: value preview
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
-      id: "step-language"
+      id: "step-value-preview"
     timeout: 10000
 - tapOn:
-    id: "lang-en"
-    optional: true
-- tapOn:
-    id: "btn-next"
+    id: "btn-value-preview-continue"
 
 # Step 2: Currency (step-welcome + step-features removed in v1.4.0)
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
       id: "step-currency"
-    timeout: 10000
+    timeout: 3000
 - takeScreenshot: 02_currency_screen
 
 # Pick EUR then switch back to USD — verifies toggle behavior

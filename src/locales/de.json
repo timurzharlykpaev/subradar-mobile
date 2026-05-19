@@ -573,7 +573,19 @@
     "icp_team": "Unser Team",
     "trial_spend_hook": "Du trackst {{amount}}/Mo — sieh das volle Bild",
     "region_title": "Wo kaufst du Abos?",
-    "region_subtitle": "Damit die Preise für dich akkurat bleiben."
+    "region_subtitle": "Damit die Preise für dich akkurat bleiben.",
+    "hook_eyebrow_family": "Die durchschnittliche Familie verschwendet",
+    "hook_eyebrow_team": "Das durchschnittliche Team verschwendet",
+    "hook_subtitle_family": "für Abos, die jemand vergessen hat zu kündigen.\nWie viel verliert deine Familie?",
+    "hook_subtitle_team": "für Tools, die niemand mehr nutzt.\nWofür zahlt dein Team?",
+    "hook_social_proof": "Tausende verfolgen schon smarter",
+    "first_sub_title_picked": "Deine Auswahl wird hinzugefügt",
+    "first_sub_subtitle_picked": "{{names}} — den Rest findet die KI",
+    "done_for_now": "Das war's erstmal",
+    "value_preview_title": "Alles, um Geldverluste zu stoppen",
+    "value_preview_subtitle": "KI verfolgt jedes Abo, du behältst das Geld",
+    "value_preview_cta": "Klingt gut — weiter",
+    "auth_perk_privacy": "Privatsphäre auf Banken-Niveau — deine Daten gehören dir"
   },
   "analytics": {
     "title": "Analytik",

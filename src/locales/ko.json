@@ -573,7 +573,19 @@
     "icp_team": "우리 팀",
     "trial_spend_hook": "월 {{amount}} 추적 중 — 전체 그림 확인",
     "region_title": "구독을 어디에서 구매하시나요?",
-    "region_subtitle": "정확한 가격을 표시하기 위해서입니다."
+    "region_subtitle": "정확한 가격을 표시하기 위해서입니다.",
+    "hook_eyebrow_family": "평균 가족이 낭비하는 금액",
+    "hook_eyebrow_team": "평균 팀이 낭비하는 금액",
+    "hook_subtitle_family": "누군가 취소를 잊은 구독료로.\n가족은 얼마나 잃고 있나요?",
+    "hook_subtitle_team": "아무도 안 쓰는 도구에.\n팀은 무엇에 돈을 쓰고 있나요?",
+    "hook_social_proof": "수천 명이 더 똑똑하게 관리 중",
+    "first_sub_title_picked": "선택 항목 추가 중",
+    "first_sub_subtitle_picked": "{{names}} — 나머지는 AI가 찾아드려요",
+    "done_for_now": "이만 마칠게요",
+    "value_preview_title": "돈이 새는 걸 막는 모든 기능",
+    "value_preview_subtitle": "AI가 모든 구독을 추적합니다, 돈은 당신에게",
+    "value_preview_cta": "좋아요 — 계속",
+    "auth_perk_privacy": "은행급 개인정보 보호 — 데이터는 당신 것"
   },
   "analytics": {
     "title": "분석",

@@ -573,7 +573,19 @@
     "icp_team": "Nuestro equipo",
     "trial_spend_hook": "Rastreas {{amount}}/mes — desbloquea la imagen completa",
     "region_title": "¿Dónde compras suscripciones?",
-    "region_subtitle": "Para que los precios se mantengan precisos para ti."
+    "region_subtitle": "Para que los precios se mantengan precisos para ti.",
+    "hook_eyebrow_family": "La familia media desperdicia",
+    "hook_eyebrow_team": "El equipo medio desperdicia",
+    "hook_subtitle_family": "en suscripciones que alguien olvidó cancelar.\n¿Cuánto pierde tu familia?",
+    "hook_subtitle_team": "en herramientas que nadie usa ya.\n¿Por qué paga tu equipo?",
+    "hook_social_proof": "Miles ya rastrean más inteligentemente",
+    "first_sub_title_picked": "Añadiendo tus selecciones",
+    "first_sub_subtitle_picked": "{{names}} — encontraremos el resto con IA",
+    "done_for_now": "Esto es todo por ahora",
+    "value_preview_title": "Todo para parar la sangría",
+    "value_preview_subtitle": "La IA rastrea cada suscripción, tú te quedas el dinero",
+    "value_preview_cta": "Suena bien — continuar",
+    "auth_perk_privacy": "Privacidad bancaria — tus datos son tuyos"
   },
   "analytics": {
     "title": "Analítica",

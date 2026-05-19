@@ -573,7 +573,19 @@
     "icp_team": "我们团队",
     "trial_spend_hook": "您正在追踪{{amount}}/月 — 解锁完整图景",
     "region_title": "您在哪里购买订阅?",
-    "region_subtitle": "让价格对您保持准确。"
+    "region_subtitle": "让价格对您保持准确。",
+    "hook_eyebrow_family": "普通家庭浪费",
+    "hook_eyebrow_team": "普通团队浪费",
+    "hook_subtitle_family": "在没人取消的订阅上。\n你的家庭损失了多少？",
+    "hook_subtitle_team": "在没人使用的工具上。\n你的团队在为什么付费？",
+    "hook_social_proof": "数千人已经在更聪明地跟踪",
+    "first_sub_title_picked": "正在添加您的选择",
+    "first_sub_subtitle_picked": "{{names}} — 其余的 AI 会帮你找",
+    "done_for_now": "暂时就这些",
+    "value_preview_title": "止住资金流失的一切",
+    "value_preview_subtitle": "AI 追踪每一笔订阅，钱留给你",
+    "value_preview_cta": "听起来不错 — 继续",
+    "auth_perk_privacy": "银行级隐私 — 您的数据归您所有"
   },
   "analytics": {
     "title": "分析",

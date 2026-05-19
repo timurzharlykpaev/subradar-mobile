@@ -21,7 +21,7 @@ name: "70 - Billing: GraceBanner renders for grace_pro user (v1.4.0)"
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
     visible:
-      id: "step-language"
+      id: "step-value-preview"
     timeout: 10000
 - tapOn:
     id: "btn-next"
@@ -30,7 +30,7 @@ name: "70 - Billing: GraceBanner renders for grace_pro user (v1.4.0)"
 - extendedWaitUntil:
     visible:
       id: "step-currency"
-    timeout: 10000
+    timeout: 3000
 - tapOn:
     id: "btn-next"
 

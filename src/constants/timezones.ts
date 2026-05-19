@@ -148,3 +148,15 @@ export function detectCountryFromTimezone(): string {
     return 'US';
   }
 }
+
+// Strict version: returns null when timezone doesn't unambiguously map
+// to a country. Used by onboarding to decide whether currency picker
+// can be auto-skipped.
+export function detectCountryFromTimezoneStrict(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return TIMEZONE_TO_COUNTRY[tz] ?? null;
+  } catch {
+    return null;
+  }
+}

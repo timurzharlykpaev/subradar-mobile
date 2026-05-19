@@ -36,7 +36,7 @@ import { useUIStore } from '../src/stores/uiStore';
 import { authApi } from '../src/api/auth';
 import { subscriptionsApi } from '../src/api/subscriptions';
 import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
-import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
+import { detectCountryFromTimezone, detectCountryFromTimezoneStrict, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
 import { COUNTRIES } from '../src/constants/countries';
 import { CountryPicker } from '../src/components/CountryPicker';
 import { usersApi } from '../src/api/users';
@@ -533,6 +533,10 @@ export default function OnboardingScreen() {
   // Returning user (logged out but already onboarded) → skip to auth step
   const [step, setStep] = useState(isOnboarded ? 3 : 0);
   const [email, setEmail] = useState('');
+  // regionAutoDetected = true когда timezone маппится unambiguously на страну.
+  // Используется для пропуска currency picker (Step 2) у юзеров с
+  // confident detection (US/EU/RU/etc.) — снижает onboarding friction.
+  const [regionAutoDetected] = useState(() => detectCountryFromTimezoneStrict() !== null);
   const [selectedRegion, setSelectedRegion] = useState<string>(() => {
     try {
       return detectCountryFromTimezone() || 'US';
@@ -696,12 +700,23 @@ export default function OnboardingScreen() {
     });
   }, [step]);
 
+  // Auto-skip currency step if region was confidently auto-detected from
+  // timezone. User can change currency in Settings if it's wrong.
+  useEffect(() => {
+    if (step !== 2) return;
+    if (regionAutoDetected) {
+      analytics.track('onboarding_step_completed', { step: 2, step_name: 'currency_autoskip' });
+      setStep(3);
+    }
+  }, [step, regionAutoDetected]);
+
   // Counter animation for money hook — персонализируется под ICP сегмент.
   // Solo: $420, Family: $1080, Team: $3600 (based on Bango 2025 / Chase 2024).
   const counterDisplayValue = useRef(0);
   const [counterDisplay, setCounterDisplay] = useState(0);
   const hookIconScale = useRef(new Animated.Value(0.4)).current;
   const hookCounterScale = useRef(new Animated.Value(0.6)).current;
+  const hookIconPulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     if (step !== 0) return;
     const target = ICP_WASTE_USD[icpSegment ?? 'solo'];
@@ -710,6 +725,8 @@ export default function OnboardingScreen() {
     counterAnim.setValue(0);
     counterDisplayValue.current = 0;
     setCounterDisplay(0);
+    hookIconScale.setValue(0.4);
+    hookCounterScale.setValue(0.6);
     // WOW entrance: icon bounce-in + counter scale-up + number roll.
     Animated.sequence([
       Animated.spring(hookIconScale, { toValue: 1, damping: 7, stiffness: 120, useNativeDriver: true }),
@@ -721,7 +738,15 @@ export default function OnboardingScreen() {
           useNativeDriver: false,
         }),
       ]),
-    ]).start();
+    ]).start(() => {
+      // Continuous pulse — иконка «дышит», feels alive, удерживает внимание.
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(hookIconPulse, { toValue: 1.06, duration: 1100, useNativeDriver: true }),
+          Animated.timing(hookIconPulse, { toValue: 1, duration: 1100, useNativeDriver: true }),
+        ]),
+      ).start();
+    });
     const listener = counterAnim.addListener(({ value }) => {
       const rounded = Math.round(value);
       if (rounded !== counterDisplayValue.current) {
@@ -902,24 +927,33 @@ export default function OnboardingScreen() {
   const card3Scale = useRef(new Animated.Value(0.85)).current;
   const card4Scale = useRef(new Animated.Value(0.85)).current;
 
+  // Showcase cards анимация триггерится на Step 1 (Value Preview screen).
   useEffect(() => {
-    if (step === 0) {
+    if (step === 1) {
+      // Reset before animating — иначе при backjump'е карточки уже стоят.
+      showcaseOpacity.setValue(0);
+      showcaseTranslateY.setValue(30);
+      card1Scale.setValue(0.85);
+      card2Scale.setValue(0.85);
+      card3Scale.setValue(0.85);
+      card4Scale.setValue(0.85);
       Animated.parallel([
         Animated.timing(showcaseOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
         Animated.timing(showcaseTranslateY, { toValue: 0, duration: 500, useNativeDriver: true }),
         Animated.sequence([
-          Animated.spring(card1Scale, { toValue: 1, damping: 10, delay: 100, useNativeDriver: true }),
+          Animated.delay(100),
+          Animated.spring(card1Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
         ]),
         Animated.sequence([
-          Animated.delay(150),
+          Animated.delay(180),
           Animated.spring(card2Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
         ]),
         Animated.sequence([
-          Animated.delay(250),
+          Animated.delay(260),
           Animated.spring(card3Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
         ]),
         Animated.sequence([
-          Animated.delay(350),
+          Animated.delay(340),
           Animated.spring(card4Scale, { toValue: 1, damping: 10, useNativeDriver: true }),
         ]),
       ]).start();
@@ -935,10 +969,7 @@ export default function OnboardingScreen() {
 
   const steps = [
     // Step 0: Money Loss Hook + Quick-Add
-    <Animated.View
-      key="money_hook"
-      style={[styles.step, { opacity: showcaseOpacity, transform: [{ translateY: showcaseTranslateY }] }]}
-    >
+    <View key="money_hook" style={styles.step}>
       {/* Header */}
       <View style={{ alignItems: 'center', gap: 6, marginBottom: 4 }}>
         <Animated.View style={{
@@ -946,7 +977,9 @@ export default function OnboardingScreen() {
           alignItems: 'center', justifyContent: 'center',
           shadowColor: '#F59E0B', shadowOpacity: isDark ? 0.4 : 0.22, shadowRadius: 18,
           shadowOffset: { width: 0, height: 6 },
-          transform: [{ scale: hookIconScale }],
+          transform: [
+            { scale: Animated.multiply(hookIconScale, hookIconPulse) as unknown as Animated.AnimatedInterpolation<number> },
+          ],
         }}>
           <MoneyLossIcon isDark={isDark} />
         </Animated.View>
@@ -1112,36 +1145,58 @@ export default function OnboardingScreen() {
             : t('onboarding.showcase_start')}
         </Text>
       </TouchableOpacity>
-    </Animated.View>,
+    </View>,
 
-    // Step 1: Language (was Step 0)
-    <View key="language" testID="step-language" style={styles.step}>
-      <Animated.View style={[styles.logoContainer, logoStyle]}>
+    // Step 1: Value Preview (заменил Language picker — i18n autodetect через
+    // expo-localization, юзер меняет язык в Settings). Highest-conversion
+    // booster: показываем value до sign-up gate.
+    <Animated.View
+      key="value_preview"
+      testID="step-value-preview"
+      style={[styles.step, { opacity: showcaseOpacity, transform: [{ translateY: showcaseTranslateY }] }]}
+    >
+      <Animated.View style={[styles.logoContainer, logoStyle, { marginBottom: 8 }]}>
         <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
-        <Text style={[styles.logoTitle, { color: colors.text }]}>SubRadar</Text>
-        <View style={[styles.aiBadge, { backgroundColor: colors.primary }]}><Text style={styles.aiBadgeText}>AI</Text></View>
+        <Text style={[styles.logoTitle, { color: colors.text, fontSize: 24 }]}>SubRadar</Text>
       </Animated.View>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('onboarding.choose_language')}</Text>
-      <View style={styles.langGrid}>
-        {LANGUAGES.map((lang) => (
-          <TouchableOpacity
-            key={lang.code}
-            testID={`lang-${lang.code}`}
+      <Text style={[styles.headline, { color: colors.text, textAlign: 'center', fontSize: 24 }]}>
+        {t('onboarding.value_preview_title', 'Everything to stop the bleeding')}
+      </Text>
+      <Text style={[styles.subheadline, { color: colors.textSecondary, textAlign: 'center', marginBottom: 4 }]}>
+        {t('onboarding.value_preview_subtitle', 'AI tracks every subscription, you keep the money')}
+      </Text>
+      <View style={styles.showcaseGrid}>
+        {SHOWCASE_FEATURES.map((f, i) => (
+          <Animated.View
+            key={i}
             style={[
-              styles.langChip,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-              language === lang.code && { backgroundColor: colors.primary + '22', borderColor: colors.primary },
+              styles.showcaseCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                transform: [{ scale: f.scale }],
+              },
             ]}
-            onPress={() => handleLanguageSelect(lang.code)}
           >
-            <Text style={styles.langFlag}>{lang.flag}</Text>
-            <Text style={[styles.langLabel, { color: colors.text }, language === lang.code && { color: colors.primary, fontWeight: '700' }]}>
-              {lang.label}
-            </Text>
-          </TouchableOpacity>
+            <f.Icon />
+            <Text style={[styles.showcaseCardTitle, { color: colors.text }]}>{f.title}</Text>
+            <Text style={[styles.showcaseCardDesc, { color: colors.textSecondary }]}>{f.desc}</Text>
+          </Animated.View>
         ))}
       </View>
-    </View>,
+      <TouchableOpacity
+        testID="btn-value-preview-continue"
+        style={[styles.showcaseBtn, { backgroundColor: colors.primary, marginTop: 8 }]}
+        onPress={() => {
+          analytics.track('onboarding_step_completed', { step: 1, step_name: 'value_preview' });
+          setStep(2);
+        }}
+      >
+        <Text style={styles.showcaseBtnText}>
+          {t('onboarding.value_preview_cta', 'Sounds good — continue')}
+        </Text>
+      </TouchableOpacity>
+    </Animated.View>,
 
     // Step 2: Currency
     <View key="currency" testID="step-currency" style={styles.step}>
@@ -1246,9 +1301,22 @@ export default function OnboardingScreen() {
 
       {!otpMode ? (
         <>
-          <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text, textAlign: 'center', marginBottom: 28, letterSpacing: -0.5 }}>
+          <Text style={{ fontSize: 28, fontWeight: '900', color: colors.text, textAlign: 'center', marginBottom: 4, letterSpacing: -0.5 }}>
             SubRadar
           </Text>
+          {/* Value bullets — последний шанс продать ценность перед sign-up */}
+          <View style={{ alignItems: 'center', gap: 6, marginBottom: 20 }}>
+            {[
+              { icon: 'sparkles', text: t('onboarding.auth_perk_ai', { defaultValue: t('onboarding.showcase_ai_title') }) },
+              { icon: 'notifications', text: t('onboarding.auth_perk_alerts', { defaultValue: t('onboarding.showcase_notify_title') }) },
+              { icon: 'shield-checkmark', text: t('onboarding.auth_perk_privacy', { defaultValue: 'Bank-grade privacy — your data is yours' }) },
+            ].map((perk, i) => (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name={perk.icon as any} size={16} color={colors.primary} />
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary }}>{perk.text}</Text>
+              </View>
+            ))}
+          </View>
           {Platform.OS === 'ios' && (
             <TouchableOpacity testID="btn-apple" style={[styles.socialBtn, { backgroundColor: isDark ? '#1C1C1E' : '#000' }]} onPress={handleAppleLogin} disabled={loading}>
               <AppleIcon />

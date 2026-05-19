@@ -573,7 +573,19 @@
     "icp_team": "チーム",
     "trial_spend_hook": "{{amount}}/月を追跡中 — 全体像を表示",
     "region_title": "サブスクをどこで購入しますか?",
-    "region_subtitle": "価格を正確に保つためです。"
+    "region_subtitle": "価格を正確に保つためです。",
+    "hook_eyebrow_family": "平均的な家族の無駄遣い",
+    "hook_eyebrow_team": "平均的なチームの無駄遣い",
+    "hook_subtitle_family": "誰かが解約し忘れたサブスクで。\nご家族はいくら失っていますか？",
+    "hook_subtitle_team": "誰も使っていないツールで。\nチームは何にお金を払っていますか？",
+    "hook_social_proof": "数千人がよりスマートに管理中",
+    "first_sub_title_picked": "選択を追加中",
+    "first_sub_subtitle_picked": "{{names}} — 残りはAIが見つけます",
+    "done_for_now": "とりあえず完了",
+    "value_preview_title": "出血を止めるすべて",
+    "value_preview_subtitle": "AIがすべてのサブスクを追跡。お金はあなたに",
+    "value_preview_cta": "いいですね — 続行",
+    "auth_perk_privacy": "銀行レベルのプライバシー — データはあなたのもの"
   },
   "analytics": {
     "title": "分析",
