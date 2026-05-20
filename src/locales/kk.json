@@ -142,10 +142,13 @@
     "action_edit": "Өңдеу",
     "action_cancel": "Тоқтатылған деп белгілеу",
     "long_press_hint": "Өзгерту, тоқтату немесе жою үшін жазылымды басып ұстаңыз",
-    "delete_undo_message": "{{name}} жойылды"
+    "delete_undo_message": "{{name}} жойылды",
+    "header_subtitle_count": "{{count}} белсенді · ай сайын бақылау",
+    "header_subtitle_empty": "Әрбір тұрақты төлемді бақылаңыз"
   },
   "add": {
     "title": "Жазылым қосу",
+    "subtitle": "Дауыс, фото, пошта немесе қолмен",
     "manual": "Қолмен",
     "voice": "Дауыс",
     "screenshot": "Скриншот",
@@ -745,7 +748,8 @@
     "scope_personal": "Жеке",
     "scope_team": "Команда",
     "scope_team_hint": "Команданың барлық белсенді мүшелерінің жазылымдарын біріктіреді. Мүше бойынша бөлу және қайталанулардан үнемдеуді қамтиды.",
-    "generating_team_pdf": "Команда есебі жасалуда…"
+    "generating_team_pdf": "Команда есебі жасалуда…",
+    "header_subtitle": "PDF немесе CSV-ке экспорттау"
   },
   "edit_profile": {
     "title": "Профильді өзгерту",

@@ -1185,7 +1185,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       >
         {/* Drag handle */}
         <GestureDetector gesture={panGesture}>
-          <Reanimated.View style={{ paddingVertical: 18, paddingHorizontal: 20, alignItems: 'center' }}>
+          <Reanimated.View style={{ paddingTop: 10, paddingBottom: 6, paddingHorizontal: 20, alignItems: 'center' }}>
             <View style={[styles.handleBar, { backgroundColor: colors.border }]} />
           </Reanimated.View>
         </GestureDetector>
@@ -1206,9 +1206,20 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
           style={{ flex: 1 }}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>{t('add.title')}</Text>
-            <TouchableOpacity onPress={handleClose} style={[styles.closeBtn, { backgroundColor: colors.background }]}>
-              <Ionicons name="close" size={26} color={colors.textSecondary} />
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={[styles.title, { color: colors.text }]}>{t('add.title')}</Text>
+                <View style={{ paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, backgroundColor: colors.primary + '22', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <Ionicons name="sparkles" size={9} color={colors.primary} />
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary, letterSpacing: 0.6 }}>AI</Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 3, letterSpacing: 0.1 }}>
+                {t('add.subtitle', 'Voice, photo, mail or manual')}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={handleClose} style={[styles.closeBtn, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border }]}>
+              <Ionicons name="close" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -1362,42 +1373,42 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   sheet: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: SCREEN_HEIGHT * 0.9,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    height: SCREEN_HEIGHT * 0.92,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 20,
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
+    elevation: 24,
   },
   handleBar: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
+    width: 36,
+    height: 5,
+    borderRadius: 3,
     alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 4,
+    opacity: 0.6,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingTop: 6,
+    paddingBottom: 14,
   },
-  title: { fontSize: 24, fontWeight: '800' },
+  title: { fontSize: 22, fontWeight: '700', letterSpacing: -0.4 },
   closeBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -142,10 +142,13 @@
     "action_edit": "编辑",
     "action_cancel": "标记为已取消",
     "long_press_hint": "长按任意订阅以编辑、取消或删除",
-    "delete_undo_message": "{{name}} 已删除"
+    "delete_undo_message": "{{name}} 已删除",
+    "header_subtitle_count": "{{count}} 个活跃 · 每月跟踪",
+    "header_subtitle_empty": "追踪每一笔定期扣款"
   },
   "add": {
     "title": "添加订阅",
+    "subtitle": "语音、照片、邮件或手动",
     "manual": "手动",
     "voice": "语音",
     "screenshot": "截图",
@@ -737,7 +740,8 @@
     "scope_personal": "个人",
     "scope_team": "团队",
     "scope_team_hint": "汇总所有活跃成员的订阅,含按成员明细及重复订阅节省。",
-    "generating_team_pdf": "正在生成团队报告…"
+    "generating_team_pdf": "正在生成团队报告…",
+    "header_subtitle": "导出 PDF 或 CSV"
   },
   "edit_profile": {
     "title": "编辑资料",

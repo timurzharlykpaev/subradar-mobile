@@ -272,7 +272,7 @@ export default function WorkspaceScreen() {
             </View>
             <Text style={{
               fontSize: 24,
-              fontWeight: '900',
+              fontWeight: '700',
               color: colors.text,
               textAlign: 'center',
               marginBottom: 10,
@@ -480,8 +480,8 @@ export default function WorkspaceScreen() {
         }}>
           <View style={{ flex: 1 }}>
             <Text style={{
-              fontSize: 28,
-              fontWeight: '900',
+              fontSize: 26,
+              fontWeight: '700',
               color: colors.text,
               letterSpacing: -0.5,
             }}>

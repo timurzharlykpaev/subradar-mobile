@@ -229,9 +229,9 @@ function IdleViewImpl({
         testID="voice-hero"
         onPress={handleMicPress}
         activeOpacity={0.92}
-        style={{ alignItems: 'center', paddingTop: 8 }}
+        style={{ alignItems: 'center', paddingTop: 36, overflow: 'visible' }}
       >
-        <View style={{ alignItems: 'center', justifyContent: 'center', height: 168 }}>
+        <View style={{ alignItems: 'center', justifyContent: 'center', height: 168, overflow: 'visible' }}>
           {/* Active recording rings — two concentric pulses outward. */}
           {isRecording && (
             <>

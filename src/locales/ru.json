@@ -151,10 +151,13 @@
     "action_edit": "Редактировать",
     "action_cancel": "Отметить как отменённую",
     "long_press_hint": "Удерживайте подписку, чтобы изменить, отменить или удалить",
-    "delete_undo_message": "«{{name}}» удалена"
+    "delete_undo_message": "«{{name}}» удалена",
+    "header_subtitle_count": "{{count}} активных · трекинг каждый месяц",
+    "header_subtitle_empty": "Отслеживайте все регулярные списания"
   },
   "add": {
     "title": "Добавить подписку",
+    "subtitle": "Голос, фото, почта или вручную",
     "manual": "Вручную",
     "voice": "Голос",
     "screenshot": "Скриншот",
@@ -782,7 +785,8 @@
     "scope_personal": "Личный",
     "scope_team": "Команда",
     "scope_team_hint": "Сводит подписки всех активных участников команды. Включает разбивку по участникам и экономию на дубликатах.",
-    "generating_team_pdf": "Готовим отчёт команды…"
+    "generating_team_pdf": "Готовим отчёт команды…",
+    "header_subtitle": "Экспорт PDF или CSV"
   },
   "edit_profile": {
     "title": "Редактировать профиль",

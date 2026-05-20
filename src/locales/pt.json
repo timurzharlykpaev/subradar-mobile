@@ -142,10 +142,13 @@
     "action_edit": "Editar",
     "action_cancel": "Marcar como cancelada",
     "long_press_hint": "Mantenha pressionada uma assinatura para editar, cancelar ou excluir",
-    "delete_undo_message": "{{name}} excluída"
+    "delete_undo_message": "{{name}} excluída",
+    "header_subtitle_count": "{{count}} ativas · monitoradas mensalmente",
+    "header_subtitle_empty": "Acompanhe toda cobrança recorrente"
   },
   "add": {
     "title": "Adicionar Assinatura",
+    "subtitle": "Voz, foto, e-mail ou manual",
     "manual": "Manual",
     "voice": "Voz",
     "screenshot": "Captura de tela",
@@ -737,7 +740,8 @@
     "scope_personal": "Pessoal",
     "scope_team": "Equipe",
     "scope_team_hint": "Agrega assinaturas de todos os membros ativos. Inclui detalhamento por membro e economia em duplicatas.",
-    "generating_team_pdf": "Gerando relatório da equipe…"
+    "generating_team_pdf": "Gerando relatório da equipe…",
+    "header_subtitle": "Exportar PDF ou CSV"
   },
   "edit_profile": {
     "title": "Editar Perfil",

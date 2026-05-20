@@ -142,10 +142,13 @@
     "action_edit": "編集",
     "action_cancel": "キャンセル済みにする",
     "long_press_hint": "編集・キャンセル・削除はサブスクリプションを長押し",
-    "delete_undo_message": "{{name}} を削除しました"
+    "delete_undo_message": "{{name}} を削除しました",
+    "header_subtitle_count": "{{count}}件アクティブ · 毎月トラッキング",
+    "header_subtitle_empty": "すべての定期支払いを追跡"
   },
   "add": {
     "title": "サブスクリプションを追加",
+    "subtitle": "音声・写真・メール・手動",
     "manual": "手動",
     "voice": "音声",
     "screenshot": "スクリーンショット",
@@ -737,7 +740,8 @@
     "scope_personal": "個人",
     "scope_team": "チーム",
     "scope_team_hint": "全アクティブメンバーのサブスクリプションを集計。メンバー別内訳と重複節約を含みます。",
-    "generating_team_pdf": "チームレポートを作成中…"
+    "generating_team_pdf": "チームレポートを作成中…",
+    "header_subtitle": "PDFまたはCSVで出力"
   },
   "edit_profile": {
     "title": "プロフィール編集",

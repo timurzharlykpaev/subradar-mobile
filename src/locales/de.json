@@ -142,10 +142,13 @@
     "action_edit": "Bearbeiten",
     "action_cancel": "Als gekündigt markieren",
     "long_press_hint": "Abonnement gedrückt halten zum Bearbeiten, Kündigen oder Löschen",
-    "delete_undo_message": "{{name}} gelöscht"
+    "delete_undo_message": "{{name}} gelöscht",
+    "header_subtitle_count": "{{count}} aktiv · monatlich verfolgt",
+    "header_subtitle_empty": "Jede wiederkehrende Abbuchung im Blick"
   },
   "add": {
     "title": "Abonnement hinzufügen",
+    "subtitle": "Sprache, Foto, E-Mail oder manuell",
     "manual": "Manuell",
     "voice": "Sprache",
     "screenshot": "Screenshot",
@@ -737,7 +740,8 @@
     "scope_personal": "Persönlich",
     "scope_team": "Team",
     "scope_team_hint": "Aggregiert Abonnements aller aktiven Mitglieder. Enthält Aufschlüsselung pro Mitglied und Einsparungen bei Duplikaten.",
-    "generating_team_pdf": "Team-Bericht wird erstellt…"
+    "generating_team_pdf": "Team-Bericht wird erstellt…",
+    "header_subtitle": "PDF oder CSV exportieren"
   },
   "edit_profile": {
     "title": "Profil bearbeiten",

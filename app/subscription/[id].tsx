@@ -142,15 +142,15 @@ export default function SubscriptionDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity testID="btn-back" style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={[styles.backBtnText, { color: colors.primary }]}>←</Text>
+          <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border }]} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={20} color={colors.text} />
           </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity testID="btn-edit-sub" style={[styles.editBtn, { backgroundColor: colors.primary + '14' }]} onPress={() => setEditVisible(true)} accessibilityLabel={t('common.edit')}>
-              <PencilIcon size={22} color={colors.primary} />
+              <PencilIcon size={18} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity testID="btn-delete-sub" style={[styles.deleteBtn, { backgroundColor: colors.error + '14' }]} onPress={handleDelete} accessibilityLabel={t('common.delete')}>
-              <TrashIcon size={22} color={colors.error} />
+              <TrashIcon size={18} color={colors.error} />
             </TouchableOpacity>
           </View>
         </View>
@@ -406,12 +406,12 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
-  backBtn: { padding: 10, minWidth: 44, minHeight: 44, justifyContent: 'center' },
+  backBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   backBtnText: { fontSize: 24 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  editBtn: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  editBtn: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
   editBtnText: { fontSize: 20 },
-  deleteBtn: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  deleteBtn: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
   deleteBtnText: { fontSize: 20 },
   serviceCard: {
     alignItems: 'center',

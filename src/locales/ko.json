@@ -142,10 +142,13 @@
     "action_edit": "편집",
     "action_cancel": "취소됨으로 표시",
     "long_press_hint": "구독을 길게 눌러 편집, 취소 또는 삭제",
-    "delete_undo_message": "{{name}} 삭제됨"
+    "delete_undo_message": "{{name}} 삭제됨",
+    "header_subtitle_count": "활성 {{count}}개 · 매월 추적",
+    "header_subtitle_empty": "모든 정기 결제를 추적"
   },
   "add": {
     "title": "구독 추가",
+    "subtitle": "음성, 사진, 메일 또는 수동",
     "manual": "수동",
     "voice": "음성",
     "screenshot": "스크린샷",
@@ -737,7 +740,8 @@
     "scope_personal": "개인",
     "scope_team": "팀",
     "scope_team_hint": "활성 팀원 전원의 구독을 집계합니다. 멤버별 상세 및 중복 절감 포함.",
-    "generating_team_pdf": "팀 보고서 생성 중…"
+    "generating_team_pdf": "팀 보고서 생성 중…",
+    "header_subtitle": "PDF 또는 CSV로 내보내기"
   },
   "edit_profile": {
     "title": "프로필 편집",

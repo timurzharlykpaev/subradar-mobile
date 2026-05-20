@@ -1264,8 +1264,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontSize: 28, fontWeight: '900', letterSpacing: -0.3 },
-  subtitle: { fontSize: 14, marginTop: 2 },
+  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
+  subtitle: { fontSize: 13, marginTop: 2, letterSpacing: 0.1 },
 
   // Stats row
   statsRow: { paddingHorizontal: 20, paddingVertical: 14 },

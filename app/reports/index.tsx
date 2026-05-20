@@ -190,10 +190,15 @@ export default function ReportsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface2 }]} onPress={() => router.back()}>
+        <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border }]} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{t('reports.title', 'Reports')}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.title, { color: colors.text }]}>{t('reports.title', 'Reports')}</Text>
+          <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2, letterSpacing: 0.1 }}>
+            {t('reports.header_subtitle', 'Export PDF or CSV')}
+          </Text>
+        </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -361,9 +366,9 @@ export default function ReportsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, gap: 12 },
-  backBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, gap: 12 },
+  backBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 22, fontWeight: '700', letterSpacing: -0.4 },
 
   sectionLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, paddingHorizontal: 20, marginTop: 20, marginBottom: 10 },
 

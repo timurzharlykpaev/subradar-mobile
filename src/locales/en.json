@@ -142,10 +142,13 @@
     "action_edit": "Edit",
     "action_cancel": "Mark as cancelled",
     "long_press_hint": "Hold any subscription to edit, cancel or delete",
-    "delete_undo_message": "{{name}} deleted"
+    "delete_undo_message": "{{name}} deleted",
+    "header_subtitle_count": "{{count}} active · tracked monthly",
+    "header_subtitle_empty": "Track every recurring charge"
   },
   "add": {
     "title": "Add Subscription",
+    "subtitle": "Voice, photo, mail or manual",
     "manual": "Manual",
     "voice": "Voice",
     "screenshot": "Screenshot",
@@ -810,7 +813,8 @@
     "scope_personal": "Personal",
     "scope_team": "Team",
     "scope_team_hint": "Aggregates subscriptions across every active team member. Includes per-member breakdown and overlap savings.",
-    "generating_team_pdf": "Generating team report…"
+    "generating_team_pdf": "Generating team report…",
+    "header_subtitle": "Export PDF or CSV"
   },
   "edit_profile": {
     "title": "Edit Profile",

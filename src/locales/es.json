@@ -142,10 +142,13 @@
     "action_edit": "Editar",
     "action_cancel": "Marcar como cancelada",
     "long_press_hint": "Mantén pulsada una suscripción para editar, cancelar o eliminar",
-    "delete_undo_message": "{{name}} eliminada"
+    "delete_undo_message": "{{name}} eliminada",
+    "header_subtitle_count": "{{count}} activas · seguimiento mensual",
+    "header_subtitle_empty": "Rastrea cada cargo recurrente"
   },
   "add": {
     "title": "Agregar Suscripción",
+    "subtitle": "Voz, foto, correo o manual",
     "manual": "Manual",
     "voice": "Voz",
     "screenshot": "Captura",
@@ -737,7 +740,8 @@
     "scope_personal": "Personal",
     "scope_team": "Equipo",
     "scope_team_hint": "Agrega las suscripciones de todos los miembros activos. Incluye desglose por miembro y ahorros por duplicados.",
-    "generating_team_pdf": "Generando reporte de equipo…"
+    "generating_team_pdf": "Generando reporte de equipo…",
+    "header_subtitle": "Exportar PDF o CSV"
   },
   "edit_profile": {
     "title": "Editar perfil",

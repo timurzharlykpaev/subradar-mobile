@@ -1701,8 +1701,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  headerTitle: { fontSize: 22, fontWeight: '600' },
-  headerSubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  headerTitle: { fontSize: 22, fontWeight: '700', letterSpacing: -0.4, textAlign: 'center' },
+  headerSubtitle: { fontSize: 13, textAlign: 'center', lineHeight: 19, letterSpacing: 0.1 },
   ctaBlock: { paddingHorizontal: 24, gap: 16 },
   // `flex: 1` here is a legacy of the pre-ScrollView flat layout. Now
   // that the whole page lives inside a vertical ScrollView, flex:1 on

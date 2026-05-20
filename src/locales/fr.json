@@ -142,10 +142,13 @@
     "action_edit": "Modifier",
     "action_cancel": "Marquer comme annulée",
     "long_press_hint": "Maintenez un abonnement pour modifier, annuler ou supprimer",
-    "delete_undo_message": "{{name}} supprimé"
+    "delete_undo_message": "{{name}} supprimé",
+    "header_subtitle_count": "{{count}} actives · suivi mensuel",
+    "header_subtitle_empty": "Suivez chaque prélèvement récurrent"
   },
   "add": {
     "title": "Ajouter un abonnement",
+    "subtitle": "Voix, photo, e-mail ou manuel",
     "manual": "Manuel",
     "voice": "Voix",
     "screenshot": "Capture d'écran",
@@ -737,7 +740,8 @@
     "scope_personal": "Personnel",
     "scope_team": "Équipe",
     "scope_team_hint": "Agrège les abonnements de tous les membres actifs. Inclut la répartition par membre et les économies sur les doublons.",
-    "generating_team_pdf": "Création du rapport d'équipe…"
+    "generating_team_pdf": "Création du rapport d'équipe…",
+    "header_subtitle": "Exporter en PDF ou CSV"
   },
   "edit_profile": {
     "title": "Modifier le profil",

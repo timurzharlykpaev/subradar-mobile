@@ -341,10 +341,15 @@ export default function SubscriptionsScreen() {
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.title, { color: colors.text }]}>{t('subscriptions.title')}</Text>
+            <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2, letterSpacing: 0.1 }}>
+              {activeCount > 0
+                ? t('subscriptions.header_subtitle_count', { count: activeCount, defaultValue: '{{count}} active · tracked monthly' })
+                : t('subscriptions.header_subtitle_empty', 'Track every recurring charge')}
+            </Text>
           </View>
           <TouchableOpacity
             testID="btn-toggle-search"
-            style={[styles.headerBtn, { backgroundColor: colors.surface2 }]}
+            style={[styles.headerBtn, { backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border }]}
             onPress={() => setShowSearch(!showSearch)}
           >
             <Ionicons name={showSearch ? 'close' : 'search'} size={18} color={colors.textSecondary} />
@@ -725,9 +730,9 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
 
   // Header
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, gap: 10 },
-  title: { fontSize: 28, fontWeight: '900', letterSpacing: -0.3 },
-  headerBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 10, gap: 10 },
+  title: { fontSize: 26, fontWeight: '700', letterSpacing: -0.5 },
+  headerBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12 },
   upgradeBtnText: { fontSize: 12, fontWeight: '800', color: '#FFF' },
 
