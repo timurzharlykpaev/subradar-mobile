@@ -574,8 +574,28 @@ export default function OnboardingScreen() {
   const { setLanguage, language, setCurrency } = useSettingsStore();
   const setRegionInStore = useSettingsStore((s) => s.setRegion);
   const setDisplayCurrencyInStore = useSettingsStore((s) => s.setDisplayCurrency);
+  const setDisplayCurrencyAutoDetectedInStore = useSettingsStore((s) => s.setDisplayCurrencyAutoDetected);
   const icpSegment = useSettingsStore((s) => s.icpSegment);
   const setIcpSegment = useSettingsStore((s) => s.setIcpSegment);
+
+  // Step 2 (currency) is skipped entirely when the timezone unambiguously
+  // maps to a country — picker never renders, no flash, and Back from
+  // step 3 jumps to step 1 instead of bouncing through a hidden step 2.
+  // Using a synchronous helper instead of a post-render useEffect was
+  // required to fix two bugs:
+  //   • Bug — Back from step 3 hit setStep(2) → useEffect → setStep(3),
+  //     so the user could never reach the currency picker even if their
+  //     detected TZ was wrong (VPN / travel).
+  //   • Bug — useEffect-based skip painted step 2 for one frame on slow
+  //     devices before sweeping it away.
+  const gotoStep = useCallback((target: number, direction: 'forward' | 'back' = 'forward') => {
+    if (target === 2 && regionAutoDetected) {
+      analytics.track('onboarding_step_completed', { step: 2, step_name: 'currency_autoskip' });
+      setStep(direction === 'forward' ? 3 : 1);
+      return;
+    }
+    setStep(target);
+  }, [regionAutoDetected]);
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
 
@@ -700,15 +720,9 @@ export default function OnboardingScreen() {
     });
   }, [step]);
 
-  // Auto-skip currency step if region was confidently auto-detected from
-  // timezone. User can change currency in Settings if it's wrong.
-  useEffect(() => {
-    if (step !== 2) return;
-    if (regionAutoDetected) {
-      analytics.track('onboarding_step_completed', { step: 2, step_name: 'currency_autoskip' });
-      setStep(3);
-    }
-  }, [step, regionAutoDetected]);
+  // Auto-skip is now handled synchronously via `gotoStep` — see its
+  // definition above. The previous useEffect-based version caused two
+  // bugs (back-loop + 1-frame flash); deleting it removes both.
 
   // Counter animation for money hook — персонализируется под ICP сегмент.
   // Solo: $420, Family: $1080, Team: $3600 (based on Bango 2025 / Chase 2024).
@@ -764,9 +778,20 @@ export default function OnboardingScreen() {
       setLoading(false);
       return;
     }
-    setCurrency(selectedCurrency);
     setRegionInStore(selectedRegion);
-    setDisplayCurrencyInStore(selectedCurrency);
+    // When the currency step was auto-skipped (regionAutoDetected),
+    // `selectedCurrency` is a timezone-derived guess, not a user choice
+    // — persist it WITHOUT flipping `currencyExplicitlySet`. That way a
+    // later /users/me hydrate can still overwrite it (e.g. admin fixed
+    // the value server-side), and Settings → currency change still
+    // upgrades it to an explicit choice. If the picker WAS shown the
+    // user did make a deliberate selection → mark it as explicit.
+    if (regionAutoDetected) {
+      setDisplayCurrencyAutoDetectedInStore(selectedCurrency);
+    } else {
+      setCurrency(selectedCurrency);
+      setDisplayCurrencyInStore(selectedCurrency);
+    }
     setUser(user, token, refreshToken);
     setOnboarded();
     // Best-effort sync to backend (non-blocking).
@@ -1189,7 +1214,7 @@ export default function OnboardingScreen() {
         style={[styles.showcaseBtn, { backgroundColor: colors.primary, marginTop: 8 }]}
         onPress={() => {
           analytics.track('onboarding_step_completed', { step: 1, step_name: 'value_preview' });
-          setStep(2);
+          gotoStep(2, 'forward');
         }}
       >
         <Text style={styles.showcaseBtnText}>
@@ -1585,12 +1610,12 @@ export default function OnboardingScreen() {
           {step > 0 && step !== 3 && step !== 4 && step !== 5 && (
             <View style={styles.footerBtns}>
               {step > 1 && (
-                <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep(step - 1)}>
+                <TouchableOpacity testID="btn-back" style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => gotoStep(step - 1, 'back')}>
                   <Text style={[styles.backBtnText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
                 </TouchableOpacity>
               )}
               {step < steps.length - 1 && step !== 3 && (
-                <TouchableOpacity testID="btn-next" style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => setStep(step + 1)}>
+                <TouchableOpacity testID="btn-next" style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => gotoStep(step + 1, 'forward')}>
                   <Text style={styles.nextBtnText}>{t('onboarding.next')}</Text>
                 </TouchableOpacity>
               )}
