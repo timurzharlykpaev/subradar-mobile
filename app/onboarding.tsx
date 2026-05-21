@@ -1538,7 +1538,10 @@ export default function OnboardingScreen() {
           </Text>
           <Text style={[styles.subheadline, { textAlign: 'center', color: colors.textSecondary, marginBottom: 16 }]}>
             {hasPicks
-              ? t('onboarding.first_sub_subtitle_picked', { defaultValue: `${pending.map((p) => p.name).slice(0, 3).join(', ')}${pending.length > 3 ? '…' : ''} — find the rest with AI` })
+              ? t('onboarding.first_sub_subtitle_picked', {
+                  names: `${pending.map((p) => p.name).slice(0, 3).join(', ')}${pending.length > 3 ? '…' : ''}`,
+                  defaultValue: `${pending.map((p) => p.name).slice(0, 3).join(', ')}${pending.length > 3 ? '…' : ''} — find the rest with AI`,
+                })
               : t('onboarding.first_sub_subtitle')}
           </Text>
 
