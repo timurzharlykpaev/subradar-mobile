@@ -109,6 +109,25 @@ export default function ReportsScreen() {
         ? t('reports.generating_team_pdf', 'Generating team report…')
         : t('reports.generating_pdf', 'Generating PDF...'),
     );
+    // Hard timeout for every network call. Without this, a dropped
+    // connection mid-fetch left RN's fetch pending forever (RN doesn't
+    // honor a default timeout) and the spinner stayed on screen until
+    // the user force-quit the app — the "froze when sending got
+    // interrupted" symptom. 25s per request matches the slowest
+    // realistic generation path (cold queue + large team report).
+    const fetchWithTimeout = async (
+      url: string,
+      init: RequestInit & { ms?: number } = {},
+    ) => {
+      const ms = init.ms ?? 25000;
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), ms);
+      try {
+        return await fetch(url, { ...init, signal: ctrl.signal });
+      } finally {
+        clearTimeout(tid);
+      }
+    };
     try {
       const { from, to } = getPeriodDates();
 
@@ -136,7 +155,7 @@ export default function ReportsScreen() {
           );
         }
       } else {
-        const res = await fetch(`${API_URL}/reports/generate`, {
+        const res = await fetchWithTimeout(`${API_URL}/reports/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -161,18 +180,28 @@ export default function ReportsScreen() {
       let ready = false;
       for (let i = 0; i < 15; i++) {
         await new Promise((r) => setTimeout(r, 2000));
-        const statusRes = await fetch(`${API_URL}/reports/${reportId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!statusRes.ok) continue;
-        const statusData = await statusRes.json();
-        const st = statusData?.status || statusData?.data?.status;
-        if (st === 'READY') { ready = true; break; }
-        if (st === 'FAILED') throw new Error(statusData?.error || 'Report generation failed');
+        try {
+          const statusRes = await fetchWithTimeout(`${API_URL}/reports/${reportId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            ms: 8000,
+          });
+          if (!statusRes.ok) continue;
+          const statusData = await statusRes.json();
+          const st = statusData?.status || statusData?.data?.status;
+          if (st === 'READY') { ready = true; break; }
+          if (st === 'FAILED') throw new Error(statusData?.error || 'Report generation failed');
+        } catch (pollErr: any) {
+          // Network blip mid-poll — keep trying for the remaining
+          // iterations instead of erroring out (a single dropped
+          // request was the most common "frozen" symptom).
+          if (pollErr?.name === 'AbortError') continue;
+          throw pollErr;
+        }
       }
       if (!ready) throw new Error('Report generation timed out');
 
-      // 3. Download PDF
+      // 3. Download PDF — clear progress AFTER download succeeds so the
+      // spinner doesn't sit on top of the share sheet.
       setProgress(t('reports.downloading', 'Downloading PDF...'));
       const filename = `subradar-${reportType}-${from}.pdf`;
       const localPath = `${FileSystem.documentDirectory ?? ''}${filename}`;
@@ -183,14 +212,43 @@ export default function ReportsScreen() {
       );
       if (dl.status !== 200) throw Object.assign(new Error(`Download failed: ${dl.status}`), { status: dl.status });
 
-      // 4. Share
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(localPath, { mimeType: 'application/pdf', dialogTitle: t('reports.share_title', 'Save or Share Report'), UTI: 'com.adobe.pdf' });
-      }
+      // PDF is on disk — the generation work is done. Drop the
+      // spinner BEFORE the share sheet so if iOS hangs / the user
+      // dismisses without choosing an app, the screen returns to a
+      // useable state instead of locking on "Downloading…".
+      setGenerating(false);
+      setProgress('');
       analytics.track('report_generated', { type: reportType, format: 'pdf', period: dateRange, scope });
+
+      // 4. Share (fire-and-forget). Failures here don't matter for
+      // the user — the file is already in app storage.
+      if (await Sharing.isAvailableAsync()) {
+        Sharing.shareAsync(localPath, {
+          mimeType: 'application/pdf',
+          dialogTitle: t('reports.share_title', 'Save or Share Report'),
+          UTI: 'com.adobe.pdf',
+        }).catch(() => undefined);
+      }
+      return;
     } catch (err: any) {
       console.error('Report error:', err);
       const status = err?.status;
+      // Network drop / our 25s per-request timeout fires as AbortError.
+      // Show a dedicated message + retry action so the user can resume
+      // instead of seeing "AbortError" or a confusing "Server error".
+      if (err?.name === 'AbortError') {
+        setNotice({
+          kind: 'warn',
+          title: t('reports.timeout_title', 'Connection lost'),
+          body: t(
+            'reports.timeout_body',
+            'The report request was interrupted. Check your connection and try again.',
+          ),
+          actionLabel: t('reports.retry', 'Retry'),
+          onAction: () => handlePdfExport(),
+        });
+        return;
+      }
       // 403 used to ALWAYS read "Free plan: 1 report/month" — incorrect
       // for paid users (Pro / Team) hitting a different quota or
       // permission. Now we surface the backend's actual message when
