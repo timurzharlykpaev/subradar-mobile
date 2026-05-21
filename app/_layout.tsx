@@ -193,6 +193,28 @@ function DataLoader() {
     }
   }, [isAuthenticated, user?.id]);
 
+  // Mirror the device timezone to the backend once per login. The
+  // reminder cron (`reminders.service.ts:89`) reads
+  // `user.timezoneDetected` to schedule push notifications in the
+  // user's local clock — without this PATCH it defaulted to UTC and
+  // payment reminders for a Kazakhstan user landed at 3am their
+  // time. Fire-and-forget; settings UI only displays the value so
+  // we can do this transparently from the layout effect.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (!tz) return;
+      const persistedTz = (user as any).timezoneDetected as string | undefined;
+      if (persistedTz === tz) return;
+      import('../src/api/users').then(({ usersApi }) =>
+        usersApi.updateMe({ timezoneDetected: tz }).catch(() => undefined),
+      );
+    } catch {
+      /* Intl is missing on some old Android devices — skip silently. */
+    }
+  }, [isAuthenticated, user?.id]);
+
   // Auto-detect region & display currency on first launch
   useEffect(() => {
     const settings = useSettingsStore.getState();

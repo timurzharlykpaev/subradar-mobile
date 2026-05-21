@@ -181,7 +181,14 @@ export const useSettingsStore = create<SettingsState>()(
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
       setEmailNotifications: (emailNotifications) => set({ emailNotifications }),
       setWeeklyDigestEnabled: (weeklyDigestEnabled) => set({ weeklyDigestEnabled }),
-      setDateFormat: (dateFormat) => set({ dateFormat }),
+      setDateFormat: (dateFormat) => {
+        set({ dateFormat });
+        // Mirror to backend so emails / PDF reports use the same format
+        // the user picked in Settings. Without this PATCH the toggle
+        // was a pure client-only mock — every server-generated artifact
+        // fell back to the backend default.
+        usersApi.updateMe({ dateFormat }).catch(() => {});
+      },
       setAnalyticsOptOut: (analyticsOptOut) => set({ analyticsOptOut }),
       setIcpSegment: (icpSegment) => set({ icpSegment }),
     }),
