@@ -6,6 +6,7 @@ import * as Notifications from 'expo-notifications';
 import i18n from '../i18n';
 import { Subscription } from '../types';
 import { parseBackendDate } from './formatters';
+import { useSettingsStore } from '../stores/settingsStore';
 
 const CHANNEL_ID = 'payment-reminders';
 
@@ -21,6 +22,14 @@ export async function schedulePaymentReminders(
     );
 
     const now = new Date();
+    // Read the user's global default from Settings → fallback to [1, 3]
+    // if it was never set. Previously this hardcoded `[1, 3]` regardless
+    // of what the user chose in Settings → "Remind 3 days before", which
+    // made the Settings chip a partial mock (it pushed to backend for
+    // server-side cron pushes but the local fallback ignored it).
+    const settingsState = useSettingsStore.getState();
+    const settingsDefault =
+      settingsState.reminderDays > 0 ? [settingsState.reminderDays] : [];
 
     for (const sub of active) {
       // Skip if reminders are explicitly disabled for this subscription
@@ -31,7 +40,8 @@ export async function schedulePaymentReminders(
 
       const reminderDays = (sub.reminderDaysBefore && sub.reminderDaysBefore.length > 0)
         ? sub.reminderDaysBefore
-        : [1, 3]; // default fallback
+        : settingsDefault;
+      if (reminderDays.length === 0) continue; // user disabled reminders globally and the sub has no override
 
       for (const daysBefore of reminderDays) {
         const triggerDate = new Date(payDate);
