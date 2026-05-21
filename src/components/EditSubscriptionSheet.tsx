@@ -438,6 +438,404 @@ function EditSubscriptionSheetImpl({ visible, onClose, subscription }: Props) {
     [],
   );
 
+  // Toggle for Next-Payment override. Captures the current pattern-computed
+  // date so opening the override starts at a sensible value, closing it
+  // clears nextPaymentDate so backend goes back to the pattern.
+  const onToggleOverrideNextPayment = useCallback(() => {
+    setOverrideNextPayment((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) {
+        setForm((f) => {
+          if (f.nextPaymentDate) return f;
+          const c = computeNextPaymentDate(
+            f.startDate,
+            f.billingPeriod as ComputeBillingPeriod,
+            Number(f.billingDay) || null,
+          );
+          if (!c) return f;
+          return { ...f, nextPaymentDate: c.toISOString().split('T')[0] };
+        });
+      } else {
+        setForm((f) => ({ ...f, nextPaymentDate: '' }));
+      }
+      return nextOpen;
+    });
+  }, []);
+
+  // ── Memoized heavy sections ─────────────────────────────────────────────
+  // Each chip / picker / preview section is a `useMemo` over its JSX so a
+  // keystroke in `name` / `amount` / `notes` re-creates only the changed
+  // input subtree. Without this, every keystroke re-allocated 30+ chip
+  // TouchableOpacity nodes + 16 CategoryIcon SVGs + inline style arrays,
+  // causing visible input lag and InputAccessoryView flicker on iOS.
+
+  const computedNextPayment = useMemo(
+    () =>
+      computeNextPaymentDate(
+        form.startDate,
+        form.billingPeriod as ComputeBillingPeriod,
+        Number(form.billingDay) || null,
+      ),
+    [form.startDate, form.billingPeriod, form.billingDay],
+  );
+
+  const billingPeriodChips = useMemo(
+    () => (
+      <View style={styles.chips}>
+        {BILLING_PERIODS.map((p) => (
+          <TouchableOpacity
+            key={p}
+            style={[
+              styles.chip,
+              { backgroundColor: colors.surface2, borderColor: colors.border },
+              form.billingPeriod === p && {
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              },
+            ]}
+            onPress={() => setForm((f) => ({ ...f, billingPeriod: p }))}
+          >
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '600',
+                color: form.billingPeriod === p ? '#FFF' : colors.text,
+              }}
+            >
+              {t(PERIOD_LABELS[p] || p, p)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    ),
+    [form.billingPeriod, colors, t],
+  );
+
+  const categoryChips = useMemo(
+    () => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={styles.chips}>
+          {CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[
+                styles.chip,
+                { backgroundColor: colors.surface2, borderColor: colors.border },
+                form.category === cat.id && {
+                  backgroundColor: cat.color,
+                  borderColor: cat.color,
+                },
+              ]}
+              onPress={() => setForm((f) => ({ ...f, category: cat.id }))}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <CategoryIcon category={cat.id} size={14} />
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: '600',
+                    color: form.category === cat.id ? '#FFF' : colors.text,
+                  }}
+                >
+                  {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    ),
+    [form.category, colors, t],
+  );
+
+  const paymentCardChips = useMemo(
+    () => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={styles.chips}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              { backgroundColor: colors.surface2, borderColor: colors.border },
+              !form.paymentCardId && {
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              },
+            ]}
+            onPress={() => setForm((f) => ({ ...f, paymentCardId: '' }))}
+          >
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '600',
+                color: !form.paymentCardId ? '#FFF' : colors.text,
+              }}
+            >
+              {t('add.no_card')}
+            </Text>
+          </TouchableOpacity>
+          {cards.map((card) => (
+            <TouchableOpacity
+              key={card.id}
+              style={[
+                styles.chip,
+                { backgroundColor: colors.surface2, borderColor: colors.border },
+                form.paymentCardId === card.id && {
+                  backgroundColor: colors.primary,
+                  borderColor: colors.primary,
+                },
+              ]}
+              onPress={() => setForm((f) => ({ ...f, paymentCardId: card.id }))}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: '600',
+                  color: form.paymentCardId === card.id ? '#FFF' : colors.text,
+                }}
+              >
+                ····{card.last4} ({card.brand})
+              </Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              { borderColor: colors.primary, borderStyle: 'dashed', backgroundColor: 'transparent' },
+            ]}
+            onPress={() => setShowAddCard((v) => !v)}
+          >
+            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primary }}>
+              + {t('subscription.add_card')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    ),
+    [form.paymentCardId, cards, colors, t],
+  );
+
+  const reminderChips = useMemo(
+    () => (
+      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+        <TouchableOpacity
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 20,
+            backgroundColor:
+              form.reminderDaysBefore.length === 0 ? colors.primary : colors.background,
+            borderWidth: 1,
+            borderColor:
+              form.reminderDaysBefore.length === 0 ? colors.primary : colors.border,
+          }}
+          onPress={clearReminders}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: '600',
+              color: form.reminderDaysBefore.length === 0 ? '#FFF' : colors.text,
+            }}
+          >
+            {t('add.reminder_off', 'Off')}
+          </Text>
+        </TouchableOpacity>
+        {REMINDER_OPTIONS.map((day) => {
+          const active = form.reminderDaysBefore.includes(day);
+          return (
+            <TouchableOpacity
+              key={day}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: active ? colors.primary : colors.background,
+                borderWidth: 1,
+                borderColor: active ? colors.primary : colors.border,
+              }}
+              onPress={() => toggleReminderDay(day)}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: active ? '#FFF' : colors.text,
+                }}
+              >
+                {`${day}d`}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+        {form.reminderDaysBefore
+          .filter((d) => !(REMINDER_OPTIONS as readonly number[]).includes(d))
+          .map((day) => (
+            <TouchableOpacity
+              key={`legacy-${day}`}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: colors.primary,
+                borderWidth: 1,
+                borderColor: colors.primary,
+              }}
+              onPress={() => toggleReminderDay(day)}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFF' }}>{`${day}d`}</Text>
+            </TouchableOpacity>
+          ))}
+      </View>
+    ),
+    [form.reminderDaysBefore, colors, t, toggleReminderDay, clearReminders],
+  );
+
+  const colorPalette = useMemo(
+    () => (
+      <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+        <TouchableOpacity
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            borderWidth: 2,
+            borderColor: !form.color ? colors.primary : colors.border,
+            backgroundColor: colors.surface2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onPress={() => onPickColor('')}
+          accessibilityLabel={t('add.color_auto', 'Auto')}
+        >
+          <Ionicons name="close" size={14} color={colors.textMuted} />
+        </TouchableOpacity>
+        {COLOR_PALETTE.map((c) => (
+          <TouchableOpacity
+            key={c}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: c,
+              borderWidth: 3,
+              borderColor: form.color === c ? colors.text : 'transparent',
+            }}
+            onPress={() => onPickColor(c)}
+          />
+        ))}
+      </View>
+    ),
+    [form.color, colors, t, onPickColor],
+  );
+
+  const trialSection = useMemo(
+    () => (
+      <>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={fieldLabel}>{t('add.trial_period', 'Trial')}</Text>
+          <TouchableOpacity
+            style={{
+              width: 48,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: form.isTrial ? colors.primary : colors.surface2,
+              padding: 3,
+              justifyContent: 'center',
+              alignItems: form.isTrial ? 'flex-end' : 'flex-start',
+            }}
+            onPress={onToggleTrial}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: form.isTrial }}
+          >
+            <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFF' }} />
+          </TouchableOpacity>
+        </View>
+        {form.isTrial && (
+          <View style={{ marginTop: 12 }}>
+            <DatePickerField
+              label={t('add.trial_end_date', 'Trial ends on')}
+              value={form.trialEndDate}
+              onChange={onChangeTrialEndDate}
+            />
+          </View>
+        )}
+      </>
+    ),
+    [form.isTrial, form.trialEndDate, colors, t, fieldLabel, onToggleTrial, onChangeTrialEndDate],
+  );
+
+  const nextPaymentPreview = useMemo(() => {
+    const previewStr = computedNextPayment
+      ? computedNextPayment.toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : t('subscription.next_payment_unavailable', '—');
+    return (
+      <>
+        <View
+          style={[styles.previewRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.previewLabel, { color: colors.textMuted }]}>
+              {t('add.next_payment', 'Next payment date')}
+            </Text>
+            <Text style={[styles.previewValue, { color: colors.text }]}>{previewStr}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={onToggleOverrideNextPayment}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={[styles.overrideBtn, { color: colors.primary }]}>
+              {overrideNextPayment
+                ? t('subscription.reset_to_pattern', 'Reset')
+                : t('subscription.override_date', 'Override')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {overrideNextPayment && (
+          <View style={{ marginTop: 12 }}>
+            <DatePickerField
+              label={t('subscription.next_payment_override', 'Custom next payment date')}
+              value={form.nextPaymentDate}
+              onChange={onChangeNextPaymentDate}
+            />
+            <Text style={[styles.overrideHint, { color: colors.textMuted }]}>
+              {t(
+                'subscription.override_hint',
+                'Use only if the next charge is on a different date than the pattern (irregular first cycle, mid-period upgrade).',
+              )}
+            </Text>
+          </View>
+        )}
+      </>
+    );
+  }, [
+    computedNextPayment,
+    overrideNextPayment,
+    form.nextPaymentDate,
+    colors,
+    t,
+    onToggleOverrideNextPayment,
+    onChangeNextPaymentDate,
+  ]);
+
   return (
     <Modal visible={visible} animationType="none" transparent onRequestClose={handleClose}>
       <TouchableWithoutFeedback onPress={handleClose}>
@@ -536,51 +934,13 @@ function EditSubscriptionSheetImpl({ visible, onClose, subscription }: Props) {
                 {/* Billing Period */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.billing_cycle')}</Text>
-                  <View style={styles.chips}>
-                    {BILLING_PERIODS.map((p) => (
-                      <TouchableOpacity
-                        key={p}
-                        style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                          form.billingPeriod === p && { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                        onPress={() => setForm((f) => ({ ...f, billingPeriod: p }))}
-                      >
-                        <Text style={{ fontSize: 13, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
-                          {t(PERIOD_LABELS[p] || p, p)}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                  {billingPeriodChips}
                 </View>
 
                 {/* Category */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.category')}</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    keyboardDismissMode="interactive"
-                    automaticallyAdjustKeyboardInsets
-                    contentInsetAdjustmentBehavior="automatic"
-                  >
-                    <View style={styles.chips}>
-                      {CATEGORIES.map((cat) => (
-                        <TouchableOpacity
-                          key={cat.id}
-                          style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                            form.category === cat.id && { backgroundColor: cat.color, borderColor: cat.color }]}
-                          onPress={() => setForm((f) => ({ ...f, category: cat.id }))}
-                        >
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                            <CategoryIcon category={cat.id} size={14} />
-                            <Text style={{ fontSize: 13, fontWeight: '600', color: form.category === cat.id ? '#FFF' : colors.text }}>
-                              {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </ScrollView>
+                  {categoryChips}
                 </View>
 
                 {/* Billing Day — grid picker (cleaner than the cramped
@@ -617,123 +977,12 @@ function EditSubscriptionSheetImpl({ visible, onClose, subscription }: Props) {
                     the explicit picker behind an "Override" toggle for
                     the genuinely-irregular cases (trial→paid first
                     cycle, mid-month upgrades, AI-import gaps). */}
-                <View style={styles.field}>
-                  {(() => {
-                    const computed = computeNextPaymentDate(
-                      form.startDate,
-                      form.billingPeriod as ComputeBillingPeriod,
-                      Number(form.billingDay) || null,
-                    );
-                    const previewStr = computed
-                      ? computed.toLocaleDateString(undefined, {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                      : t('subscription.next_payment_unavailable', '—');
-                    return (
-                      <View
-                        style={[styles.previewRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                      >
-                        <Ionicons name="calendar-outline" size={18} color={colors.primary} />
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.previewLabel, { color: colors.textMuted }]}>
-                            {t('add.next_payment', 'Next payment date')}
-                          </Text>
-                          <Text style={[styles.previewValue, { color: colors.text }]}>
-                            {previewStr}
-                          </Text>
-                        </View>
-                        <TouchableOpacity
-                          onPress={() => {
-                            setOverrideNextPayment((prev) => {
-                              const nextOpen = !prev;
-                              if (nextOpen && !form.nextPaymentDate && computed) {
-                                // Pre-seed the override with the computed value so
-                                // the picker opens at a sensible date instead of
-                                // empty.
-                                setForm((f) => ({
-                                  ...f,
-                                  nextPaymentDate: computed.toISOString().split('T')[0],
-                                }));
-                              } else if (!nextOpen) {
-                                // Closing the override clears the field so the
-                                // backend goes back to the computed pattern on
-                                // save.
-                                setForm((f) => ({ ...f, nextPaymentDate: '' }));
-                              }
-                              return nextOpen;
-                            });
-                          }}
-                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        >
-                          <Text style={[styles.overrideBtn, { color: colors.primary }]}>
-                            {overrideNextPayment
-                              ? t('subscription.reset_to_pattern', 'Reset')
-                              : t('subscription.override_date', 'Override')}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  })()}
-                  {overrideNextPayment && (
-                    <View style={{ marginTop: 12 }}>
-                      <DatePickerField
-                        label={t('subscription.next_payment_override', 'Custom next payment date')}
-                        value={form.nextPaymentDate}
-                        onChange={onChangeNextPaymentDate}
-                      />
-                      <Text style={[styles.overrideHint, { color: colors.textMuted }]}>
-                        {t(
-                          'subscription.override_hint',
-                          'Use only if the next charge is on a different date than the pattern (irregular first cycle, mid-period upgrade).',
-                        )}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                <View style={styles.field}>{nextPaymentPreview}</View>
 
                 {/* Payment Card */}
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.card')}</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    keyboardDismissMode="interactive"
-                    automaticallyAdjustKeyboardInsets
-                    contentInsetAdjustmentBehavior="automatic"
-                  >
-                    <View style={styles.chips}>
-                      <TouchableOpacity
-                        style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                          !form.paymentCardId && { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                        onPress={() => setForm((f) => ({ ...f, paymentCardId: '' }))}
-                      >
-                        <Text style={{ fontSize: 13, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
-                          {t('add.no_card')}
-                        </Text>
-                      </TouchableOpacity>
-                      {cards.map((card) => (
-                        <TouchableOpacity
-                          key={card.id}
-                          style={[styles.chip, { backgroundColor: colors.surface2, borderColor: colors.border },
-                            form.paymentCardId === card.id && { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                          onPress={() => setForm((f) => ({ ...f, paymentCardId: card.id }))}
-                        >
-                          <Text style={{ fontSize: 13, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
-                            ····{card.last4} ({card.brand})
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                      <TouchableOpacity
-                        style={[styles.chip, { borderColor: colors.primary, borderStyle: 'dashed', backgroundColor: 'transparent' }]}
-                        onPress={() => setShowAddCard((v) => !v)}
-                      >
-                        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.primary }}>+ {t('subscription.add_card')}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </ScrollView>
+                  {paymentCardChips}
                 </View>
 
                 {/* Inline Add Card */}
@@ -820,77 +1069,7 @@ function EditSubscriptionSheetImpl({ visible, onClose, subscription }: Props) {
                 {/* Reminder — multi-select: reflect any persisted day (e.g. [2], [1,3]) */}
                 <View style={{ marginBottom: 16 }}>
                   <Text style={fieldLabel}>{t('add.reminder', 'Reminder')}</Text>
-                  <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-                    <TouchableOpacity
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 20,
-                        backgroundColor:
-                          form.reminderDaysBefore.length === 0 ? colors.primary : colors.background,
-                        borderWidth: 1,
-                        borderColor:
-                          form.reminderDaysBefore.length === 0 ? colors.primary : colors.border,
-                      }}
-                      onPress={clearReminders}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '600',
-                          color: form.reminderDaysBefore.length === 0 ? '#FFF' : colors.text,
-                        }}
-                      >
-                        {t('add.reminder_off', 'Off')}
-                      </Text>
-                    </TouchableOpacity>
-                    {REMINDER_OPTIONS.map((day) => {
-                      const active = form.reminderDaysBefore.includes(day);
-                      return (
-                        <TouchableOpacity
-                          key={day}
-                          style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 20,
-                            backgroundColor: active ? colors.primary : colors.background,
-                            borderWidth: 1,
-                            borderColor: active ? colors.primary : colors.border,
-                          }}
-                          onPress={() => toggleReminderDay(day)}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: '600',
-                              color: active ? '#FFF' : colors.text,
-                            }}
-                          >
-                            {`${day}d`}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                    {/* Legacy non-standard days (e.g. [2] from older data) */}
-                    {form.reminderDaysBefore
-                      .filter((d) => !(REMINDER_OPTIONS as readonly number[]).includes(d))
-                      .map((day) => (
-                        <TouchableOpacity
-                          key={`legacy-${day}`}
-                          style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 20,
-                            backgroundColor: colors.primary,
-                            borderWidth: 1,
-                            borderColor: colors.primary,
-                          }}
-                          onPress={() => toggleReminderDay(day)}
-                        >
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFF' }}>{`${day}d`}</Text>
-                        </TouchableOpacity>
-                      ))}
-                  </View>
+                  {reminderChips}
                 </View>
 
                 {/* Plan / URLs / Color / Trial — moved out of "More options"
@@ -938,70 +1117,10 @@ function EditSubscriptionSheetImpl({ visible, onClose, subscription }: Props) {
 
                 <View style={styles.field}>
                   <Text style={fieldLabel}>{t('add.color', 'Color')}</Text>
-                  <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                    <TouchableOpacity
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        borderWidth: 2,
-                        borderColor: !form.color ? colors.primary : colors.border,
-                        backgroundColor: colors.surface2,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                      onPress={() => onPickColor('')}
-                      accessibilityLabel={t('add.color_auto', 'Auto')}
-                    >
-                      <Ionicons name="close" size={14} color={colors.textMuted} />
-                    </TouchableOpacity>
-                    {COLOR_PALETTE.map((c) => (
-                      <TouchableOpacity
-                        key={c}
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 16,
-                          backgroundColor: c,
-                          borderWidth: 3,
-                          borderColor: form.color === c ? colors.text : 'transparent',
-                        }}
-                        onPress={() => onPickColor(c)}
-                      />
-                    ))}
-                  </View>
+                  {colorPalette}
                 </View>
 
-                <View style={styles.field}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={fieldLabel}>{t('add.trial_period', 'Trial')}</Text>
-                    <TouchableOpacity
-                      style={{
-                        width: 48,
-                        height: 28,
-                        borderRadius: 14,
-                        backgroundColor: form.isTrial ? colors.primary : colors.surface2,
-                        padding: 3,
-                        justifyContent: 'center',
-                        alignItems: form.isTrial ? 'flex-end' : 'flex-start',
-                      }}
-                      onPress={onToggleTrial}
-                      accessibilityRole="switch"
-                      accessibilityState={{ checked: form.isTrial }}
-                    >
-                      <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFF' }} />
-                    </TouchableOpacity>
-                  </View>
-                  {form.isTrial && (
-                    <View style={{ marginTop: 12 }}>
-                      <DatePickerField
-                        label={t('add.trial_end_date', 'Trial ends on')}
-                        value={form.trialEndDate}
-                        onChange={onChangeTrialEndDate}
-                      />
-                    </View>
-                  )}
-                </View>
+                <View style={styles.field}>{trialSection}</View>
 
                 {/* Actions */}
                 <TouchableOpacity

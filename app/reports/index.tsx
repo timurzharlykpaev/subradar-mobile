@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator,
+  ScrollView, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,7 @@ import { exportSubscriptionsCsv } from '../../src/services/csvExport';
 import { analytics } from '../../src/services/analytics';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { workspaceApi } from '../../src/api/workspace';
+import { NoticeBanner, useNotice } from '../../src/components/NoticeBanner';
 
 type ExportFormat = 'pdf' | 'csv';
 
@@ -58,6 +59,12 @@ export default function ReportsScreen() {
   const isTeamOwner = (access?.isTeamOwner ?? false) && (access?.plan === 'organization');
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState('');
+  // In-screen banner instead of system Alert.alert. The native alert
+  // (a) didn't match the app's design language, and (b) blocked the
+  // whole screen for a non-blocking failure like 403 quota / network
+  // hiccup. NoticeBanner mirrors the pattern already used by
+  // Workspace / Gmail Import / Settings.
+  const [notice, setNotice] = useNotice();
 
   const getPeriodDates = () => {
     const now = new Date();
@@ -83,7 +90,11 @@ export default function ReportsScreen() {
       await exportSubscriptionsCsv(subscriptions);
       analytics.track('report_generated', { type: reportType, format: 'csv', period: dateRange });
     } catch (err: any) {
-      Alert.alert(t('common.error'), err?.message || t('reports.error_generic', 'Export failed'));
+      setNotice({
+        kind: 'error',
+        title: t('common.error'),
+        body: err?.message || t('reports.error_generic', 'Export failed'),
+      });
     } finally {
       setGenerating(false);
       setProgress('');
@@ -107,11 +118,23 @@ export default function ReportsScreen() {
       // path below stays unified.
       let reportId: string | null = null;
       if (scope === 'team') {
-        const teamReport = await workspaceApi.generateTeamReport(
-          reportType.toUpperCase() as 'SUMMARY' | 'DETAILED' | 'TAX',
-          { from, to, locale: i18n.language || 'en', displayCurrency: reportCurrency },
-        );
-        reportId = teamReport.id;
+        try {
+          const teamReport = await workspaceApi.generateTeamReport(
+            reportType.toUpperCase() as 'SUMMARY' | 'DETAILED' | 'TAX',
+            { from, to, locale: i18n.language || 'en', displayCurrency: reportCurrency },
+          );
+          reportId = teamReport.id;
+        } catch (err: any) {
+          // Axios wraps non-2xx as AxiosError with `response.status` and
+          // `response.data.message`. The catch below expects `err.status`
+          // so we normalize it here.
+          const axiosStatus = err?.response?.status;
+          const axiosMessage = err?.response?.data?.message;
+          throw Object.assign(
+            new Error(axiosMessage || err?.message || `Server error: ${axiosStatus}`),
+            { status: axiosStatus ?? err?.status },
+          );
+        }
       } else {
         const res = await fetch(`${API_URL}/reports/generate`, {
           method: 'POST',
@@ -168,15 +191,49 @@ export default function ReportsScreen() {
     } catch (err: any) {
       console.error('Report error:', err);
       const status = err?.status;
-      let msg: string;
-      if (status === 401) msg = t('reports.error_401', 'Session expired, please log in again');
-      else if (status === 403) msg = t('reports.error_403', 'Free plan: 1 report/month. Upgrade to Pro for unlimited.');
-      else if (status === 404) msg = t('reports.error_404', 'Report not found');
-      else msg = err?.message || t('reports.error_generic', 'Could not generate report');
-      Alert.alert(t('common.error'), msg, [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('reports.retry', 'Retry'), onPress: () => handlePdfExport() },
-      ]);
+      // 403 used to ALWAYS read "Free plan: 1 report/month" — incorrect
+      // for paid users (Pro / Team) hitting a different quota or
+      // permission. Now we surface the backend's actual message when
+      // available, and fall back to plan-aware copy. Same logic
+      // applied to 401 / 404.
+      const backendMsg: string | undefined = err?.message && !/^Server error:\s*\d+$/i.test(err.message)
+        ? err.message
+        : undefined;
+      let title = t('common.error');
+      let body: string;
+      let actionLabel: string | undefined = t('reports.retry', 'Retry');
+      let actionFn: (() => void) | undefined = () => handlePdfExport();
+      if (status === 401) {
+        body = t('reports.error_401', 'Session expired, please log in again');
+        actionLabel = undefined;
+        actionFn = undefined;
+      } else if (status === 403) {
+        if (isPro) {
+          // Paid users — the 403 is NOT the free-plan quota; show the
+          // backend message verbatim (often "rate limited", "feature
+          // disabled for org", etc.) so the user knows what to actually
+          // fix instead of being told to "upgrade to Pro" they already
+          // have.
+          title = t('reports.error_403_paid_title', 'Report unavailable');
+          body = backendMsg || t('reports.error_403_paid', 'We could not generate this report. Please try again in a few minutes or contact support if it persists.');
+        } else {
+          title = t('reports.error_403_free_title', 'Free plan limit');
+          body = t('reports.error_403', 'Free plan: 1 report/month. Upgrade to Pro for unlimited.');
+          actionLabel = t('common.upgrade', 'Upgrade');
+          actionFn = () => router.push('/paywall' as any);
+        }
+      } else if (status === 404) {
+        body = backendMsg || t('reports.error_404', 'Report not found');
+      } else {
+        body = backendMsg || t('reports.error_generic', 'Could not generate report');
+      }
+      setNotice({
+        kind: 'error',
+        title,
+        body,
+        actionLabel,
+        onAction: actionFn,
+      });
     } finally {
       setGenerating(false);
       setProgress('');
@@ -200,6 +257,8 @@ export default function ReportsScreen() {
           </Text>
         </View>
       </View>
+
+      {notice && <NoticeBanner notice={notice} onClose={() => setNotice(null)} />}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Personal / Team scope toggle — visible only to workspace owners.

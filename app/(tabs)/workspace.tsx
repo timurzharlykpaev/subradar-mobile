@@ -157,6 +157,17 @@ export default function WorkspaceScreen() {
       }),
   });
 
+  // Stable handlers for CreateTeamForm — without these the inline
+  // `onCancel={() => setShowCreate(false)}` arrows created a fresh
+  // identity on every WorkspaceScreen re-render (subscriptions store
+  // updates, billing refetch, FX refresh) → React.memo(CreateTeamForm)
+  // invalidated → input lost focus / blinked.
+  const closeCreateTeam = useCallback(() => setShowCreate(false), []);
+  const submitCreateTeam = useCallback(
+    (name: string) => createMutation.mutate(name),
+    [createMutation],
+  );
+
   const removeMutation = useMutation({
     mutationFn: (memberId: string) => workspaceApi.removeMember(workspace.id, memberId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workspace'] }),
@@ -388,8 +399,8 @@ export default function WorkspaceScreen() {
               </>
             ) : showCreate ? (
               <CreateTeamForm
-                onCancel={() => setShowCreate(false)}
-                onSubmit={(name) => createMutation.mutate(name)}
+                onCancel={closeCreateTeam}
+                onSubmit={submitCreateTeam}
                 isPending={createMutation.isPending}
               />
             ) : (

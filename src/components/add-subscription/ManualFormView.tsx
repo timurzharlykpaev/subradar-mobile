@@ -103,8 +103,317 @@ function ManualFormViewImpl({
   const handleServiceUrl = useCallback((v: string) => setF('serviceUrl', v), [setF]);
   const handleCancelUrl = useCallback((v: string) => setF('cancelUrl', v), [setF]);
   const handleNotes = useCallback((v: string) => setF('notes', v), [setF]);
+  const handleStartDate = useCallback((v: string) => setF('startDate', v), [setF]);
+  const handleNextPaymentDate = useCallback((v: string) => setF('nextPaymentDate', v), [setF]);
+  const handleBillingDay = useCallback((day: number) => setF('billingDay', String(day)), [setF]);
+  const handlePickBillingPeriod = useCallback(
+    (p: AddSubscriptionForm['billingPeriod']) => setF('billingPeriod', p),
+    [setF],
+  );
+  const handlePickCategory = useCallback((id: string) => setF('category', id), [setF]);
+  const handlePickPaymentCard = useCallback((id: string) => setF('paymentCardId', id), [setF]);
+  const handlePickReminder = useCallback((value: number[]) => setF('reminderDaysBefore', value), [setF]);
+  const handlePickColor = useCallback((c: string) => setF('color', c), [setF]);
+  const handleTrialEndDate = useCallback((v: string) => setF('trialEndDate', v), [setF]);
+  const handleTrialToggle = useCallback(
+    (v: boolean) =>
+      setForm((f: AddSubscriptionForm) => ({
+        ...f,
+        isTrial: v,
+        trialEndDate: v
+          ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+          : '',
+      })),
+    [setForm],
+  );
+  const handleRemoveTag = useCallback(
+    (idx: number) => setF('tags', form.tags.filter((_, i) => i !== idx)),
+    [form.tags, setF],
+  );
+  const handleAddTagText = useCallback(
+    (v: string) => {
+      if (v.includes(',')) {
+        const tag = v.replace(',', '').trim();
+        if (tag && !form.tags.includes(tag)) {
+          setF('tags', [...form.tags, tag]);
+        }
+      }
+    },
+    [form.tags, setF],
+  );
+  const handleAddTagSubmit = useCallback(
+    (e: { nativeEvent: { text: string } }) => {
+      const tag = e.nativeEvent.text.trim();
+      if (tag && !form.tags.includes(tag)) {
+        setF('tags', [...form.tags, tag]);
+      }
+    },
+    [form.tags, setF],
+  );
 
   const canSave = form.name.trim() !== '' && parseFloat(form.amount) > 0;
+
+  // ── Memoized heavy sections ─────────────────────────────────────────────
+  // Identical pattern to EditSubscriptionSheet: each chip / picker / preview
+  // is a `useMemo` over its JSX so a keystroke in `name` / `amount` /
+  // `notes` re-creates only the changed input subtree. Without this, every
+  // keystroke re-allocated 6 billing chips + 16 categories + N card chips +
+  // 4 reminders + 8 colors + every inline style, causing visible input lag.
+
+  const billingPeriodChips = useMemo(
+    () => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
+          {BILLING_PERIODS.map((p) => (
+            <TouchableOpacity
+              key={p}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
+                borderWidth: 1,
+                borderColor: form.billingPeriod === p ? colors.primary : colors.border,
+              }}
+              onPress={() => handlePickBillingPeriod(p)}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: form.billingPeriod === p ? '#FFF' : colors.text,
+                }}
+              >
+                {t(`billing.${p.toLowerCase()}`, p)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    ),
+    [form.billingPeriod, colors, t, handlePickBillingPeriod],
+  );
+
+  const categoryChips = useMemo(
+    () => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
+          {CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
+                borderWidth: 1,
+                borderColor: form.category === cat.id ? colors.primary : colors.border,
+              }}
+              onPress={() => handlePickCategory(cat.id)}
+            >
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: form.category === cat.id ? colors.primary : colors.text,
+                }}
+              >
+                {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+    ),
+    [form.category, colors, t, handlePickCategory],
+  );
+
+  const paymentCardChips = useMemo(
+    () =>
+      cards.length === 0 ? null : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
+          contentInsetAdjustmentBehavior="automatic"
+        >
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <TouchableOpacity
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
+                borderWidth: 1,
+                borderColor: !form.paymentCardId ? colors.primary : colors.border,
+              }}
+              onPress={() => handlePickPaymentCard('')}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: !form.paymentCardId ? '#FFF' : colors.text,
+                }}
+              >
+                {t('add.no_card')}
+              </Text>
+            </TouchableOpacity>
+            {cards.map((card) => (
+              <TouchableOpacity
+                key={card.id}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
+                  borderWidth: 1,
+                  borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
+                }}
+                onPress={() => handlePickPaymentCard(card.id)}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '600',
+                    color: form.paymentCardId === card.id ? '#FFF' : colors.text,
+                  }}
+                >
+                  ••••{card.last4} ({card.brand})
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      ),
+    [cards, form.paymentCardId, colors, t, handlePickPaymentCard],
+  );
+
+  const reminderChips = useMemo(
+    () => (
+      <View style={{ flexDirection: 'row', gap: 6 }}>
+        {REMINDER_PRESETS.map((opt) => {
+          const label = t(opt.i18nKey, opt.fallback);
+          const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
+          return (
+            <TouchableOpacity
+              key={opt.i18nKey}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: isSelected ? colors.primary : colors.background,
+                borderWidth: 1,
+                borderColor: isSelected ? colors.primary : colors.border,
+              }}
+              onPress={() => handlePickReminder(opt.value)}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: isSelected ? '#FFF' : colors.text,
+                }}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    ),
+    [form.reminderDaysBefore, colors, t, handlePickReminder],
+  );
+
+  const colorPalette = useMemo(
+    () => (
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+        <TouchableOpacity
+          key="auto"
+          onPress={() => handlePickColor('')}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: colors.primary,
+            borderWidth: 2.5,
+            borderColor: form.color === '' ? colors.text : 'transparent',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>
+            {t('add.color_auto', 'Auto')}
+          </Text>
+        </TouchableOpacity>
+        {CARD_COLOR_PALETTE.map((hex) => (
+          <TouchableOpacity
+            key={hex}
+            onPress={() => handlePickColor(hex)}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: hex,
+              borderWidth: 2.5,
+              borderColor: form.color === hex ? colors.text : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          />
+        ))}
+      </View>
+    ),
+    [form.color, colors, t, handlePickColor],
+  );
+
+  const tagChips = useMemo(
+    () =>
+      form.tags.length === 0 ? null : (
+        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+          {form.tags.map((tag, idx) => (
+            <View
+              key={idx}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                backgroundColor: colors.primary + '20',
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 12,
+              }}
+            >
+              <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
+              <TouchableOpacity onPress={() => handleRemoveTag(idx)}>
+                <Ionicons name="close" size={14} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      ),
+    [form.tags, colors, handleRemoveTag],
+  );
 
   return (
     <View style={{ paddingBottom: 40 }}>
@@ -193,35 +502,7 @@ function ManualFormViewImpl({
         <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
           {t('add.billing_cycle')}
         </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-          automaticallyAdjustKeyboardInsets
-          contentInsetAdjustmentBehavior="automatic"
-        >
-          <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 6 }}>
-            {BILLING_PERIODS.map((p) => (
-              <TouchableOpacity
-                key={p}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 20,
-                  backgroundColor: form.billingPeriod === p ? colors.primary : colors.background,
-                  borderWidth: 1,
-                  borderColor: form.billingPeriod === p ? colors.primary : colors.border,
-                }}
-                onPress={() => setF('billingPeriod', p)}
-              >
-                <Text style={{ fontSize: 12, fontWeight: '600', color: form.billingPeriod === p ? '#FFF' : colors.text }}>
-                  {t(`billing.${p.toLowerCase()}`, p)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        {billingPeriodChips}
       </View>
 
       {/* Schedule section — separates payment timing fields from name/amount.
@@ -236,12 +517,12 @@ function ManualFormViewImpl({
       <DatePickerField
         label={t('add.start_date', 'Start date')}
         value={form.startDate}
-        onChange={(v) => setF('startDate', v)}
+        onChange={handleStartDate}
       />
       <DatePickerField
         label={t('add.next_payment', 'Next payment date')}
         value={form.nextPaymentDate}
-        onChange={(v) => setF('nextPaymentDate', v)}
+        onChange={handleNextPaymentDate}
       />
 
       {/* "More" toggle — explicit "(optional)" suffix tells older users that
@@ -279,91 +560,16 @@ function ManualFormViewImpl({
             <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
               {t('add.category')}
             </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="interactive"
-              automaticallyAdjustKeyboardInsets
-              contentInsetAdjustmentBehavior="automatic"
-            >
-              <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: 8 }}>
-                {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 6,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: form.category === cat.id ? colors.primaryLight : colors.background,
-                      borderWidth: 1,
-                      borderColor: form.category === cat.id ? colors.primary : colors.border,
-                    }}
-                    onPress={() => setF('category', cat.id)}
-                  >
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cat.color }} />
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: form.category === cat.id ? colors.primary : colors.text }}>
-                      {t(`categories.${cat.id.toLowerCase()}`, cat.label)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+            {categoryChips}
           </View>
 
           {/* Payment Card */}
-          {cards.length > 0 && (
+          {paymentCardChips && (
             <View style={{ marginBottom: 16 }}>
               <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
                 {t('add.card')}
               </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                keyboardDismissMode="interactive"
-                automaticallyAdjustKeyboardInsets
-                contentInsetAdjustmentBehavior="automatic"
-              >
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  <TouchableOpacity
-                    style={{
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: !form.paymentCardId ? colors.primary : colors.background,
-                      borderWidth: 1,
-                      borderColor: !form.paymentCardId ? colors.primary : colors.border,
-                    }}
-                    onPress={() => setF('paymentCardId', '')}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: !form.paymentCardId ? '#FFF' : colors.text }}>
-                      {t('add.no_card')}
-                    </Text>
-                  </TouchableOpacity>
-                  {cards.map((card) => (
-                    <TouchableOpacity
-                      key={card.id}
-                      style={{
-                        paddingHorizontal: 10,
-                        paddingVertical: 6,
-                        borderRadius: 20,
-                        backgroundColor: form.paymentCardId === card.id ? colors.primary : colors.background,
-                        borderWidth: 1,
-                        borderColor: form.paymentCardId === card.id ? colors.primary : colors.border,
-                      }}
-                      onPress={() => setF('paymentCardId', card.id)}
-                    >
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: form.paymentCardId === card.id ? '#FFF' : colors.text }}>
-                        ••••{card.last4} ({card.brand})
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
+              {paymentCardChips}
             </View>
           )}
 
@@ -424,7 +630,7 @@ function ManualFormViewImpl({
             <BillingDayPicker
               label={t('add.billing_day', 'Billing day')}
               value={form.billingDay}
-              onChange={(day) => setF('billingDay', String(day))}
+              onChange={handleBillingDay}
             />
           </View>
 
@@ -450,30 +656,7 @@ function ManualFormViewImpl({
             <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
               {t('add.reminder', 'Reminder')}
             </Text>
-            <View style={{ flexDirection: 'row', gap: 6 }}>
-              {REMINDER_PRESETS.map((opt) => {
-                const label = t(opt.i18nKey, opt.fallback);
-                const isSelected = JSON.stringify(form.reminderDaysBefore) === JSON.stringify(opt.value);
-                return (
-                  <TouchableOpacity
-                    key={opt.i18nKey}
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: isSelected ? colors.primary : colors.background,
-                      borderWidth: 1,
-                      borderColor: isSelected ? colors.primary : colors.border,
-                    }}
-                    onPress={() => setF('reminderDaysBefore', opt.value)}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFF' : colors.text }}>
-                      {label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            {reminderChips}
           </View>
 
           {/* Card color */}
@@ -481,36 +664,7 @@ function ManualFormViewImpl({
             <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
               {t('add.card_color', 'Card color')}
             </Text>
-            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-              <TouchableOpacity
-                key="auto"
-                onPress={() => setF('color', '')}
-                style={{
-                  width: 44, height: 44, borderRadius: 22,
-                  backgroundColor: colors.primary,
-                  borderWidth: 2.5,
-                  borderColor: form.color === '' ? colors.text : 'transparent',
-                  alignItems: 'center', justifyContent: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 7, fontWeight: '800', color: '#FFF' }}>
-                  {t('add.color_auto', 'Auto')}
-                </Text>
-              </TouchableOpacity>
-              {CARD_COLOR_PALETTE.map((hex) => (
-                <TouchableOpacity
-                  key={hex}
-                  onPress={() => setF('color', hex)}
-                  style={{
-                    width: 44, height: 44, borderRadius: 22,
-                    backgroundColor: hex,
-                    borderWidth: 2.5,
-                    borderColor: form.color === hex ? colors.text : 'transparent',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}
-                />
-              ))}
-            </View>
+            {colorPalette}
           </View>
 
           {/* Tags */}
@@ -518,39 +672,13 @@ function ManualFormViewImpl({
             <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, marginBottom: 6 }}>
               {t('add.tags', 'Tags')}
             </Text>
-            {form.tags.length > 0 && (
-              <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                {form.tags.map((tag, idx) => (
-                  <View key={idx} style={{
-                    flexDirection: 'row', alignItems: 'center', gap: 4,
-                    backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
-                  }}>
-                    <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '600' }}>{tag}</Text>
-                    <TouchableOpacity onPress={() => setF('tags', form.tags.filter((_, i) => i !== idx))}>
-                      <Ionicons name="close" size={14} color={colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            )}
+            {tagChips}
             <DoneAccessoryInput
               style={inputStyle}
               placeholder={t('add.tags_placeholder', 'Type and press comma...')}
               placeholderTextColor={colors.textMuted}
-              onChangeText={(v) => {
-                if (v.includes(',')) {
-                  const tag = v.replace(',', '').trim();
-                  if (tag && !form.tags.includes(tag)) {
-                    setF('tags', [...form.tags, tag]);
-                  }
-                }
-              }}
-              onSubmitEditing={(e) => {
-                const tag = e.nativeEvent.text.trim();
-                if (tag && !form.tags.includes(tag)) {
-                  setF('tags', [...form.tags, tag]);
-                }
-              }}
+              onChangeText={handleAddTagText}
+              onSubmitEditing={handleAddTagSubmit}
               returnKeyType="done"
               accessoryId="manual-tags"
             />
@@ -572,13 +700,7 @@ function ManualFormViewImpl({
               </View>
               <Switch
                 value={form.isTrial}
-                onValueChange={(v) => setForm((f: AddSubscriptionForm) => ({
-                  ...f,
-                  isTrial: v,
-                  trialEndDate: v
-                    ? new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
-                    : '',
-                }))}
+                onValueChange={handleTrialToggle}
                 trackColor={{ false: colors.border, true: '#F59E0B' }}
                 thumbColor={form.isTrial ? '#FFF' : '#999'}
               />
@@ -586,17 +708,10 @@ function ManualFormViewImpl({
 
             {form.isTrial && (
               <View style={{ marginTop: 12 }}>
-                {/* Native-style picker — replaces the raw YYYY-MM-DD text
-                    input that left users typing "19.05.2026" (or nothing
-                    at all when they assumed the toggle alone was enough)
-                    and silently saved status:TRIAL with no end date, so
-                    the card showed neither a trial badge nor a billing
-                    date. Same component the Edit sheet has used since
-                    day one. */}
                 <DatePickerField
                   label={t('add.trial_end_date', 'Trial ends on')}
                   value={form.trialEndDate}
-                  onChange={(v) => setF('trialEndDate', v)}
+                  onChange={handleTrialEndDate}
                 />
               </View>
             )}
