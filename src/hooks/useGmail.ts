@@ -174,16 +174,29 @@ export function useGmailScanJob() {
           nextDelay,
         );
       } catch (err: any) {
-        // 404 on the job means it expired or never existed (or another
-        // user's id, but the server-side check covers that). Surface
-        // as a failed state so the UI can show "couldn't reach scan"
-        // and offer a retry.
+        const status = err?.response?.status;
+        const isNetworkError = !err?.response && /network|timeout/i.test(err?.message ?? '');
+        const isTransient5xx = typeof status === 'number' && status >= 500;
+        // Transient network blips and 5xx hiccups should NOT kill the
+        // whole scan UI — the scan keeps running server-side. Retry
+        // with a short backoff (1s, then poll cadence) up to 3 times
+        // before surfacing as failed. 404 / 401 / 403 / 400 are
+        // terminal (job expired, auth gone, validation rejected) and
+        // get the failed state immediately.
+        if ((isNetworkError || isTransient5xx) && attemptsLeft > 0) {
+          const backoffMs = Math.min(8000, 1500 + (90 - attemptsLeft) * 500);
+          pollTimer.current = setTimeout(
+            () => poll(jobId, attemptsLeft - 1, anchor),
+            backoffMs,
+          );
+          return;
+        }
         setState({
           jobId,
           status: 'failed',
           result: null,
           error: {
-            statusCode: err?.response?.status,
+            statusCode: status,
             message: err?.message ?? 'Scan poll failed',
           },
           cached: false,

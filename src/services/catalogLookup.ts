@@ -19,11 +19,21 @@ export interface LookupResult {
 // anything that obviously isn't a service name and let the AI wizard
 // handle natural-language input instead. Caps at 40 chars / 6 tokens so
 // legitimate multi-word brand names still hit the catalog.
+// See src/utils/catalogLookup.ts for the rationale on the pronoun/verb
+// rejection — keeping the two implementations in lockstep so neither
+// call site bombs /ai/service-catalog with sentence-shaped input.
+const SENTENCE_PREFIXES = new Set([
+  'i', 'my', 'a', 'an', 'the', 'this', 'these', 'add', 'have', 'need', 'want',
+  'мой', 'моя', 'моё', 'мне', 'я', 'у', 'добавь', 'есть',
+]);
+const SENTENCE_VERBS = /\b(have|got|use|using|pay|paying|subscribe|subscribed|to|for|about|есть|плачу|пользуюсь|оплатил|оформил)\b/i;
 function looksLikeServiceName(key: string): boolean {
   const trimmed = key.trim();
   if (trimmed.length === 0 || trimmed.length > 40) return false;
-  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  const tokens = trimmed.toLowerCase().split(/\s+/).filter(Boolean);
   if (tokens.length > 6) return false;
+  if (tokens.length >= 2 && SENTENCE_PREFIXES.has(tokens[0])) return false;
+  if (tokens.length >= 3 && SENTENCE_VERBS.test(trimmed)) return false;
   return true;
 }
 

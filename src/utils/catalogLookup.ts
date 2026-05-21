@@ -129,15 +129,26 @@ const lookupCache = new Map<string, CatalogEntry | null>();
 // chars / 5 tokens, "Microsoft 365 Family Subscription" = 4 tokens).
 // When the user types a sentence ("I have a subscription MailGun") the
 // smart-input pipeline previously forwarded the whole string to
-// /ai/service-catalog/<text>, causing 404s that surfaced in the prod
-// alert channel. Skip the network call for anything that obviously
-// isn't a service name and let the AI wizard handle natural-language
-// input instead. Caps at 40 chars / 6 tokens so legitimate multi-word
-// brand names still hit the catalog.
+// /ai/service-catalog/<text>, causing 404s in the prod alert channel.
+// The previous length/token guard let "I have subscription ChubGBT Pro"
+// (31 chars / 5 tokens) through — sentence shape but inside the budget.
+// Now we ALSO reject anything that starts with a pronoun or contains
+// common natural-language verbs, which the AI wizard handles cleanly
+// without polluting the alert channel with 404s.
+const SENTENCE_PREFIXES = new Set([
+  // English
+  'i', 'my', 'a', 'an', 'the', 'this', 'these', 'add', 'have', 'need', 'want',
+  // Russian transliterated/cyrillic
+  'мой', 'моя', 'моё', 'мне', 'я', 'у', 'добавь', 'есть',
+]);
+const SENTENCE_VERBS = /\b(have|got|use|using|pay|paying|subscribe|subscribed|to|for|about|есть|плачу|пользуюсь|оплатил|оформил)\b/i;
 function looksLikeServiceName(key: string): boolean {
-  if (key.length === 0 || key.length > 40) return false;
-  const tokens = key.split(/\s+/).filter(Boolean);
+  const trimmed = key.trim();
+  if (trimmed.length === 0 || trimmed.length > 40) return false;
+  const tokens = trimmed.toLowerCase().split(/\s+/).filter(Boolean);
   if (tokens.length > 6) return false;
+  if (tokens.length >= 2 && SENTENCE_PREFIXES.has(tokens[0])) return false;
+  if (tokens.length >= 3 && SENTENCE_VERBS.test(trimmed)) return false;
   return true;
 }
 
