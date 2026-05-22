@@ -263,6 +263,28 @@ eas update --branch production --message "fix: description"
 | `subradar-backend` | NestJS API |
 | `subradar-web` | React веб-приложение |
 | `subradar-landing` | Лендинг subradar.ai |
+| `subradar-vault` | Obsidian knowledge graph — единая визуализация всех 4 репо (см. ниже) |
+
+## Knowledge Graph — `../subradar-vault`
+
+Соседний репо `subradar-vault/` — Obsidian vault с архитектурной картой всего продукта: модули backend, экраны mobile, pages web, секции landing, domain entities, cross-cutting flows (Auth / Billing / AI / API Contracts). 100+ нот, связанных `[[wiki-links]]`, цветные группы в graph view по тегам.
+
+**Открыть:** Obsidian → File → Open vault → `~/Desktop/repositories/subradar-vault/`. Начинать с `00 Index.md`.
+
+**Для этого репо релевантны:** `02 Mobile/Screens/`, `02 Mobile/Hooks/`, `02 Mobile/Stores/`.
+
+### Когда обновлять vault
+
+Обнови соответствующую ноту, если изменение этого репо меняет архитектурную карту:
+
+- ✅ Новый экран в `app/` → добавь ноту в `02 Mobile/Screens/`
+- ✅ Новый hook в `src/hooks/` → добавь ноту в `02 Mobile/Hooks/`
+- ✅ Новый Zustand store → добавь ноту в `02 Mobile/Stores/`
+- ✅ Новый API endpoint, который мобилка дёргает → обнови `00 API Contracts.md` + соответствующую `[[Hook]]` ноту
+- ✅ Изменение auth / billing / AI flow → обнови `00 Auth Flow.md` / `00 Billing Flow.md` / `00 AI Pipeline.md`
+- ❌ Мелкий рефактор, новые i18n ключи, фикс типа — vault не трогаем
+
+После обновления нот в vault → закоммить отдельным коммитом в `subradar-vault` (private repo).
 
 ## graphify
 
