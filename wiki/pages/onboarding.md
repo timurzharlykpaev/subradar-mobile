@@ -1,12 +1,12 @@
 ---
 title: "Онбординг"
-tags: [онбординг, регион, таймзона, авторизация]
+tags: [онбординг, регион, таймзона, авторизация, i18n]
 sources:
   - app/onboarding.tsx
   - src/constants/timezones.ts
   - src/constants/countries.ts
   - src/components/CountryPicker.tsx
-updated: 2026-04-16
+updated: 2026-05-22
 ---
 
 # Онбординг
@@ -75,16 +75,45 @@ function detectCountryFromTimezone(): string {
 2. `isOnboarded` в authStore сбрасывается в `false`
 3. При следующем открытии приложения показывается онбординг
 
+## i18n fix `335c40a` — `{{names}}` interpolation
+
+Ключ `onboarding.first_sub_subtitle_picked` ждёт переменную `{{names}}`,
+но в вызов `t()` передавался только `defaultValue` без поля `names`. Поскольку
+ключ есть во всех 10 локалях, i18next брал текст оттуда — а `{{names}}`
+оставался сырым плейсхолдером на финальном шаге онбординга после pre-pick.
+
+Исправление: передавать `names` параметр в `t()`:
+
+```typescript
+t('onboarding.first_sub_subtitle_picked', {
+  names: pending.map(p => p.name).slice(0, 3).join(', '),
+  defaultValue: `${...} — find the rest with AI`,
+});
+```
+
+Правило для всех новых ключей: если ключ содержит `{{var}}`, **всегда**
+передавать `var` параметр, даже если defaultValue его уже встроил inline.
+
+## WOW polish и pre-pick UX
+
+Recent commits добавили несколько улучшений:
+- `b44e742` — value preview screen + conditional currency step
+- `a603187` — WOW hook + ICP personalization + quick-add backfill
+- `e6f044c` — redraw 5 brand-icon SVGs для auth-hero float cards
+- `c5c438e` — currency auto-skip через `autoDetected` flag + расширенная TZ map
+
 ## Аналитические события
 
 - `onboarding_started` — при открытии
 - `onboarding_slide_viewed` — при просмотре каждого слайда
 - `onboarding_region_selected` — при выборе региона
 - `onboarding_auth_method` — при выборе метода авторизации
-- `onboarding_completed` — при завершении
+- `onboarding_completed` — при завершении (триггерит [[review-prompt]] eligibility)
 
 ## Связанные страницы
 
 - [[auth]] — методы авторизации
 - [[currency-system]] — автодетект региона и валюты
 - [[navigation]] — поток Splash → Onboarding → Main App
+- [[review-prompt]] — `onboarding_completed` trigger
+- [[known-issues]] — fix `335c40a` про i18n interpolation

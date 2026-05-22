@@ -1,12 +1,16 @@
 ---
 title: "Биллинг и монетизация"
-tags: [биллинг, revenuecat, подписка, триал, paywall, тарифы]
+tags: [биллинг, revenuecat, подписка, триал, paywall, тарифы, effective-access]
 sources:
   - src/hooks/useBilling.ts
-  - src/types/index.ts
+  - src/hooks/useEffectiveAccess.ts
+  - src/hooks/useCancelSubscription.ts
+  - src/hooks/useRevenueCat.ts
+  - src/types/billing.ts
+  - src/utils/reconcileBillingDrift.ts
   - CLAUDE.md
   - docs/BILLING_RULES.md
-updated: 2026-04-16
+updated: 2026-05-22
 ---
 
 # Биллинг и монетизация
@@ -52,28 +56,63 @@ loginRevenueCat(userId);        // Идентификация
 logoutRevenueCat();             // При выходе
 ```
 
-## BillingStatus
+## BillingMeResponse и EffectiveAccess
+
+Бэкенд `/billing/me` возвращает структурированный ответ `BillingMeResponse`,
+который mobile резолвит в `EffectiveAccess` через [[state-management]] →
+`useEffectiveAccess`.
 
 ```typescript
-interface BillingStatus {
+interface EffectiveAccess {
+  // Эффективный план (учитывает trial > intro > paid > team-inherited > free)
   plan: 'free' | 'pro' | 'organization';
-  status: 'active' | 'cancelled' | 'trialing';
-  source?: 'own' | 'team' | 'grace_team' | 'grace_pro' | 'free';
-  isTeamOwner?: boolean;
-  isTeamMember?: boolean;
-  hasOwnPro?: boolean;
-  graceUntil?: string | null;
-  graceDaysLeft?: number | null;
-  hasBillingIssue?: boolean;
-  cancelAtPeriodEnd?: boolean;
-  trialUsed: boolean;
-  trialDaysLeft?: number | null;
-  subscriptionCount: number;
-  subscriptionLimit: number | null;
-  aiRequestsUsed: number;
-  aiRequestsLimit: number | null;
+  source: 'own' | 'team' | 'trial' | 'intro' | 'free';
+  state: 'active' | 'grace' | 'expired' | 'trialing' | 'cancelled';
+  billingPeriod: 'monthly' | 'yearly' | null;
+
+  isPro: boolean;             // plan !== 'free'
+  isTeamOwner: boolean;
+  isTeamMember: boolean;
+  hasOwnPaidPlan: boolean;    // у юзера есть свой Apple receipt (не наследованный)
+
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  nextPaymentDate: Date | null;
+  graceExpiresAt: Date | null;
+  graceDaysLeft: number | null;
+  graceReason: GraceReason;   // 'team_expired' | 'pro_expired' | 'billing_issue' | null
+  trialEndsAt: Date | null;
+  billingIssueStartedAt: Date | null;
+
+  flags: BillingFlags;        // hasBillingIssue, willCancel, etc.
+  limits: BillingLimits;      // subscriptions, aiRequests, gmailScans
+  actions: BillingActions;    // canStartTrial, canUpgrade, etc.
+  banner: BillingBanner;      // priority + type для top-level баннера
+  products: BillingProducts;  // ProductIDs от backend (см. [[paywall]])
 }
 ```
+
+### Effective access резолвер (приоритет)
+
+Сервер мерджит источники доступа в один effective view:
+
+```
+trial > intro > own paid plan > team-inherited > grace > free
+```
+
+Поэтому `effective.plan === 'organization'` может быть результатом:
+- own Team purchase (source='own')
+- inherited через team owner (source='team')
+- grace period после expiry (source='team', state='grace')
+
+UI должен опираться на `source` + `state`, не только на `plan`.
+
+### Identity cache
+
+`useEffectiveAccess` использует `WeakMap<BillingMeResponse, EffectiveAccess>`
+— TanStack Query structural sharing даёт one-and-the-same object reference
+для byte-equal responses → consumers (AddSubscriptionSheet, BannerRenderer,
+AIWizard) не получают fresh objects и chain of re-renders на каждый рендер.
 
 ## Хуки
 
@@ -114,15 +153,36 @@ const isTrialing = billing?.status === 'trialing' && !billing?.cancelAtPeriodEnd
 
 ## Grace Period
 
-Когда подписка отменяется (команда распадается, или billing issue):
+Когда подписка отменяется (команда распадается, billing issue, expiry):
+backend держит юзера на Pro/Team фичах ещё N дней (обычно 3-7).
 
 ```typescript
-access.shouldShowGraceBanner → true
-access.graceReason          → 'team_expired' | 'pro_expired' | ...
-access.graceDaysLeft        → number
+access.state === 'grace'
+access.graceReason   → 'team_expired' | 'pro_expired' | 'billing_issue'
+access.graceDaysLeft → number
+access.graceExpiresAt → Date
 ```
 
-Компоненты: `GraceBanner`, `ExpirationBanner`, `WinBackBanner`, `BillingIssueBanner`, `DoublePayBanner`.
+Компоненты-баннеры (rendered через `BannerRenderer` с priority order):
+`GraceBanner`, `ExpirationBanner`, `WinBackBanner`, `BillingIssueBanner`,
+`DoublePayBanner`, `RefundBanner`.
+
+## Reconciliation (RC ↔ backend drift)
+
+Apple SDK и наш backend могут расходиться (webhook lag, sandbox quirks,
+network issues). `reconcileBillingDrift()` (`src/utils/reconcileBillingDrift.ts`)
+синхронизирует:
+
+1. Fetch `Purchases.getCustomerInfo()` — actual entitlements от Apple
+2. Сравни с `effective.plan` от backend
+3. Если drift → вызови `billingApi.reconcile()` → backend pulls свежий
+   state от RC REST API
+
+**Когда триггерится:**
+- `app/(tabs)/workspace.tsx` pull-to-refresh — самое видимое место drift'a
+- `app/_layout.tsx` DataLoader cold start (если есть pending receipt)
+- Commit `ba4d9c3`: backend в grace + RC active → trigger reconcile
+- Commit `bc3d393`: cooldown + in-flight dedup чтобы не спамить
 
 ## Degraded Mode
 
@@ -144,13 +204,23 @@ access.hiddenSubsCount  → number
 - `AsyncStorage.trial_offered` — флаг показа
 - Start trial: `billingApi.startTrial()`
 
-## Отмена подписки
+## Отмена подписки (тариф SubRadar, не отдельная подписка-сущность)
 
-Settings → Manage Subscription:
-1. `CancellationInterceptModal` — предлагает остаться
-2. Если trialing → `billingApi.cancel()` напрямую
-3. Если RC subscriber → `RevenueCatUI.presentCustomerCenter()`
-4. После закрытия CustomerCenter → `syncAfterCustomerCenter()` — проверяет entitlements и синхронизирует с бэкендом
+Через хук `useCancelSubscription` (`src/hooks/useCancelSubscription.ts`):
+
+1. Если `isTrialing` → `billingApi.cancel()` напрямую (нет Apple receipt)
+2. Иначе IAP path:
+   - `checkRcEntitlement()` — снимок BEFORE state из RC
+   - `RevenueCatUI.presentCustomerCenter()` (или fallback на
+     `Linking.openURL('https://apps.apple.com/account/subscriptions')`)
+   - После закрытия: `Purchases.invalidateCustomerInfoCache()` +
+     `Purchases.syncPurchases()` — bust SDK in-memory cache
+   - Снова `checkRcEntitlement()` + `rcHasPendingCancellation()` (проверка
+     `willRenew=false`)
+   - Если entitlement пропал ИЛИ pendingCancellation → `billingApi.cancel()`
+     + `billingApi.reconcile()` (belt-and-suspenders)
+3. `invalidateQueries(['billing'])` всегда — даже если юзер dismissed
+   CustomerCenter, чтобы любые side-effects (renewal, plan switch) подхватились
 
 ## Team Upsell
 
@@ -163,6 +233,9 @@ Settings → Manage Subscription:
 
 ## Связанные страницы
 
+- [[paywall]] — IAP flow + sync retry + feature attribution
 - [[ai-features]] — AI анализ (Pro-only)
 - [[analytics]] — Pro-gated секции
+- [[workspace]] — Team plan UI + transfer ownership
 - [[state-management]] — billing кеш в TanStack Query
+- [[reports]] — PDF generation gated на Pro

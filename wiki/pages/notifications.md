@@ -1,13 +1,14 @@
 ---
 title: "Уведомления"
-tags: [уведомления, push, fcm, напоминания, email, digest]
+tags: [уведомления, push, fcm, напоминания, email, digest, reminder-days]
 sources:
   - app/_layout.tsx
   - src/utils/localNotifications.ts
   - src/api/notifications.ts
+  - src/stores/settingsStore.ts
   - app/(tabs)/settings.tsx
   - CLAUDE.md
-updated: 2026-04-16
+updated: 2026-05-22
 ---
 
 # Уведомления
@@ -38,8 +39,10 @@ async function registerForPushNotificationsAsync() {
 #### Отправка на бэкенд
 
 ```typescript
-notificationsApi.registerPushToken(token, platform);
-// → API endpoint для регистрации токена
+notificationsApi.registerPushToken(token, platform, locale?);
+// POST /notifications/push-token
+// locale — optional, чтобы backend cron мог отправлять push на правильном языке
+// сразу после первой регистрации (не дожидаясь PATCH /users/me)
 ```
 
 #### Обработка нотификаций
@@ -74,8 +77,26 @@ if (notificationsEnabled) {
 ```
 
 `schedulePaymentReminders()` из `src/utils/localNotifications.ts`:
-- Планирует уведомления за N дней до платежа
-- N настраивается пользователем: 0 (off), 1, 3, 7 дней
+- Cancel all existing scheduled notifications
+- Для каждой ACTIVE/TRIAL подписки планирует уведомления за N дней до платежа
+- Время триггера: 09:00 local
+
+### Fix `32c2835` — honor global reminderDays
+
+Раньше `schedulePaymentReminders` хардкодил `[1, 3]` как fallback когда у
+подписки нет `reminderDaysBefore`. Settings → "Remind 3 days before" / "Off"
+работали только для серверного push-cron'a — локальный планировщик
+игнорировал глобальную настройку.
+
+Сейчас читает `useSettingsStore.getState().reminderDays`:
+
+| reminderDays | Sub имеет `reminderDaysBefore` | Behavior |
+|--------------|-------------------------------|----------|
+| `> 0` | Нет | schedule за N дней (где N = global) |
+| `0` (Off) | Нет | skip scheduling — юзер выключил глобально |
+| `0` или `> 0` | Да (массив) | per-sub array выигрывает |
+
+Per-row preference всегда beats global default — это правильный приоритет.
 
 ### 3. Email уведомления
 
@@ -137,8 +158,20 @@ useEffect(() => {
 - Запрашиваются при запуске приложения (PushSetup)
 - Не работает на эмуляторе/Expo Go
 
+## Push deep-link сценарии
+
+| Источник push | Payload | Действие |
+|--------------|---------|----------|
+| Payment reminder | `subscriptionId` | `router.push(/subscription/${id})` |
+| Gmail scan completed | `jobId` | `router.push(/gmail-import?jobId=…)` — auto-resume |
+| Weekly digest preview | (нет) | open dashboard |
+
+См. [[gmail-import]] для auto-resume через jobId deep-link.
+
 ## Связанные страницы
 
 - [[architecture]] — PushSetup в дереве провайдеров
 - [[billing]] — Weekly AI Digest доступен только Pro
 - [[subscriptions]] — напоминания привязаны к nextPaymentDate
+- [[gmail-import]] — push deep-link `?jobId=…`
+- [[known-issues]] — fix `32c2835` про reminderDays

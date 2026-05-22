@@ -1,12 +1,14 @@
 ---
 title: "Подписки"
-tags: [подписка, сущность, crud, статус]
+tags: [подписка, сущность, crud, статус, lifecycle]
 sources:
   - src/types/index.ts
   - src/hooks/useSubscriptions.ts
+  - src/hooks/useCancelSubscription.ts
   - src/stores/subscriptionsStore.ts
+  - src/api/subscriptions.ts
   - src/components/SubscriptionCard.tsx
-updated: 2026-04-16
+updated: 2026-05-22
 ---
 
 # Подписки (Subscription)
@@ -121,6 +123,34 @@ useUpdateSubscription() → useMutation({ id, data }) → invalidate(['subscript
 useDeleteSubscription() → useMutation(id) → invalidate(['subscriptions'], ['billing', 'me'])
 ```
 
+### Lifecycle actions (REST endpoints)
+
+`subscriptionsApi` (`src/api/subscriptions.ts`) предоставляет переходы статусов:
+
+| Метод | Endpoint | Переход |
+|-------|----------|---------|
+| `cancel(id)` | `POST /subscriptions/:id/cancel` | ACTIVE / TRIAL → CANCELLED |
+| `pause(id)` | `POST /subscriptions/:id/pause` | ACTIVE → PAUSED |
+| `restore(id)` | `POST /subscriptions/:id/restore` | PAUSED → ACTIVE |
+| `archive(id)` | `POST /subscriptions/:id/archive` | CANCELLED → ARCHIVED |
+| `uploadReceipt(id, formData)` | `POST /subscriptions/:id/receipts` | прикрепить чек |
+
+### `useCancelSubscription` хук (для биллинга app-плана)
+
+**Важно:** этот хук — для отмены **тарифа SubRadar** (Pro/Team), не для отмены
+подписки в списке. См. [[billing]] → отмена через `useCancelSubscription`:
+- Trial path → backend cancel (`/billing/cancel`)
+- IAP path → RC Customer Center или Apple Settings → проверка
+  entitlement через `willRenew=false` → backend cancel + reconcile
+
+### Server-side gating
+
+`getAll()` передаёт `gateByPlan: true` — backend режет ответ на лимиты плана.
+Free пользователь после downgrade не сможет вытянуть подписки сверх лимита
+прямым API hit-ом. Mobile cap `SUBSCRIPTIONS_DEFAULT_LIMIT = 500` — защита
+от OOM (Pro лимит 500, Team 2000 → Pro получает всё, Team — top-500
+по amount, что покрывает 99% UI-сценариев).
+
 **Важно:** `useSubscriptions()` автоматически подмешивает `displayCurrency` из `settingsStore` в параметры запроса. Бэкенд возвращает `displayAmount` и `displayCurrency` в каждой подписке.
 
 ### Zustand Store
@@ -157,9 +187,17 @@ formatMoney(displayValue, displayCur, i18n.language);
 
 См. [[currency-system]] для деталей конвертации.
 
+## Swipe-to-delete UX
+
+В списке подписок (`(tabs)/subscriptions.tsx`) карточка поддерживает
+**swipe-left** для показа красной trash action (commit `0fdf04c`). Tap по
+action открывает confirm dialog → `useDeleteSubscription`.
+
 ## Связанные страницы
 
 - [[currency-system]] — конвертация валют и displayAmount
 - [[ai-features]] — AI-способы создания подписок
+- [[gmail-import]] — bulk-импорт через Gmail (создаёт подписки)
 - [[state-management]] — subscriptionsStore
 - [[analytics]] — аналитика по подпискам
+- [[billing]] — отмена тарифа SubRadar через `useCancelSubscription`

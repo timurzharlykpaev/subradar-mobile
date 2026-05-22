@@ -8,11 +8,18 @@ sources:
   - src/stores/paymentCardsStore.ts
   - src/stores/uiStore.ts
   - src/stores/analyticsStore.ts
+  - src/stores/reviewPromptStore.ts
   - src/hooks/useSubscriptions.ts
   - src/hooks/useAnalytics.ts
   - src/hooks/useBilling.ts
+  - src/hooks/useEffectiveAccess.ts
   - src/hooks/useAI.ts
-updated: 2026-04-16
+  - src/hooks/useGmail.ts
+  - src/hooks/useActiveGmailScan.ts
+  - src/hooks/useWorkspaceAnalysis.ts
+  - src/hooks/useReviewPrompt.ts
+  - src/hooks/useCancelSubscription.ts
+updated: 2026-05-22
 ---
 
 # Управление состоянием
@@ -114,10 +121,32 @@ updated: 2026-04-16
   summary: AnalyticsSummary | null,
   monthly: MonthlyData[],
   byCategory: CategoryData[],
+  setSummary, setMonthly, setByCategory,
 }
 ```
 
 **Примечание:** используется реже, основные аналитические данные загружаются напрямую через API в компоненте Analytics.
+
+### reviewPromptStore
+
+**Хранение:** AsyncStorage (Zustand `persist`)
+**Ключ:** `subradar-review-prompt`
+**Версия:** 1
+
+```typescript
+{
+  installedAt: number | null,
+  lastPromptedAt: number | null,
+  promptCount: number,
+  firedTriggers: Record<ReviewTrigger, true | undefined>,
+  lastNegativeAt: number | null,
+  lastActiveDay: string | null,    // YYYY-MM-DD
+  consecutiveDays: number,
+  recordAppOpen, markNegative, shouldPrompt, markPrompted, reset,
+}
+```
+
+Подробнее: [[review-prompt]] — gates, throttling, streak tracking.
 
 ## TanStack Query — ключи и хуки
 
@@ -136,8 +165,36 @@ updated: 2026-04-16
 | Хук | Query Key | Описание |
 |-----|-----------|----------|
 | `useBillingStatus()` | `['billing', 'me']` | Статус подписки (staleTime: 30s) |
+| `useEffectiveAccess()` | (wraps `useBillingStatus`) | Резолвенный EffectiveAccess с WeakMap identity cache |
 | `usePlans()` | `['billing', 'plans']` | Доступные планы |
 | `useStartTrial()` | mutation | Старт триала → invalidate billing |
+| `useCancelSubscription()` | callback | Trial-cancel или IAP cancel via RC CustomerCenter |
+| `useRevenueCat()` | RC SDK | offerings, purchasePackage, hasTrialOffer, loadOfferings |
+
+### Workspace / Team
+
+| Хук | Query Key | Описание |
+|-----|-----------|----------|
+| `useQuery(['workspace'])` | inline в `workspace.tsx` | `/workspace/me` |
+| `useQuery(['workspace-analytics', currency])` | inline | `/workspace/me/analytics` |
+| `useWorkspaceAnalysisLatest()` | `['workspace-analysis', 'latest']` | AI-анализ overlaps |
+| `useRunWorkspaceAnalysis()` | mutation | Запуск AI-анализа |
+
+### Gmail
+
+| Хук | Описание |
+|-----|----------|
+| `useGmailStatus()` | `/gmail/status` — подключение + dailyScans quota |
+| `useGmailConnect()` | mutation → authUrl для OAuth consent |
+| `useGmailDisconnect()` | mutation → revoke + invalidate status |
+| `useGmailScanJob()` | Background scan: start, resume, reset, polling, persistence |
+| `useActiveGmailScan()` | Read-only companion для dashboard banner |
+
+### Review Prompt
+
+| Хук | Описание |
+|-----|----------|
+| `useReviewPrompt()` | `promptIfEligible(trigger)`, `markNegative()` |
 
 ### Analytics
 
@@ -161,6 +218,9 @@ updated: 2026-04-16
 | `auth-storage` | SecureStore | Авторизация (через secureStorage adapter) |
 | `subradar-settings` | AsyncStorage | Настройки |
 | `subradar-subscriptions` | AsyncStorage | Кеш подписок |
+| `subradar-review-prompt` | AsyncStorage | Review prompt state |
+| `gmail:scan:active-jobId` | AsyncStorage | Активный Gmail scan jobId (auto-resume) |
+| `pending_receipt` | SecureStore | Apple receipt не синхронизирован с backend |
 | `welcome_shown` | AsyncStorage | Флаг показа WelcomeSheet |
 | `trial_offered` | AsyncStorage | Флаг предложения триала |
 | `team_modal_shown_v1` | AsyncStorage | Флаг показа Team Upsell |
@@ -182,3 +242,8 @@ updated: 2026-04-16
 - [[currency-system]] — settingsStore
 - [[subscriptions]] — subscriptionsStore
 - [[architecture]] — DataLoader и начальная загрузка
+- [[billing]] — EffectiveAccess, useCancelSubscription
+- [[gmail-import]] — useGmail* hooks
+- [[workspace]] — workspace query keys
+- [[review-prompt]] — reviewPromptStore + gates
+- [[cards]] — paymentCardsStore
