@@ -210,6 +210,7 @@
     "tags_placeholder": "Tapez et appuyez sur virgule...",
     "parse_failed": "Impossible d'analyser. Reessayez.",
     "save_failed": "Impossible d'enregistrer l'abonnement",
+    "rate_limited": "Trop de requêtes. Patientez un instant puis réessayez.",
     "limit_title": "Limite d'abonnements atteinte",
     "limit_msg": "Le plan gratuit permet jusqu'à {{max}} abonnements. Passez à Pro pour un accès illimité.",
     "hold_to_record": "Maintenir pour parler",

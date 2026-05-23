@@ -210,6 +210,7 @@
     "tags_placeholder": "Digite e pressione virgula...",
     "parse_failed": "Nao foi possivel analisar. Tente novamente.",
     "save_failed": "Não foi possível salvar a assinatura",
+    "rate_limited": "Muitas solicitações. Aguarde um momento e tente novamente.",
     "limit_title": "Limite de assinaturas atingido",
     "limit_msg": "O plano gratuito permite até {{max}} assinaturas. Atualize para Pro para ilimitadas.",
     "hold_to_record": "Segurar para falar",

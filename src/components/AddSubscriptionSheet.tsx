@@ -126,8 +126,14 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const formRef = useRef(formCtx.form);
   formRef.current = formCtx.form;
   const [saving, setSaving] = useState(false);
-  const savingRef = useRef(saving);
-  savingRef.current = saving;
+  // Synchronous mutex against double/triple-tap on Save. Setting React state
+  // (setSaving) doesn't update savingRef until the next render — between two
+  // onPress calls in the same frame there IS no render, so an "is the button
+  // already saving?" guard built on state lets all taps through and the user
+  // fires N concurrent POST /subscriptions (we saw 3 requests in 290ms in
+  // prod logs → first 201, rest 429 ThrottlerException). Write the ref
+  // BEFORE setSaving so the very next call to handleSave sees a hot mutex.
+  const savingRef = useRef(false);
   const [addedViaSource, setAddedViaSource] = useState<'MANUAL' | 'AI_TEXT' | 'AI_SCREENSHOT'>('MANUAL');
   // Keep frequently-changing values in refs so handlers passed to memoized
   // children (BulkConfirmView, ConfirmView, ManualFormView, BulkEditModal)
@@ -362,6 +368,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     try {
       const iconUrl = resolveIconUrl({ iconUrl: form.iconUrl, serviceUrl: form.serviceUrl });
@@ -423,17 +430,27 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     } catch (err: any) {
       const errorData = err?.response?.data?.error || err?.response?.data;
       const code = errorData?.code || '';
-      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429;
+      const status = err?.response?.status;
+      // Only treat 429 as the subscription-cap paywall trigger when the
+      // server explicitly tagged it as such. Generic 429 = NestJS throttler
+      // (rate-limit on /subscriptions); showing the upgrade modal there is
+      // the wrong UX — the user already created the sub on the first POST,
+      // the 2nd/3rd are double-tap collisions.
+      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED';
+      const isRateLimited = status === 429 && !isLimitError;
 
       if (isLimitError) {
         analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'manual_save_backend' });
         setProGate('unlimited_subs');
+      } else if (isRateLimited) {
+        Alert.alert(t('common.error'), t('add.rate_limited'));
       } else {
         const msg = typeof errorData === 'string' ? errorData
           : errorData?.message || errorData?.message_key || err?.message || t('add.save_failed');
         Alert.alert(t('common.error'), String(msg));
       }
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [subsLimitReached, t, addSubscription]);
@@ -448,6 +465,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setProGate('unlimited_subs');
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     setLoadingStage('saving');
     const source = addedViaSourceRef.current;
@@ -504,14 +522,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     } catch (err: any) {
       const errorData = err?.response?.data?.error || err?.response?.data;
       const code = errorData?.code || '';
-      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED' || err?.response?.status === 429;
+      const status = err?.response?.status;
+      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED';
+      const isRateLimited = status === 429 && !isLimitError;
       if (isLimitError) {
         analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'confirm_save_backend' });
         setProGate('unlimited_subs');
+      } else if (isRateLimited) {
+        Alert.alert(t('common.error'), t('add.rate_limited'));
       } else {
         Alert.alert(t('common.error'), translateBackendError(t, err) || t('add.save_failed'));
       }
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [subsLimitReached, currency, addSubscription, t]);
@@ -899,6 +922,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   // by position, which caused the row after the removed one to inherit its
   // slot's checked-state.
   const [bulkSaving, setBulkSaving] = useState(false);
+  // Same race-condition pattern as savingRef above: bulk Save All is a
+  // potentially long for-loop of POSTs; without a synchronous ref guard a
+  // quick double-tap can kick off two concurrent loops over the same items.
+  const bulkSavingRef = useRef(false);
+  const wizardSavingRef = useRef(false);
   const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
   const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
 
@@ -941,6 +969,8 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
     const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
     if (selected.length === 0) return;
+    if (bulkSavingRef.current) return;
+    bulkSavingRef.current = true;
 
     setBulkSaving(true);
     let saved = 0;
@@ -1010,6 +1040,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
+    bulkSavingRef.current = false;
     setBulkSaving(false);
 
     if (saved > 0) {
@@ -1051,6 +1082,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
 
   // ── Wizard: AI-clarification fallback handlers ──────────────────────────
   const handleWizardSave = useCallback(async (sub: ParsedSub) => {
+    if (wizardSavingRef.current) return;
+    wizardSavingRef.current = true;
+    try {
     const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
 
     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
@@ -1097,13 +1131,19 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
       useSubscriptionsStore.getState().setSubscriptions(r.data || []);
     }).catch(() => {});
+    } finally {
+      wizardSavingRef.current = false;
+    }
   }, [addSubscription, currency]);
 
   const handleWizardSaveBulk = useCallback(async (subs: ParsedSub[]) => {
+    if (wizardSavingRef.current) return;
+    wizardSavingRef.current = true;
     const VALID_CATEGORIES = ['STREAMING','AI_SERVICES','INFRASTRUCTURE','DEVELOPER','PRODUCTIVITY','MUSIC','GAMING','EDUCATION','FINANCE','DESIGN','SECURITY','HEALTH','SPORT','NEWS','BUSINESS','OTHER'];
     const VALID_BILLING = ['WEEKLY','MONTHLY','QUARTERLY','YEARLY','LIFETIME','ONE_TIME'];
     let saved = 0;
     const failed: string[] = [];
+    try {
     for (const sub of subs) {
       try {
         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
@@ -1149,6 +1189,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (failed.length > 0 && saved === 0) {
       handleClose();
       router.push('/paywall');
+    }
+    } finally {
+      wizardSavingRef.current = false;
     }
   }, [addSubscription, currency, t, handleClose, router]);
 

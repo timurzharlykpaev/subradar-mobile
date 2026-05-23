@@ -218,6 +218,7 @@
     "color_auto": "Auto",
     "parse_failed": "Could not parse. Try again.",
     "save_failed": "Failed to save subscription",
+    "rate_limited": "Too many requests. Please wait a moment and try again.",
     "limit_title": "Subscription limit reached",
     "limit_msg": "Free plan allows up to {{max}} subscriptions. Upgrade to Pro for unlimited.",
     "monthly": "Monthly",
