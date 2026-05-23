@@ -20,7 +20,7 @@ if (__DEV__ && process.env.EXPO_PUBLIC_E2E_MODE === '1') {
 }
 
 import { useEffect, useRef, useState } from 'react';
-import { AppState, BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
+import { AppState, Appearance, BackHandler, Platform, View, Text, Image, Animated } from 'react-native';
 import type { AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { EventSubscription } from 'expo-modules-core';
@@ -646,6 +646,13 @@ function AdaptiveStatusBar() {
 function SplashScreen() {
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.85)).current;
+  // Read system theme synchronously — Appearance.getColorScheme() is sync and
+  // available before our ThemeProvider mounts. Prevents a white flash on
+  // cold-start for users in dark mode.
+  const isDark = Appearance.getColorScheme() === 'dark';
+  const bg = isDark ? '#1A1A2E' : '#FFFFFF';
+  const titleColor = isDark ? '#FFFFFF' : '#1A1A2E';
+  const subtitleColor = isDark ? '#9CA3AF' : '#6B7280';
 
   useEffect(() => {
     Animated.parallel([
@@ -655,19 +662,35 @@ function SplashScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
       <Animated.View style={{ alignItems: 'center', opacity, transform: [{ scale }] }}>
-        <Image
-          source={require('../assets/images/icon.png')}
-          style={{ width: 96, height: 96, borderRadius: 22, marginBottom: 20 }}
-        />
+        {/* Wrap in View with overflow:hidden — `borderRadius` on <Image> with a
+            non-transparent PNG doesn't reliably clip on Android, so the icon
+            showed as a sharp square. Clipping the wrapping View works on both
+            platforms. */}
+        <View
+          style={{
+            width: 96,
+            height: 96,
+            borderRadius: 22,
+            overflow: 'hidden',
+            marginBottom: 20,
+            backgroundColor: '#5826C0',
+          }}
+        >
+          <Image
+            source={require('../assets/images/icon.png')}
+            style={{ width: 96, height: 96 }}
+            resizeMode="cover"
+          />
+        </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <Text style={{ fontSize: 32, fontWeight: '900', color: '#1A1A2E', letterSpacing: -0.5 }}>SubRadar</Text>
+          <Text style={{ fontSize: 32, fontWeight: '900', color: titleColor, letterSpacing: -0.5 }}>SubRadar</Text>
           <View style={{ backgroundColor: '#8B5CF6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 8 }}>
             <Text style={{ fontSize: 14, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 }}>AI</Text>
           </View>
         </View>
-        <Text style={{ fontSize: 15, color: '#6B7280', textAlign: 'center', letterSpacing: 0.2 }}>
+        <Text style={{ fontSize: 15, color: subtitleColor, textAlign: 'center', letterSpacing: 0.2 }}>
           Smart subscription tracker
         </Text>
       </Animated.View>
