@@ -63,11 +63,17 @@ export function useActiveGmailScan() {
     const clearedSub = DeviceEventEmitter.addListener(
       GMAIL_SCAN_CLEARED_EVENT,
       () => {
-        void reloadJobId();
-        // Also kill any cached query data so the banner doesn't briefly
-        // re-render the "completed" card before the activeJobId state
-        // settles to null on the next paint.
+        // Optimistically clear local state — the event itself IS the
+        // "scan cleared" signal, so we trust it instead of round-tripping
+        // through AsyncStorage. Even now that useGmail.reset() awaits the
+        // removeItem before emitting, native AsyncStorage batching can
+        // still reorder a read against a just-completed write in pathological
+        // cases, so we belt-and-suspenders by zeroing state in the listener
+        // and only use reloadJobId as a re-check.
+        setActiveJobId(null);
+        setDismissed(false);
         qc.removeQueries({ queryKey: ['gmail', 'scan', 'active'] });
+        void reloadJobId();
       },
     );
     return () => {

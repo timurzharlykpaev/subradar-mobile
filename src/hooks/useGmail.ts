@@ -354,14 +354,8 @@ export function useGmailScanJob() {
     [poll, stopPolling],
   );
 
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
     stopPolling();
-    AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY).catch(() => {
-      /* best-effort */
-    });
-    // Tell the dashboard banner (useActiveGmailScan) to drop its cached
-    // jobId immediately instead of waiting for the next focus event.
-    DeviceEventEmitter.emit(GMAIL_SCAN_CLEARED_EVENT);
     setState({
       jobId: null,
       status: 'idle',
@@ -370,6 +364,22 @@ export function useGmailScanJob() {
       cached: false,
       progress: null,
     });
+    // Persist the cleared state BEFORE broadcasting. Previously this was
+    // fire-and-forget, which let the dashboard banner's listener
+    // (useActiveGmailScan) react to the event and re-read AsyncStorage
+    // before `removeItem` had actually flushed — so it picked up the
+    // stale jobId and the banner lingered. Worse: tapping the banner
+    // re-entered gmail-import, whose recoverOnce effect also re-read
+    // AsyncStorage, called `resume(jobId)`, and re-fetched the just-
+    // imported candidates so the user could add them a second time.
+    try {
+      await AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY);
+    } catch {
+      /* best-effort */
+    }
+    // Tell the dashboard banner (useActiveGmailScan) to drop its cached
+    // jobId immediately instead of waiting for the next focus event.
+    DeviceEventEmitter.emit(GMAIL_SCAN_CLEARED_EVENT);
   }, [stopPolling]);
 
   // Auto-recover the previously-running scan on mount + whenever

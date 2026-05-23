@@ -128,6 +128,15 @@ export default function GmailImportScreen() {
   const [bulkEditIdx, setBulkEditIdx] = useState<number | null>(null);
   const [bulkMoreExpanded, setBulkMoreExpanded] = useState(false);
   const [importing, setImporting] = useState(false);
+  // Synchronous re-entrancy guard for the bulk save handler. React's
+  // `importing` state and the TouchableOpacity `disabled` prop both
+  // update asynchronously, so two onPress callbacks fired in the same
+  // JS frame (e.g. a fast double-tap on the Save button) can both pass
+  // the disabled check and trigger the create loop twice — producing
+  // duplicate subscriptions. The ref flips synchronously before any
+  // await, so the second invocation bails out immediately. Same
+  // pattern as the `savingRef` fix in AddSubscriptionSheet (v1.4.4).
+  const bulkSavingRef = useRef(false);
   // True when the backend's scan result reports it couldn't read the
   // whole inbox in one go. Render a banner inviting the user to
   // re-scan so they don't think the list below is exhaustive.
@@ -505,8 +514,14 @@ export default function GmailImportScreen() {
   }, [bulkEditIdx]);
 
   const handleBulkSaveAll = useCallback(async () => {
+    // Synchronous mutex check — flip BEFORE any state update or await,
+    // otherwise a same-frame double tap can pass `disabled={importing}`
+    // (which is React-state-based and only updates on next render) and
+    // start the create loop twice.
+    if (bulkSavingRef.current) return;
     const picked = bulkItems.filter((_, i) => bulkChecked[i]);
     if (picked.length === 0) return;
+    bulkSavingRef.current = true;
     setImporting(true);
     let created = 0;
     let failed = 0;
@@ -593,7 +608,13 @@ export default function GmailImportScreen() {
     setScanSummary(null);
     setTruncated(false);
     setScanFromCache(false);
-    scan.reset();
+    // Await reset so AsyncStorage's `gmail:scan:active-jobId` is fully
+    // cleared BEFORE we navigate. Without await, the dashboard banner
+    // listener (or a re-entered gmail-import via banner tap) could
+    // re-read the stale jobId and either keep the banner visible or
+    // re-resume the just-imported scan, letting the user add the same
+    // candidates again.
+    await scan.reset();
     setNotice({
       kind:
         created > 0 && failed === 0
@@ -607,7 +628,16 @@ export default function GmailImportScreen() {
         fail: failed,
       }),
     });
-    setTimeout(() => router.replace('/(tabs)'), 1200);
+    // Release the re-entrancy guard right before navigation. Doing it
+    // earlier (e.g. in a finally on the create loop) would re-open the
+    // window between cleanup and router.replace where a stray tap could
+    // re-enter the (now empty) handler.
+    bulkSavingRef.current = false;
+    // 500ms is enough for the success notice to register visually
+    // without feeling like the app froze. The previous 1.2 s delay was
+    // the dominant component of the "long redirect" complaint, and the
+    // sequential create loop already adds variable latency on top.
+    setTimeout(() => router.replace('/(tabs)'), 500);
   }, [bulkItems, bulkChecked, createSub, router, scan, t]);
 
   const handleBulkCancel = useCallback(() => {
@@ -619,7 +649,9 @@ export default function GmailImportScreen() {
     setScanSummary(null);
     setTruncated(false);
     setScanFromCache(false);
-    scan.reset();
+    // reset() is now async — no navigation follows so fire-and-forget is
+    // fine, but mark it explicitly so the floating promise isn't lint noise.
+    void scan.reset();
   }, [scan]);
 
   const isLoading = status.isLoading;
