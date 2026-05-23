@@ -61,6 +61,8 @@ import { useAddSubscriptionForm, emptyForm } from './add-subscription/useAddSubs
 import type { LoadingStage } from './add-subscription/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SHEET_TOP_GAP = 60;
+const SHEET_MAX_HEIGHT = Math.min(SCREEN_HEIGHT * 0.92, SCREEN_HEIGHT - SHEET_TOP_GAP);
 
 interface Props {
   visible: boolean;
@@ -1423,7 +1425,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: SCREEN_HEIGHT * 0.92,
+    height: SHEET_MAX_HEIGHT,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     shadowColor: '#000',

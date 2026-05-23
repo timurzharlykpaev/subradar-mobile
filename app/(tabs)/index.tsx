@@ -52,6 +52,7 @@ import { analytics } from '../../src/services/analytics';
 import { parseBackendDate, daysUntilDate } from '../../src/utils/formatters';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { formatMoney } from '../../src/utils/formatMoney';
+import { ms, mvs } from '../../src/utils/responsive';
 
 export default function DashboardScreen() {
   const { t, i18n } = useTranslation();
@@ -480,6 +481,7 @@ export default function DashboardScreen() {
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.7}
+            maxFontSizeMultiplier={1.2}
           >
             {formatMoney(totalMonthlyVisible, effectiveCurrency, i18n.language)}
           </Text>
@@ -900,9 +902,9 @@ function QuickAction({ icon, label, onPress, color }: { icon: React.ComponentPro
       accessibilityLabel={label}
     >
       <View style={[styles.actionIcon, { backgroundColor: color + '18' }]}>
-        <Ionicons name={icon} size={20} color={color} />
+        <Ionicons name={icon} size={ms(20)} color={color} />
       </View>
-      <Text style={[styles.actionLabel, { color: colors.text }]} numberOfLines={2}>{label}</Text>
+      <Text style={[styles.actionLabel, { color: colors.text }]} numberOfLines={2} maxFontSizeMultiplier={1.3}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -1188,9 +1190,9 @@ const styles = StyleSheet.create({
   heroCard: { marginHorizontal: 20, marginTop: 16, borderRadius: 24, padding: 18, gap: 4, shadowOpacity: 0.4, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 10, overflow: 'hidden' },
   heroDecor1: { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(255,255,255,0.06)', top: -60, right: -30 },
   heroDecor2: { position: 'absolute', width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.04)', bottom: -40, left: -20 },
-  heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
+  heroLabel: { fontSize: ms(13), color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
   heroAmountRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  heroAmount: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: -1 },
+  heroAmount: { fontSize: ms(36), fontWeight: '900', color: '#FFF', letterSpacing: -1 },
   deltaRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1285,8 +1287,8 @@ const styles = StyleSheet.create({
   emptyHint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
 
   // Actions
-  actionsRow: { flexDirection: 'row', gap: 10 },
-  actionCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center', gap: 8, borderWidth: 1 },
-  actionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  actionLabel: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  actionsRow: { flexDirection: 'row', gap: ms(10) },
+  actionCard: { flex: 1, borderRadius: 16, padding: ms(14), alignItems: 'center', gap: mvs(8), borderWidth: 1, minHeight: mvs(110), justifyContent: 'center' },
+  actionIcon: { width: ms(40), height: ms(40), borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  actionLabel: { fontSize: ms(12), fontWeight: '700', textAlign: 'center' },
 });

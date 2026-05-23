@@ -39,6 +39,8 @@ import type { BulkSub } from './bulk-add/types';
 export type { BulkSub };
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SHEET_TOP_GAP = 60;
+const SHEET_MAX_HEIGHT = Math.min(SCREEN_HEIGHT * 0.88, SCREEN_HEIGHT - SHEET_TOP_GAP);
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -477,7 +479,7 @@ export function BulkAddSheet({ visible, onClose, onDone }: Props) {
 
 const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet: { position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT * 0.88, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' },
+  sheet: { position: 'absolute', bottom: 0, left: 0, right: 0, height: SHEET_MAX_HEIGHT, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 },
   title: { fontSize: 22, fontWeight: '900' },
   subtitle: { fontSize: 13, marginTop: 2 },

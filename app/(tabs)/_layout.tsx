@@ -8,6 +8,7 @@ import { COLORS } from '../../src/constants';
 import { useTheme } from '../../src/theme';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
+import { ms } from '../../src/utils/responsive';
 
 function TabIcon({ name, focused }: { name: React.ComponentProps<typeof Ionicons>['name']; focused: boolean }) {
   const { colors } = useTheme();
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: ms(11),
     fontWeight: '600',
     marginTop: 2,
   },

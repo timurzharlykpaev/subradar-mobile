@@ -248,7 +248,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onSwipeDelete, o
 
       <View style={styles.middle}>
         <View style={styles.nameRow}>
-          <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{subscription.name}</Text>
+          <Text style={[styles.name, { color: colors.text }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>{subscription.name}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
             <Text style={[styles.statusText, { color: statusColor }]}>
               {t(`subscriptions.status_${subscription.status?.toLowerCase()}`, subscription.status)}
@@ -284,6 +284,7 @@ const SubscriptionCardInner: React.FC<Props> = ({ subscription, onSwipeDelete, o
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={0.8}
+              maxFontSizeMultiplier={1.2}
             >
               {formatMoney(primaryAmount, primaryCurrency, lang)}
             </Text>

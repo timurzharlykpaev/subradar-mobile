@@ -12,7 +12,8 @@ import { formatMoney } from '../utils/formatMoney';
 import { convertAmount } from '../services/fxCache';
 
 const { height: SCREEN_H } = Dimensions.get('window');
-const SHEET_H = SCREEN_H * 0.75;
+const SHEET_TOP_GAP = 60;
+const SHEET_H = Math.min(SCREEN_H * 0.75, SCREEN_H - SHEET_TOP_GAP);
 
 interface MemberData {
   id: string;

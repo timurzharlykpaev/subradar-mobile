@@ -41,6 +41,8 @@ interface Props {
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const SHEET_TOP_GAP = 60;
+const SHEET_MAX_HEIGHT = Math.min(SCREEN_HEIGHT * 0.9, SCREEN_HEIGHT - SHEET_TOP_GAP);
 
 const PERIOD_LABELS: Record<string, string> = {
   WEEKLY: 'billing.weekly',
@@ -1173,7 +1175,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: SCREEN_HEIGHT * 0.9,
+    height: SHEET_MAX_HEIGHT,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     shadowColor: '#000',
