@@ -27,6 +27,7 @@ export type AnalyticsEvent =
   | 'onboarding_completed'
   | 'onboarding_money_hook_viewed'
   | 'onboarding_quick_add_tapped'
+  | 'onboarding_region_autodetect_tapped'
   | 'region_selected'
 
   // Auth

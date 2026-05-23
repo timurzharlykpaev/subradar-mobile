@@ -651,6 +651,7 @@
     "hook_cta_selected": "Find the rest →",
     "region_title": "Where do you buy subscriptions?",
     "region_subtitle": "So prices stay accurate for you.",
+    "region_autodetected": "Detected: {{country}} · {{currency}}",
     "hook_eyebrow_family": "The average family wastes",
     "hook_eyebrow_team": "The average team wastes",
     "hook_subtitle_family": "on subscriptions someone forgot to cancel.\nHow much is your family bleeding?",

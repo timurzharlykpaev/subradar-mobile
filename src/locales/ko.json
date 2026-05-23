@@ -578,6 +578,7 @@
     "trial_spend_hook": "월 {{amount}} 추적 중 — 전체 그림 확인",
     "region_title": "구독을 어디에서 구매하시나요?",
     "region_subtitle": "정확한 가격을 표시하기 위해서입니다.",
+    "region_autodetected": "감지됨: {{country}} · {{currency}}",
     "hook_eyebrow_family": "평균 가족이 낭비하는 금액",
     "hook_eyebrow_team": "평균 팀이 낭비하는 금액",
     "hook_subtitle_family": "누군가 취소를 잊은 구독료로.\n가족은 얼마나 잃고 있나요?",

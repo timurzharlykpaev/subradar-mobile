@@ -578,6 +578,7 @@
     "trial_spend_hook": "您正在追踪{{amount}}/月 — 解锁完整图景",
     "region_title": "您在哪里购买订阅?",
     "region_subtitle": "让价格对您保持准确。",
+    "region_autodetected": "已检测: {{country}} · {{currency}}",
     "hook_eyebrow_family": "普通家庭浪费",
     "hook_eyebrow_team": "普通团队浪费",
     "hook_subtitle_family": "在没人取消的订阅上。\n你的家庭损失了多少？",

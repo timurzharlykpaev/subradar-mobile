@@ -1,8 +1,22 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n from '../i18n';
+import i18n, { getDeviceLanguage } from '../i18n';
+import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../constants/timezones';
 import { usersApi } from '../api/users';
+
+// Run device detectors once at module load so a fresh install lands on the
+// user's actual region/currency/language instead of en/US/USD. Wrapped in
+// try/catch because the underlying APIs (Intl, expo-localization) can fail
+// on older native binaries — we keep the previous en/US/USD as the last
+// resort. These values only matter for first-launch; persisted state from
+// AsyncStorage wins for returning users, and `hydrateFromUser` overrides
+// from the server on login.
+const DETECTED_REGION = (() => {
+  try { return detectCountryFromTimezone(); } catch { return 'US'; }
+})();
+const DETECTED_CURRENCY = COUNTRY_DEFAULT_CURRENCY[DETECTED_REGION] ?? 'USD';
+const DETECTED_LANGUAGE = getDeviceLanguage();
 
 interface SettingsState {
   /** @deprecated — kept for backward compatibility. Use displayCurrency. */
@@ -77,11 +91,11 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      currency: 'USD',
-      country: 'US',
-      region: 'US',
-      displayCurrency: 'USD',
-      language: 'en',
+      currency: DETECTED_CURRENCY,
+      country: DETECTED_REGION,
+      region: DETECTED_REGION,
+      displayCurrency: DETECTED_CURRENCY,
+      language: DETECTED_LANGUAGE,
       reminderDays: 2,
       notificationsEnabled: true,
       emailNotifications: true,
@@ -162,10 +176,10 @@ export const useSettingsStore = create<SettingsState>()(
         // user still wants the UI in their language even after logout)
         // are preserved.
         set({
-          currency: 'USD',
-          country: 'US',
-          region: 'US',
-          displayCurrency: 'USD',
+          currency: DETECTED_CURRENCY,
+          country: DETECTED_REGION,
+          region: DETECTED_REGION,
+          displayCurrency: DETECTED_CURRENCY,
           currencyExplicitlySet: false,
           icpSegment: null,
         });

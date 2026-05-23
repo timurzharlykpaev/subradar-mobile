@@ -578,6 +578,7 @@
     "trial_spend_hook": "{{amount}}/月を追跡中 — 全体像を表示",
     "region_title": "サブスクをどこで購入しますか?",
     "region_subtitle": "価格を正確に保つためです。",
+    "region_autodetected": "検出: {{country}} · {{currency}}",
     "hook_eyebrow_family": "平均的な家族の無駄遣い",
     "hook_eyebrow_team": "平均的なチームの無駄遣い",
     "hook_subtitle_family": "誰かが解約し忘れたサブスクで。\nご家族はいくら失っていますか？",

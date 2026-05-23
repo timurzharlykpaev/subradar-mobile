@@ -623,6 +623,7 @@
     "hook_cta_selected": "Найти остальные →",
     "region_title": "Где вы покупаете подписки?",
     "region_subtitle": "Чтобы цены были точными именно для вас.",
+    "region_autodetected": "Определено: {{country}} · {{currency}}",
     "hook_eyebrow_family": "Средняя семья теряет",
     "hook_eyebrow_team": "Средняя команда теряет",
     "hook_subtitle_family": "на подписки, которые кто-то забыл отменить.\nСколько теряет ваша семья?",

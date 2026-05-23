@@ -578,6 +578,7 @@
     "trial_spend_hook": "Vous suivez {{amount}}/mois — voyez l'image complète",
     "region_title": "Où achetez-vous vos abonnements ?",
     "region_subtitle": "Pour que les prix restent précis pour vous.",
+    "region_autodetected": "Détecté : {{country}} · {{currency}}",
     "hook_eyebrow_family": "La famille moyenne gaspille",
     "hook_eyebrow_team": "L'équipe moyenne gaspille",
     "hook_subtitle_family": "sur des abonnements oubliés.\nCombien votre famille perd-elle ?",

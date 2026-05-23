@@ -578,6 +578,7 @@
     "trial_spend_hook": "Você rastreia {{amount}}/mês — veja o todo",
     "region_title": "Onde você compra assinaturas?",
     "region_subtitle": "Para que os preços permaneçam precisos para você.",
+    "region_autodetected": "Detectado: {{country}} · {{currency}}",
     "hook_eyebrow_family": "A família média desperdiça",
     "hook_eyebrow_team": "A equipa média desperdiça",
     "hook_subtitle_family": "em assinaturas que alguém esqueceu de cancelar.\nQuanto a tua família está a perder?",

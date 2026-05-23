@@ -1209,6 +1209,48 @@ export default function OnboardingScreen() {
           </Animated.View>
         ))}
       </View>
+      {/* Auto-detected region confirmation. Shown only when TZ unambiguously
+          mapped to a country — otherwise the user reaches the full currency
+          picker on Step 2 anyway. Tapping opens the same picker used on
+          Step 2 so a misdetected region (VPN/roaming) is one tap away. */}
+      {regionAutoDetected && (() => {
+        const regionInfo = COUNTRIES.find((c) => c.code === selectedRegion);
+        return (
+          <TouchableOpacity
+            testID="onboarding-region-autodetect-chip"
+            onPress={() => {
+              analytics.track('onboarding_region_autodetect_tapped', {
+                region: selectedRegion,
+                currency: selectedCurrency,
+              });
+              setRegionPickerVisible(true);
+            }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              alignSelf: 'center',
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+              marginTop: 4,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>{regionInfo?.flag ?? '🌐'}</Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '600' }}>
+              {t('onboarding.region_autodetected', {
+                country: regionInfo?.name ?? selectedRegion,
+                currency: selectedCurrency,
+                defaultValue: 'Detected: {{country}} · {{currency}}',
+              })}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+        );
+      })()}
       <TouchableOpacity
         testID="btn-value-preview-continue"
         style={[styles.showcaseBtn, { backgroundColor: colors.primary, marginTop: 8 }]}
@@ -1593,6 +1635,21 @@ export default function OnboardingScreen() {
         <View style={styles.content}>{steps[step]}</View>
       </TouchableWithoutFeedback>
 
+      {/* CountryPicker рендерим на корневом уровне, а не внутри step-3 (auth),
+          чтобы chip с auto-detected region на Step 1 мог его открыть. */}
+      <CountryPicker
+        visible={regionPickerVisible}
+        selectedCode={selectedRegion}
+        title={t('onboarding.region_title', 'Where do you buy subscriptions?')}
+        onClose={() => setRegionPickerVisible(false)}
+        onSelect={(code) => {
+          setSelectedRegion(code);
+          const suggested = COUNTRY_DEFAULT_CURRENCY[code];
+          if (suggested) setSelectedCurrency(suggested);
+          analytics.track('region_selected', { region: code, suggested_currency: suggested ?? null });
+        }}
+      />
+
       {/* Hide the whole footer (pagination dots + back/next) while the
           keyboard is up. On the OTP step the dots used to sit on top of the
           verify button on shorter devices, and the number-pad has no Done
@@ -1627,19 +1684,6 @@ export default function OnboardingScreen() {
         </View>
       )}
 
-      {/* Auth error toast */}
-      <CountryPicker
-        visible={regionPickerVisible}
-        selectedCode={selectedRegion}
-        title={t('onboarding.region_title', 'Where do you buy subscriptions?')}
-        onClose={() => setRegionPickerVisible(false)}
-        onSelect={(code) => {
-          setSelectedRegion(code);
-          const suggested = COUNTRY_DEFAULT_CURRENCY[code];
-          if (suggested) setSelectedCurrency(suggested);
-          analytics.track('region_selected', { region: code, suggested_currency: suggested ?? null });
-        }}
-      />
       {authError && (
         <View style={{ position: 'absolute', bottom: 40, left: 16, right: 16, backgroundColor: '#DC2626', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 8 }}>
           <Ionicons name="alert-circle" size={20} color="#FFF" />

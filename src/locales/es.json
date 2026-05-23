@@ -578,6 +578,7 @@
     "trial_spend_hook": "Rastreas {{amount}}/mes — desbloquea la imagen completa",
     "region_title": "¿Dónde compras suscripciones?",
     "region_subtitle": "Para que los precios se mantengan precisos para ti.",
+    "region_autodetected": "Detectado: {{country}} · {{currency}}",
     "hook_eyebrow_family": "La familia media desperdicia",
     "hook_eyebrow_team": "El equipo medio desperdicia",
     "hook_subtitle_family": "en suscripciones que alguien olvidó cancelar.\n¿Cuánto pierde tu familia?",

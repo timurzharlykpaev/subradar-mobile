@@ -578,6 +578,7 @@
     "trial_spend_hook": "Du trackst {{amount}}/Mo — sieh das volle Bild",
     "region_title": "Wo kaufst du Abos?",
     "region_subtitle": "Damit die Preise für dich akkurat bleiben.",
+    "region_autodetected": "Erkannt: {{country}} · {{currency}}",
     "hook_eyebrow_family": "Die durchschnittliche Familie verschwendet",
     "hook_eyebrow_team": "Das durchschnittliche Team verschwendet",
     "hook_subtitle_family": "für Abos, die jemand vergessen hat zu kündigen.\nWie viel verliert deine Familie?",
