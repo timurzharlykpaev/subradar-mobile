@@ -9,11 +9,18 @@ const currentLocale = () => (i18n.language || 'en').split('-')[0];
 
 export const authApi = {
   loginWithGoogle: (idToken: string) =>
-    apiClient.post('/auth/google/token', { idToken }),
+    apiClient.post('/auth/google/token', { idToken, locale: currentLocale() }),
   loginWithGoogleMobile: (accessToken: string) =>
-    apiClient.post('/auth/google/mobile', { accessToken }),
+    apiClient.post('/auth/google/mobile', {
+      accessToken,
+      locale: currentLocale(),
+    }),
   loginWithApple: (identityToken: string, name?: string) =>
-    apiClient.post('/auth/apple', { idToken: identityToken, name }),
+    apiClient.post('/auth/apple', {
+      idToken: identityToken,
+      name,
+      locale: currentLocale(),
+    }),
   sendMagicLink: (email: string) =>
     apiClient.post('/auth/magic-link', { email, locale: currentLocale() }),
   verifyMagicLink: (token: string) =>

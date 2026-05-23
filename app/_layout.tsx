@@ -129,6 +129,13 @@ const queryClient = new QueryClient({
 function LanguageLoader() {
   const language = useSettingsStore((s) => s.language);
   useEffect(() => {
+    // Re-detect device language on every cold start as long as the user
+    // hasn't explicitly chosen one. Lets users who change their system
+    // language between launches see the app follow along, instead of
+    // being stuck on whatever language was primary at first install.
+    useSettingsStore.getState().redetectLanguageIfNotExplicit();
+  }, []);
+  useEffect(() => {
     if (language && i18n.language !== language) {
       i18n.changeLanguage(language);
     }

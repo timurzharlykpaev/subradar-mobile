@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n, { getDeviceLanguage } from '../i18n';
+import i18n, { getDeviceLanguage, SUPPORTED_LANGUAGES } from '../i18n';
 import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../constants/timezones';
 import { usersApi } from '../api/users';
+
+const SUPPORTED_LANGUAGE_SET = new Set<string>(SUPPORTED_LANGUAGES);
 
 // Run device detectors once at module load so a fresh install lands on the
 // user's actual region/currency/language instead of en/US/USD. Wrapped in
@@ -46,6 +48,13 @@ interface SettingsState {
    * during CurrencySync on a fresh device.
    */
   currencyExplicitlySet: boolean;
+  /**
+   * Mirrors `currencyExplicitlySet` for `language`. False = the persisted
+   * value came from `getDeviceLanguage()` and the store will re-detect
+   * on every cold start; true = the user (or server hydration) picked
+   * the language and re-detection must not stomp it.
+   */
+  languageExplicitlySet: boolean;
   setCurrency: (currency: string) => void;
   setCountry: (country: string) => void;
   setRegion: (region: string) => void;
@@ -86,6 +95,14 @@ interface SettingsState {
    * account preferences.
    */
   resetUserScoped: () => void;
+  /**
+   * Re-run device-language detection on cold start and apply the result
+   * if the user has not explicitly chosen a language. Lets users who
+   * change their iOS / Android system language between launches see the
+   * app follow along, instead of being stuck on whatever language was
+   * primary at first install.
+   */
+  redetectLanguageIfNotExplicit: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -104,6 +121,7 @@ export const useSettingsStore = create<SettingsState>()(
       analyticsOptOut: false,
       icpSegment: null,
       currencyExplicitlySet: false,
+      languageExplicitlySet: false,
       setCurrency: (currency) => {
         const upper = currency.toUpperCase();
         set({ currency: upper, displayCurrency: upper, currencyExplicitlySet: true });
@@ -164,9 +182,16 @@ export const useSettingsStore = create<SettingsState>()(
         const loc = typeof user.locale === 'string' && user.locale;
         if (loc) {
           // Strip region subtag (e.g. en-US → en) — i18n is keyed on language only.
-          const lang = loc.split('-')[0];
-          next.language = lang;
-          i18n.changeLanguage(lang).catch(() => {});
+          const lang = loc.split('-')[0].toLowerCase();
+          // Skip unknown / unsupported codes — backend can theoretically
+          // hold any string, but i18next has no resources outside this set
+          // and would silently fall back to English, masking the actual
+          // problem (bad data in user.locale).
+          if (SUPPORTED_LANGUAGE_SET.has(lang)) {
+            next.language = lang;
+            next.languageExplicitlySet = true;
+            i18n.changeLanguage(lang).catch(() => {});
+          }
         }
         if (Object.keys(next).length > 0) set(next as SettingsState);
       },
@@ -185,11 +210,22 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
       setLanguage: (language) => {
+        if (!SUPPORTED_LANGUAGE_SET.has(language)) return;
         i18n.changeLanguage(language);
-        set({ language });
+        set({ language, languageExplicitlySet: true });
         // Sync to backend so cron-driven push/email content matches the UI.
         // Fire-and-forget — auth may be missing on cold-start onboarding.
         usersApi.updateMe({ locale: language }).catch(() => {});
+      },
+      redetectLanguageIfNotExplicit: () => {
+        // Bail if the user has explicitly chosen a language — we never
+        // stomp an explicit pick with a device re-detection.
+        if (useSettingsStore.getState().languageExplicitlySet) return;
+        const detected = getDeviceLanguage();
+        if (!SUPPORTED_LANGUAGE_SET.has(detected)) return;
+        if (useSettingsStore.getState().language === detected) return;
+        i18n.changeLanguage(detected).catch(() => {});
+        set({ language: detected });
       },
       setReminderDays: (reminderDays) => set({ reminderDays }),
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
@@ -209,7 +245,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'subradar-settings',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 4,
+      version: 5,
       migrate: (persistedState: any, version: number) => {
         if (!persistedState) return persistedState;
         let next = persistedState;
@@ -251,6 +287,28 @@ export const useSettingsStore = create<SettingsState>()(
           // `currencyExplicitlySet=false`, only runs on a truly fresh
           // install — those users skip this migration entirely.
           next = { ...next, currencyExplicitlySet: true };
+        }
+        if (version < 5) {
+          // v5: introduce `languageExplicitlySet`. The persisted store
+          // doesn't track whether the persisted `language` was a deliberate
+          // pick or a one-shot device detection from first launch. To
+          // avoid silently overwriting a deliberate choice, default to
+          // `true` ONLY when the persisted `language` differs from the
+          // current device detection — that asymmetry is the cheapest
+          // signal we have that the user (or a previous build's
+          // hydrateFromUser) actually changed it. Users whose persisted
+          // value still equals the device language land on `false` and
+          // will benefit from re-detection on the next system-language
+          // change.
+          let detected = 'en';
+          try { detected = getDeviceLanguage(); } catch {}
+          const persistedLang =
+            typeof next.language === 'string' ? next.language : null;
+          next = {
+            ...next,
+            languageExplicitlySet:
+              !!persistedLang && persistedLang !== detected,
+          };
         }
         return next;
       },
