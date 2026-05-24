@@ -23,6 +23,7 @@ import { MemberDetailSheet } from '../../src/components/MemberDetailSheet';
 import { useWorkspaceAnalysisLatest } from '../../src/hooks/useWorkspaceAnalysis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSubscriptionsStore } from '../../src/stores/subscriptionsStore';
+import { ms } from '../../src/utils/responsive';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { BannerRenderer } from '../../src/components/BannerRenderer';
@@ -557,14 +558,20 @@ export default function WorkspaceScreen() {
           borderColor: colors.border,
           alignItems: 'center',
         }}>
-          <Text style={{
-            fontSize: 36,
-            fontWeight: '900',
-            color: colors.text,
-            letterSpacing: -1,
-          }}>
+          <Text
+            adjustsFontSizeToFit
+            numberOfLines={1}
+            minimumFontScale={0.7}
+            maxFontSizeMultiplier={1.15}
+            style={{
+              fontSize: ms(36),
+              fontWeight: '900',
+              color: colors.text,
+              letterSpacing: -1,
+            }}
+          >
             {formatMoney(teamMonthly, displayCurrency, locale)}
-            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textSecondary }}>
+            <Text style={{ fontSize: ms(18), fontWeight: '700', color: colors.textSecondary }}>
               {' /'}{t('add_flow.mo', 'mo')}
             </Text>
           </Text>

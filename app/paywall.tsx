@@ -29,6 +29,7 @@ import { analytics } from '../src/services/analytics';
 import { calcYearlySavings } from '../src/utils/calcYearlySavings';
 import { formatMoney } from '../src/utils/formatMoney';
 import i18n from '../src/i18n';
+import { ms } from '../src/utils/responsive';
 
 // react-native-purchases is unavailable in Expo Go / simulator builds —
 // require lazily so the module crash doesn't take down the whole paywall
@@ -640,10 +641,10 @@ export default function PaywallScreen() {
           <View style={[styles.headerIcon, { backgroundColor: '#EF444415' }]}>
             <Text style={{ fontSize: 28 }}>💸</Text>
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text maxFontSizeMultiplier={1.2} style={[styles.title, { color: colors.text }]}>
             {t('paywall.fear_title', 'Stop Losing Money on Forgotten Subscriptions')}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          <Text maxFontSizeMultiplier={1.3} style={[styles.subtitle, { color: colors.textSecondary }]}>
             {canTrial
               ? t('paywall.subtitle_trial', 'The average person wastes $624/year. Start your 7-day free trial.')
               : t('paywall.subtitle_no_trial', 'Track everything for less than $1/week.')}
@@ -1075,7 +1076,7 @@ const styles = StyleSheet.create({
 
   header: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 20, gap: 8 },
   headerIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  title: { fontSize: 28, fontWeight: '900', textAlign: 'center', letterSpacing: -0.5, fontFamily: 'Inter-ExtraBold' },
+  title: { fontSize: ms(28), fontWeight: '900', textAlign: 'center', letterSpacing: -0.5, fontFamily: 'Inter-ExtraBold' },
   subtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
 
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginBottom: 16, padding: 10, borderRadius: 12, borderWidth: 1 },

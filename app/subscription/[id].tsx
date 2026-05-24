@@ -26,6 +26,7 @@ import { PencilIcon, TrashIcon } from '../../src/components/icons';
 import { formatMoney } from '../../src/utils/formatMoney';
 import { useEffectiveAccess } from '../../src/hooks/useEffectiveAccess';
 import { analytics } from '../../src/services/analytics';
+import { ms } from '../../src/utils/responsive';
 
 export default function SubscriptionDetailScreen() {
   const { t } = useTranslation();  const { id } = useLocalSearchParams<{ id: string }>();
@@ -181,7 +182,7 @@ export default function SubscriptionDetailScreen() {
             </View>
           )}
 
-          <Text testID="subscription-name" style={[styles.serviceName, { color: colors.text }]}>{subscription.name}</Text>
+          <Text testID="subscription-name" numberOfLines={2} maxFontSizeMultiplier={1.2} style={[styles.serviceName, { color: colors.text }]}>{subscription.name}</Text>
 
           {subscription.currentPlan && (
             <Text style={[styles.plan, { color: colors.textSecondary }]}>{subscription.currentPlan}</Text>
@@ -210,7 +211,13 @@ export default function SubscriptionDetailScreen() {
             const lang = i18n.language || 'en';
             return (
               <>
-                <Text style={[styles.amount, { color: colors.primary }]}>
+                <Text
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                  minimumFontScale={0.7}
+                  maxFontSizeMultiplier={1.2}
+                  style={[styles.amount, { color: colors.primary }]}
+                >
                   {formatMoney(primaryAmount, primaryCurrency, lang)}
                   <Text style={[styles.period, { color: colors.textSecondary }]}> / {t(`billing.${subscription.billingPeriod?.toLowerCase()}`, subscription.billingPeriod)}</Text>
                 </Text>
@@ -426,12 +433,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoText: { fontSize: 36, fontWeight: '900' },
-  serviceName: { fontSize: 26, fontWeight: '900', textAlign: 'center' },
+  logoText: { fontSize: ms(36), fontWeight: '900' },
+  serviceName: { fontSize: ms(26), fontWeight: '900', textAlign: 'center' },
   plan: { fontSize: 14 },
   statusBadge: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20 },
   statusText: { fontSize: 13, fontWeight: '800', textTransform: 'capitalize' },
-  amount: { fontSize: 32, fontWeight: '900', marginTop: 4 },
+  amount: { fontSize: ms(32), fontWeight: '900', marginTop: 4 },
   period: { fontSize: 16, fontWeight: '500' },
   card: {
     marginHorizontal: 20,

@@ -44,6 +44,7 @@ import { useTheme, fonts } from '../src/theme';
 import { SunIcon, MoonIcon, MailIcon } from '../src/components/icons';
 import * as Notifications from 'expo-notifications';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ms, mvs, scale, isSmallScreen } from '../src/utils/responsive';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -401,7 +402,7 @@ const AuthHero = React.memo(function AuthHero() {
   }, []);
 
   return (
-    <View style={{ width: '100%', height: 260 + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4, overflow: 'hidden' }}>
+    <View style={{ width: '100%', height: mvs(260) + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4, overflow: 'hidden' }}>
       {/* Floating cards — за лого */}
       {(isDark ? FLOAT_CARDS_DARK : FLOAT_CARDS_LIGHT).map((card) => (
         <FloatingCard key={card.name} {...card} topOffset={insets.top} textColor={colors.text} subColor={colors.textSecondary} />
@@ -1016,11 +1017,17 @@ export default function OnboardingScreen() {
             : t('onboarding.hook_eyebrow', 'The average person wastes')}
         </Text>
         {/* Animated counter — масштабируется при появлении (WOW) */}
-        <Animated.View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2, transform: [{ scale: hookCounterScale }] }}>
-          <Text style={{ fontSize: 64, fontWeight: '900', color: colors.text, letterSpacing: -1, fontFamily: 'Inter-ExtraBold' }}>
+        <Animated.View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2, transform: [{ scale: hookCounterScale }], maxWidth: '100%' }}>
+          <Text
+            adjustsFontSizeToFit
+            numberOfLines={1}
+            minimumFontScale={0.6}
+            maxFontSizeMultiplier={1.1}
+            style={{ fontSize: 64, fontWeight: '900', color: colors.text, letterSpacing: -1, fontFamily: 'Inter-ExtraBold' }}
+          >
             ${counterDisplay.toLocaleString()}
           </Text>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: colors.textSecondary, paddingBottom: 12 }}>
+          <Text maxFontSizeMultiplier={1.1} style={{ fontSize: 20, fontWeight: '700', color: colors.textSecondary, paddingBottom: 12 }}>
             /{t('paywall.year', 'yr')}
           </Text>
         </Animated.View>
@@ -1782,8 +1789,8 @@ const styles = StyleSheet.create({
   otpContainer: { gap: 14, alignItems: 'center' },
   otpSubtitle: { fontSize: 15, textAlign: 'center' },
   otpEmail: { fontSize: 15, fontWeight: '700', textAlign: 'center' },
-  otpInputRow: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
-  otpDigitInput: { width: 48, height: 56, borderRadius: 12, borderWidth: 1.5, textAlign: 'center', fontSize: 22, fontWeight: '700' },
+  otpInputRow: { flexDirection: 'row', gap: isSmallScreen ? 6 : 8, justifyContent: 'center' },
+  otpDigitInput: { width: scale(48), height: scale(56), borderRadius: 12, borderWidth: 1.5, textAlign: 'center', fontSize: ms(22), fontWeight: '700' },
   otpDigitFilled: {},
   emailBtnDisabled: { opacity: 0.5 },
   otpTimerText: { fontSize: 13, textAlign: 'center' },
