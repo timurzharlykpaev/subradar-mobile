@@ -4,7 +4,10 @@ import { useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { gmailApi } from '../api/gmail';
-import { GMAIL_SCAN_CLEARED_EVENT } from './useGmail';
+import {
+  GMAIL_SCAN_CLEARED_EVENT,
+  isGmailRecentlyCleared,
+} from './useGmail';
 
 const ACTIVE_SCAN_STORAGE_KEY = 'gmail:scan:active-jobId';
 
@@ -36,6 +39,17 @@ export function useActiveGmailScan() {
   const qc = useQueryClient();
 
   const reloadJobId = useCallback(async () => {
+    // Race guard: if useGmail.reset() ran in the last few seconds we
+    // ignore whatever AsyncStorage says — its native queue might not
+    // have flushed the removeItem yet, and a stale read here would
+    // bring the banner back to life right after a successful import.
+    // The mark auto-expires after GMAIL_CLEAR_GUARD_MS or is reset
+    // immediately when a brand-new scan starts.
+    if (isGmailRecentlyCleared()) {
+      setActiveJobId(null);
+      setDismissed(false);
+      return;
+    }
     try {
       const stored = await AsyncStorage.getItem(ACTIVE_SCAN_STORAGE_KEY);
       setActiveJobId((prev) => {

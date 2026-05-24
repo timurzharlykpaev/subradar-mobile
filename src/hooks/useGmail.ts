@@ -26,6 +26,26 @@ const ACTIVE_SCAN_STORAGE_KEY = 'gmail:scan:active-jobId';
 // forget; listeners just call their reloadJobId() once.
 export const GMAIL_SCAN_CLEARED_EVENT = 'gmail.scan.cleared';
 
+// In-memory "scan was just cleared" timestamp. Survives the gap between
+// reset() and dashboard re-mount even when:
+//   - dashboard was unmounted during navigation to gmail-import (so it
+//     missed the DeviceEventEmitter broadcast), AND
+//   - native AsyncStorage hadn't finished flushing the removeItem by the
+//     time the freshly-mounted banner re-reads it.
+// useActiveGmailScan checks this on mount and during focus and refuses
+// to render the banner inside the window. Cleared the moment a new scan
+// starts so a legit follow-up scan isn't suppressed.
+let lastClearedAt = 0;
+export const GMAIL_CLEAR_GUARD_MS = 5000;
+export const markGmailScanCleared = () => {
+  lastClearedAt = Date.now();
+};
+export const isGmailRecentlyCleared = () =>
+  Date.now() - lastClearedAt < GMAIL_CLEAR_GUARD_MS;
+export const resetGmailClearMark = () => {
+  lastClearedAt = 0;
+};
+
 const currentLocale = () => (i18n.language || 'en').split('-')[0];
 
 /** Connection status — refetches on focus so toggling Gmail on/off in
@@ -225,6 +245,9 @@ export function useGmailScanJob() {
         cached: false,
         progress: null,
       });
+      // Brand new scan starts → drop the "just cleared" guard so the
+      // dashboard banner can immediately surface the running job.
+      resetGmailClearMark();
       try {
         const job = await gmailApi.startScan(currentLocale(), opts?.force === true);
         // Persist the jobId immediately so a hard-kill of the app
@@ -372,6 +395,11 @@ export function useGmailScanJob() {
     // re-entered gmail-import, whose recoverOnce effect also re-read
     // AsyncStorage, called `resume(jobId)`, and re-fetched the just-
     // imported candidates so the user could add them a second time.
+    // Mark the in-memory guard FIRST. Even if AsyncStorage flush is
+    // delayed, even if the event listener missed the broadcast because
+    // the dashboard was unmounted during navigation, the guard survives
+    // and the banner will refuse to render for GMAIL_CLEAR_GUARD_MS.
+    markGmailScanCleared();
     try {
       await AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY);
     } catch {
