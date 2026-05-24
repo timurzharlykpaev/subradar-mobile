@@ -615,6 +615,23 @@ export default function GmailImportScreen() {
     // re-resume the just-imported scan, letting the user add the same
     // candidates again.
     await scan.reset();
+    // Drop every cached Gmail scan response. After the backend re-runs
+    // filterDuplicates against the just-imported subscriptions (see
+    // subradar-backend GmailScanService.refreshDedupOnCachedResult), a
+    // re-fetched status returns the post-import list — but only if React
+    // Query actually re-fetches instead of replaying the stale cached
+    // promise. Removing the queries forces a fresh GET on the next mount
+    // or banner re-attach.
+    queryClient.removeQueries({ queryKey: ['gmail', 'scan'] });
+    // Status query carries `dailyScans.used` — bumped by every scan.
+    // Re-fetch so the quota pill reflects reality without waiting for
+    // the next focus/staleTime expiry.
+    queryClient.invalidateQueries({ queryKey: ['gmail', 'status'] });
+    // Subscription list query keys live under ['subscriptions', …]. Add
+    // All just inserted up to N rows server-side; mark the cached
+    // listing stale so the next render of the dashboard / subs tab
+    // refetches instead of showing the pre-import snapshot.
+    queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
     setNotice({
       kind:
         created > 0 && failed === 0
@@ -638,7 +655,7 @@ export default function GmailImportScreen() {
     // the dominant component of the "long redirect" complaint, and the
     // sequential create loop already adds variable latency on top.
     setTimeout(() => router.replace('/(tabs)'), 500);
-  }, [bulkItems, bulkChecked, createSub, router, scan, t]);
+  }, [bulkItems, bulkChecked, createSub, router, scan, t, queryClient]);
 
   const handleBulkCancel = useCallback(() => {
     // BulkConfirmView's Back button — drop the result list and return
