@@ -412,10 +412,10 @@ export default function SettingsScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 15, fontWeight: '700', color: '#10B981' }}>
-                    {t('settings.switch_to_yearly', 'Switch to Yearly — Save $8.88')}
+                    {t('settings.switch_to_yearly', 'Switch to Yearly & Save')}
                   </Text>
                   <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 1 }}>
-                    {t('settings.yearly_desc', '$27/year vs $35.88/year monthly')}
+                    {t('settings.yearly_desc', 'Best value — billed yearly')}
                   </Text>
                 </View>
                 <TouchableOpacity

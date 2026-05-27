@@ -424,7 +424,7 @@ Month range, category, status, currency, workspace/personal scope
 - Feature-specific icon circle and gradient colors
 - Title + description specific to the blocked feature
 - Pro benefits list (4 items with checkmarks)
-- CTA: "Start 7-day Free Trial" (if eligible) or "Upgrade — $2.99/mo"
+- CTA: "Start 7-day Free Trial" (if eligible) or "Upgrade to Pro" (live price from store)
 - "Maybe Later" dismiss
 
 **Supported features:** `forecast`, `savings`, `ai_text`, `ai_photo`, `unlimited_subs`, `workspace`, `reports`

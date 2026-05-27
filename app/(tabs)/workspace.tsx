@@ -382,7 +382,7 @@ export default function WorkspaceScreen() {
                 >
                   <Ionicons name="star" size={18} color="#FFF" />
                   <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 16 }}>
-                    {t('workspace.start_team', 'Start Team — $9.99/mo')}
+                    {t('workspace.start_team', 'Start Team')}
                   </Text>
                 </TouchableOpacity>
 

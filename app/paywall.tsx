@@ -647,7 +647,7 @@ export default function PaywallScreen() {
           <Text maxFontSizeMultiplier={1.3} style={[styles.subtitle, { color: colors.textSecondary }]}>
             {canTrial
               ? t('paywall.subtitle_trial', 'The average person wastes $624/year. Start your 7-day free trial.')
-              : t('paywall.subtitle_no_trial', 'Track everything for less than $1/week.')}
+              : t('paywall.subtitle_no_trial', 'Unlock all SubRadar features.')}
           </Text>
         </Animated.View>
 

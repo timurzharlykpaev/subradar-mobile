@@ -65,8 +65,8 @@ export default function AnnualUpgradeBanner({ payload }: Props) {
     if (real) {
       return formatMoney(real.amount, real.currency, i18n.language);
     }
-    // Sensible fallback — Pro USD monthly $2.99 × 12 − yearly $24.99 ≈ $11
-    return formatMoney(11, 'USD', i18n.language);
+    // Sensible fallback — Pro USD monthly $4.99 × 12 − yearly $29.99 ≈ $30
+    return formatMoney(30, 'USD', i18n.language);
   }, [plan, access?.products, offerings, i18n.language]);
 
   useEffect(() => {
