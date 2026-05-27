@@ -57,7 +57,7 @@ Text.defaultProps.style = { fontFamily: 'Inter-Medium' };
 import { analytics } from '../src/services/analytics';
 import { useReviewPromptStore } from '../src/stores/reviewPromptStore';
 analytics.init();
-import { loginRevenueCat, logoutRevenueCat } from '../src/hooks/useRevenueCat';
+import { loginRevenueCat, logoutRevenueCat, prewarmOfferings } from '../src/hooks/useRevenueCat';
 import * as SecureStore from 'expo-secure-store';
 import * as Sentry from '@sentry/react-native';
 import { billingApi } from '../src/api/billing';
@@ -274,6 +274,11 @@ function DataLoader() {
 
         await loginRevenueCat(userId);
         if (cancelled) return;
+
+        // Prewarm offerings into the module cache so the post-onboarding paywall
+        // paints prices on the first frame (no placeholder→price flicker).
+        // Fire-and-forget — best-effort, never blocks receipt recovery below.
+        void prewarmOfferings();
 
         const user = useAuthStore.getState().user;
         analytics.identify(userId, { plan: (user as any)?.plan });

@@ -77,6 +77,38 @@ let configurePromise: Promise<void> | null = null;
 let configured = false;
 
 /**
+ * Enable Apple Search Ads attribution (iOS only).
+ *
+ * Collects Apple's AdServices attribution token so RevenueCat can tie installs
+ * and subscription conversions back to the ASA keyword/geo that drove them.
+ * Without it the ASA dashboard shows installs but not *which keyword pays* —
+ * the test would be blind on revenue (see docs/marketing/ADVERTISING_PLAYBOOK §2.4).
+ *
+ * Privacy-friendly: the AdServices token needs NO App Tracking Transparency
+ * prompt and NO entitlement/Info.plist key. react-native-purchases weak-links
+ * AdServices.framework, so no native change is required. The native SDK no-ops
+ * on iOS < 14.3 and on Android.
+ *
+ * The token is captured on-device at install time, so the build that ships this
+ * call must reach the store BEFORE ad-driven installs arrive — earlier installs
+ * stay permanently unattributable.
+ *
+ * Best-effort: attribution must never break billing init, so failures are
+ * caught + reported (not rethrown). Must run AFTER configure().
+ */
+function enableAdServicesAttribution(): void {
+  if (Platform.OS !== 'ios') return;
+  if (typeof Purchases?.enableAdServicesAttributionTokenCollection !== 'function') return;
+  try {
+    Purchases.enableAdServicesAttributionTokenCollection();
+    console.log('[RevenueCat] AdServices (Apple Search Ads) attribution enabled');
+  } catch (e) {
+    if (__DEV__) console.warn('RevenueCat AdServices attribution failed:', e);
+    Sentry.captureException(e, { tags: { source: 'rc_adservices_attribution' } });
+  }
+}
+
+/**
  * Configure the RevenueCat SDK. Idempotent — subsequent calls return the same promise.
  * Resolves even when RC is not available (dev without native module) so callers can
  * safely `await` it without branching.
@@ -102,6 +134,7 @@ export function configureRevenueCat(): Promise<void> {
       console.log('[RevenueCat] Configuring with key:', apiKey.slice(0, 8) + '...', 'platform:', Platform.OS);
       await Purchases.configure({ apiKey, appUserID: null });
       configured = true;
+      enableAdServicesAttribution();
       console.log('[RevenueCat] Configured successfully');
     } catch (e) {
       if (__DEV__) console.warn('RevenueCat configure failed:', e);
@@ -158,10 +191,39 @@ export async function logoutRevenueCat(): Promise<void> {
   }
 }
 
+/**
+ * Module-level offerings cache. RC offerings are stable within a session, so
+ * once any consumer (or `prewarmOfferings` below) fetches them we keep the last
+ * good value here. Every useRevenueCat() consumer seeds its INITIAL state from
+ * this cache — so the post-onboarding paywall (and any view after prewarm) paints
+ * real prices on the FIRST frame instead of a placeholder that then swaps in.
+ * That placeholder→price swap is the price "flicker" users reported.
+ */
+let cachedOfferings: any = null;
+
+/**
+ * Prewarm offerings into the module cache (and RC's native cache) so the paywall
+ * has prices ready before it mounts. Best-effort and idempotent (configure is a
+ * singleton). Call once the user is known (post-login) — long before the
+ * post-onboarding paywall appears.
+ */
+export async function prewarmOfferings(): Promise<void> {
+  if (!isAvailable()) return;
+  try {
+    await configureRevenueCat();
+    if (!configured) return;
+    const off = await Purchases.getOfferings();
+    if (off) cachedOfferings = off;
+  } catch {
+    // best-effort — the paywall still loads its own offerings on mount.
+  }
+}
+
 export function useRevenueCat() {
   const [customerInfo, setCustomerInfo] = useState<any>(null);
-  const [offerings, setOfferings] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  // Seed from the module cache so a warm paywall shows prices on the first frame.
+  const [offerings, setOfferings] = useState<any>(cachedOfferings);
+  const [loading, setLoading] = useState<boolean>(cachedOfferings == null);
   const mountedRef = useRef(true);
   const prevEntitlementsRef = useRef<string>('');
   const queryClient = useQueryClient();
@@ -194,6 +256,7 @@ export function useRevenueCat() {
       if (mountedRef.current) {
         if (info) setCustomerInfo(info);
         if (off) {
+          cachedOfferings = off;
           setOfferings(off);
           console.log('[RevenueCat] Offerings loaded:', off?.current?.availablePackages?.length ?? 0, 'packages');
         } else {

@@ -17,6 +17,9 @@ type PurchasesMock = {
   setLogLevel: jest.Mock;
   logIn: jest.Mock;
   logOut: jest.Mock;
+  enableAdServicesAttributionTokenCollection: jest.Mock;
+  getOfferings: jest.Mock;
+  getCustomerInfo: jest.Mock;
 };
 
 function setupMocks(opts: { platform?: 'ios' | 'android' } = {}) {
@@ -39,6 +42,9 @@ function setupMocks(opts: { platform?: 'ios' | 'android' } = {}) {
     setLogLevel: jest.fn().mockResolvedValue(undefined),
     logIn: jest.fn().mockResolvedValue(undefined),
     logOut: jest.fn().mockResolvedValue(undefined),
+    enableAdServicesAttributionTokenCollection: jest.fn(),
+    getOfferings: jest.fn().mockResolvedValue({ current: { availablePackages: [] } }),
+    getCustomerInfo: jest.fn().mockResolvedValue(null),
   };
   jest.doMock('react-native-purchases', () => ({
     __esModule: true,
@@ -178,6 +184,50 @@ describe('configureRevenueCat', () => {
     expect(configureOrder).toBeLessThan(loginOrder);
   });
 
+  it('enables Apple Search Ads attribution AFTER configure on iOS', async () => {
+    (global as any).__DEV__ = true;
+    process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS = 'test_abc';
+    const { purchases } = setupMocks({ platform: 'ios' });
+
+    const mod = await import('../useRevenueCat');
+    await mod.configureRevenueCat();
+
+    expect(purchases.enableAdServicesAttributionTokenCollection).toHaveBeenCalledTimes(1);
+    const configureOrder = purchases.configure.mock.invocationCallOrder[0];
+    const attrOrder =
+      purchases.enableAdServicesAttributionTokenCollection.mock.invocationCallOrder[0];
+    expect(configureOrder).toBeLessThan(attrOrder);
+  });
+
+  it('does NOT enable ASA attribution on Android', async () => {
+    (global as any).__DEV__ = true;
+    process.env.EXPO_PUBLIC_REVENUECAT_KEY_ANDROID = 'test_abc';
+    const { purchases } = setupMocks({ platform: 'android' });
+
+    const mod = await import('../useRevenueCat');
+    await mod.configureRevenueCat();
+
+    expect(purchases.configure).toHaveBeenCalledTimes(1);
+    expect(purchases.enableAdServicesAttributionTokenCollection).not.toHaveBeenCalled();
+  });
+
+  it('attribution failure is swallowed (best-effort) — configure still resolves', async () => {
+    (global as any).__DEV__ = true;
+    process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS = 'test_abc';
+    const { purchases, captureException } = setupMocks({ platform: 'ios' });
+    purchases.enableAdServicesAttributionTokenCollection.mockImplementation(() => {
+      throw new Error('AdServices boom');
+    });
+
+    const mod = await import('../useRevenueCat');
+    await expect(mod.configureRevenueCat()).resolves.toBeUndefined();
+    expect(purchases.configure).toHaveBeenCalledTimes(1);
+    expect(captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ tags: { source: 'rc_adservices_attribution' } }),
+    );
+  });
+
   it('rethrows (and resets promise) when resolveRcKey throws in prod', async () => {
     (global as any).__DEV__ = false;
     process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS = 'test_bad_prod';
@@ -188,5 +238,55 @@ describe('configureRevenueCat', () => {
 
     // Promise was reset — a second call should try again (and throw again).
     await expect(mod.configureRevenueCat()).rejects.toThrow(/misconfigured/i);
+  });
+});
+
+describe('prewarmOfferings', () => {
+  const originalDev = (global as any).__DEV__;
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    jest.resetModules();
+    for (const k of ENV_KEYS) delete process.env[k];
+  });
+
+  afterEach(() => {
+    (global as any).__DEV__ = originalDev;
+    process.env = { ...originalEnv };
+  });
+
+  it('configures then fetches offerings into the cache', async () => {
+    (global as any).__DEV__ = true;
+    process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS = 'test_abc';
+    const { purchases } = setupMocks({ platform: 'ios' });
+
+    const mod = await import('../useRevenueCat');
+    await mod.prewarmOfferings();
+
+    expect(purchases.configure).toHaveBeenCalledTimes(1);
+    expect(purchases.getOfferings).toHaveBeenCalledTimes(1);
+    // configure must complete before getOfferings runs
+    const configureOrder = purchases.configure.mock.invocationCallOrder[0];
+    const offeringsOrder = purchases.getOfferings.mock.invocationCallOrder[0];
+    expect(configureOrder).toBeLessThan(offeringsOrder);
+  });
+
+  it('is best-effort — swallows getOfferings rejection without throwing', async () => {
+    (global as any).__DEV__ = true;
+    process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS = 'test_abc';
+    const { purchases } = setupMocks({ platform: 'ios' });
+    purchases.getOfferings.mockRejectedValue(new Error('network down'));
+
+    const mod = await import('../useRevenueCat');
+    await expect(mod.prewarmOfferings()).resolves.toBeUndefined();
+  });
+
+  it('no-ops in dev when key is missing (never fetches)', async () => {
+    (global as any).__DEV__ = true;
+    const { purchases } = setupMocks({ platform: 'ios' });
+
+    const mod = await import('../useRevenueCat');
+    await mod.prewarmOfferings();
+    expect(purchases.getOfferings).not.toHaveBeenCalled();
   });
 });

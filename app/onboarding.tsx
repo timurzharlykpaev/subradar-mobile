@@ -742,17 +742,23 @@ export default function OnboardingScreen() {
     setCounterDisplay(0);
     hookIconScale.setValue(0.4);
     hookCounterScale.setValue(0.6);
-    // WOW entrance: icon bounce-in + counter scale-up + number roll.
-    Animated.sequence([
+    // WOW entrance: icon bounce-in + counter scale-up + number roll — все
+    // ПАРАЛЛЕЛЬНО, чтобы число начинало крутиться сразу.
+    //
+    // Раньше count-up был вторым шагом Animated.sequence ЗА пружиной иконки
+    // (damping: 7 → ζ≈0.32, недодемпфирована). Sequence ждёт, пока RN сочтёт
+    // пружину «в покое» — а она колеблется ~1.5с до rest. Всё это время число
+    // визуально висело на 0. Параллель + маленький delay даёт тот же «вау»-беат
+    // (иконка хлопает первой), но цифры стартуют через 180мс, а не через ~1.5с.
+    Animated.parallel([
       Animated.spring(hookIconScale, { toValue: 1, damping: 7, stiffness: 120, useNativeDriver: true }),
-      Animated.parallel([
-        Animated.spring(hookCounterScale, { toValue: 1, damping: 9, stiffness: 90, useNativeDriver: true }),
-        Animated.timing(counterAnim, {
-          toValue: target,
-          duration: 1800,
-          useNativeDriver: false,
-        }),
-      ]),
+      Animated.spring(hookCounterScale, { toValue: 1, damping: 9, stiffness: 90, useNativeDriver: true }),
+      Animated.timing(counterAnim, {
+        toValue: target,
+        duration: 1800,
+        delay: 180,
+        useNativeDriver: false,
+      }),
     ]).start(() => {
       // Continuous pulse — иконка «дышит», feels alive, удерживает внимание.
       Animated.loop(
