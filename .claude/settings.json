@@ -9,7 +9,20 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:react-native-purchases.revenuecat.com)",
-      "WebFetch(domain:revenuecat.github.io)"
+      "WebFetch(domain:revenuecat.github.io)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(mkdir -p ~/.claude/channels/telegram)",
+      "Bash(echo \"TELEGRAM_BOT_TOKEN=8024619383:AAHE37YkZLNPllI1RB0XwDHiVCeL4q6J4Nw\")",
+      "Bash(chmod 600 ~/.claude/channels/telegram/.env)",
+      "Bash(mv ~/.claude/hooks/send-to-telegram.sh ~/.claude/hooks/send-to-telegram.sh.disabled)",
+      "Bash(mv ~/.claude/hooks/stream-to-telegram.sh ~/.claude/hooks/stream-to-telegram.sh.disabled)",
+      "Bash(mkdir -p ~/.claude/bin ~/.claude/logs && ls -d ~/.claude/bin ~/.claude/logs)",
+      "mcp__plugin_telegram_telegram__reply",
+      "mcp__stability-ai__stability-ai-generate-image",
+      "mcp__hfspace__FLUX_1-schnell-infer"
+    ],
+    "additionalDirectories": [
+      "/Users/timurzharlykpaev/.claude/bin"
     ]
   },
   "hooks": {
