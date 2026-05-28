@@ -39,6 +39,7 @@ import { COLORS, CURRENCIES, LANGUAGES } from '../src/constants';
 import { detectCountryFromTimezone, detectCountryFromTimezoneStrict, COUNTRY_DEFAULT_CURRENCY } from '../src/constants/timezones';
 import { COUNTRIES } from '../src/constants/countries';
 import { CountryPicker } from '../src/components/CountryPicker';
+import { LanguagePicker } from '../src/components/LanguagePicker';
 import { usersApi } from '../src/api/users';
 import { useTheme, fonts } from '../src/theme';
 import { SunIcon, MoonIcon, MailIcon } from '../src/components/icons';
@@ -553,6 +554,7 @@ export default function OnboardingScreen() {
     }
   });
   const [regionPickerVisible, setRegionPickerVisible] = useState(false);
+  const [languagePickerVisible, setLanguagePickerVisible] = useState(false);
   const [quickAddSelected, setQuickAddSelected] = useState<Set<string>>(new Set());
   const counterAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(false);
@@ -670,11 +672,6 @@ export default function OnboardingScreen() {
     } catch (e: any) {
       showAuthError(t('auth.google_setup_hint'));
     }
-  };
-
-  const handleLanguageSelect = (code: string) => {
-    setLanguage(code);
-    i18n.changeLanguage(code);
   };
 
   const logoScale = useRef(new Animated.Value(0.5)).current;
@@ -1264,6 +1261,44 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         );
       })()}
+      {/* Language chip — мобила всегда детектит язык через expo-localization,
+          поэтому chip показываем всегда. Для итальянца с итальянским iPhone
+          здесь будет 🇮🇹 Italian, тапом откроется picker с возможностью
+          переключиться. Без этого юзер не понимает, что app выбрал язык
+          автоматически и его можно поменять — а для нескольких langs у нас
+          нет переводов 1:1 с device locale (детектируется hi → fallback en). */}
+      {(() => {
+        const langInfo = LANGUAGES.find((l) => l.code === language);
+        if (!langInfo) return null;
+        return (
+          <TouchableOpacity
+            testID="onboarding-language-chip"
+            onPress={() => {
+              analytics.track('onboarding_language_chip_tapped', { language });
+              setLanguagePickerVisible(true);
+            }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              alignSelf: 'center',
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+              marginTop: 6,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>{langInfo.flag}</Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '600' }}>
+              {langInfo.label}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+        );
+      })()}
       <TouchableOpacity
         testID="btn-value-preview-continue"
         style={[styles.showcaseBtn, { backgroundColor: colors.primary, marginTop: 8 }]}
@@ -1660,6 +1695,17 @@ export default function OnboardingScreen() {
           const suggested = COUNTRY_DEFAULT_CURRENCY[code];
           if (suggested) setSelectedCurrency(suggested);
           analytics.track('region_selected', { region: code, suggested_currency: suggested ?? null });
+        }}
+      />
+
+      <LanguagePicker
+        visible={languagePickerVisible}
+        selectedCode={language}
+        title={t('onboarding.choose_language', 'Choose your language')}
+        onClose={() => setLanguagePickerVisible(false)}
+        onSelect={(code) => {
+          setLanguage(code);
+          analytics.track('onboarding_language_selected', { language: code });
         }}
       />
 

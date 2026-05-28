@@ -28,6 +28,8 @@ export type AnalyticsEvent =
   | 'onboarding_money_hook_viewed'
   | 'onboarding_quick_add_tapped'
   | 'onboarding_region_autodetect_tapped'
+  | 'onboarding_language_chip_tapped'
+  | 'onboarding_language_selected'
   | 'region_selected'
 
   // Auth

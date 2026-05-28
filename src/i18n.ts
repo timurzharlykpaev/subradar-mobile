@@ -11,6 +11,10 @@ import zh from './locales/zh.json';
 import ja from './locales/ja.json';
 import ko from './locales/ko.json';
 import kk from './locales/kk.json';
+import it from './locales/it.json';
+import tr from './locales/tr.json';
+import pl from './locales/pl.json';
+import ar from './locales/ar.json';
 
 export const SUPPORTED_LANGUAGES = [
   'en',
@@ -23,6 +27,10 @@ export const SUPPORTED_LANGUAGES = [
   'ja',
   'ko',
   'kk',
+  'it',
+  'tr',
+  'pl',
+  'ar',
 ] as const;
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -67,6 +75,10 @@ i18n.use(initReactI18next).init({
     ja: { translation: ja },
     ko: { translation: ko },
     kk: { translation: kk },
+    it: { translation: it },
+    tr: { translation: tr },
+    pl: { translation: pl },
+    ar: { translation: ar },
   },
   lng: getDeviceLanguage(),
   fallbackLng: 'en',
