@@ -25,6 +25,9 @@ import type { AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authApi } from '../src/api/auth';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
@@ -645,6 +648,112 @@ function PushSetup() {
   return null;
 }
 
+// ─── Universal / App Link router ─────────────────────────────────────────────
+//
+// Handles two flavours of incoming URLs that the AASA / assetlinks files on
+// `subradar.ai` and `app.subradar.ai` direct to this app:
+//
+//   • `app.subradar.ai/auth/magic?token=<opaque>` — magic-link login. The
+//     same URL also has a web fallback in subradar-web; on devices with the
+//     app installed iOS opens us first.
+//   • `subradar.ai/app/<surface>[/<id>]` — generic deep-link entry point used
+//     in transactional emails. `subradar.ai/app/index.html` doubles as the
+//     desktop / not-installed fallback (smart app banner + manual buttons).
+//
+// We deliberately keep the routing table small and explicit: anything we
+// don't recognise drops the user on the dashboard rather than crashing on a
+// malformed URL.
+function DeepLinkHandler() {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setUser = useAuthStore((s) => s.setUser);
+
+  useEffect(() => {
+    type Target =
+      | { kind: 'magic'; token: string }
+      | { kind: 'route'; path: string };
+
+    const parseTarget = (url: string): Target | null => {
+      let parsed: ReturnType<typeof Linking.parse>;
+      try {
+        parsed = Linking.parse(url);
+      } catch {
+        return null;
+      }
+      const path = (parsed.path ?? '').replace(/^\/+/, '').replace(/\/+$/, '');
+      const params = parsed.queryParams ?? {};
+
+      // Magic-link verification — backend sends `${APP_URL}/auth/magic?token=…`.
+      if (path === 'auth/magic') {
+        const token = typeof params.token === 'string' ? params.token : null;
+        if (token) return { kind: 'magic', token };
+      }
+
+      // Generic app paths — `subradar.ai/app/<surface>` from emails / landing.
+      let appPath: string | null = null;
+      if (path === 'app') appPath = '';
+      else if (path.startsWith('app/')) appPath = path.slice(4);
+
+      if (appPath !== null) {
+        if (appPath === '' || appPath === 'home') return { kind: 'route', path: '/(tabs)' };
+        if (appPath === 'analytics') return { kind: 'route', path: '/(tabs)/analytics' };
+        if (appPath === 'subscriptions') return { kind: 'route', path: '/(tabs)/subscriptions' };
+        if (appPath === 'settings') return { kind: 'route', path: '/(tabs)/settings' };
+        if (appPath === 'workspace') return { kind: 'route', path: '/(tabs)/workspace' };
+        if (appPath === 'paywall') return { kind: 'route', path: '/paywall' };
+        if (appPath === 'subscription-plan') return { kind: 'route', path: '/subscription-plan' };
+        if (appPath === 'gmail-import') return { kind: 'route', path: '/gmail-import' };
+        if (appPath === 'edit-profile') return { kind: 'route', path: '/edit-profile' };
+        const subMatch = appPath.match(/^subscription\/([a-f0-9-]{36})$/);
+        if (subMatch) return { kind: 'route', path: `/subscription/${subMatch[1]}` };
+        // Unknown but well-formed → dashboard, never crash.
+        return { kind: 'route', path: '/(tabs)' };
+      }
+
+      return null;
+    };
+
+    const handle = async (url: string) => {
+      const target = parseTarget(url);
+      if (!target) return;
+
+      if (target.kind === 'magic') {
+        try {
+          const res = await authApi.verifyMagicLink(target.token);
+          const { user, accessToken, refreshToken } = res.data;
+          setUser(user, accessToken, refreshToken);
+          await AsyncStorage.setItem('auth_token', accessToken);
+          if (refreshToken) {
+            await AsyncStorage.setItem('refresh_token', refreshToken);
+          }
+          router.replace('/(tabs)');
+        } catch {
+          // Invalid / expired token — bounce to onboarding so the user can
+          // request a fresh magic link instead of staring at a hung URL.
+          router.replace('/onboarding');
+        }
+        return;
+      }
+
+      // Routes only make sense once we have a session; tapping a sub-link
+      // while logged out lands the user on onboarding (which is also the
+      // active screen at that point) — the intent is forgotten.
+      if (!isAuthenticated) return;
+      router.push(target.path as any);
+    };
+
+    Linking.getInitialURL().then((url) => {
+      if (url) void handle(url);
+    });
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      void handle(url);
+    });
+    return () => sub.remove();
+  }, [router, isAuthenticated, setUser]);
+
+  return null;
+}
+
 function AdaptiveStatusBar() {
   const { isDark } = useTheme();
   return (
@@ -796,6 +905,7 @@ export default function RootLayout() {
             <LanguageLoader />
             <DataLoader />
             <PushSetup />
+            <DeepLinkHandler />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="onboarding" />
               <Stack.Screen name="(tabs)" />
