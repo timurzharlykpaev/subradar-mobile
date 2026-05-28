@@ -213,6 +213,15 @@ export default function GmailImportScreen() {
       );
       if (result.type === 'success') {
         analytics.track('gmail.connect.success');
+        // Drop any leftover scan state from the prior (expired-grant)
+        // session BEFORE the status refetch. Without this, a stale
+        // jobId persisted in AsyncStorage during the broken session
+        // survives the reconnect and gets auto-resumed on the next
+        // gmail-import entry, surfacing the same 401 as a misleading
+        // "Gmail connection expired" banner that loops even though
+        // the new grant is healthy.
+        await scan.reset();
+        setNotice(null);
         await status.refetch();
       } else if (result.type === 'cancel') {
         analytics.track('gmail.connect.cancel');
@@ -224,7 +233,7 @@ export default function GmailImportScreen() {
         body: err?.message ?? String(err),
       });
     }
-  }, [connect, status, t]);
+  }, [connect, status, scan, t]);
 
   const handleDisconnect = useCallback(() => {
     setDisconnectVisible(true);

@@ -353,12 +353,18 @@ export function useGmailScanJob() {
         }));
         pollTimer.current = setTimeout(() => poll(jobId, POLL_ATTEMPTS), 2000);
       } catch (err: any) {
-        // A 404 on resume means the job expired (>30 min TTL) or was
-        // never the user's — drop the persisted pointer so a fresh
-        // visit doesn't re-attempt the same dead jobId. Other errors
-        // keep the persisted pointer so a transient network hiccup
-        // doesn't lose the in-flight scan.
-        if (err?.response?.status === 404) {
+        const status = err?.response?.status;
+        // Drop the persisted pointer on any terminal error that means the
+        // job is no longer accessible: 404 (expired / never existed),
+        // 401 (auth on /gmail/scan/status rejected the stale jobId), or
+        // 403 (job belongs to another grant). Without clearing here, the
+        // next entry to gmail-import re-reads the same dead jobId from
+        // AsyncStorage, re-runs resume(), and surfaces the same 401 as
+        // the misleading "Gmail connection expired" banner — looping
+        // even after a successful reconnect. Other errors (network
+        // blips, 5xx) keep the pointer so a transient hiccup doesn't
+        // lose a legit in-flight scan.
+        if (status === 404 || status === 401 || status === 403) {
           AsyncStorage.removeItem(ACTIVE_SCAN_STORAGE_KEY).catch(() => {});
         }
         setState({
@@ -366,7 +372,7 @@ export function useGmailScanJob() {
           status: 'failed',
           result: null,
           error: {
-            statusCode: err?.response?.status,
+            statusCode: status,
             message: err?.message ?? 'Scan poll failed',
           },
           cached: false,

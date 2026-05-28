@@ -699,8 +699,8 @@ export default function OnboardingScreen() {
             name: item.name,
             amount: item.amount,
             currency: selectedCurrency,
-            billingPeriod: 'monthly',
-            nextChargeDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            billingPeriod: 'MONTHLY',
+            nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           })
           .catch((err) => console.warn('[quick-add backfill] failed for', item.name, err?.message));
       });
