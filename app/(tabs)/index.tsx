@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   Image,
   AppState,
+  InteractionManager,
   type AppStateStatus,
 } from 'react-native';
 import { SafeLinearGradient as LinearGradient } from '../../src/components/SafeLinearGradient';
@@ -260,27 +261,55 @@ export default function DashboardScreen() {
     }, {} as Record<string, number>)
   ).filter(([, count]) => count > 1);
 
-  // Show TeamUpsellModal once when Pro user hits a "moment of truth"
+  // Show TeamUpsellModal once when Pro user hits a "moment of truth".
+  //
+  // Guarded against three pile-ups that produced the 5s "freeze" at login:
+  //   1. JS-thread storm — the modal used to mount on top of a still-
+  //      hydrating dashboard. We now defer the show via InteractionManager
+  //      so the dashboard frame is committed first.
+  //   2. Wrong audience — Pro on grace/cancel-at-period-end is a
+  //      renewal-candidate, not a Team-upsell target. Skip non-active
+  //      states explicitly.
+  //   3. Cold-start collision — at the very first dashboard render the
+  //      billing query hasn't reconciled yet; wait one tick before deciding.
   useEffect(() => {
     if (loading) return;
-    const isProPlan = access?.plan === 'pro';
-    const isOrgPlan = access?.plan === 'organization';
-    if (!isProPlan || isOrgPlan) return;
+    if (access?.isLoading) return;
+    if (access?.plan !== 'pro') return;
+    if (access?.state !== 'active') return; // skip grace/billing_issue/cancel
+    if (access?.flags?.cancelAtPeriodEnd) return;
 
     const duplicateCount = duplicateCategories.length;
     const subsCount = activeSubs.length;
     const triggers = subsCount >= 8 || duplicateCount >= 2 || totalMonthly >= 50;
     if (!triggers) return;
 
-    AsyncStorage.getItem('team_modal_shown_v1').then((val) => {
-      if (val) return;
-      setShowTeamUpsell(true);
-      AsyncStorage.setItem('team_modal_shown_v1', '1');
-      AsyncStorage.setItem('team_modal_dismissed_at', new Date().toISOString());
-      const trigger = duplicateCount >= 2 ? 'duplicates' : subsCount >= 8 ? 'subs_count' : 'spend';
-      analytics.track('team_upsell_modal_shown', { trigger });
+    let cancelled = false;
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (cancelled) return;
+      AsyncStorage.getItem('team_modal_shown_v1').then((val) => {
+        if (cancelled || val) return;
+        setShowTeamUpsell(true);
+        AsyncStorage.setItem('team_modal_shown_v1', '1');
+        AsyncStorage.setItem('team_modal_dismissed_at', new Date().toISOString());
+        const trigger = duplicateCount >= 2 ? 'duplicates' : subsCount >= 8 ? 'subs_count' : 'spend';
+        analytics.track('team_upsell_modal_shown', { trigger });
+      });
     });
-  }, [loading, access?.plan, activeSubs.length, duplicateCategories.length, totalMonthly]);
+    return () => {
+      cancelled = true;
+      task.cancel();
+    };
+  }, [
+    loading,
+    access?.plan,
+    access?.state,
+    access?.isLoading,
+    access?.flags?.cancelAtPeriodEnd,
+    activeSubs.length,
+    duplicateCategories.length,
+    totalMonthly,
+  ]);
 
   // Derived UI flags. `cancel_at_period_end` still has Pro access until the
   // period ends — treat it as `isPro = true` in the dashboard header.

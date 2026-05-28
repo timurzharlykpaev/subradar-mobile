@@ -501,6 +501,17 @@ export default function OnboardingScreen() {
   const [otpCode, setOtpCode] = useState('');
   const [otpTimer, setOtpTimer] = useState(0);
   const otpInputRefs = useRef<Array<TextInput | null>>([]);
+  // Pre-built ref-setters so the JSX gets a stable function per index
+  // instead of a fresh inline closure each render. Inline `ref={(r) => ...}`
+  // was being torn down (called with null) on every controlled re-render
+  // — usually invisible, but combined with `requestAnimationFrame` focus
+  // calls it occasionally caught the ref mid-null and the focus jump
+  // silently dropped.
+  const otpRefSetters = useRef<Array<(r: TextInput | null) => void>>(
+    Array.from({ length: 6 }, (_, i) => (r: TextInput | null) => {
+      otpInputRefs.current[i] = r;
+    }),
+  ).current;
 
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -844,22 +855,51 @@ export default function OnboardingScreen() {
     }
   };
 
+  // Functional setState — `otpCode` from closure can lag behind several
+  // rapid keystrokes (auto-fill, fast manual typing). Reading `prev` from
+  // the updater guarantees we never drop a digit.
+  //
+  // Focus moves are deferred to `requestAnimationFrame` so the next field
+  // is focused AFTER React commits the new code. Calling `.focus()` in the
+  // same tick as `setOtpCode` raced with the controlled `value` update and
+  // sporadically dropped the caret back to the previous field.
   const handleOtpDigitChange = (text: string, index: number) => {
-    const digit = text.replace(/[^0-9]/g, '');
-    const newCode = otpCode.split('');
-    newCode[index] = digit;
-    const joined = newCode.join('').slice(0, 6);
-    setOtpCode(joined);
-
+    const digit = text.replace(/\D/g, '').slice(0, 1);
+    setOtpCode((prev) => {
+      const arr = prev.split('');
+      arr[index] = digit;
+      return arr.join('').slice(0, 6);
+    });
     if (digit && index < 5) {
-      otpInputRefs.current[index + 1]?.focus();
+      requestAnimationFrame(() => {
+        otpInputRefs.current[index + 1]?.focus();
+      });
     }
   };
 
+  // Backspace UX: with the old handler, deleting a filled digit required
+  // two presses — the first cleared the field, the second moved focus
+  // back. We now handle both states in one keystroke by reading the live
+  // value through the setState updater.
   const handleOtpKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && !otpCode[index] && index > 0) {
-      otpInputRefs.current[index - 1]?.focus();
-    }
+    if (e.nativeEvent.key !== 'Backspace') return;
+    if (index === 0) return;
+    setOtpCode((prev) => {
+      if (prev[index]) {
+        // Field has a digit — clear it, stay focused here for the
+        // ergonomic "one press, one delete" behaviour.
+        const arr = prev.split('');
+        arr[index] = '';
+        return arr.join('');
+      }
+      // Empty field — focus moves to prev and clears it in one stroke.
+      requestAnimationFrame(() => {
+        otpInputRefs.current[index - 1]?.focus();
+      });
+      const arr = prev.split('');
+      arr[index - 1] = '';
+      return arr.join('');
+    });
   };
 
   const handleMagicLink = async () => {
@@ -1416,7 +1456,7 @@ export default function OnboardingScreen() {
             {[0, 1, 2, 3, 4, 5].map((index) => (
               <TextInput
                 key={index}
-                ref={(ref) => { otpInputRefs.current[index] = ref; }}
+                ref={otpRefSetters[index]}
                 testID={`otp-input-${index}`}
                 style={[styles.otpDigitInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, otpCode[index] ? styles.otpDigitFilled : null]}
                 value={otpCode[index] || ''}
@@ -1430,7 +1470,9 @@ export default function OnboardingScreen() {
                     const code = digits.slice(0, 6);
                     setOtpCode(code);
                     const target = Math.min(code.length, 5);
-                    otpInputRefs.current[target]?.focus();
+                    requestAnimationFrame(() => {
+                      otpInputRefs.current[target]?.focus();
+                    });
                     return;
                   }
                   handleOtpDigitChange(digits, index);
@@ -1448,7 +1490,10 @@ export default function OnboardingScreen() {
                 // сам выкинет не-цифры и возьмёт первые 6. Отображается
                 // всегда 1 цифра через `value={otpCode[index]}`.
                 maxLength={20}
-                selectTextOnFocus
+                // `selectTextOnFocus` removed — combined with programmatic
+                // `.focus()` it flashed the previous digit as selected for
+                // one frame before the new keystroke replaced it. On rapid
+                // typing this looked like the caret was bouncing.
                 // iOS-autofill SMS-кода: достаточно повесить только на
                 // первое поле — дальше iOS сам распределит цифры.
                 textContentType={index === 0 ? 'oneTimeCode' : 'none'}

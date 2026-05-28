@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
+  InteractionManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -26,28 +27,27 @@ export function TeamUpsellModal({ visible, monthlySpend, currency, onCreateTeam,
   const { colors, isDark } = useTheme();
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
-  const counterAnim = useRef(new Animated.Value(0)).current;
-  const [counter, setCounter] = React.useState(0);
 
   const perPerson = Math.round((monthlySpend / 4) * 100) / 100;
   const yearlySavings = Math.round(monthlySpend * 12 * 0.75);
 
   useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(opacityAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
-        Animated.spring(slideAnim, { toValue: 0, damping: 18, useNativeDriver: true }),
-      ]).start();
-
-      counterAnim.setValue(0);
-      Animated.timing(counterAnim, { toValue: monthlySpend, duration: 1200, useNativeDriver: false }).start();
-      const id = counterAnim.addListener(({ value }) => setCounter(Math.round(value * 100) / 100));
-      return () => counterAnim.removeListener(id);
-    } else {
+    if (!visible) {
       opacityAnim.setValue(0);
       slideAnim.setValue(40);
+      return;
     }
-  }, [visible, monthlySpend]);
+    // Defer animation start until after current interactions / data settle.
+    // Without this the modal mounts in the middle of the dashboard's own
+    // mount + query-resolve frame storm and the spring visibly stutters.
+    const task = InteractionManager.runAfterInteractions(() => {
+      Animated.parallel([
+        Animated.timing(opacityAnim, { toValue: 1, duration: 220, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, damping: 18, useNativeDriver: true }),
+      ]).start();
+    });
+    return () => task.cancel();
+  }, [visible]);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onLater}>
@@ -86,7 +86,7 @@ export function TeamUpsellModal({ visible, monthlySpend, currency, onCreateTeam,
                 {t('team_upsell.current_spend_label')}
               </Text>
               <Text style={[styles.spendAmount, { color: colors.text }]}>
-                {currency} {counter.toFixed(2)}/mo
+                {currency} {monthlySpend.toFixed(2)}/mo
               </Text>
               <View style={styles.divider} />
               <Text style={[styles.calcLabel, { color: colors.textMuted }]}>

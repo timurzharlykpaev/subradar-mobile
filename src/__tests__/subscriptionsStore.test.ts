@@ -61,6 +61,34 @@ describe('useSubscriptionsStore', () => {
     expect(useSubscriptionsStore.getState().subscriptions[0].id).toBe('sub-2');
   });
 
+  it('addSubscription replaces in place when id already exists', () => {
+    // Regression: AI add flow used to insert the same sub twice when the
+    // dashboard's `/subscriptions` refetch race-landed before the
+    // optimistic prepend. The store now deduplicates by id.
+    useSubscriptionsStore.getState().setSubscriptions([
+      makeSub({ id: 'sub-1', amount: 9.99 }),
+      makeSub({ id: 'sub-2', name: 'Spotify' }),
+    ]);
+    useSubscriptionsStore.getState().addSubscription(makeSub({ id: 'sub-1', amount: 14.99 }));
+    const subs = useSubscriptionsStore.getState().subscriptions;
+    expect(subs).toHaveLength(2);
+    expect(subs[0].id).toBe('sub-1');
+    expect(subs[0].amount).toBe(14.99);
+    expect(subs[1].id).toBe('sub-2');
+  });
+
+  it('setSubscriptions deduplicates by id', () => {
+    useSubscriptionsStore.getState().setSubscriptions([
+      makeSub({ id: 'sub-1', amount: 9.99 }),
+      makeSub({ id: 'sub-1', amount: 14.99 }),
+      makeSub({ id: 'sub-2', name: 'Spotify' }),
+    ]);
+    const subs = useSubscriptionsStore.getState().subscriptions;
+    expect(subs).toHaveLength(2);
+    expect(subs[0].amount).toBe(9.99);
+    expect(subs[1].id).toBe('sub-2');
+  });
+
   describe('getFiltered', () => {
     beforeEach(() => {
       useSubscriptionsStore.getState().setSubscriptions([
