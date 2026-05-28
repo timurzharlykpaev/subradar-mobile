@@ -1,6 +1,6 @@
 {
   "name": "subradar-mobile",
-  "version": "1.4.12",
+  "version": "1.4.13",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
