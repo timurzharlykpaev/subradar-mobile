@@ -445,76 +445,6 @@ const AuthHero = React.memo(function AuthHero() {
   );
 });
 
-// ─── Showcase card icons ────────────────────────────────────────────────────
-function ShowcaseAIIcon() {
-  return (
-    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Rect width="48" height="48" rx="14" fill="#7C3AED" />
-      {/* Sparkle stars */}
-      <Path d="M16 14l1.5 3 3 1.5-3 1.5L16 23l-1.5-3-3-1.5 3-1.5z" fill="white" opacity="0.9"/>
-      <Path d="M30 10l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" fill="white" opacity="0.6"/>
-      {/* AI circuit */}
-      <Circle cx="24" cy="26" r="9" fill="white" opacity="0.15"/>
-      <Circle cx="24" cy="26" r="6" stroke="white" strokeWidth="1.8" fill="none" opacity="0.9"/>
-      <Circle cx="24" cy="26" r="2.5" fill="white"/>
-      <Path d="M24 20v-2M24 34v-2M18 26h-2M32 26h-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-      <Path d="M20.2 22.2l-1.4-1.4M29.2 31.2l-1.4-1.4M27.8 22.2l1.4-1.4M18.8 31.2l1.4-1.4" stroke="white" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
-    </Svg>
-  );
-}
-
-function ShowcaseBellIcon() {
-  return (
-    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Rect width="48" height="48" rx="14" fill="#F59E0B" />
-      {/* Bell body */}
-      <Path d="M24 12a8 8 0 00-8 8v5l-2.5 2.5V29h21v-1.5L32 25v-5a8 8 0 00-8-8z" fill="white" opacity="0.95"/>
-      {/* Clapper */}
-      <Path d="M21 29.5c0 1.66 1.34 3 3 3s3-1.34 3-3" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
-      {/* Ring line */}
-      <Path d="M24 10v2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-      {/* Alert badge */}
-      <Circle cx="32" cy="15" r="5" fill="#EF4444" />
-      <Path d="M32 12v4" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-      <Circle cx="32" cy="18.5" r="1" fill="white"/>
-    </Svg>
-  );
-}
-
-function ShowcaseChartIcon() {
-  return (
-    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Rect width="48" height="48" rx="14" fill="#10B981" />
-      {/* Bars */}
-      <Rect x="11" y="27" width="6" height="10" rx="2" fill="white" opacity="0.5"/>
-      <Rect x="21" y="20" width="6" height="17" rx="2" fill="white" opacity="0.75"/>
-      <Rect x="31" y="13" width="6" height="24" rx="2" fill="white" opacity="0.95"/>
-      {/* Trend line */}
-      <Path d="M13 27l10-8 6 4 8-10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Arrow tip */}
-      <Path d="M35 11l2 2M37 13l-2 2" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-    </Svg>
-  );
-}
-
-function ShowcaseTeamIcon() {
-  return (
-    <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-      <Rect width="48" height="48" rx="14" fill="#3B82F6" />
-      {/* Center person */}
-      <Circle cx="24" cy="18" r="5" fill="white" opacity="0.95"/>
-      <Path d="M15 35c0-4.97 4.03-9 9-9s9 4.03 9 9" fill="white" opacity="0.3"/>
-      <Path d="M17 33c0-3.87 3.13-7 7-7s7 3.13 7 7" fill="white" opacity="0.6"/>
-      {/* Left person */}
-      <Circle cx="12" cy="21" r="3.5" fill="white" opacity="0.6"/>
-      <Path d="M6 33c0-3.31 2.69-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
-      {/* Right person */}
-      <Circle cx="36" cy="21" r="3.5" fill="white" opacity="0.6"/>
-      <Path d="M42 33c0-3.31-2.69-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
-    </Svg>
-  );
-}
-
 // ─── ICP-based waste estimate (per year, $USD) ───────────────────────────────
 // Values reflect average forgotten-subscription spend for each persona based on
 // industry studies (Chase 2024, Bango Subscriptions Report 2025).
@@ -989,11 +919,17 @@ export default function OnboardingScreen() {
     }
   }, [step]);
 
+  // Replaced the dense hand-drawn SVGs (sparkle clusters, bell+badge,
+  // bar+trend, three-person stack) with clean Ionicons tiles. The SVGs
+  // packed too much visual noise into a 48×48 tile and made the four
+  // cards compete with the headline / chips. A simple icon on a flat
+  // colour reads as confident and category-defining, which is what
+  // these cards need to do at a glance.
   const SHOWCASE_FEATURES = [
-    { Icon: ShowcaseAIIcon,    title: t('onboarding.showcase_ai_title'),        desc: t('onboarding.showcase_ai_desc'),        scale: card1Scale },
-    { Icon: ShowcaseBellIcon,  title: t('onboarding.showcase_notify_title'),    desc: t('onboarding.showcase_notify_desc'),    scale: card2Scale },
-    { Icon: ShowcaseChartIcon, title: t('onboarding.showcase_analytics_title'), desc: t('onboarding.showcase_analytics_desc'), scale: card3Scale },
-    { Icon: ShowcaseTeamIcon,  title: t('onboarding.showcase_team_title'),      desc: t('onboarding.showcase_team_desc'),      scale: card4Scale },
+    { icon: 'sparkles' as const,      color: '#7C3AED', title: t('onboarding.showcase_ai_title'),        desc: t('onboarding.showcase_ai_desc'),        scale: card1Scale },
+    { icon: 'notifications' as const, color: '#F59E0B', title: t('onboarding.showcase_notify_title'),    desc: t('onboarding.showcase_notify_desc'),    scale: card2Scale },
+    { icon: 'bar-chart' as const,     color: '#10B981', title: t('onboarding.showcase_analytics_title'), desc: t('onboarding.showcase_analytics_desc'), scale: card3Scale },
+    { icon: 'people' as const,        color: '#3B82F6', title: t('onboarding.showcase_team_title'),      desc: t('onboarding.showcase_team_desc'),      scale: card4Scale },
   ];
 
   const steps = [
@@ -1190,14 +1126,23 @@ export default function OnboardingScreen() {
       testID="step-value-preview"
       style={[styles.step, { opacity: showcaseOpacity, transform: [{ translateY: showcaseTranslateY }] }]}
     >
-      <Animated.View style={[styles.logoContainer, logoStyle, { marginBottom: 8 }]}>
-        <Image source={require('../assets/images/icon.png')} style={styles.logoImage} />
-        <Text style={[styles.logoTitle, { color: colors.text, fontSize: 24 }]}>SubRadar</Text>
+      <Animated.View style={[styles.logoContainer, logoStyle, { marginBottom: 4, gap: 4 }]}>
+        <Image source={require('../assets/images/icon.png')} style={[styles.logoImage, { width: 64, height: 64, borderRadius: 16 }]} />
+        <Text style={[styles.logoTitle, { color: colors.text, fontSize: 22 }]}>SubRadar</Text>
       </Animated.View>
-      <Text style={[styles.headline, { color: colors.text, textAlign: 'center', fontSize: 24 }]}>
+      {/* Headline downsized to 20 + adjustsFontSizeToFit so the Russian
+          "Всё, чтобы перестать терять деньги" (and similarly long de/pt/ar)
+          stays on one line on standard phones, with auto-shrink for the
+          edge cases (huge accessibility font scale, narrow Mini class). */}
+      <Text
+        adjustsFontSizeToFit
+        numberOfLines={2}
+        minimumFontScale={0.85}
+        style={[styles.headline, { color: colors.text, textAlign: 'center', fontSize: 20, lineHeight: 26 }]}
+      >
         {t('onboarding.value_preview_title', 'Everything to stop the bleeding')}
       </Text>
-      <Text style={[styles.subheadline, { color: colors.textSecondary, textAlign: 'center', marginBottom: 4 }]}>
+      <Text style={[styles.subheadline, { color: colors.textSecondary, textAlign: 'center', fontSize: 14, lineHeight: 20 }]}>
         {t('onboarding.value_preview_subtitle', 'AI tracks every subscription, you keep the money')}
       </Text>
       <View style={styles.showcaseGrid}>
@@ -1213,9 +1158,11 @@ export default function OnboardingScreen() {
               },
             ]}
           >
-            <f.Icon />
-            <Text style={[styles.showcaseCardTitle, { color: colors.text }]}>{f.title}</Text>
-            <Text style={[styles.showcaseCardDesc, { color: colors.textSecondary }]}>{f.desc}</Text>
+            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: f.color, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name={f.icon} size={22} color="#FFF" />
+            </View>
+            <Text style={[styles.showcaseCardTitle, { color: colors.text }]} numberOfLines={1}>{f.title}</Text>
+            <Text style={[styles.showcaseCardDesc, { color: colors.textSecondary }]} numberOfLines={2}>{f.desc}</Text>
           </Animated.View>
         ))}
       </View>
@@ -1308,7 +1255,7 @@ export default function OnboardingScreen() {
         }}
       >
         <Text style={styles.showcaseBtnText}>
-          {t('onboarding.value_preview_cta', 'Sounds good — continue')}
+          {t('onboarding.value_preview_cta', 'Continue')}
         </Text>
       </TouchableOpacity>
     </Animated.View>,
@@ -1847,8 +1794,8 @@ const styles = StyleSheet.create({
   nextBtn: { flex: 2, paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
   nextBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
   showcaseTitle: { fontSize: 20, fontWeight: '800', textAlign: 'center', lineHeight: 26, letterSpacing: -0.3, marginBottom: 4 },
-  showcaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
-  showcaseCard: { width: '46%', borderRadius: 20, borderWidth: 1, padding: 18, gap: 10, alignItems: 'center' },
+  showcaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' },
+  showcaseCard: { width: '47%', borderRadius: 16, borderWidth: 1, padding: 12, gap: 6, alignItems: 'center' },
   showcaseEmoji: { fontSize: 28 },
   showcaseCardTitle: { fontSize: 14, fontWeight: '800', textAlign: 'center' },
   showcaseCardDesc: { fontSize: 11, lineHeight: 15, textAlign: 'center' },
