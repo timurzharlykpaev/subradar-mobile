@@ -17,7 +17,7 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Keyboard,
-  TouchableWithoutFeedback,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -1679,9 +1679,27 @@ export default function OnboardingScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Theme toggle убран из онбординга — distraction в hot funnel.
           Доступен в Settings. */}
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.content}>{steps[step]}</View>
-      </TouchableWithoutFeedback>
+      {/* ScrollView вместо фиксированного View: на маленьких экранах
+          (iPhone SE 1st gen, mini'ах с увеличенным шрифтом, Android
+          до 5") контент шага не помещается — раньше logoContainer
+          уезжал под status bar, а нижние chip'ы / CTA обрезались без
+          возможности доскроллить. flexGrow + justifyContent: 'center'
+          сохраняет вертикальное центрирование для больших экранов,
+          а на маленьких просто включается скролл.
+          paddingTop через safeInsets фиксит конкретный кейс «лого под
+          шапкой» — у нас нет SafeAreaView edges=['top'] поверх. */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.content,
+          { flexGrow: 1, paddingTop: safeInsets.top + 16 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        onScrollBeginDrag={Keyboard.dismiss}
+        showsVerticalScrollIndicator={false}
+      >
+        {steps[step]}
+      </ScrollView>
 
       {/* CountryPicker рендерим на корневом уровне, а не внутри step-3 (auth),
           чтобы chip с auto-detected region на Step 1 мог его открыть. */}

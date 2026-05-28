@@ -113,10 +113,10 @@ export default function AnnualUpgradeBanner({ payload }: Props) {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={handleDismiss}
-        style={styles.closeBtn}
+        style={[styles.closeBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Ionicons name="close" size={14} color={colors.textMuted} />
+        <Ionicons name="close" size={18} color={colors.textMuted} />
       </TouchableOpacity>
     </View>
   );
@@ -126,15 +126,33 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     marginTop: 12,
+    // Match the marginTop so a banner that lives at the top of a card
+    // stack doesn't collide visually with whatever section comes next.
+    // Before this it sat flush against the following list/card and read
+    // as "stuck on" rather than part of the layout rhythm.
+    marginBottom: 12,
     borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
     position: 'relative',
   },
-  inner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, paddingRight: 32 },
+  inner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, paddingRight: 40 },
   iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   textWrap: { flex: 1, gap: 2 },
   title: { fontSize: 14, fontWeight: '800' },
   subtitle: { fontSize: 12 },
-  closeBtn: { position: 'absolute', top: 8, right: 8, padding: 4 },
+  // Slightly bigger and given its own background tile so the affordance
+  // reads as a real tap target — the previous 14 px icon with 4 px
+  // padding on a transparent background looked like decoration, and on
+  // a green banner the dismiss control was easy to miss.
+  closeBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
