@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -85,6 +86,50 @@ const PLANS = [
     missing: [],
   },
 ];
+
+/**
+ * Header hero icon for the paywall. Replaces the 💸 emoji which (a) renders
+ * differently per platform — Android's "money with wings" glyph looks
+ * crude next to the rest of the UI — and (b) reads as casual where this
+ * screen wants to read as serious (the user is about to spend money).
+ *
+ * Composition: a deep-red coin with a clean stylized "$" mark, and a
+ * small dark down-arrow badge in the corner that visually says "your
+ * money is going down". Static SVG, no animation, no native deps — same
+ * pattern used by the showcase tiles on the onboarding step. Sized to
+ * fill the existing 48 px `headerIcon` container.
+ */
+function PaywallHeroIcon() {
+  return (
+    <Svg width={44} height={44} viewBox="0 0 44 44" fill="none">
+      <Defs>
+        <LinearGradient id="paywallCoin" x1="0" y1="0" x2="44" y2="44">
+          <Stop offset="0" stopColor="#F87171" />
+          <Stop offset="1" stopColor="#DC2626" />
+        </LinearGradient>
+      </Defs>
+      {/* Coin body */}
+      <Circle cx="22" cy="22" r="20" fill="url(#paywallCoin)" />
+      {/* Inner highlight ring — gives the coin depth without an actual shadow */}
+      <Circle cx="22" cy="22" r="16" stroke="#FFFFFF" strokeOpacity="0.25" strokeWidth="1.5" fill="none" />
+      {/* Stylized "$" — vertical bar + S-curve. Looks cleaner than a literal
+          character because the strokes can be tuned to the icon size. */}
+      <Path d="M22 11v3 M22 30v3" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+      <Path
+        d="M27.5 16.5c0-1.7-2.5-2.8-5.5-2.8s-5.5 1.1-5.5 3 2.5 2.6 5.5 3.3 5.5 1.4 5.5 3.3-2.5 3-5.5 3-5.5-1.1-5.5-2.8"
+        stroke="#FFFFFF"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      {/* Corner down-arrow badge — "losing money" cue without using an
+          emoji or two icons side-by-side. */}
+      <Circle cx="35" cy="35" r="7.5" fill="#1F2937" stroke="#FFFFFF" strokeWidth="1.5" />
+      <Path d="M35 31.5v6 M32 35l3 3 3-3" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -639,7 +684,7 @@ export default function PaywallScreen() {
         {/* Header */}
         <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <View style={[styles.headerIcon, { backgroundColor: '#EF444415' }]}>
-            <Text style={{ fontSize: 28 }}>💸</Text>
+            <PaywallHeroIcon />
           </View>
           <Text maxFontSizeMultiplier={1.2} style={[styles.title, { color: colors.text }]}>
             {t('paywall.fear_title', 'Stop Losing Money on Forgotten Subscriptions')}
