@@ -42,7 +42,6 @@ import { CountryPicker } from '../../src/components/CountryPicker';
 import { CurrencyPicker } from '../../src/components/CurrencyPicker';
 import { COUNTRIES } from '../../src/constants/countries';
 import { COUNTRY_DEFAULT_CURRENCY } from '../../src/constants/timezones';
-import { usersApi } from '../../src/api/users';
 
 const DATE_FORMATS = ['DD/MM', 'MM/DD', 'YYYY-MM-DD'];
 
@@ -974,17 +973,14 @@ export default function SettingsScreen() {
         onSelect={async (code) => {
           // Read live values from store to avoid stale closure
           const prevCurrency = useSettingsStore.getState().displayCurrency;
+          // setRegion mirrors to backend internally — don't double-PATCH here.
           setRegion(code);
           const suggested = COUNTRY_DEFAULT_CURRENCY[code];
           // Always invalidate — region drives AI pricing even if display currency doesn't change
           queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
           queryClient.invalidateQueries({ queryKey: ['analytics'] });
 
-          if (!suggested || suggested === prevCurrency) {
-            // Single atomic PATCH when no currency change needed
-            usersApi.updateMe({ region: code }).catch(() => {});
-            return;
-          }
+          if (!suggested || suggested === prevCurrency) return;
 
           Alert.alert(
             t('settings.region_change_currency_title', 'Change display currency?'),
@@ -993,22 +989,15 @@ export default function SettingsScreen() {
               {
                 text: t('settings.region_change_keep', 'Keep {{currency}}', { currency: prevCurrency }),
                 style: 'cancel',
-                // Still persist the region change
-                onPress: () => {
-                  usersApi.updateMe({ region: code }).catch(() => {});
-                },
               },
               {
                 text: t('settings.region_change_switch', 'Switch to {{currency}}', { currency: suggested }),
                 onPress: () => {
-                  // setDisplayCurrency already mirrors to legacy `currency`
-                  // (settingsStore.ts:60-61) — no second setter needed.
+                  // setDisplayCurrency mirrors both store fields AND the
+                  // backend PATCH internally — single source of truth, no
+                  // duplicate PATCH here.
                   setDisplayCurrency(suggested);
                   analytics.track('currency_changed', { from: prevCurrency, to: suggested, source: 'region_switch' });
-                  // Backend only persists `displayCurrency`. Sending the legacy
-                  // `currency` field would 400 on strict DTOs and the silent
-                  // .catch would swallow it, losing the user's change.
-                  usersApi.updateMe({ region: code, displayCurrency: suggested }).catch(() => {});
                   queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
                   queryClient.invalidateQueries({ queryKey: ['analytics'] });
                 },
@@ -1025,16 +1014,14 @@ export default function SettingsScreen() {
         onClose={() => setCurrencyPickerVisible(false)}
         onSelect={(code) => {
           const prev = displayCurrency;
-          // setDisplayCurrency already mirrors to legacy `currency`
-          // (settingsStore.ts:60-61), so a single setter keeps both in sync.
+          // setDisplayCurrency mirrors legacy `currency` AND fires the
+          // PATCH /users/me internally — single source of truth, no
+          // duplicate PATCH here. Failures now surface to Sentry / Telegram
+          // alerts via reportPatchFailure instead of being swallowed.
           setDisplayCurrency(code);
           if (prev !== code) {
             analytics.track('currency_changed', { from: prev, to: code, source: 'picker' });
           }
-          // Backend only knows about `displayCurrency`. Don't send `currency`
-          // in the PATCH body — strict DTOs would reject it and `.catch` would
-          // swallow the failure, losing the user's choice on the server.
-          usersApi.updateMe({ displayCurrency: code }).catch(() => {});
           queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
           queryClient.invalidateQueries({ queryKey: ['analytics'] });
         }}

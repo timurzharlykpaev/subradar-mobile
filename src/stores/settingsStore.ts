@@ -4,6 +4,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n, { getDeviceLanguage, SUPPORTED_LANGUAGES } from '../i18n';
 import { detectCountryFromTimezone, COUNTRY_DEFAULT_CURRENCY } from '../constants/timezones';
 import { usersApi } from '../api/users';
+import { reportError } from '../utils/errorReporter';
+
+/**
+ * Report a failed `PATCH /users/me` mirror call. These used to be silent
+ * (`.catch(() => {})`) which let server-side rejections (e.g. validation
+ * errors, transient 5xx) destroy the user's preference choice without
+ * any signal — they'd change region in Settings, exit, come back, and
+ * see the old region restored from the server on the next hydrate. Now
+ * we surface to Telegram alerts + Sentry so the regression is visible.
+ */
+function reportPatchFailure(field: string, value: unknown, err: unknown) {
+  const status = (err as any)?.response?.status;
+  const body = (err as any)?.response?.data;
+  reportError(
+    `[settingsStore] PATCH /users/me { ${field} } failed (${status ?? 'network'})`,
+    (err as any)?.stack,
+    { field, value, status, body },
+  ).catch(() => {
+    /* reportError has its own retry; swallowing here is fine */
+  });
+}
 
 const SUPPORTED_LANGUAGE_SET = new Set<string>(SUPPORTED_LANGUAGES);
 
@@ -131,24 +152,29 @@ export const useSettingsStore = create<SettingsState>()(
         // totals in whatever DB.displayCurrency was set to (often USD)
         // — workspace analytics + team reports came back wrong.
         // Fire-and-forget: auth might not be ready in onboarding.
-        usersApi.updateMe({ displayCurrency: upper }).catch(() => {});
+        usersApi
+          .updateMe({ displayCurrency: upper })
+          .catch((err) => reportPatchFailure('displayCurrency', upper, err));
       },
       setCountry: (country) => set({ country, region: country }),
       setRegion: (region) => {
         const upper = region.toUpperCase();
         set({ region: upper, country: upper });
         // Mirror to backend so the user's saved region survives a
-        // re-install / new device. Server already validates ISO-3166
-        // alpha-2 and silently rejects malformed values. Fire-and-forget
-        // because auth may not be ready during onboarding.
-        usersApi.updateMe({ region: upper } as any).catch(() => {});
+        // re-install / new device. Fire-and-forget because auth may
+        // not be ready during onboarding.
+        usersApi
+          .updateMe({ region: upper })
+          .catch((err) => reportPatchFailure('region', upper, err));
       },
       setDisplayCurrency: (displayCurrency) => {
         const upper = displayCurrency.toUpperCase();
         set({ displayCurrency: upper, currency: upper, currencyExplicitlySet: true });
         // Same rationale as setCurrency above — keep DB in sync so
         // server-side conversion uses the user's actual preference.
-        usersApi.updateMe({ displayCurrency: upper }).catch(() => {});
+        usersApi
+          .updateMe({ displayCurrency: upper })
+          .catch((err) => reportPatchFailure('displayCurrency', upper, err));
       },
       setDisplayCurrencyAutoDetected: (displayCurrency) => {
         const upper = displayCurrency.toUpperCase();
@@ -215,7 +241,9 @@ export const useSettingsStore = create<SettingsState>()(
         set({ language, languageExplicitlySet: true });
         // Sync to backend so cron-driven push/email content matches the UI.
         // Fire-and-forget — auth may be missing on cold-start onboarding.
-        usersApi.updateMe({ locale: language }).catch(() => {});
+        usersApi
+          .updateMe({ locale: language })
+          .catch((err) => reportPatchFailure('locale', language, err));
       },
       redetectLanguageIfNotExplicit: () => {
         // Bail if the user has explicitly chosen a language — we never
@@ -237,7 +265,9 @@ export const useSettingsStore = create<SettingsState>()(
         // the user picked in Settings. Without this PATCH the toggle
         // was a pure client-only mock — every server-generated artifact
         // fell back to the backend default.
-        usersApi.updateMe({ dateFormat }).catch(() => {});
+        usersApi
+          .updateMe({ dateFormat })
+          .catch((err) => reportPatchFailure('dateFormat', dateFormat, err));
       },
       setAnalyticsOptOut: (analyticsOptOut) => set({ analyticsOptOut }),
       setIcpSegment: (icpSegment) => set({ icpSegment }),
