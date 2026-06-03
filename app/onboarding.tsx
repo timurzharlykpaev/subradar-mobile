@@ -648,6 +648,16 @@ export default function OnboardingScreen() {
       useUIStore.getState().clearPendingQuickAdd();
     }
     setOnboarded();
+    // Mirror onboarding completion to the server so the backend
+    // `onboardingCompleted` column + onboarding-funnel analytics reflect
+    // reality. Fire-and-forget — never block navigation on it; old backend
+    // builds simply ignored the field (and pre-whitelist-fix backends would
+    // 400, which we swallow here).
+    usersApi
+      .updateMe({ onboardingCompleted: true })
+      .catch((err) =>
+        console.warn('[onboarding] server sync failed', err?.message),
+      );
     router.replace('/(tabs)');
   };
 

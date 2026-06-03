@@ -30,5 +30,14 @@ export const usersApi = {
      * used the backend default regardless of what the user picked.
      */
     dateFormat?: string;
+    /**
+     * Mark first-run onboarding as finished server-side. Sent once when the
+     * user reaches the dashboard so the backend `users.onboardingCompleted`
+     * column (and the onboarding-funnel analytics built on it) reflects
+     * reality instead of staying empty. The backend started accepting this
+     * field again after the UpdateUserDto whitelist fix — older builds that
+     * never sent it simply keep the column at its default.
+     */
+    onboardingCompleted?: boolean;
   }) => apiClient.patch('/users/me', data),
 };
