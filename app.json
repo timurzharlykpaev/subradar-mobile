@@ -117,6 +117,14 @@
     "plugins": [
       "expo-router",
       [
+        "@sentry/react-native/expo",
+        {
+          "organization": "healthy-med",
+          "project": "subradar-mobile",
+          "url": "https://sentry.io/"
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Allow SubRadar to access your photos to scan receipts.",
