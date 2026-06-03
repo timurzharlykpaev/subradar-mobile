@@ -146,6 +146,31 @@ function LanguageLoader() {
   return null;
 }
 
+function AttGate() {
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    // Request App Tracking Transparency once, shortly after the UI is up
+    // (iOS only shows the system prompt when the app is active). Granting it
+    // exposes the IDFA to SKAdNetwork / RevenueCat so TikTok ad installs and
+    // purchases attribute more accurately. Lazy-require so Expo Go builds
+    // without the native module don't crash (same pattern as Purchases).
+    // Fire-and-forget — a denial is fine, SKAdNetwork still works without it.
+    const t = setTimeout(() => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { requestTrackingPermissionsAsync } = require('expo-tracking-transparency');
+        requestTrackingPermissionsAsync().catch((e: any) =>
+          console.warn('[ATT] request failed', e?.message),
+        );
+      } catch {
+        // native module unavailable (Expo Go) — skip
+      }
+    }, 800);
+    return () => clearTimeout(t);
+  }, []);
+  return null;
+}
+
 // Lazy-require so Expo Go / simulator builds without the native module
 // don't crash at import time. Same pattern reconcileBillingDrift uses.
 let Purchases: any = null;
@@ -903,6 +928,7 @@ export default function RootLayout() {
             <AdaptiveStatusBar />
             <OfflineBanner />
             <LanguageLoader />
+            <AttGate />
             <DataLoader />
             <PushSetup />
             <DeepLinkHandler />

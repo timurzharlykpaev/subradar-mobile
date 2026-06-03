@@ -49,18 +49,42 @@
           "_http._tcp"
         ],
         "SKAdNetworkItems": [
-          { "SKAdNetworkIdentifier": "238da6jt44.skadnetwork" },
-          { "SKAdNetworkIdentifier": "22mmun2rn5.skadnetwork" },
-          { "SKAdNetworkIdentifier": "uw77j35x4d.skadnetwork" },
-          { "SKAdNetworkIdentifier": "7ug5zh24hu.skadnetwork" },
-          { "SKAdNetworkIdentifier": "9t245vhmpl.skadnetwork" },
-          { "SKAdNetworkIdentifier": "kbd757ywx3.skadnetwork" },
-          { "SKAdNetworkIdentifier": "a8cz6cu7e5.skadnetwork" },
-          { "SKAdNetworkIdentifier": "578prtvx9j.skadnetwork" },
-          { "SKAdNetworkIdentifier": "5tjdwbrq8w.skadnetwork" },
-          { "SKAdNetworkIdentifier": "hs6bdukanm.skadnetwork" },
-          { "SKAdNetworkIdentifier": "k674qkevps.skadnetwork" },
-          { "SKAdNetworkIdentifier": "dbu4b84rxf.skadnetwork" }
+          {
+            "SKAdNetworkIdentifier": "238da6jt44.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "22mmun2rn5.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "uw77j35x4d.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "7ug5zh24hu.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "9t245vhmpl.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "kbd757ywx3.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "a8cz6cu7e5.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "578prtvx9j.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "5tjdwbrq8w.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "hs6bdukanm.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "k674qkevps.skadnetwork"
+          },
+          {
+            "SKAdNetworkIdentifier": "dbu4b84rxf.skadnetwork"
+          }
         ]
       },
       "xcodeproj": {
@@ -159,6 +183,12 @@
       "expo-secure-store",
       "expo-font",
       "expo-localization",
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "SubRadar uses this to measure which ads bring real value and to improve your experience. Your data is never sold."
+        }
+      ],
       [
         "expo-splash-screen",
         {
