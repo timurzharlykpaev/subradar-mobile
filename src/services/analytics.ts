@@ -259,6 +259,62 @@ class AmplitudeProvider implements AnalyticsProvider {
 }
 
 const AMPLITUDE_KEY = process.env.EXPO_PUBLIC_AMPLITUDE_KEY;
+const POSTHOG_KEY = process.env.EXPO_PUBLIC_POSTHOG_KEY;
+// EU project by default (the wizard region). Override via env if the
+// project ever moves to US Cloud or a self-hosted instance.
+const POSTHOG_HOST =
+  process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com';
+
+// ─── PostHog provider ─────────────────────────────────────────────────────────
+// Lazy require so Jest (which mocks this module) and any build without the
+// native module installed don't blow up — mirrors AmplitudeProvider. The
+// whole existing AnalyticsEvent catalogue flows through here unchanged, so
+// every onboarding / paywall / billing event already wired in the app lands
+// in PostHog the moment EXPO_PUBLIC_POSTHOG_KEY is set.
+class PostHogProvider implements AnalyticsProvider {
+  private ph: any = null;
+
+  init(apiKey: string) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const PostHog = require('posthog-react-native').default;
+      this.ph = new PostHog(apiKey, {
+        host: POSTHOG_HOST,
+        // Auto-capture app open/background/update — gives us app_open,
+        // session boundaries and version without manual instrumentation.
+        captureNativeAppLifecycleEvents: true,
+      });
+    } catch (e) {
+      if (__DEV__)
+        console.warn(
+          '[Analytics] PostHog SDK not available, falling back to console',
+          e,
+        );
+    }
+  }
+
+  identify(userId: string, traits?: Record<string, any>) {
+    if (!this.ph) return;
+    this.ph.identify(userId, traits);
+  }
+
+  track(event: string, properties?: EventProperties) {
+    if (!this.ph) return;
+    this.ph.capture(event, properties);
+  }
+
+  revenue(_productId: string, _price: number, _revenue: number) {
+    // No-op: the `purchase_completed` event already carries `revenue`/`price`
+    // properties (see AnalyticsService.purchaseCompleted), so PostHog revenue
+    // insights read those directly. Emitting a second `revenue` event here
+    // would double-count.
+  }
+
+  reset() {
+    if (!this.ph) return;
+    this.ph.reset();
+  }
+}
 
 // ─── Analytics service ────────────────────────────────────────────────────────
 class AnalyticsService {
@@ -277,9 +333,17 @@ class AnalyticsService {
   /** Call once in app/_layout.tsx. */
   init() {
     if (this.initialized) return;
-    // Use Amplitude in prod when a key is present; Console otherwise.
-    const keyIsReal = AMPLITUDE_KEY && !AMPLITUDE_KEY.startsWith('__TODO_');
-    if (keyIsReal && !__DEV__) {
+    const posthogKeyReal = POSTHOG_KEY && !POSTHOG_KEY.startsWith('__TODO_');
+    const amplitudeKeyReal =
+      AMPLITUDE_KEY && !AMPLITUDE_KEY.startsWith('__TODO_');
+    // Prefer PostHog (product analytics + session replay) when configured;
+    // fall back to Amplitude, then to the no-op console provider. PostHog is
+    // allowed in dev too so an internal / TestFlight build can be verified
+    // before a store release; Amplitude stays prod-only as before.
+    if (posthogKeyReal) {
+      this.provider = new PostHogProvider();
+      this.provider.init(POSTHOG_KEY as string);
+    } else if (amplitudeKeyReal && !__DEV__) {
       this.provider = new AmplitudeProvider();
       this.provider.init(AMPLITUDE_KEY as string);
     }
