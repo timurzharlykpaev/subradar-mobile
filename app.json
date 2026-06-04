@@ -2,7 +2,7 @@
   "expo": {
     "name": "SubRadar",
     "slug": "subradar",
-    "version": "1.4.15",
+    "version": "1.4.16",
     "description": "AI-powered subscription tracker. Add by voice, scan receipts, get reminders before charges, analyze spending across all your subscriptions.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -183,12 +183,6 @@
       "expo-secure-store",
       "expo-font",
       "expo-localization",
-      [
-        "expo-tracking-transparency",
-        {
-          "userTrackingPermission": "SubRadar uses this to measure which ads bring real value and to improve your experience. Your data is never sold."
-        }
-      ],
       [
         "expo-splash-screen",
         {
