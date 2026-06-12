@@ -2,7 +2,7 @@
   "expo": {
     "name": "SubRadar",
     "slug": "subradar",
-    "version": "1.4.16",
+    "version": "1.4.17",
     "description": "AI-powered subscription tracker. Add by voice, scan receipts, get reminders before charges, analyze spending across all your subscriptions.",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -97,7 +97,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#5826C0"
+        "backgroundColor": "#140944"
       },
       "package": "com.goalin.subradar",
       "intentFilters": [
@@ -186,12 +186,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#5826C0",
+          "backgroundColor": "#2B1668",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 220,
           "resizeMode": "contain",
           "dark": {
-            "backgroundColor": "#2A0E66",
+            "backgroundColor": "#140944",
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 220,
             "resizeMode": "contain"
