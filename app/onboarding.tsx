@@ -481,6 +481,59 @@ const AuthHero = React.memo(function AuthHero() {
   );
 });
 
+// ─── Email entry (isolated) ──────────────────────────────────────────────────
+// The email field keeps its draft in LOCAL state and only lifts the value on
+// submit. Previously `email` lived in OnboardingScreen, so every keystroke
+// re-rendered the whole screen and rebuilt the 6-element `steps` array (plus
+// re-laid-out the iOS InputAccessoryView) — that's what made typing lag/glitch.
+// Keeping the draft here means typing re-renders only this tiny subtree.
+const EmailEntryView = React.memo(function EmailEntryView({
+  initialEmail,
+  loading,
+  onSubmit,
+  onBack,
+}: {
+  initialEmail: string;
+  loading: boolean;
+  onSubmit: (email: string) => void;
+  onBack: () => void;
+}) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+  const [email, setEmail] = useState(initialEmail);
+
+  const submit = useCallback(() => onSubmit(email.trim()), [email, onSubmit]);
+
+  return (
+    <View style={styles.otpContainer}>
+      <DoneAccessoryInput
+        testID="email-input"
+        style={[styles.emailInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+        value={email}
+        onChangeText={setEmail}
+        placeholder={t('auth.email_placeholder')}
+        placeholderTextColor={colors.textMuted}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
+        autoComplete="email"
+        textContentType="emailAddress"
+        returnKeyType="send"
+        onSubmitEditing={submit}
+        blurOnSubmit
+      />
+      <TouchableOpacity testID="btn-send-code" style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={submit} disabled={loading}>
+        <Text style={styles.emailBtnText}>{t('auth.send_code')}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onBack}>
+        <Text style={[styles.otpBackText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
 // ─── ICP-based waste estimate (per year, $USD) ───────────────────────────────
 // Values reflect average forgotten-subscription spend for each persona based on
 // industry studies (Chase 2024, Bango Subscriptions Report 2025).
@@ -859,15 +912,24 @@ export default function OnboardingScreen() {
     return () => clearInterval(interval);
   }, [otpTimer]);
 
-  const handleSendOtp = async () => {
-    if (!email.includes('@')) {
+  // `emailArg` is a string when called from the isolated EmailEntryView
+  // (send button / return key). The OTP-sent "resend" button wires this to
+  // TouchableOpacity.onPress, which passes a GestureResponderEvent — guard
+  // against that by only accepting a string, otherwise fall back to the
+  // lifted `email` state (already set from the first send).
+  const handleSendOtp = async (emailArg?: unknown) => {
+    const targetEmail = (typeof emailArg === 'string' ? emailArg : email).trim();
+    if (!targetEmail.includes('@')) {
       Alert.alert('', t('onboarding.invalid_email'));
       return;
     }
+    // Lift the draft so the OTP screen ("code sent to {email}") and
+    // verifyOtp read the same address the user typed.
+    if (targetEmail !== email) setEmail(targetEmail);
     setLoading(true);
     try {
-      console.log('[OTP] Sending to:', email);
-      await authApi.sendOtp(email);
+      console.log('[OTP] Sending to:', targetEmail);
+      await authApi.sendOtp(targetEmail);
       setOtpSent(true);
       setOtpTimer(60);
       setOtpCode('');
@@ -1572,32 +1634,12 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={styles.otpContainer}>
-          <DoneAccessoryInput
-            testID="email-input"
-            style={[styles.emailInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
-            value={email}
-            onChangeText={setEmail}
-            placeholder={t('auth.email_placeholder')}
-            placeholderTextColor={colors.textMuted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            spellCheck={false}
-            autoComplete="email"
-            textContentType="emailAddress"
-            returnKeyType="send"
-            onSubmitEditing={handleSendOtp}
-            blurOnSubmit
-          />
-          <TouchableOpacity testID="btn-send-code" style={[styles.emailBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={handleSendOtp} disabled={loading}>
-            <Text style={styles.emailBtnText}>{t('auth.send_code')}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setOtpMode(false)}>
-            <Text style={[styles.otpBackText, { color: colors.textSecondary }]}>{t('common.back')}</Text>
-          </TouchableOpacity>
-        </View>
+        <EmailEntryView
+          initialEmail={email}
+          loading={loading}
+          onSubmit={handleSendOtp}
+          onBack={() => setOtpMode(false)}
+        />
       )}
 
       <Text style={[styles.terms, { color: colors.textSecondary }]}>

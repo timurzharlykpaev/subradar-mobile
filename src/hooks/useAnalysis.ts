@@ -28,10 +28,23 @@ export function useAnalysisStatus(jobId: string | null) {
     queryKey: ANALYSIS_KEYS.status(jobId || ''),
     queryFn: () => analysisApi.getStatus(jobId!),
     enabled: !!jobId,
+    // A 429 means "slow down" — never retry it inline; pacing is owned by the
+    // backoff in refetchInterval. Retrying a rate-limit immediately just burns
+    // the budget faster. Allow a couple of retries for other transient errors.
+    retry: (failureCount, error) => {
+      if ((error as any)?.response?.status === 429) return false;
+      return failureCount < 2;
+    },
     refetchInterval: (query) => {
       const data = query.state.data as AnalysisStatusResponse | undefined;
-      if (!data) return 3000;
-      if (data.status === 'COMPLETED' || data.status === 'FAILED') return false;
+      if (data?.status === 'COMPLETED' || data?.status === 'FAILED') return false;
+      // Back off on consecutive failures (429 rate-limit, transient 5xx)
+      // instead of a fixed 3s. A stuck / rate-limited job otherwise polls
+      // ~20×/min and self-rate-limits (Sentry caught 19× 429 in one minute).
+      // Cap at 30s so polling still recovers once the limit clears — on the
+      // next success fetchFailureCount resets and we return to the 3s cadence.
+      const failures = query.state.fetchFailureCount;
+      if (failures > 0) return Math.min(3000 * 2 ** failures, 30_000);
       return 3000;
     },
   });
