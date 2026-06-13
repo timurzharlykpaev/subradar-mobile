@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Svg, { Path, Circle, Rect, Text as SvgText, G, Defs, LinearGradient, Stop, Ellipse } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
+import { Image as ExpoImage } from 'expo-image';
 import { analytics } from '../src/services/analytics';
 import {
   View,
@@ -266,34 +267,66 @@ function OpenAIIcon() {
   );
 }
 
+// ─── Radar sweep ────────────────────────────────────────────────────────────
+// Вращающийся сектор-«луч» сканера: градиент от прозрачного к фирменному
+// фиолетовому по передней кромке. Главный премиум-штрих — даёт ощущение
+// живого радара вместо статичной пульсации.
+function RadarSweep({ color }: { color: string }) {
+  return (
+    <Svg width={150} height={150} viewBox="0 0 150 150">
+      <Defs>
+        <LinearGradient id="radarSweep" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor={color} stopOpacity="0" />
+          <Stop offset="1" stopColor={color} stopOpacity="0.55" />
+        </LinearGradient>
+      </Defs>
+      {/* Сектор ~50° из центра (75,75), радиус 75; яркая кромка — ведущая при вращении */}
+      <Path d="M75 75 L150 75 A75 75 0 0 0 123.2 17.5 Z" fill="url(#radarSweep)" />
+    </Svg>
+  );
+}
+
+// depth: 1 = передний план (крупнее, чётче, больше parallax), <1 = в глубине
+// (мельче, прозрачнее, меньше плавает) — создаёт эффект орбиты вокруг логотипа.
 const FLOAT_CARDS_LIGHT = [
-  { name: 'Netflix',  amount: '$15.99', bg: '#FFEAEA', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10  },
-  { name: 'Spotify',  amount: '$9.99',  bg: '#EAFAF1', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50  },
-  { name: 'iCloud',   amount: '$2.99',  bg: '#EAF2FF', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95  },
-  { name: 'YouTube',  amount: '$13.99', bg: '#FFEAEA', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130 },
-  { name: 'ChatGPT',  amount: '$20.00', bg: '#EAF7F4', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165 },
+  { name: 'Netflix',  amount: '$15.99', bg: '#FFFFFF', iconBg: '#E50914', domain: 'netflix.com', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10,  depth: 1    },
+  { name: 'Spotify',  amount: '$9.99',  bg: '#FFFFFF', iconBg: '#1DB954', domain: 'spotify.com', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50,  depth: 0.9  },
+  { name: 'iCloud',   amount: '$2.99',  bg: '#FFFFFF', iconBg: '#0071E3', domain: 'icloud.com',  IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95,  depth: 0.86 },
+  { name: 'YouTube',  amount: '$13.99', bg: '#FFFFFF', iconBg: '#FF0000', domain: 'youtube.com', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130, depth: 1    },
+  // icon.horse для openai.com отдаёт серую заглушку — берём логотип ChatGPT из Google favicons.
+  { name: 'ChatGPT',  amount: '$20.00', bg: '#FFFFFF', iconBg: '#10A37F', domain: 'openai.com',  iconUrl: 'https://www.google.com/s2/favicons?domain=chatgpt.com&sz=128', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165, depth: 0.9  },
 ];
 const FLOAT_CARDS_DARK = [
-  { name: 'Netflix',  amount: '$15.99', bg: '#2A1520', iconBg: '#E50914', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10  },
-  { name: 'Spotify',  amount: '$9.99',  bg: '#152A20', iconBg: '#1DB954', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50  },
-  { name: 'iCloud',   amount: '$2.99',  bg: '#152030', iconBg: '#0071E3', IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95  },
-  { name: 'YouTube',  amount: '$13.99', bg: '#2A1520', iconBg: '#FF0000', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130 },
-  { name: 'ChatGPT',  amount: '$20.00', bg: '#152A25', iconBg: '#10A37F', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165 },
+  { name: 'Netflix',  amount: '$15.99', bg: '#23232E', iconBg: '#E50914', domain: 'netflix.com', IconComponent: NetflixIcon,  x: -120, delay: 0,   duration: 3200, yPos: 10,  depth: 1    },
+  { name: 'Spotify',  amount: '$9.99',  bg: '#23232E', iconBg: '#1DB954', domain: 'spotify.com', IconComponent: SpotifyIcon,  x: 70,   delay: 400,  duration: 2900, yPos: 50,  depth: 0.9  },
+  { name: 'iCloud',   amount: '$2.99',  bg: '#23232E', iconBg: '#0071E3', domain: 'icloud.com',  IconComponent: ICloudIcon,   x: -85,  delay: 700,  duration: 3500, yPos: 95,  depth: 0.86 },
+  { name: 'YouTube',  amount: '$13.99', bg: '#23232E', iconBg: '#FF0000', domain: 'youtube.com', IconComponent: YoutubeIcon,  x: 100,  delay: 200,  duration: 3000, yPos: 130, depth: 1    },
+  { name: 'ChatGPT',  amount: '$20.00', bg: '#23232E', iconBg: '#10A37F', domain: 'openai.com',  iconUrl: 'https://www.google.com/s2/favicons?domain=chatgpt.com&sz=128', IconComponent: OpenAIIcon,   x: -130, delay: 550,  duration: 3300, yPos: 165, depth: 0.9  },
 ];
 
-const FloatingCard = React.memo(function FloatingCard({ name, amount, bg, iconBg, IconComponent, x, delay, duration, yPos, topOffset = 0, textColor, subColor }: {
-  name: string; amount: string; bg: string; iconBg: string; IconComponent: React.FC;
-  x: number; delay: number; duration: number; yPos: number; topOffset?: number;
-  textColor: string; subColor: string;
+const FloatingCard = React.memo(function FloatingCard({ name, amount, bg, iconBg, domain, iconUrl, IconComponent, x, delay, duration, yPos, depth = 1, topOffset = 0, textColor, subColor, tileBorder }: {
+  name: string; amount: string; bg: string; iconBg: string; domain: string; iconUrl?: string; IconComponent: React.FC;
+  x: number; delay: number; duration: number; yPos: number; depth?: number; topOffset?: number;
+  textColor: string; subColor: string; tileBorder: string;
 }) {
   const entryY = useRef(new Animated.Value(30)).current;
   const entryOpacity = useRef(new Animated.Value(0)).current;
   // Linear 0→1 progress mapped to sine — no jump at loop boundary
   const progress = useRef(new Animated.Value(0)).current;
+  // Реальный логотип через icon.horse (тот же источник, что QUICK_ADD_SERVICES);
+  // при ошибке сети падаем на рукодельный SVG-силуэт, чтобы карточка не пустовала.
+  const [logoFailed, setLogoFailed] = useState(false);
 
+  // Parallax: ближние карточки (depth=1) плавают сильнее, дальние — меньше.
+  const amplitude = 10 * depth;
   const floatY = progress.interpolate({
     inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: [0, -8, 0, 8, 0],
+    outputRange: [0, -amplitude, 0, amplitude, 0],
+  });
+  // Лёгкий «дрейф» наклона — оживляет, добавляет ощущение парения.
+  const floatRotate = progress.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ['0deg', '1.4deg', '0deg', '-1.4deg', '0deg'],
   });
 
   useEffect(() => {
@@ -304,7 +337,7 @@ const FloatingCard = React.memo(function FloatingCard({ name, amount, bg, iconBg
         easing: Easing.out(Easing.cubic), useNativeDriver: true,
       }),
       Animated.timing(entryOpacity, {
-        toValue: 1, duration: 650, delay,
+        toValue: depth, duration: 650, delay,
         easing: Easing.out(Easing.quad), useNativeDriver: true,
       }),
     ]);
@@ -324,22 +357,44 @@ const FloatingCard = React.memo(function FloatingCard({ name, amount, bg, iconBg
     <Animated.View style={{
       position: 'absolute',
       top: yPos + topOffset,
-      transform: [{ translateX: x }, { translateY: Animated.add(entryY, floatY) }],
+      transform: [
+        { translateX: x },
+        { translateY: Animated.add(entryY, floatY) },
+        { rotate: floatRotate },
+        { scale: depth },
+      ],
       opacity: entryOpacity,
     }}>
       <View style={{
-        flexDirection: 'row', alignItems: 'center', gap: 8,
+        flexDirection: 'row', alignItems: 'center', gap: 9,
         backgroundColor: bg,
-        borderRadius: 18, paddingHorizontal: 11, paddingVertical: 8,
-        shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12,
-        shadowOffset: { width: 0, height: 4 }, elevation: 6,
+        borderRadius: 16, paddingHorizontal: 11, paddingVertical: 8,
+        borderWidth: 1, borderColor: tileBorder,
+        shadowColor: '#1A1330', shadowOpacity: 0.12, shadowRadius: 16,
+        shadowOffset: { width: 0, height: 8 }, elevation: 8,
       }}>
         <View style={{
-          width: 30, height: 30, borderRadius: 9,
-          backgroundColor: iconBg,
-          alignItems: 'center', justifyContent: 'center',
+          width: 32, height: 32, borderRadius: 10,
+          backgroundColor: '#FFFFFF',
+          borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
+          alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+          shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3,
+          shadowOffset: { width: 0, height: 1 },
         }}>
-          <IconComponent />
+          {logoFailed ? (
+            <View style={{ width: '100%', height: '100%', backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
+              <IconComponent />
+            </View>
+          ) : (
+            <ExpoImage
+              source={{ uri: iconUrl ?? `https://icon.horse/icon/${domain}` }}
+              style={{ width: 24, height: 24 }}
+              contentFit="contain"
+              transition={250}
+              cachePolicy="memory-disk"
+              onError={() => setLogoFailed(true)}
+            />
+          )}
         </View>
         <View>
           <Text style={{ fontSize: 12, fontWeight: '700', color: textColor, letterSpacing: -0.2 }}>{name}</Text>
@@ -355,61 +410,41 @@ const AuthHero = React.memo(function AuthHero() {
   const insets = useSafeAreaInsets();
   const logoScale = useRef(new Animated.Value(0.5)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const ring1Scale = useRef(new Animated.Value(1)).current;
-  const ring1Opacity = useRef(new Animated.Value(0.4)).current;
-  const ring2Scale = useRef(new Animated.Value(1)).current;
-  const ring2Opacity = useRef(new Animated.Value(0.25)).current;
+  // Вращение радар-луча — единственная анимация центра (пульс-кольца убраны).
+  const sweepRotate = useRef(new Animated.Value(0)).current;
+
+  // Карточки темнее центра → видны в обоих темах; тонкая рамка для «стекла».
+  const tileBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(17,12,46,0.06)';
+  const sweepColor = isDark ? '#A78BFA' : '#8B5CF6';
 
   useEffect(() => {
-    // Logo entry
+    // Появление логотипа
     Animated.parallel([
       Animated.spring(logoScale, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }),
       Animated.timing(logoOpacity, { toValue: 1, duration: 600, easing: Easing.out(Easing.quad), useNativeDriver: true }),
     ]).start();
 
-    // Ring 1 pulse
-    const loop1 = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(ring1Scale, { toValue: 1.5, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-          Animated.timing(ring1Opacity, { toValue: 0, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        ]),
-        Animated.parallel([
-          Animated.timing(ring1Scale, { toValue: 1, duration: 0, useNativeDriver: true }),
-          Animated.timing(ring1Opacity, { toValue: 0.4, duration: 0, useNativeDriver: true }),
-        ]),
-      ])
+    // Непрерывное вращение луча
+    const sweepLoop = Animated.loop(
+      Animated.timing(sweepRotate, {
+        toValue: 1, duration: 4000, easing: Easing.linear, useNativeDriver: true,
+      })
     );
-    loop1.start();
+    sweepLoop.start();
 
-    // Ring 2 pulse (offset)
-    let loop2: ReturnType<typeof Animated.loop> | null = null;
-    const t2 = setTimeout(() => {
-      loop2 = Animated.loop(
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(ring2Scale, { toValue: 1.5, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-            Animated.timing(ring2Opacity, { toValue: 0, duration: 2000, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-          ]),
-          Animated.parallel([
-            Animated.timing(ring2Scale, { toValue: 1, duration: 0, useNativeDriver: true }),
-            Animated.timing(ring2Opacity, { toValue: 0.25, duration: 0, useNativeDriver: true }),
-          ]),
-        ])
-      );
-      loop2.start();
-    }, 1000);
-    return () => { loop1.stop(); loop2?.stop(); clearTimeout(t2); };
+    return () => { sweepLoop.stop(); };
   }, []);
+
+  const spin = sweepRotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
   return (
     <View style={{ width: '100%', height: mvs(260) + insets.top, paddingTop: insets.top, alignItems: 'center', justifyContent: 'center', marginBottom: 4, overflow: 'hidden' }}>
       {/* Floating cards — за лого */}
       {(isDark ? FLOAT_CARDS_DARK : FLOAT_CARDS_LIGHT).map((card) => (
-        <FloatingCard key={card.name} {...card} topOffset={insets.top} textColor={colors.text} subColor={colors.textSecondary} />
+        <FloatingCard key={card.name} {...card} topOffset={insets.top} textColor={colors.text} subColor={colors.textSecondary} tileBorder={tileBorder} />
       ))}
 
-      {/* Центральный блок: кольца + иконка — всё вместе через flexbox */}
+      {/* Центральный блок: glow + вращающийся радар-луч + иконка */}
       <Animated.View style={{
         alignItems: 'center', justifyContent: 'center',
         width: 180, height: 180,
@@ -418,18 +453,19 @@ const AuthHero = React.memo(function AuthHero() {
       }}>
         {/* Glow */}
         <View style={{ position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(139,92,246,0.12)' }} />
-        {/* Pulse ring 1 */}
-        <Animated.View style={{
-          position: 'absolute', width: 130, height: 130, borderRadius: 65,
-          borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.5)',
-          transform: [{ scale: ring1Scale }], opacity: ring1Opacity,
+        <View style={{ position: 'absolute', width: 116, height: 116, borderRadius: 58, backgroundColor: 'rgba(139,92,246,0.10)' }} />
+
+        {/* Статичный циферблат радара (не мерцает) */}
+        <View style={{
+          position: 'absolute', width: 150, height: 150, borderRadius: 75,
+          borderWidth: 1, borderColor: 'rgba(139,92,246,0.14)',
         }} />
-        {/* Pulse ring 2 */}
-        <Animated.View style={{
-          position: 'absolute', width: 130, height: 130, borderRadius: 65,
-          borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.5)',
-          transform: [{ scale: ring2Scale }], opacity: ring2Opacity,
-        }} />
+
+        {/* Радар-луч — единственный движущийся элемент */}
+        <Animated.View style={{ position: 'absolute', width: 150, height: 150, transform: [{ rotate: spin }] }}>
+          <RadarSweep color={sweepColor} />
+        </Animated.View>
+
         {/* Иконка */}
         <View style={{
           shadowColor: '#5A28C8', shadowOpacity: 0.5, shadowRadius: 18,
