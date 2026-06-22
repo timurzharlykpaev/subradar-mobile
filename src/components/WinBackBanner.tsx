@@ -99,7 +99,9 @@ export default function WinBackBanner({ payload }: Props) {
   const handleTap = () => {
     analytics.track('banner_action_tapped', { priority: 'win_back', bucket });
     analytics.track('winback_banner_tapped', { bucket });
-    router.push('/paywall?prefill=pro-yearly' as any);
+    // feature=winback lets the paywall attribute a completed purchase back to
+    // the win-back banner (fires win_back_resubscribed), closing the loop.
+    router.push('/paywall?prefill=pro-yearly&feature=winback' as any);
   };
 
   const handleDismiss = () => {

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billingApi } from '../api/billing';
 import type { BillingMeResponse } from '../types/billing';
+import { analytics } from '../services/analytics';
 
 export function useBillingStatus() {
   return useQuery<BillingMeResponse>({
@@ -38,6 +39,12 @@ export function useStartTrial() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => billingApi.startTrial().then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['billing', 'me'] }),
+    onSuccess: () => {
+      // Single point covering every caller (onboarding modal, ProFeatureModal,
+      // dashboard). Was defined on the analytics service but never fired —
+      // without it the churn funnel has no trial_started entry node.
+      analytics.trialStarted('pro');
+      qc.invalidateQueries({ queryKey: ['billing', 'me'] });
+    },
   });
 }

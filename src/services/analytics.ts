@@ -59,6 +59,7 @@ export type AnalyticsEvent =
   | 'paywall_dismissed'
   | 'trial_cta_tapped'
   | 'trial_started'
+  | 'trial_ended'
   | 'purchase_initiated'
   | 'purchase_completed'
   | 'purchase_failed'
@@ -418,6 +419,24 @@ class AnalyticsService {
 
   trialStarted(plan: string) {
     this.track('trial_started', { plan });
+  }
+
+  /**
+   * Fired once when the internal (server-granted) trial ends and the user
+   * drops to free — detected client-side via the billing `source`
+   * transition `trial → free`. This is the linchpin of the churn funnel:
+   * without it we can't measure trial → trial_ended → gate → purchase.
+   */
+  trialEnded(daysSinceStart?: number | null) {
+    this.track('trial_ended', { days_since_start: daysSinceStart ?? null });
+  }
+
+  /**
+   * Fired when a user who tapped the win-back banner completes a purchase —
+   * closes the win-back loop (banner_shown → tapped → resubscribed).
+   */
+  winBackResubscribed(plan: string, period: string) {
+    this.track('win_back_resubscribed', { plan, period });
   }
 
   subscriptionAdded(

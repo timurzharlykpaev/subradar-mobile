@@ -65,6 +65,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as Sentry from '@sentry/react-native';
 import { billingApi } from '../src/api/billing';
 import { reconcileBillingDrift } from '../src/utils/reconcileBillingDrift';
+import { useTrialEndedTracker } from '../src/hooks/useTrialEndedTracker';
 
 const PENDING_RECEIPT_KEY = 'pending_receipt';
 // Tracks consecutive 5xx/network failures across cold starts so we can
@@ -153,6 +154,13 @@ try {
   const rc = require('react-native-purchases');
   Purchases = rc.default || rc;
 } catch {}
+
+// Headless: emits `trial_ended` when the internal trial expires to free.
+// Lives inside QueryClientProvider so it can read /billing/me.
+function TrialEndedTracker() {
+  useTrialEndedTracker();
+  return null;
+}
 
 function DataLoader() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -904,6 +912,7 @@ export default function RootLayout() {
             <OfflineBanner />
             <LanguageLoader />
             <DataLoader />
+            <TrialEndedTracker />
             <PushSetup />
             <DeepLinkHandler />
             <Stack screenOptions={{ headerShown: false }}>

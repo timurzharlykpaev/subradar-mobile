@@ -513,6 +513,11 @@ export default function PaywallScreen() {
       // "Pro Monthly @ 1790" for a user actually billed Team Yearly @ 49990.
       const planLabel = actualPlanKey === 'org' ? 'Team' : 'Pro';
       analytics.purchaseCompleted(actualPlanKey, actualPeriod, actualPrice);
+      // Attribute the conversion to the win-back banner when the paywall was
+      // opened from it (feature=winback) — closes the win-back funnel loop.
+      if (featureSource === 'winback') {
+        analytics.winBackResubscribed(actualPlanKey, actualPeriod);
+      }
       setSuccessPlan(planLabel);
 
       // Sync RC then refetch billing so button state updates before user dismisses success screen.
