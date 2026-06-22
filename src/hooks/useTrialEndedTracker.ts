@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffectiveAccess } from './useEffectiveAccess';
 import { analytics } from '../services/analytics';
+import { classifyTrialTransition } from './trialTransition';
 
 const WAS_TRIALING_KEY = 'trial:was_trialing';
 const TRIAL_STARTED_AT_KEY = 'trial:started_at';
@@ -31,10 +32,9 @@ export function useTrialEndedTracker(): void {
   useEffect(() => {
     if (!access || access.isLoading) return;
 
-    const isTrialing = access.source === 'trial';
-    const isFree = access.plan === 'free';
+    const transition = classifyTrialTransition(access.source);
 
-    if (isTrialing) {
+    if (transition === 'mark') {
       firedRef.current = false;
       AsyncStorage.getItem(WAS_TRIALING_KEY).then((v) => {
         if (v !== '1') {
@@ -45,15 +45,16 @@ export function useTrialEndedTracker(): void {
       return;
     }
 
-    // No longer trialing — was the user trialing before?
+    // Non-terminal (grace) or unrelated state → leave the flag intact and wait
+    // for the next /billing/me to reach a terminal churn/convert state.
+    if (transition !== 'churn' && transition !== 'convert') return;
+
     if (firedRef.current) return;
     AsyncStorage.getItem(WAS_TRIALING_KEY).then(async (v) => {
       if (v !== '1') return;
       firedRef.current = true;
 
-      // Only count it as a trial *end* (churn) when they dropped to free.
-      // source becoming `own`/`team` with a paid plan = conversion, not churn.
-      if (isFree) {
+      if (transition === 'churn') {
         const startedRaw = await AsyncStorage.getItem(TRIAL_STARTED_AT_KEY);
         const startedAt = startedRaw ? Number(startedRaw) : null;
         const daysSinceStart =
@@ -65,5 +66,5 @@ export function useTrialEndedTracker(): void {
 
       await AsyncStorage.multiRemove([WAS_TRIALING_KEY, TRIAL_STARTED_AT_KEY]);
     });
-  }, [access?.source, access?.plan, access?.isLoading]);
+  }, [access?.source, access?.isLoading]);
 }
