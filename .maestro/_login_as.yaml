@@ -1,0 +1,98 @@
+appId: com.goalin.subradar
+name: "_login_as — parametrized OTP login (env: EMAIL)"
+#
+# Reusable login for seeded QA accounts (qa-*@subradar.test) on the dev API.
+# Uses the fixed 000000 OTP bypass (ENABLE_REVIEW_ACCOUNT=true on dev).
+# Caller passes EMAIL via runFlow env. Lands on the dashboard.
+---
+- clearState
+- launchApp
+- runFlow: ./_dismiss_logbox.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 30000
+- tapOn:
+    id: "btn-get-started"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-value-preview"
+    timeout: 10000
+- tapOn:
+    id: "btn-value-preview-continue"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-currency"
+    timeout: 5000
+- tapOn:
+    id: "btn-next"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "step-auth"
+    timeout: 15000
+- tapOn:
+    id: "btn-email"
+- extendedWaitUntil:
+    visible:
+      id: "email-input"
+    timeout: 10000
+- tapOn:
+    id: "email-input"
+- inputText: "${EMAIL}"
+- tapOn:
+    id: "btn-send-code"
+
+# OTP bypass — fixed 000000 for qa-*@subradar.test / review@subradar.ai
+- extendedWaitUntil:
+    visible:
+      id: "otp-input-0"
+    timeout: 15000
+- tapOn:
+    id: "otp-input-0"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-1"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-2"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-3"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-4"
+- inputText: "0"
+- tapOn:
+    id: "otp-input-5"
+- inputText: "0"
+- tapOn:
+    id: "btn-verify"
+
+# iOS native push-permission dialog (conditional)
+- tapOn:
+    text: "Don't Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Onboarding tail — skip if shown
+- tapOn:
+    id: "btn-notifications-skip"
+    optional: true
+- tapOn:
+    id: "btn-first-sub-skip"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+- assertNotVisible: "Render Error"

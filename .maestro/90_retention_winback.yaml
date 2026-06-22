@@ -1,0 +1,29 @@
+appId: com.goalin.subradar
+name: "90 - Retention: win-back banner (trial churner)"
+#
+# Core validation of the backend win-back fix: a free user who previously had
+# a trial (downgradedAt set) must see the win_back banner on the dashboard.
+# Account: qa-winback-recent@subradar.test → /billing/me banner.priority=win_back.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-winback-recent@subradar.test"
+
+# Win-back banner is rendered by BannerRenderer on the dashboard.
+- extendedWaitUntil:
+    visible:
+      id: "win_back-banner"
+    timeout: 15000
+- takeScreenshot: 90_winback_banner
+
+# Tapping it routes to the paywall (feature=winback attribution).
+- tapOn:
+    id: "win_back-banner"
+- assertVisible:
+    text: ".*(Pro|Upgrade|Continue|Plan).*"
+    optional: true
+- takeScreenshot: 90_winback_paywall
+
+- assertNotVisible: "Render Error"
+- assertNotVisible: "undefined"

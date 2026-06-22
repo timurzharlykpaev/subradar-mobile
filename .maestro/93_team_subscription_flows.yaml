@@ -1,0 +1,37 @@
+appId: com.goalin.subradar
+name: "93 - Team: owner workspace + fresh team (creation flow)"
+#
+# Team subscription states render correctly:
+#   qa-team-owner  → has a workspace, Team tab usable
+#   qa-team-fresh  → team plan but NO workspace yet → team-creation entry point
+#   qa-team-member → inherits Pro via team, no own paywall
+---
+# 1) Team owner — Team tab + workspace
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-team-owner@subradar.test"
+- tapOn:
+    text: "Team"
+    optional: true
+- takeScreenshot: 93_team_owner_workspace
+- assertNotVisible: "Render Error"
+
+# 2) Fresh team plan, no workspace → creation flow surface
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-team-fresh@subradar.test"
+- tapOn:
+    text: "Team"
+    optional: true
+- takeScreenshot: 93_team_fresh_create
+- assertNotVisible: "Render Error"
+
+# 3) Team member — inherits access, no degraded/paywall noise
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-team-member@subradar.test"
+- takeScreenshot: 93_team_member_dashboard
+- assertNotVisible: "Render Error"

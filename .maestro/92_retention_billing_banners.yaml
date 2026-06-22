@@ -1,0 +1,51 @@
+appId: com.goalin.subradar
+name: "92 - Retention: billing banners (expiration / grace / billing-issue / double-pay)"
+#
+# Each billing state must render its banner on the dashboard. Runs 4 sequential
+# login cycles (clearState per account inside _login_as).
+---
+# 1) Cancel-at-period-end → expiration banner
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-pro-cancel-at-period-end@subradar.test"
+- extendedWaitUntil:
+    visible:
+      id: "expiration-banner"
+    timeout: 15000
+- takeScreenshot: 92_expiration_banner
+
+# 2) Grace period → grace banner
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-pro-grace@subradar.test"
+- extendedWaitUntil:
+    visible:
+      id: "grace-banner"
+    timeout: 15000
+- takeScreenshot: 92_grace_banner
+
+# 3) Billing issue → billing-issue banner
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-pro-billing-issue@subradar.test"
+- extendedWaitUntil:
+    visible:
+      id: "billing_issue-banner"
+    timeout: 15000
+- takeScreenshot: 92_billing_issue_banner
+
+# 4) Double pay (own Pro + team member) → double-pay banner
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-double-pay@subradar.test"
+- extendedWaitUntil:
+    visible:
+      id: "double_pay-banner"
+    timeout: 15000
+- takeScreenshot: 92_double_pay_banner
+
+- assertNotVisible: "Render Error"

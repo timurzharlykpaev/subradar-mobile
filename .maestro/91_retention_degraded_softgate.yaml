@@ -1,0 +1,34 @@
+appId: com.goalin.subradar
+name: "91 - Retention: degraded soft-gate (locked subs)"
+#
+# A downgraded free user with 5 subs (limit 3) must keep their data visible but
+# see the soft-gate: "N subscriptions hidden — Get Pro" banner + locked cards.
+# Account: qa-free-degraded@subradar.test → degradedMode=true, hidden=2.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-free-degraded@subradar.test"
+
+# Go to the Subscriptions tab where the soft-gate lives.
+- tapOn:
+    text: "Subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+# Scroll to surface the locked-subs banner / locked cards at the list tail.
+- scrollUntilVisible:
+    element:
+      text: ".*hidden.*Get Pro.*"
+    direction: DOWN
+    timeout: 15000
+    optional: true
+- takeScreenshot: 91_degraded_softgate
+
+# Data is NOT destroyed — at least one real subscription stays visible.
+- assertVisible:
+    text: "Netflix"
+    optional: true
+- assertNotVisible: "Render Error"

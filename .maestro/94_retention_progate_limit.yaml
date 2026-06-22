@@ -1,0 +1,48 @@
+appId: com.goalin.subradar
+name: "94 - Retention: free limit → Pro gate on 4th sub"
+#
+# A free user at the 3-sub limit who adds a 4th must hit the Pro gate
+# (server-enforced 403 → ProFeatureModal), not lose data.
+# Account: qa-free-atlimit@subradar.test → subsUsed 3/3.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-free-atlimit@subradar.test"
+
+# Open the add sheet
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+
+# Switch to manual entry
+- tapOn:
+    text: "Enter manually"
+    optional: true
+- tapOn:
+    text: "Add manually"
+    optional: true
+
+# Fill the minimum and save → expect the Pro gate
+- tapOn:
+    id: "name-input"
+    optional: true
+- inputText: "QA Fourth Sub"
+- tapOn:
+    id: "amount-input"
+    optional: true
+- inputText: "9.99"
+- tapOn:
+    id: "btn-save-sub"
+    optional: true
+
+# Server returns 403 → ProFeatureModal (unlimited_subs gate)
+- extendedWaitUntil:
+    visible:
+      id: "pro-modal"
+    timeout: 12000
+- takeScreenshot: 94_progate_modal
+- assertNotVisible: "Render Error"
