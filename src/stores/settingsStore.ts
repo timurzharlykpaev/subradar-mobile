@@ -209,11 +209,22 @@ export const useSettingsStore = create<SettingsState>()(
         if (loc) {
           // Strip region subtag (e.g. en-US → en) — i18n is keyed on language only.
           const lang = loc.split('-')[0].toLowerCase();
-          // Skip unknown / unsupported codes — backend can theoretically
-          // hold any string, but i18next has no resources outside this set
-          // and would silently fall back to English, masking the actual
-          // problem (bad data in user.locale).
-          if (SUPPORTED_LANGUAGE_SET.has(lang)) {
+          // Never stomp an explicit local language pick with the server's
+          // copy. `hydrateFromUser` runs on EVERY launch (DataLoader), so if
+          // the user picked a language whose `updateMe({ locale })` mirror
+          // never landed (fire-and-forget PATCH can fail) — or the account
+          // simply still holds the default `locale: 'en'` — the server value
+          // would silently revert their choice back to English on every
+          // re-entry. The local store survives restarts via persist and IS
+          // the freshest signal, so it wins. Mirrors how `currencyExplicitlySet`
+          // protects the currency pick from CurrencySync. We still adopt the
+          // server locale on a device that never set one (multi-device sync
+          // for a fresh login), and skip unknown/unsupported codes (i18next
+          // would otherwise fall back to English and mask bad `user.locale`).
+          if (
+            SUPPORTED_LANGUAGE_SET.has(lang) &&
+            !useSettingsStore.getState().languageExplicitlySet
+          ) {
             next.language = lang;
             next.languageExplicitlySet = true;
             i18n.changeLanguage(lang).catch(() => {});

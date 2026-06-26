@@ -39,13 +39,16 @@ export function useAnalysisStatus(jobId: string | null) {
       const data = query.state.data as AnalysisStatusResponse | undefined;
       if (data?.status === 'COMPLETED' || data?.status === 'FAILED') return false;
       // Back off on consecutive failures (429 rate-limit, transient 5xx)
-      // instead of a fixed 3s. A stuck / rate-limited job otherwise polls
-      // ~20×/min and self-rate-limits (Sentry caught 19× 429 in one minute).
+      // instead of a fixed cadence. A stuck / rate-limited job otherwise polls
+      // hard and self-rate-limits (Sentry caught 19× 429 in one minute).
       // Cap at 30s so polling still recovers once the limit clears — on the
-      // next success fetchFailureCount resets and we return to the 3s cadence.
+      // next success fetchFailureCount resets and we return to the base cadence.
+      // Base interval is 5s (12/min): an analysis takes 15-30s, so 5s keeps
+      // perceived latency low while staying well under the backend's per-route
+      // poll ceiling even if a few clients share a carrier IP.
       const failures = query.state.fetchFailureCount;
-      if (failures > 0) return Math.min(3000 * 2 ** failures, 30_000);
-      return 3000;
+      if (failures > 0) return Math.min(5000 * 2 ** failures, 30_000);
+      return 5000;
     },
   });
 }
