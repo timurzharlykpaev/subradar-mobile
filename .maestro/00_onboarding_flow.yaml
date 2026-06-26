@@ -25,14 +25,20 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "btn-value-preview-continue"
 
-# Step 2: currency
+# Step 2: currency — AUTO-SKIPPED when the timezone unambiguously determines
+# the region (onboarding.tsx gotoStep:625, `regionAutoDetected`). On most sims
+# the step is skipped and we land straight on auth, so only tap Next if the
+# currency step actually rendered.
 - runFlow: ./_dismiss_logbox.yaml
-- extendedWaitUntil:
-    visible:
-      id: "step-currency"
+- waitForAnimationToEnd:
     timeout: 3000
-- tapOn:
-    id: "btn-next"
+- runFlow:
+    when:
+      visible:
+        id: "step-currency"
+    commands:
+      - tapOn:
+          id: "btn-next"
 
 # Step 3: auth
 - runFlow: ./_dismiss_logbox.yaml
@@ -50,6 +56,9 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "email-input"
 - inputText: "review@subradar.ai"
+# Dismiss the keyboard — it covers btn-send-code, so a tap without this lands
+# on the keyboard instead of the button and the OTP screen never appears.
+- hideKeyboard
 - tapOn:
     id: "btn-send-code"
 
@@ -76,6 +85,11 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
 - tapOn:
     id: "otp-input-5"
 - inputText: "0"
+# The number-pad keyboard has no dismiss key (hideKeyboard fails on it), and it
+# can cover btn-verify. Tap the displayed email (static text) to drop focus.
+- tapOn:
+    text: "review@subradar.ai"
+    optional: true
 - tapOn:
     id: "btn-verify"
 

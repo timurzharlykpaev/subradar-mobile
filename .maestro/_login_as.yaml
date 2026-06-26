@@ -25,12 +25,17 @@ name: "_login_as — parametrized OTP login (env: EMAIL)"
     id: "btn-value-preview-continue"
 
 - runFlow: ./_dismiss_logbox.yaml
-- extendedWaitUntil:
-    visible:
-      id: "step-currency"
-    timeout: 5000
-- tapOn:
-    id: "btn-next"
+# Currency (step 2) auto-skips when the timezone determines the region
+# (onboarding.tsx gotoStep:625). Tap Next only if it actually rendered.
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      visible:
+        id: "step-currency"
+    commands:
+      - tapOn:
+          id: "btn-next"
 
 - runFlow: ./_dismiss_logbox.yaml
 - extendedWaitUntil:
@@ -46,6 +51,8 @@ name: "_login_as — parametrized OTP login (env: EMAIL)"
 - tapOn:
     id: "email-input"
 - inputText: "${EMAIL}"
+# Keyboard covers btn-send-code — dismiss it or the tap misses the button.
+- hideKeyboard
 - tapOn:
     id: "btn-send-code"
 
@@ -72,6 +79,11 @@ name: "_login_as — parametrized OTP login (env: EMAIL)"
 - tapOn:
     id: "otp-input-5"
 - inputText: "0"
+# Number-pad keyboard has no dismiss key; tap the displayed email (static text)
+# to drop focus so btn-verify isn't covered by the keyboard.
+- tapOn:
+    text: "${EMAIL}"
+    optional: true
 - tapOn:
     id: "btn-verify"
 
