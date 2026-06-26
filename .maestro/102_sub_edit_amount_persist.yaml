@@ -59,7 +59,7 @@ name: "102 - Edit amount → reopen detail → amount persisted (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Amount"
+- tapOn: ".*QA Amount.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"
@@ -98,7 +98,7 @@ name: "102 - Edit amount → reopen detail → amount persisted (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Amount"
+- tapOn: ".*QA Amount.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"

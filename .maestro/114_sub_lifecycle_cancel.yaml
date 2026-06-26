@@ -54,7 +54,7 @@ name: "114 - Subscription lifecycle: cancel → CANCELLED, stays in list"
       id: "subscriptions-screen"
     timeout: 10000
 - tapOn:
-    text: "Cancel Me"
+    text: ".*Cancel Me.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"
@@ -73,10 +73,15 @@ name: "114 - Subscription lifecycle: cancel → CANCELLED, stays in list"
     timeout: 8000
 - tapOn:
     text: "Cancel Subscription"
-# Success Alert → OK
+# A SECOND alert ("Subscription cancelled" + OK) appears only after the cancel
+# API returns — wait for it before tapping OK, otherwise OK is missed and the
+# alert blocks the list assertion below.
+- extendedWaitUntil:
+    visible:
+      text: ".*cancelled.*"
+    timeout: 10000
 - tapOn:
     text: "OK"
-    optional: true
 
 # Back on the list
 - extendedWaitUntil:
@@ -89,12 +94,12 @@ name: "114 - Subscription lifecycle: cancel → CANCELLED, stays in list"
     id: "filter-chip-cancelled"
 - extendedWaitUntil:
     visible:
-      text: "Cancel Me"
+      text: ".*Cancel Me.*"
     timeout: 8000
 
 # Open it and assert the cancelled status badge on detail
 - tapOn:
-    text: "Cancel Me"
+    text: ".*Cancel Me.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"

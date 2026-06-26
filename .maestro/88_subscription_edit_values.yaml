@@ -48,7 +48,7 @@ name: "88 - Edit subscription: change amount, save, verify (v1.4.0)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Edit"
+- tapOn: ".*QA Edit.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"

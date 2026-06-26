@@ -59,7 +59,7 @@ name: "144 - Cards: delete removes card from list (hard-assert)"
     notVisible:
       id: "add-card-modal"
     timeout: 5000
-- assertVisible: "Maestro Delete Me"
+- assertVisible: ".*Maestro Delete Me.*"
 
 # ── Delete it ──
 # Per-card delete control shows the "Delete" label (common.delete).
@@ -79,7 +79,7 @@ name: "144 - Cards: delete removes card from list (hard-assert)"
 # HARD assert: card gone + empty-state restored.
 - extendedWaitUntil:
     notVisible:
-      text: "Maestro Delete Me"
+      text: ".*Maestro Delete Me.*"
     timeout: 8000
 - assertVisible:
     id: "cards-empty"

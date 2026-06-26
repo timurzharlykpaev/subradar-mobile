@@ -43,7 +43,7 @@ name: "84 - Cards: add + delete payment card (v1.4.0)"
       id: "add-card-modal"
     timeout: 5000
 
-- assertVisible: "QA Visa"
+- assertVisible: ".*QA Visa.*"
 - takeScreenshot: 84_card_added
 
 - assertNotVisible: "undefined"

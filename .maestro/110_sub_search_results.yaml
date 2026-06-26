@@ -28,7 +28,7 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
     timeout: 10000
 - tapOn:
     id: "name-input"
-- inputText: "Netflix"
+- inputText: "QA Search One"
 - tapOn:
     id: "amount-input"
 - inputText: "15.99"
@@ -57,7 +57,7 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
     timeout: 10000
 - tapOn:
     id: "name-input"
-- inputText: "Spotify"
+- inputText: "QA Search Two"
 - tapOn:
     id: "amount-input"
 - inputText: "9.99"
@@ -82,10 +82,10 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
 # Both visible before search
 - extendedWaitUntil:
     visible:
-      text: "Netflix"
+      text: ".*QA Search One.*"
     timeout: 10000
 - assertVisible:
-    text: ".*Spotify.*"
+    text: ".*QA Search Two.*"
 
 # ── Search "Netflix" ────────────────────────────────────────
 - tapOn:
@@ -96,25 +96,25 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
     timeout: 5000
 - tapOn:
     id: "search-input"
-- inputText: "Netflix"
+- inputText: "QA Search One"
 
 # HARD-ASSERT: only Netflix remains, Spotify filtered out
 - extendedWaitUntil:
     visible:
-      text: "Netflix"
+      text: ".*QA Search One.*"
     timeout: 8000
 - assertNotVisible:
-    text: ".*Spotify.*"
+    text: ".*QA Search Two.*"
 
 # ── Clear search → both visible again ───────────────────────
 - tapOn:
     id: "btn-clear-search"
 - extendedWaitUntil:
     visible:
-      text: "Spotify"
+      text: ".*QA Search Two.*"
     timeout: 8000
 - assertVisible:
-    text: ".*Netflix.*"
+    text: ".*QA Search One.*"
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

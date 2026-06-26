@@ -55,7 +55,7 @@ name: "105 - Delete from detail → row gone from list (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Delete Me"
+- tapOn: ".*QA Delete Me.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"

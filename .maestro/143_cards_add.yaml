@@ -68,7 +68,7 @@ name: "143 - Cards: add card appears in list (hard-assert)"
 # HARD assert: card rendered in the list with its nickname + masked last4.
 - assertVisible:
     id: "cards-list"
-- assertVisible: "Maestro QA Visa"
+- assertVisible: ".*Maestro QA Visa.*"
 - assertVisible: "4242"
 - assertNotVisible:
     id: "cards-empty"

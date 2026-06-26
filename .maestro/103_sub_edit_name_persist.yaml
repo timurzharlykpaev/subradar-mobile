@@ -57,7 +57,7 @@ name: "103 - Edit name → reopen detail → name persisted (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Name"
+- tapOn: ".*QA Name.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"
@@ -96,7 +96,7 @@ name: "103 - Edit name → reopen detail → name persisted (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Renamed"
+- tapOn: ".*QA Renamed.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"

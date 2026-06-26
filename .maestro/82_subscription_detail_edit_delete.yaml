@@ -45,7 +45,7 @@ name: "82 - Subscription detail: view + edit + delete (v1.4.0)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Detail"
+- tapOn: ".*QA Detail.*"
 
 # Detail screen asserts
 - extendedWaitUntil:

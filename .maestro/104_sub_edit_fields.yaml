@@ -61,7 +61,7 @@ name: "104 - Edit billing period + reminder → persisted on detail (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Fields"
+- tapOn: ".*QA Fields.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"
@@ -97,7 +97,7 @@ name: "104 - Edit billing period + reminder → persisted on detail (HARD)"
     visible:
       id: "subscriptions-screen"
     timeout: 10000
-- tapOn: "QA Fields"
+- tapOn: ".*QA Fields.*"
 - extendedWaitUntil:
     visible:
       id: "subscription-detail-screen"

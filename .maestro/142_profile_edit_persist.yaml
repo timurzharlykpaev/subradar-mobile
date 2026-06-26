@@ -57,7 +57,7 @@ name: "142 - Profile: edit name persists to settings (hard-assert)"
     visible:
       id: "settings-screen"
     timeout: 10000
-- assertVisible: "Maestro QA Name"
+- assertVisible: ".*Maestro QA Name.*"
 - takeScreenshot: 142_name_persisted
 
 # Reopen settings tab to prove persistence across a remount.
@@ -70,7 +70,7 @@ name: "142 - Profile: edit name persists to settings (hard-assert)"
     visible:
       id: "settings-screen"
     timeout: 10000
-- assertVisible: "Maestro QA Name"
+- assertVisible: ".*Maestro QA Name.*"
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"
