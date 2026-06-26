@@ -39,15 +39,13 @@ name: "105 - Delete from detail → row gone from list (HARD)"
     id: "amount-input"
 - inputText: "3.21"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Open detail ──
@@ -84,10 +82,10 @@ name: "105 - Delete from detail → row gone from list (HARD)"
 # that left the card present makes this flow fail.
 - extendedWaitUntil:
     notVisible:
-      text: "QA Delete Me"
+      text: ".*QA Delete Me.*"
     timeout: 10000
 - assertNotVisible:
-    text: "QA Delete Me"
+    text: ".*QA Delete Me.*"
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

@@ -41,15 +41,13 @@ name: "112 - Subscriptions sort: price asc/desc reorders list"
     id: "amount-input"
 - inputText: "1.00"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Add expensive sub: "Zzz Pricey" $99.99 ──────────────────
@@ -72,15 +70,13 @@ name: "112 - Subscriptions sort: price asc/desc reorders list"
     id: "amount-input"
 - inputText: "99.99"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Open list ───────────────────────────────────────────────

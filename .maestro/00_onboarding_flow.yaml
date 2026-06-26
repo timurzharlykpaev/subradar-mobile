@@ -22,6 +22,8 @@ name: "00 - Onboarding + Auth (v1.4.0, 6 slides)"
     visible:
       id: "step-value-preview"
     timeout: 10000
+# Language is forced to English in E2E builds via getDeviceLanguage (gated on
+# EXPO_PUBLIC_E2E_MODE), so no in-app language selection is needed here.
 - tapOn:
     id: "btn-value-preview-continue"
 

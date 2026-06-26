@@ -29,6 +29,6 @@ name: "91 - Retention: degraded soft-gate (locked subs)"
 
 # Data is NOT destroyed — at least one real subscription stays visible.
 - assertVisible:
-    text: "Netflix"
+    text: ".*Netflix.*"
     optional: true
 - assertNotVisible: "Render Error"

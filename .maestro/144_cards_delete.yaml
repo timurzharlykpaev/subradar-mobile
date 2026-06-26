@@ -51,7 +51,8 @@ name: "144 - Cards: delete removes card from list (hard-assert)"
 - tapOn:
     id: "card-last4-input"
 - inputText: "1111"
-- hideKeyboard
+- tapOn:
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-card"
 - extendedWaitUntil:

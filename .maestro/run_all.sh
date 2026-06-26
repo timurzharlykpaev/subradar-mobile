@@ -57,7 +57,7 @@ echo "📦 app: $APP_PATH"
 # Flows tagged [seed] require the dev DB seeded with qa-*@subradar.test users.
 section_flows() {
   case "$1" in
-    2)  echo "00_onboarding_flow 01_onboarding_language 02_onboarding_currency" ;;
+    2)  echo "00_onboarding_flow" ;;  # 01/02 dropped: stale (language picker removed, currency auto-skips); 00 covers onboarding hard
     3)  echo "03_auth_email 21_logout 140_auth_logout_login" ;;
     4)  echo "150_dashboard_populated 151_dashboard_navigation 20_dashboard_sanity 37_dashboard_navigation 45_pull_to_refresh 62_banner_renderer_priority" ;;
     5)  echo "100_sub_add_manual_verify 101_sub_add_ai_verify 80_subscription_add_manual 29_bulk_add_text" ;;
@@ -93,6 +93,8 @@ for sec in "${ORDER[@]}"; do
   echo "━━━ Section $sec ━━━"
   for flow in $flows; do
     [ -f "$DIR/$flow.yaml" ] || { echo "  ⚠️  $flow.yaml missing — skipped"; continue; }
+    # Clear review's backend subscriptions so add-flows never hit the free limit.
+    "$DIR/reset_review_subs.sh" >/dev/null 2>&1 || true
     reset_sim
     printf "  %-42s " "$flow"
     if maestro --device "$SIM_UDID" test "$DIR/$flow.yaml" > "/tmp/maestro-$flow.log" 2>&1; then

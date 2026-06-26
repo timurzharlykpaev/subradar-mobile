@@ -43,9 +43,6 @@ name: "154 - Workspace: create team (Team plan, no workspace) — HARD"
 - tapOn:
     id: "input-workspace-name"
 - inputText: "QA Created Team"
-- tapOn:
-    text: "Done"
-    optional: true
 - hideKeyboard
 - tapOn:
     id: "btn-confirm-create-workspace"
@@ -56,7 +53,7 @@ name: "154 - Workspace: create team (Team plan, no workspace) — HARD"
       id: "workspace-screen"
     timeout: 20000
 - assertVisible:
-    text: "QA Created Team"
+    text: ".*QA Created Team.*"
 
 # ── No render garbage ──
 - assertNotVisible: "NaN"

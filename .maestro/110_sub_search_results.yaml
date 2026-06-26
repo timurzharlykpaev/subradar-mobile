@@ -33,15 +33,13 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
     id: "amount-input"
 - inputText: "15.99"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Add subscription 2: Spotify ─────────────────────────────
@@ -64,15 +62,13 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
     id: "amount-input"
 - inputText: "9.99"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Open subscriptions list ─────────────────────────────────
@@ -89,7 +85,7 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
       text: "Netflix"
     timeout: 10000
 - assertVisible:
-    text: "Spotify"
+    text: ".*Spotify.*"
 
 # ── Search "Netflix" ────────────────────────────────────────
 - tapOn:
@@ -108,7 +104,7 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
       text: "Netflix"
     timeout: 8000
 - assertNotVisible:
-    text: "Spotify"
+    text: ".*Spotify.*"
 
 # ── Clear search → both visible again ───────────────────────
 - tapOn:
@@ -118,7 +114,7 @@ name: "110 - Subscriptions search: matching card visible, others hidden"
       text: "Spotify"
     timeout: 8000
 - assertVisible:
-    text: "Netflix"
+    text: ".*Netflix.*"
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

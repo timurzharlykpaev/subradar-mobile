@@ -33,17 +33,15 @@ name: "150 - Dashboard: populated hero + stats + charts (HARD)"
     id: "amount-input"
 - inputText: "15.99"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 
 # Sheet closes; first-sub add may pop TrialOfferModal → dismiss
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 - extendedWaitUntil:

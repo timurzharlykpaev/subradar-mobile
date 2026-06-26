@@ -49,15 +49,13 @@ name: "113 - Subscription lifecycle: pause/resume (UI GAP — not exposed)"
     id: "amount-input"
 - inputText: "5.00"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Open detail ─────────────────────────────────────────────

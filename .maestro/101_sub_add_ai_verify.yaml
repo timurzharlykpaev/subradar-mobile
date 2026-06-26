@@ -37,7 +37,6 @@ name: "101 - Add via AI smart-input → verify in list (HARD, network-dependent)
     id: "smart-input"
 - inputText: "Spotify 9.99 monthly"
 - hideKeyboard
-
 # Trigger the AI lookup explicitly via the "Add with AI" CTA if present
 # (the field also submits on keyboard return, but the button is the stable
 # affordance once text is entered).
@@ -82,16 +81,14 @@ name: "101 - Add via AI smart-input → verify in list (HARD, network-dependent)
           id: "amount-input"
       - inputText: "9.99"
       - tapOn:
-          text: "Done"
-          optional: true
-      - hideKeyboard
+          point: "88%,62%"
       - tapOn:
           id: "btn-save-sub"
 
 # Either path closes the sheet
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
+    visible:
+      id: "dashboard-screen"
     timeout: 20000
 
 - runFlow: ./_dismiss_modals.yaml

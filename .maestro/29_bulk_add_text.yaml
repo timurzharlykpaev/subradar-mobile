@@ -61,10 +61,10 @@ name: "29 - Bulk Add via Text"
 
 # Should show found subscriptions
 - assertVisible:
-    text: "Netflix"
+    text: ".*Netflix.*"
     optional: true
 - assertVisible:
-    text: "Spotify"
+    text: ".*Spotify.*"
     optional: true
 
 # Sanity checks

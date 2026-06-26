@@ -1,0 +1,18 @@
+appId: com.goalin.subradar
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil: { visible: { id: "dashboard-screen" }, timeout: 20000 }
+- tapOn: { id: "tab-add" }
+- extendedWaitUntil: { visible: { id: "add-sub-sheet" }, timeout: 10000 }
+- tapOn: { id: "hero-manual" }
+- extendedWaitUntil: { visible: { id: "name-input" }, timeout: 10000 }
+- tapOn: { id: "name-input" }
+- inputText: "QA KbdTest"
+- tapOn: { id: "amount-input" }
+- inputText: "9.99"
+- tapOn: { id: "btn-keyboard-done" }
+- tapOn: { id: "btn-save-sub" }
+- extendedWaitUntil: { notVisible: { id: "add-sub-sheet" }, timeout: 12000 }
+- tapOn: { id: "tab-subs" }
+- extendedWaitUntil: { visible: { id: "subscriptions-screen" }, timeout: 10000 }
+- assertVisible: { text: "QA KbdTest" }

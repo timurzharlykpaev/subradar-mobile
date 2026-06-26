@@ -89,6 +89,7 @@ export const DoneAccessoryInput = forwardRef<TextInput, DoneAccessoryInputProps>
           >
             <View style={{ flex: 1 }} />
             <TouchableOpacity
+              testID="btn-keyboard-done"
               style={[styles.doneButton, { backgroundColor: colors.primary }]}
               onPress={() => Keyboard.dismiss()}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

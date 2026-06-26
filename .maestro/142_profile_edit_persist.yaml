@@ -48,7 +48,6 @@ name: "142 - Profile: edit name persists to settings (hard-assert)"
 - eraseText
 - inputText: "Maestro QA Name"
 - hideKeyboard
-
 # Save via header action (text, no testID).
 - tapOn:
     text: "Save"

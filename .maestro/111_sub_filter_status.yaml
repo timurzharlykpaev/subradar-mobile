@@ -36,15 +36,13 @@ name: "111 - Subscriptions filter: active vs trial isolation"
     id: "amount-input"
 - inputText: "11.99"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Add TRIAL sub: "Disney Trial" (toggle Free trial Switch) ─
@@ -67,9 +65,7 @@ name: "111 - Subscriptions filter: active vs trial isolation"
     id: "amount-input"
 - inputText: "7.99"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 # Trial Switch has no testID — tap the labelled row to flip it on.
 - scrollUntilVisible:
     element:
@@ -81,9 +77,9 @@ name: "111 - Subscriptions filter: active vs trial isolation"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Open subscriptions list ─────────────────────────────────

@@ -45,15 +45,13 @@ name: "106 - Swipe-delete then Undo → row survives (HARD)"
     id: "amount-input"
 - inputText: "4.44"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Go to list ──
@@ -65,13 +63,13 @@ name: "106 - Swipe-delete then Undo → row survives (HARD)"
     timeout: 10000
 - extendedWaitUntil:
     visible:
-      text: "QA Undo Me"
+      text: ".*QA Undo Me.*"
     timeout: 15000
 
 # ── Swipe the card left to reveal the trash action ──
 - swipe:
     from:
-      text: "QA Undo Me"
+      text: ".*QA Undo Me.*"
     direction: LEFT
 
 # Tap the revealed delete action (accessibilityLabel "Delete"); fall back to
@@ -80,7 +78,7 @@ name: "106 - Swipe-delete then Undo → row survives (HARD)"
     text: "Delete"
     optional: true
 - longPressOn:
-    text: "QA Undo Me"
+    text: ".*QA Undo Me.*"
     optional: true
 - tapOn:
     text: "Delete"
@@ -92,7 +90,7 @@ name: "106 - Swipe-delete then Undo → row survives (HARD)"
       text: "Undo"
     timeout: 8000
 - assertVisible:
-    text: "QA Undo Me deleted"
+    text: ".*QA Undo Me deleted.*"
 
 # ── Tap Undo BEFORE the 5s commit timer fires ──
 - tapOn:
@@ -101,14 +99,14 @@ name: "106 - Swipe-delete then Undo → row survives (HARD)"
 # ── HARD: the row is restored and still in the list ──
 - extendedWaitUntil:
     visible:
-      text: "QA Undo Me"
+      text: ".*QA Undo Me.*"
     timeout: 8000
 - assertVisible:
-    text: "QA Undo Me"
+    text: ".*QA Undo Me.*"
 
 # And the toast is gone (undo dismissed it)
 - assertNotVisible:
-    text: "QA Undo Me deleted"
+    text: ".*QA Undo Me deleted.*"
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

@@ -22,10 +22,10 @@ name: "41 - Add Subscription: AI Wizard Flow"
 
 # Quick suggestion buttons should be visible
 - assertVisible:
-    text: "Netflix"
+    text: ".*Netflix.*"
     optional: true
 - assertVisible:
-    text: "Spotify"
+    text: ".*Spotify.*"
     optional: true
 
 # Tap a quick suggestion

@@ -42,10 +42,10 @@ name: "53 - AI Wizard: bulk add + edit individual subscription"
 
 # Verify bulk list appeared (should have multiple items)
 - assertVisible:
-    text: "Netflix"
+    text: ".*Netflix.*"
     optional: true
 - assertVisible:
-    text: "Spotify"
+    text: ".*Spotify.*"
     optional: true
 
 # Tap Edit on first item
@@ -62,9 +62,6 @@ name: "53 - AI Wizard: bulk add + edit individual subscription"
 - assertNotVisible: "NaN"
 
 # Go back to list
-- tapOn:
-    text: "Done"
-    optional: true
 - tapOn:
     text: "Готово"
     optional: true

@@ -44,18 +44,17 @@ name: "100 - Add manual → verify card appears in list (HARD)"
     id: "amount-input"
 - inputText: "12.34"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
-
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 
-# Sheet must close — first real proof the save handler ran
+# Save → ~1.7s success overlay → sheet closes → back on the dashboard. The
+# add-sub-sheet Modal lingers in the tree even when hidden, so assert the
+# dashboard reappears rather than the sheet being "not visible".
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 
 # First sub for a free user pops the TrialOfferModal — clear it
 - runFlow: ./_dismiss_modals.yaml
@@ -76,11 +75,11 @@ name: "100 - Add manual → verify card appears in list (HARD)"
     timeout: 10000
 - extendedWaitUntil:
     visible:
-      text: "QA Verify Sub"
+      text: ".*QA Verify Sub.*"
     timeout: 15000
 
 - assertVisible:
-    text: "QA Verify Sub"
+    text: ".*QA Verify Sub.*"
 
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

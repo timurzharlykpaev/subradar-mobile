@@ -36,10 +36,7 @@ name: "80 - Add Subscription (Manual) — HARD asserts (v1.4.0)"
 
 # Dismiss numeric keyboard — Save button is below it
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
-
+    point: "88%,62%"
 - takeScreenshot: 80_form_filled
 
 # Save
@@ -48,9 +45,9 @@ name: "80 - Add Subscription (Manual) — HARD asserts (v1.4.0)"
 
 # Sheet closes
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 
 # First-sub add triggers TrialOfferModal for free users — dismiss
 - runFlow: ./_dismiss_modals.yaml

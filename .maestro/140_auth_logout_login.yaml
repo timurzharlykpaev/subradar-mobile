@@ -21,11 +21,15 @@ name: "140 - Auth: logout returns to onboarding (hard-assert)"
     timeout: 10000
 
 # Logout row lives at the very bottom (Account section) — scroll it in.
+# centerElement + a lower visibility threshold so a row sitting under the
+# safe-area / tab bar still satisfies the condition (default 100% never did).
 - scrollUntilVisible:
     element:
       text: "Sign Out"
     direction: DOWN
-    timeout: 15000
+    centerElement: true
+    visibilityPercentage: 40
+    timeout: 20000
 
 # Tap the logout row -> opens the confirm Alert.
 - tapOn:

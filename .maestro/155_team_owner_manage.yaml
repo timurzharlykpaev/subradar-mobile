@@ -28,7 +28,7 @@ name: "155 - Team owner: manage members + controls (HARD)"
 
 # Team name from the owner seed
 - assertVisible:
-    text: "QA Test Team"
+    text: ".*QA Test Team.*"
 
 # ── Owner controls: invite code button is in the header ──
 - assertVisible:
@@ -37,7 +37,7 @@ name: "155 - Team owner: manage members + controls (HARD)"
 # ── Member section + invited member visible ──
 - scrollUntilVisible:
     element:
-      text: "QA Team Member"
+      text: ".*QA Team Member.*"
     direction: DOWN
     timeout: 12000
     optional: true

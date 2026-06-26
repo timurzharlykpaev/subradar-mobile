@@ -135,9 +135,6 @@ name: "99 - Full User Journey: onboarding → all features → logout"
 
 # Close success overlay
 - tapOn:
-    text: "Done"
-    optional: true
-- tapOn:
     text: "Готово"
     optional: true
 

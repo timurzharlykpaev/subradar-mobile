@@ -53,8 +53,8 @@ name: "143 - Cards: add card appears in list (hard-assert)"
 - tapOn:
     id: "card-last4-input"
 - inputText: "4242"
-- hideKeyboard
-
+- tapOn:
+    point: "88%,62%"
 # VISA is the default brand; save.
 - tapOn:
     id: "btn-save-card"

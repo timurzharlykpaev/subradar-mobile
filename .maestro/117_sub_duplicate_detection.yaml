@@ -49,15 +49,13 @@ name: "117 - Duplicate-category banner (Pro-gated — not triggerable on free)"
     id: "amount-input"
 - inputText: "4.00"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 - tapOn:
@@ -79,15 +77,13 @@ name: "117 - Duplicate-category banner (Pro-gated — not triggerable on free)"
     id: "amount-input"
 - inputText: "4.50"
 - tapOn:
-    text: "Done"
-    optional: true
-- hideKeyboard
+    point: "88%,62%"
 - tapOn:
     id: "btn-save-sub"
 - extendedWaitUntil:
-    notVisible:
-      id: "add-sub-sheet"
-    timeout: 15000
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
 - runFlow: ./_dismiss_modals.yaml
 
 # ── Open list — assert the Pro dupe banner is NOT shown to free ─

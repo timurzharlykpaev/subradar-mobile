@@ -47,6 +47,11 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
  * module-load time and crash the entire app.
  */
 export function getDeviceLanguage(): SupportedLanguage {
+  // E2E builds force a deterministic UI language. The simulator's device-locale
+  // resolution is flaky (intermittently resolves a non-English locale), which
+  // makes every text-based Maestro assertion non-deterministic. Gated on the
+  // E2E flag so production behaviour (real device detection) is unchanged.
+  if (process.env.EXPO_PUBLIC_E2E_MODE === '1') return 'en';
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Localization = require('expo-localization');

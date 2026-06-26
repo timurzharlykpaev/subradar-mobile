@@ -23,7 +23,6 @@ name: "87 - AI add via smart text input (v1.4.0)"
     id: "smart-input"
 - inputText: "Netflix 15.99 monthly"
 - hideKeyboard
-
 # AI call can take 5-10s; wait for confirm card or fallback
 - extendedWaitUntil:
     visible:

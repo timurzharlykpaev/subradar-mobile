@@ -21,6 +21,7 @@ name: "_login_as — parametrized OTP login (env: EMAIL)"
     visible:
       id: "step-value-preview"
     timeout: 10000
+# Language forced to English in E2E via getDeviceLanguage (EXPO_PUBLIC_E2E_MODE).
 - tapOn:
     id: "btn-value-preview-continue"
 
