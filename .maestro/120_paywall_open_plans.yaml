@@ -1,0 +1,53 @@
+appId: com.goalin.subradar
+name: "120 - Paywall: free user opens paywall, sees >=2 plan cards"
+#
+# Free user (seeded qa-free-empty) opens the paywall via the dashboard
+# "Upgrade to Pro" quick-action (renders only for non-Pro users and pushes
+# straight to /paywall). HARD-ASSERT: paywall-screen + the three plan cards
+# (free / pro / org). For a free user none of them carries the `-current`
+# suffix on the upgrade tiers, but the FREE card IS the current plan, so we
+# assert plan-card-free-current. Pro/Team render as plain plan-card-{id}.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-free-empty@subradar.test"
+
+- runFlow: ./_dismiss_modals.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+# Open paywall — dashboard quick-action "Upgrade to Pro" (free users only).
+- tapOn:
+    text: "Upgrade to Pro"
+
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 15000
+
+# HARD-ASSERT: at least two plan cards rendered.
+# Free user → FREE card is the current plan (plan-card-free-current),
+# Pro + Team (org) render as upgradable plain cards.
+- assertVisible:
+    id: "plan-card-free-current"
+- assertVisible:
+    id: "plan-card-pro"
+- assertVisible:
+    id: "plan-card-org"
+
+- takeScreenshot: 120_paywall_open_plans
+
+# Selecting Pro reveals its feature list — proves the card is interactive.
+- tapOn:
+    id: "plan-card-pro"
+- assertVisible:
+    text: "MOST POPULAR"
+    optional: true
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

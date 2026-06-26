@@ -1,0 +1,115 @@
+appId: com.goalin.subradar
+name: "106 - Swipe-delete then Undo → row survives (HARD)"
+#
+# The list uses an optimistic delete + 5s UndoToast (subscriptions.tsx:222-262,
+# 648-655). Swipe a card left to reveal the trash action, tap it to fire the
+# optimistic delete + toast, then tap "Undo" before the 5s timer commits.
+# The restored row proves the undo path re-inserts the subscription and the
+# backend delete was NEVER sent.
+#
+# GROUNDING:
+#  - swipe-delete trash action: RightDeleteAction, accessibilityLabel =
+#    t('common.delete') = "Delete" (SubscriptionCard.tsx:96,367). No testID →
+#    targeted by accessibility text.
+#  - UndoToast has NO testID. Its message = subscriptions.delete_undo_message
+#    = "{{name}} deleted" and the action text = add_flow.undo = "Undo"
+#    (UndoToast.tsx:51,53; en.json). Both targeted by visible text.
+#  - subscription card / list → SubscriptionCard.tsx:194, subscriptions.tsx:583
+#  GAP: neither the swipe trash action nor the UndoToast expose a testID —
+#  this flow leans on accessibility/i18n text (documented in report).
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Create a sub to delete ──
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Undo Me"
+- tapOn:
+    id: "amount-input"
+- inputText: "4.44"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Go to list ──
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      text: "QA Undo Me"
+    timeout: 15000
+
+# ── Swipe the card left to reveal the trash action ──
+- swipe:
+    from:
+      text: "QA Undo Me"
+    direction: LEFT
+
+# Tap the revealed delete action (accessibilityLabel "Delete"); fall back to
+# the long-press menu path if the swipe action wasn't hit.
+- tapOn:
+    text: "Delete"
+    optional: true
+- longPressOn:
+    text: "QA Undo Me"
+    optional: true
+- tapOn:
+    text: "Delete"
+    optional: true
+
+# ── The UndoToast should appear (text "Undo" + "QA Undo Me deleted") ──
+- extendedWaitUntil:
+    visible:
+      text: "Undo"
+    timeout: 8000
+- assertVisible:
+    text: "QA Undo Me deleted"
+
+# ── Tap Undo BEFORE the 5s commit timer fires ──
+- tapOn:
+    text: "Undo"
+
+# ── HARD: the row is restored and still in the list ──
+- extendedWaitUntil:
+    visible:
+      text: "QA Undo Me"
+    timeout: 8000
+- assertVisible:
+    text: "QA Undo Me"
+
+# And the toast is gone (undo dismissed it)
+- assertNotVisible:
+    text: "QA Undo Me deleted"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

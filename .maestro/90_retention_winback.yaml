@@ -20,9 +20,10 @@ name: "90 - Retention: win-back banner (trial churner)"
 # Tapping it routes to the paywall (feature=winback attribution).
 - tapOn:
     id: "win_back-banner"
-- assertVisible:
-    text: ".*(Pro|Upgrade|Continue|Plan).*"
-    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 12000
 - takeScreenshot: 90_winback_paywall
 
 - assertNotVisible: "Render Error"

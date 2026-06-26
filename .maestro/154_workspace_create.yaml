@@ -1,0 +1,66 @@
+appId: com.goalin.subradar
+name: "154 - Workspace: create team (Team plan, no workspace) — HARD"
+#
+# GATING NOTE: btn-create-workspace only renders when the user is already on
+# the Team plan (access.plan === 'organization') AND has no workspace. A free
+# user instead sees btn-workspace-upgrade + btn-join-team-empty (the create
+# CTA is absent — creating a team requires the Team subscription). So this
+# flow MUST use a seeded Team account with no workspace:
+#   qa-team-fresh@subradar.test — plan=team, billingStatus=active, noWorkspace
+#
+# Flow: tab-workspace → workspace-screen-empty → btn-create-workspace →
+# input-workspace-name → btn-confirm-create-workspace → workspace-screen with
+# the new name visible (createMutation success → /workspace/me refetch).
+---
+- runFlow: { file: ./_login_as.yaml, env: { EMAIL: "qa-team-fresh@subradar.test" } }
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open Workspace tab → empty state (Team plan, no workspace yet) ──
+- tapOn:
+    id: "tab-workspace"
+- extendedWaitUntil:
+    visible:
+      id: "workspace-screen-empty"
+    timeout: 15000
+
+# Team plan → the create CTA is present (free users would NOT see this)
+- assertVisible:
+    id: "btn-create-workspace"
+- takeScreenshot: 154_workspace_empty
+
+# ── Create the team ──
+- tapOn:
+    id: "btn-create-workspace"
+- extendedWaitUntil:
+    visible:
+      id: "input-workspace-name"
+    timeout: 10000
+- tapOn:
+    id: "input-workspace-name"
+- inputText: "QA Created Team"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-confirm-create-workspace"
+
+# ── Workspace now exists: header renders with the new name ──
+- extendedWaitUntil:
+    visible:
+      id: "workspace-screen"
+    timeout: 20000
+- assertVisible:
+    text: "QA Created Team"
+
+# ── No render garbage ──
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "Invalid Date"
+- assertNotVisible: "Render Error"
+- takeScreenshot: 154_workspace_created

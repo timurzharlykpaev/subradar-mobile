@@ -1,0 +1,61 @@
+appId: com.goalin.subradar
+name: "140 - Auth: logout returns to onboarding (hard-assert)"
+#
+# Login (free) -> Settings -> Sign Out (confirm) -> assert we land back on
+# the onboarding money-hook screen (btn-get-started). The logout handler
+# does router.replace('/onboarding'), so a successful logout is HARD-proven
+# by btn-get-started becoming visible and the dashboard tab bar disappearing.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+# Logout row lives at the very bottom (Account section) — scroll it in.
+- scrollUntilVisible:
+    element:
+      text: "Sign Out"
+    direction: DOWN
+    timeout: 15000
+
+# Tap the logout row -> opens the confirm Alert.
+- tapOn:
+    text: "Sign Out"
+
+# Confirm Alert: cancel="Cancel", destructive confirm="Sign Out".
+# The confirm button carries the same "Sign Out" label, so tap the last one.
+- tapOn:
+    text: "Sign Out"
+    index: 1
+    optional: true
+# Fallback for single-match runners: re-tap "Sign Out" if the alert is still up.
+- tapOn:
+    text: "Sign Out"
+    optional: true
+
+- runFlow: ./_dismiss_logbox.yaml
+
+# HARD ASSERT: back on onboarding money-hook screen.
+- extendedWaitUntil:
+    visible:
+      id: "btn-get-started"
+    timeout: 20000
+
+# And the authed app shell is gone.
+- assertNotVisible:
+    id: "tab-settings"
+- assertNotVisible:
+    id: "dashboard-screen"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

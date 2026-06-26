@@ -1,0 +1,116 @@
+appId: com.goalin.subradar
+name: "104 - Edit billing period + reminder → persisted on detail (HARD)"
+#
+# Exercises the non-text edit controls (chips) and proves they persist.
+# Create a MONTHLY sub, open edit, switch the billing-period chip to YEARLY
+# and set a reminder, save, leave detail, re-open, and assert the detail
+# screen now renders the YEARLY period. The period is shown on the detail
+# amount line as "/ Yearly" (subscription/[id].tsx:222 → billing.yearly),
+# so its presence after a full re-render proves the chip selection persisted.
+#
+# GROUNDING:
+#  - billing-period chips render visible text via PERIOD_LABELS →
+#    billing.weekly/monthly/quarterly/yearly (EditSubscriptionSheet.tsx:47-54,507).
+#    These chips carry NO testID, so they're tapped by their label text.
+#  - reminder chips "Off"/"1d"/"3d"/"7d" (EditSubscriptionSheet.tsx:656,681) —
+#    also text-only, no testID.
+#  - detail period line "/ Yearly" → subscription/[id].tsx:222 (billing.<period>)
+#  - en.json: billing.yearly="Yearly", billing.monthly="Monthly"
+#  GAP: individual edit chips have no testID — targeted by visible label text.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Create a MONTHLY sub ──
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Fields"
+- tapOn:
+    id: "amount-input"
+- inputText: "6.66"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open detail ──
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Fields"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# ── Edit: switch period chip Monthly → Yearly, set a reminder ──
+- tapOn:
+    id: "btn-edit-sub"
+- extendedWaitUntil:
+    visible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+
+# Period chip (text label, no testID)
+- tapOn:
+    text: "Yearly"
+# Reminder chip "3d" (text label, no testID)
+- tapOn:
+    text: "3d"
+    optional: true
+
+- tapOn:
+    id: "btn-save-edit"
+- extendedWaitUntil:
+    notVisible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+
+# ── Leave + re-open to force fresh render from store ──
+- tapOn:
+    id: "btn-back"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Fields"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# HARD: the detail now shows the YEARLY period (was MONTHLY at create time)
+- assertVisible:
+    text: ".*Yearly.*"
+- assertNotVisible:
+    text: ".*/ Monthly.*"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

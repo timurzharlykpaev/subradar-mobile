@@ -1,0 +1,95 @@
+appId: com.goalin.subradar
+name: "113 - Subscription lifecycle: pause/resume (UI GAP — not exposed)"
+#
+# ⚠️ GAP — NO HARD-ASSERT POSSIBLE FOR PAUSE/RESUME ⚠️
+#
+# The detail screen app/subscription/[id].tsx exposes ONLY three actions:
+#   - btn-edit-sub        (open EditSubscriptionSheet)
+#   - btn-delete-sub      (delete)
+#   - btn-cancel-sub      (mark CANCELLED, via subscription.cancel_subscription)
+# There is NO Pause and NO Resume/Reactivate button anywhere in the detail UI,
+# the long-press menu, or the card. The backend API (src/api/subscriptions.ts:
+# pause/restore) exists, but NO screen wires it up. SubscriptionStatus includes
+# 'PAUSED' (src/types/index.ts:2) and STATUS_COLORS handles it, but the app
+# never transitions a sub into PAUSED from the client.
+#
+# Therefore a pause→active round-trip CANNOT be driven through the real UI.
+# Instead of faking optional taps on buttons that don't exist (as legacy
+# 51_subscription_pause_cancel.yaml did with optional:true), this flow asserts
+# the GAP: after opening a fresh sub's detail, the cancel/edit/delete actions
+# are present and NO pause control exists.
+#
+# TODO(product): if pause/resume is added to detail UI, add testIDs
+#   btn-pause-sub / btn-resume-sub and rewrite this into a real hard-assert:
+#     pause → assertVisible status-badge-paused → resume → status-badge-active.
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add a sub ───────────────────────────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Pause Probe"
+- tapOn:
+    id: "amount-input"
+- inputText: "5.00"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open detail ─────────────────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn:
+    text: "Pause Probe"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# HARD-ASSERT the real lifecycle surface + the documented gap.
+- assertVisible:
+    id: "status-badge-active"
+- assertVisible:
+    id: "btn-edit-sub"
+- assertVisible:
+    id: "btn-delete-sub"
+- assertVisible:
+    id: "btn-cancel-sub"
+# No pause/resume control exists — assert their absence so a future
+# regression that wires them up (and breaks this assumption) is caught.
+- assertNotVisible:
+    id: "btn-pause-sub"
+- assertNotVisible:
+    id: "btn-resume-sub"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

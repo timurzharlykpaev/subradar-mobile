@@ -1,0 +1,135 @@
+appId: com.goalin.subradar
+name: "111 - Subscriptions filter: active vs trial isolation"
+#
+# HARD-ASSERT: create one ACTIVE sub + one TRIAL sub, then prove the status
+# filter chips isolate them. filter-chip-active → trial sub hidden;
+# filter-chip-trial → active sub hidden.
+# Grounded:
+#   subscriptions.tsx:481 filter-chip-{value}; FilterType = all|active|trial|cancelled|category
+#   getFiltered: status.toLowerCase() === filter
+#   ManualFormView.tsx:701 Trial Switch (NO testID) → tap text "Free trial"
+#     (add.trial_period = "Free trial", en.json) to enable TRIAL status
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add ACTIVE sub: "Hulu Active" ───────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Hulu Active"
+- tapOn:
+    id: "amount-input"
+- inputText: "11.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Add TRIAL sub: "Disney Trial" (toggle Free trial Switch) ─
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Disney Trial"
+- tapOn:
+    id: "amount-input"
+- inputText: "7.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+# Trial Switch has no testID — tap the labelled row to flip it on.
+- scrollUntilVisible:
+    element:
+      text: "Free trial"
+    direction: DOWN
+    timeout: 8000
+- tapOn:
+    text: "Free trial"
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open subscriptions list ─────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      text: "Hulu Active"
+    timeout: 10000
+- assertVisible:
+    text: "Disney Trial"
+
+# ── Filter: ACTIVE → only active sub remains ────────────────
+- tapOn:
+    id: "filter-chip-active"
+- extendedWaitUntil:
+    visible:
+      text: "Hulu Active"
+    timeout: 8000
+- assertNotVisible:
+    text: "Disney Trial"
+
+# ── Filter: TRIAL → only trial sub remains ──────────────────
+- tapOn:
+    id: "filter-chip-trial"
+- extendedWaitUntil:
+    visible:
+      text: "Disney Trial"
+    timeout: 8000
+- assertNotVisible:
+    text: "Hulu Active"
+
+# ── Back to ALL → both visible ──────────────────────────────
+- tapOn:
+    id: "filter-chip-all"
+- extendedWaitUntil:
+    visible:
+      text: "Hulu Active"
+    timeout: 8000
+- assertVisible:
+    text: "Disney Trial"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

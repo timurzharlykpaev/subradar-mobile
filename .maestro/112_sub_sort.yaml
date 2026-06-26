@@ -1,0 +1,134 @@
+appId: com.goalin.subradar
+name: "112 - Subscriptions sort: price asc/desc reorders list"
+#
+# HARD-ASSERT (best-effort ordering): add a cheap sub (Aaa, $1.00) and an
+# expensive one (Zzz, $99.99). Sort by Price ↓ then Price ↑ and confirm the
+# list still renders both with no error.
+#
+# LIMITATION: FlatList rows expose testID=subscription-card-{id} (real id,
+# not positional index) and there is no per-position testID, so Maestro
+# cannot assert the *relative order* of two cards directly. We assert both
+# cards remain present + visible after each sort and that the sort chips
+# toggle without breaking the screen. True order verification would need a
+# positional testID (e.g. subscription-row-{index}) which the screen lacks.
+# Grounded:
+#   subscriptions.tsx:523 sort-chip-{value}; SortType values used here:
+#     amount_high (Price ↓), amount_low (Price ↑), name (A-Z), next_date
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add cheap sub: "Aaa Cheap" $1.00 ────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Aaa Cheap"
+- tapOn:
+    id: "amount-input"
+- inputText: "1.00"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Add expensive sub: "Zzz Pricey" $99.99 ──────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Zzz Pricey"
+- tapOn:
+    id: "amount-input"
+- inputText: "99.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open list ───────────────────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- assertVisible:
+    id: "sort-chips"
+- extendedWaitUntil:
+    visible:
+      text: "Aaa Cheap"
+    timeout: 10000
+- assertVisible:
+    text: "Zzz Pricey"
+
+# ── Sort Price ↓ (amount_high) ──────────────────────────────
+- tapOn:
+    id: "sort-chip-amount_high"
+- extendedWaitUntil:
+    visible:
+      text: "Zzz Pricey"
+    timeout: 8000
+- assertVisible:
+    text: "Aaa Cheap"
+
+# ── Sort Price ↑ (amount_low) ───────────────────────────────
+- tapOn:
+    id: "sort-chip-amount_low"
+- extendedWaitUntil:
+    visible:
+      text: "Aaa Cheap"
+    timeout: 8000
+- assertVisible:
+    text: "Zzz Pricey"
+
+# ── Sort A-Z (name) ─────────────────────────────────────────
+- tapOn:
+    id: "sort-chip-name"
+- extendedWaitUntil:
+    visible:
+      text: "Aaa Cheap"
+    timeout: 8000
+- assertVisible:
+    text: "Zzz Pricey"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

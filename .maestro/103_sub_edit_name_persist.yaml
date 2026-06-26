@@ -1,0 +1,120 @@
+appId: com.goalin.subradar
+name: "103 - Edit name → reopen detail → name persisted (HARD)"
+#
+# Same persistence shape as 102 but for the name field. Create → edit name →
+# save → back to list → re-open detail → assert the renamed title is shown
+# AND the old name is gone. Re-opening guarantees the value came from the
+# store/back-end, not just an in-sheet echo.
+#
+# GROUNDING:
+#  - add flow ids as in 100/102
+#  - subscription-detail-screen / subscription-name / btn-edit-sub / btn-back
+#       → subscription/[id].tsx:142,185,150,146
+#  - edit-sub-sheet / btn-save-edit → EditSubscriptionSheet.tsx:847,1129
+#  NOTE: the edit sheet's name field (DoneAccessoryInput) carries NO testID,
+#  so it's targeted by its current visible value ("QA Name") — see report.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Create ──
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Name"
+- tapOn:
+    id: "amount-input"
+- inputText: "8.88"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open detail ──
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Name"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+- assertVisible:
+    id: "subscription-name"
+- assertVisible:
+    text: "QA Name"
+
+# ── Edit the name ──
+- tapOn:
+    id: "btn-edit-sub"
+- extendedWaitUntil:
+    visible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+
+# Target the name field by its current value (no testID on this input).
+- tapOn:
+    text: "QA Name"
+- eraseText:
+    charactersToErase: 12
+- inputText: "QA Renamed"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-edit"
+- extendedWaitUntil:
+    notVisible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+
+# ── Leave + re-open ──
+- tapOn:
+    id: "btn-back"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Renamed"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# HARD: renamed title persisted, old name gone from the detail screen
+- assertVisible:
+    id: "subscription-name"
+- assertVisible:
+    text: "QA Renamed"
+- assertNotVisible:
+    text: "QA Name"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

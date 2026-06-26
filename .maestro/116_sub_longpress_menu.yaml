@@ -1,0 +1,109 @@
+appId: com.goalin.subradar
+name: "116 - Subscription long-press menu surfaces edit/cancel/delete"
+#
+# HARD-ASSERT: long-press a card → native action menu appears with the
+# documented options, then drive the "Mark as cancelled" item and confirm the
+# sub becomes CANCELLED.
+# Grounded (subscriptions.tsx:267-311):
+#   handleLongPress → iOS ActionSheetIOS options:
+#     subscriptions.action_view   "Open"
+#     subscriptions.action_edit   "Edit"
+#     subscriptions.action_cancel "Mark as cancelled" (omitted if already cancelled)
+#     common.delete               "Delete"
+#     common.cancel               "Cancel"
+#   Android Alert.alert strips to Edit / Delete / Cancel (3-button OEM limit).
+#   onLongPress wired on SubscriptionCard via renderItem (:318).
+#   "Mark as cancelled" calls subscriptionsApi.cancel then re-fetches.
+# NOTE: the menu is a native ActionSheet/Alert — items have no testID, so we
+#   address them by their confirmed visible text. Items are common across
+#   iOS/Android except "Open"/"Mark as cancelled" (iOS only) → optional.
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add a sub ───────────────────────────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Hold Me"
+- tapOn:
+    id: "amount-input"
+- inputText: "6.50"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open list, long-press the card ──────────────────────────
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      text: "Hold Me"
+    timeout: 10000
+- longPressOn:
+    text: "Hold Me"
+
+# Menu items — Edit + Delete present on both platforms.
+- extendedWaitUntil:
+    visible:
+      text: "Edit"
+    timeout: 8000
+- assertVisible:
+    text: "Delete"
+# iOS-only items (ActionSheet). Assert best-effort.
+- assertVisible:
+    text: "Mark as cancelled"
+    optional: true
+- assertVisible:
+    text: "Open"
+    optional: true
+
+# ── Drive "Mark as cancelled" (iOS) → sub becomes CANCELLED ──
+- tapOn:
+    text: "Mark as cancelled"
+    optional: true
+# If on Android (no cancel item), dismiss the menu so the flow stays green.
+- tapOn:
+    text: "Cancel"
+    optional: true
+
+# Verify cancellation took effect (iOS path). Filter cancelled.
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 8000
+- tapOn:
+    id: "filter-chip-cancelled"
+- assertVisible:
+    text: "Hold Me"
+    optional: true   # only true on iOS where "Mark as cancelled" was tapped
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

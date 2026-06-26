@@ -1,21 +1,24 @@
 appId: com.goalin.subradar
-name: "92 - Retention: billing banners (expiration / grace / billing-issue / double-pay)"
+name: "92 - Retention: billing banners (grace / billing-issue)"
 #
-# Each billing state must render its banner on the dashboard. Runs 4 sequential
-# login cycles (clearState per account inside _login_as).
+# HARD-ASSERT the two banner priorities that the seed actually produces.
+# Grounded against subradar-backend banner-priority.ts + seed-test-users.ts:
+#
+#   grace         ← state=grace_pro + gracePeriodEnd   → qa-pro-grace
+#   billing_issue ← billingIssueAt set                 → qa-pro-billing-issue
+#
+# NOTE — expiration / double_pay / annual_upgrade / refund are intentionally
+# NOT covered here. The current seed cannot produce them (verified against
+# effective-access.service.ts + banner-priority.ts):
+#   - expiration   needs cancel_at_period_end AND daysLeft<=7; seed
+#     qa-pro-cancel-at-period-end has currentPeriodEnd +10d (>7) → `none`.
+#   - double_pay   needs hasOwnPaidPlan && isTeamMember; qa-double-pay sets
+#     neither billingSource nor a team membership → `none`.
+#   - annual_upgrade / refund have no seeded account at all.
+# Do NOT re-add waits for those banner testIDs against these accounts — they
+# will always time out. See the section report for the seed-fix needed.
 ---
-# 1) Cancel-at-period-end → expiration banner
-- runFlow:
-    file: ./_login_as.yaml
-    env:
-      EMAIL: "qa-pro-cancel-at-period-end@subradar.test"
-- extendedWaitUntil:
-    visible:
-      id: "expiration-banner"
-    timeout: 15000
-- takeScreenshot: 92_expiration_banner
-
-# 2) Grace period → grace banner
+# 1) Grace period → grace banner, taps through to paywall
 - runFlow:
     file: ./_login_as.yaml
     env:
@@ -25,8 +28,16 @@ name: "92 - Retention: billing banners (expiration / grace / billing-issue / dou
       id: "grace-banner"
     timeout: 15000
 - takeScreenshot: 92_grace_banner
+- tapOn:
+    id: "grace-banner"
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 12000
+- assertNotVisible: "Render Error"
+- assertNotVisible: "undefined"
 
-# 3) Billing issue → billing-issue banner
+# 2) Billing issue → billing-issue banner (highest priority)
 - runFlow:
     file: ./_login_as.yaml
     env:
@@ -36,16 +47,5 @@ name: "92 - Retention: billing banners (expiration / grace / billing-issue / dou
       id: "billing_issue-banner"
     timeout: 15000
 - takeScreenshot: 92_billing_issue_banner
-
-# 4) Double pay (own Pro + team member) → double-pay banner
-- runFlow:
-    file: ./_login_as.yaml
-    env:
-      EMAIL: "qa-double-pay@subradar.test"
-- extendedWaitUntil:
-    visible:
-      id: "double_pay-banner"
-    timeout: 15000
-- takeScreenshot: 92_double_pay_banner
-
 - assertNotVisible: "Render Error"
+- assertNotVisible: "undefined"

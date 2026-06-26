@@ -1,0 +1,32 @@
+appId: com.goalin.subradar
+name: "130 - Banner: win_back (d8_30 bucket, old churner)"
+#
+# Second win_back seed bucket. qa-winback-old has downgradedAt 20d ago →
+# resolver emits priority=win_back with daysSince=20 (mobile d8_30 copy).
+# Distinct from 90 (qa-winback-recent, d3_7) to catch bucket-specific
+# regressions in WinBackBanner copy selection.
+# Grounded: banner-priority.ts L177-188 (free+state free+hadProBefore),
+# seed-test-users.ts L236-244.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-winback-old@subradar.test"
+
+- extendedWaitUntil:
+    visible:
+      id: "win_back-banner"
+    timeout: 15000
+- takeScreenshot: 130_winback_old_banner
+
+# Tap routes to the win-back paywall (prefill=pro-yearly&feature=winback).
+- tapOn:
+    id: "win_back-banner"
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 12000
+- takeScreenshot: 130_winback_old_paywall
+
+- assertNotVisible: "Render Error"
+- assertNotVisible: "undefined"

@@ -1,0 +1,125 @@
+appId: com.goalin.subradar
+name: "110 - Subscriptions search: matching card visible, others hidden"
+#
+# HARD-ASSERT: add two subs (Netflix, Spotify), search "Netflix" → assert
+# Netflix visible AND Spotify NOT visible. Clear search → both visible again.
+# Grounded:
+#   subscriptions.tsx:351 btn-toggle-search, :709 search-input, :718 btn-clear-search
+#   getFiltered (store) filters by name.toLowerCase().includes(query)
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add subscription 1: Netflix ─────────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Netflix"
+- tapOn:
+    id: "amount-input"
+- inputText: "15.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Add subscription 2: Spotify ─────────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Spotify"
+- tapOn:
+    id: "amount-input"
+- inputText: "9.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open subscriptions list ─────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+# Both visible before search
+- extendedWaitUntil:
+    visible:
+      text: "Netflix"
+    timeout: 10000
+- assertVisible:
+    text: "Spotify"
+
+# ── Search "Netflix" ────────────────────────────────────────
+- tapOn:
+    id: "btn-toggle-search"
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 5000
+- tapOn:
+    id: "search-input"
+- inputText: "Netflix"
+
+# HARD-ASSERT: only Netflix remains, Spotify filtered out
+- extendedWaitUntil:
+    visible:
+      text: "Netflix"
+    timeout: 8000
+- assertNotVisible:
+    text: "Spotify"
+
+# ── Clear search → both visible again ───────────────────────
+- tapOn:
+    id: "btn-clear-search"
+- extendedWaitUntil:
+    visible:
+      text: "Spotify"
+    timeout: 8000
+- assertVisible:
+    text: "Netflix"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

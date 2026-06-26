@@ -1,0 +1,98 @@
+appId: com.goalin.subradar
+name: "150 - Dashboard: populated hero + stats + charts (HARD)"
+#
+# Adds one subscription via the canonical add-sheet flow so the dashboard
+# leaves its empty state, then HARD-asserts the hero card, stats row and
+# the rendered chart blocks (monthly/category appear once analytics
+# resolve). No NaN/undefined/Invalid Date anywhere.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+# ── Add a subscription so the dashboard is populated ──
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Dash Netflix"
+- tapOn:
+    id: "amount-input"
+- inputText: "15.99"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+
+# Sheet closes; first-sub add may pop TrialOfferModal → dismiss
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 10000
+
+# ── HARD asserts: hero + stats ──
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-hero-card"
+    timeout: 15000
+- assertVisible:
+    id: "dashboard-stats-row"
+
+# Hero label is always rendered when populated
+- assertVisible:
+    text: "Total this month"
+    optional: true
+
+# ── Scroll to surface the chart blocks ──
+- scrollUntilVisible:
+    element:
+      id: "dashboard-forecast-row"
+    direction: DOWN
+    timeout: 12000
+
+# Monthly + category charts render once /analytics monthly+by-category
+# resolve. They are conditionally mounted, so keep optional but scroll
+# the body to give them a chance to appear.
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+- assertVisible:
+    id: "dashboard-monthly-chart"
+    optional: true
+- swipe:
+    start: "50%,75%"
+    end: "50%,25%"
+- assertVisible:
+    id: "dashboard-category-chart"
+    optional: true
+- assertVisible:
+    id: "dashboard-quick-actions"
+    optional: true
+
+# ── No render garbage anywhere on screen ──
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "Invalid Date"
+- assertNotVisible: "Render Error"
+- takeScreenshot: 150_dashboard_populated

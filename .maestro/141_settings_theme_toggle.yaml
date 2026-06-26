@@ -1,0 +1,53 @@
+appId: com.goalin.subradar
+name: "141 - Settings: theme toggle flips label (hard-assert)"
+#
+# btn-theme-toggle is a <Switch>; its sibling row label is the only
+# user-visible indicator and it flips between "Dark Mode" and "Light Mode"
+# (isDark ? settings.dark_mode : settings.light_mode). We assert the label
+# actually changes after toggling, then changes back — proving toggleTheme
+# took effect, not just that the tap didn't crash.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+# Bring the Theme row (in Preferences) into view.
+- scrollUntilVisible:
+    element:
+      id: "btn-theme-toggle"
+    direction: DOWN
+    timeout: 15000
+
+# Capture starting theme: exactly one of these labels is present.
+- assertVisible:
+    text: "Dark Mode|Light Mode"
+- takeScreenshot: 141_theme_before
+
+# First toggle.
+- tapOn:
+    id: "btn-theme-toggle"
+- waitForAnimationToEnd
+- takeScreenshot: 141_theme_after_first
+
+# Toggle back and HARD-assert we return to Dark Mode (default seeded theme
+# is dark in this app), proving the control round-trips deterministically.
+- tapOn:
+    id: "btn-theme-toggle"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Dark Mode"
+- takeScreenshot: 141_theme_restored
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

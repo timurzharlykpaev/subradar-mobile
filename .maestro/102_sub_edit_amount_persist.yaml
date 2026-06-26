@@ -1,0 +1,120 @@
+appId: com.goalin.subradar
+name: "102 - Edit amount → reopen detail → amount persisted (HARD)"
+#
+# True persistence proof: create a sub with a distinctive amount, edit the
+# amount, save, navigate fully OUT of the detail screen (back to the list),
+# then re-open the detail and assert the NEW amount is shown. Re-opening
+# forces a fresh render from the store (which the edit save re-fetches from
+# the backend), so a stale-only optimistic update would not survive.
+#
+# GROUNDING:
+#  - tab-add/add-sub-sheet/hero-manual/name-input/amount-input/btn-save-sub → add flow
+#  - tab-subs/subscriptions-screen → (tabs)/subscriptions.tsx:337
+#  - subscription-detail-screen/btn-edit-sub → subscription/[id].tsx:142,150
+#  - edit-sub-sheet/btn-save-edit → EditSubscriptionSheet.tsx:847,1129
+#  - btn-back → subscription/[id].tsx:146
+#  NOTE: the edit sheet's amount field (NumericInput) carries NO testID, so
+#  it's targeted by its current visible value ("5.55") — see report.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Create a sub with a unique amount ──
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Amount"
+- tapOn:
+    id: "amount-input"
+- inputText: "5.55"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open detail ──
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Amount"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# Sanity: the original amount is shown before editing
+- assertVisible:
+    text: ".*5.55.*"
+
+# ── Edit the amount ──
+- tapOn:
+    id: "btn-edit-sub"
+- extendedWaitUntil:
+    visible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+
+# Target the amount field by its current value (no testID on this input).
+- tapOn:
+    text: "5.55"
+- eraseText:
+    charactersToErase: 6
+- inputText: "77.77"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-edit"
+- extendedWaitUntil:
+    notVisible:
+      id: "edit-sub-sheet"
+    timeout: 10000
+
+# ── Leave detail entirely, then re-open to force a fresh render ──
+- tapOn:
+    id: "btn-back"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Amount"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# HARD: the new amount persisted and the old one is gone
+- assertVisible:
+    text: ".*77.77.*"
+- assertNotVisible:
+    text: ".*5.55.*"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

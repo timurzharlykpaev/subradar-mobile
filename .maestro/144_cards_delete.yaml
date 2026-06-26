@@ -1,0 +1,89 @@
+appId: com.goalin.subradar
+name: "144 - Cards: delete removes card from list (hard-assert)"
+#
+# Add a card first (deterministic precondition), then delete it via the
+# per-card delete control and confirm the Alert. HARD-assert the card's
+# nickname is gone and the empty-state returns. The per-card button is
+# btn-delete-card-{id} where id = Date.now() (dynamic), so we drive deletion
+# by the visible "Delete" text on the card row + the Alert's destructive
+# "Delete" (cards.delete_card title "Delete card?").
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+- scrollUntilVisible:
+    element:
+      id: "row-cards"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "row-cards"
+- extendedWaitUntil:
+    visible:
+      id: "cards-screen"
+    timeout: 10000
+
+# ── Precondition: add one card ──
+- tapOn:
+    id: "btn-add-card-empty"
+    optional: true
+- tapOn:
+    id: "btn-add-card"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "add-card-modal"
+    timeout: 5000
+- tapOn:
+    id: "card-nickname-input"
+- inputText: "Maestro Delete Me"
+- tapOn:
+    id: "card-last4-input"
+- inputText: "1111"
+- hideKeyboard
+- tapOn:
+    id: "btn-save-card"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-card-modal"
+    timeout: 5000
+- assertVisible: "Maestro Delete Me"
+
+# ── Delete it ──
+# Per-card delete control shows the "Delete" label (common.delete).
+- tapOn:
+    text: "Delete"
+
+# Confirm Alert: title "Delete card?", cancel="Cancel", destructive="Delete".
+# Tap the alert's "Delete" (second match) with a single-match fallback.
+- tapOn:
+    text: "Delete"
+    index: 1
+    optional: true
+- tapOn:
+    text: "Delete"
+    optional: true
+
+# HARD assert: card gone + empty-state restored.
+- extendedWaitUntil:
+    notVisible:
+      text: "Maestro Delete Me"
+    timeout: 8000
+- assertVisible:
+    id: "cards-empty"
+- takeScreenshot: 144_card_deleted
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

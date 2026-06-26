@@ -1,0 +1,79 @@
+appId: com.goalin.subradar
+name: "143 - Cards: add card appears in list (hard-assert)"
+#
+# Settings -> row-cards -> cards-screen -> btn-add-card -> fill nickname +
+# last4 -> btn-save-card. HARD-assert: the add-card-modal dismisses AND the
+# new card (nickname + last4) is rendered in cards-list. Cards are stored in
+# the local zustand store, so the row persists immediately after save.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+# Payment Cards row (Plan & Billing section) -> /cards
+- scrollUntilVisible:
+    element:
+      id: "row-cards"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "row-cards"
+
+- extendedWaitUntil:
+    visible:
+      id: "cards-screen"
+    timeout: 10000
+
+# Open add modal — empty-state CTA when no cards yet, header button otherwise.
+- tapOn:
+    id: "btn-add-card-empty"
+    optional: true
+- tapOn:
+    id: "btn-add-card"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "add-card-modal"
+    timeout: 5000
+
+- tapOn:
+    id: "card-nickname-input"
+- inputText: "Maestro QA Visa"
+- tapOn:
+    id: "card-last4-input"
+- inputText: "4242"
+- hideKeyboard
+
+# VISA is the default brand; save.
+- tapOn:
+    id: "btn-save-card"
+
+# HARD assert: modal gone (handleAdd closes it only on valid input).
+- extendedWaitUntil:
+    notVisible:
+      id: "add-card-modal"
+    timeout: 5000
+
+# HARD assert: card rendered in the list with its nickname + masked last4.
+- assertVisible:
+    id: "cards-list"
+- assertVisible: "Maestro QA Visa"
+- assertVisible: "4242"
+- assertNotVisible:
+    id: "cards-empty"
+- takeScreenshot: 143_card_added
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

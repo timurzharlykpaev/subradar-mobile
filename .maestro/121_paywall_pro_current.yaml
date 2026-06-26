@@ -1,0 +1,62 @@
+appId: com.goalin.subradar
+name: "121 - Paywall: Pro (monthly) user sees Pro card marked CURRENT"
+#
+# Seeded `qa-pro-active@subradar.test` = Pro monthly active. Opens the
+# paywall and HARD-ASSERTS the Pro tile carries the `-current` suffix
+# (plan-card-pro-current), proving the current-plan badge logic. The
+# Team (org) card must still render as an upsell. Entry: dashboard plan
+# badge → /subscription-plan → "Upgrade to Pro" (subscription-plan's
+# primary action pushes /paywall). The badge ID is deterministic; the
+# upgrade button is matched by its translated label.
+#
+# Note: isCurrentPlan() only marks Pro as current on the MONTHLY billing
+# toggle (yearly is always upgradable). qa-pro-active is monthly and the
+# paywall opens on its default period, so the suffix resolves on open.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-pro-active@subradar.test"
+
+- runFlow: ./_dismiss_modals.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+# Dashboard plan badge confirms Pro tier before navigating.
+- assertVisible: "PRO"
+
+# plan badge → subscription-plan management screen
+- tapOn:
+    id: "dashboard-plan-badge"
+
+- extendedWaitUntil:
+    visible:
+      text: "Upgrade to Pro"
+    timeout: 10000
+- tapOn:
+    text: "Upgrade to Pro"
+
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 15000
+
+# Ensure monthly period is active (Pro is only "current" on monthly).
+- tapOn:
+    text: "Monthly"
+    optional: true
+
+# HARD-ASSERT: Pro card flagged current, Team still an upsell.
+- assertVisible:
+    id: "plan-card-pro-current"
+- assertVisible:
+    id: "plan-card-org"
+
+- takeScreenshot: 121_paywall_pro_current
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

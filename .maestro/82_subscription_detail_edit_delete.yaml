@@ -16,7 +16,7 @@ name: "82 - Subscription detail: view + edit + delete (v1.4.0)"
       id: "add-sub-sheet"
     timeout: 10000
 - tapOn:
-    id: "btn-manual-toggle"
+    id: "hero-manual"
 - extendedWaitUntil:
     visible:
       id: "name-input"

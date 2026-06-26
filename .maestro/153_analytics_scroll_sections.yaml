@@ -1,0 +1,72 @@
+appId: com.goalin.subradar
+name: "153 - Analytics: scroll lower sections (top5 / cards / forecast)"
+#
+# Logs in as the Pro seed (qa-pro-active, 8 subs across categories) so the
+# analytics screen is rich without an add step, then scrolls analytics-scroll
+# and HARD-asserts the lower blocks render:
+#   - analytics-top5  (Top 5 most expensive)
+#   - analytics-card-breakdown (per-card spend; mounts when ≥1 card row)
+#   - analytics-forecast-row (Pro → not blurred, real values)
+#   - analytics-all-subs
+---
+- runFlow: { file: ./_login_as.yaml, env: { EMAIL: "qa-pro-active@subradar.test" } }
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+- runFlow: ./_dismiss_modals.yaml
+
+- tapOn:
+    id: "tab-analytics"
+- extendedWaitUntil:
+    visible:
+      id: "analytics-screen"
+    timeout: 20000
+
+# Top of screen sanity
+- assertVisible:
+    id: "analytics-stats-row"
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+
+# ── Forecast row (Pro: rendered inside BlurredProSection but unblurred) ──
+- scrollUntilVisible:
+    element:
+      id: "analytics-forecast-row"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "analytics-forecast-row"
+
+# ── Card breakdown — mounts only when cardBreakdown.length > 0. Optional
+#    because the Pro seed's subs may all be card-less (→ single "No card"
+#    row still mounts the block, but keep tolerant). ──
+- assertVisible:
+    id: "analytics-card-breakdown"
+    optional: true
+
+# ── Top 5 most expensive ──
+- scrollUntilVisible:
+    element:
+      id: "analytics-top5"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "analytics-top5"
+
+# ── All subscriptions ──
+- scrollUntilVisible:
+    element:
+      id: "analytics-all-subs"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "analytics-all-subs"
+
+# ── No render garbage across the scrolled sections ──
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "Invalid Date"
+- assertNotVisible: "Render Error"
+- takeScreenshot: 153_analytics_sections

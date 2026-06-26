@@ -104,7 +104,7 @@ name: "85 - Pro user: no Free limit on subscription add (v1.4.0)"
       id: "add-sub-sheet"
     timeout: 10000
 - tapOn:
-    id: "btn-manual-toggle"
+    id: "hero-manual"
 - extendedWaitUntil:
     visible:
       id: "name-input"

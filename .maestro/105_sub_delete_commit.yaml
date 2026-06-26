@@ -1,0 +1,94 @@
+appId: com.goalin.subradar
+name: "105 - Delete from detail → row gone from list (HARD)"
+#
+# Create a sub, open detail, hit the delete button, confirm the native
+# Alert, and assert the row has DISAPPEARED from the subscription list.
+# The detail handler calls subscriptionsApi.delete + re-fetches the list
+# before router.back(), so the row's absence after returning is a true
+# committed-delete post-condition (not an optimistic-only removal).
+#
+# GROUNDING:
+#  - btn-delete-sub → subscription/[id].tsx:153, opens Alert.alert(common.delete,…)
+#  - destructive button text = t('common.delete') = "Delete" (en.json) / "Удалить" (ru)
+#  - subscriptions-screen / subscription-list → (tabs)/subscriptions.tsx:337,583
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Create ──
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Delete Me"
+- tapOn:
+    id: "amount-input"
+- inputText: "3.21"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open detail ──
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn: "QA Delete Me"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+
+# ── Delete + confirm the destructive Alert ──
+- tapOn:
+    id: "btn-delete-sub"
+# Native Alert destructive button — locale-dependent label
+- tapOn:
+    text: "Delete"
+    optional: true
+- tapOn:
+    text: "Удалить"
+    optional: true
+
+# Returns to the list once the backend delete + refetch resolve
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 15000
+
+# HARD: the row is gone. assertNotVisible (no `optional`) — a failed delete
+# that left the card present makes this flow fail.
+- extendedWaitUntil:
+    notVisible:
+      text: "QA Delete Me"
+    timeout: 10000
+- assertNotVisible:
+    text: "QA Delete Me"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

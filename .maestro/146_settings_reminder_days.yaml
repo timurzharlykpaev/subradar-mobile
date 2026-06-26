@@ -1,0 +1,53 @@
+appId: com.goalin.subradar
+name: "146 - Settings: reminder-days selection updates indicator (hard-assert)"
+#
+# The reminder pills (btn-reminder-{0,1,3,7}d) drive a visible indicator:
+#   reminderDays === 0  -> "Currently: off"           (settings.reminder_current_off)
+#   reminderDays === N  -> "Currently: Nd before"     (settings.reminder_current)
+# We HARD-assert that text changes to match each selection. Note handleReminderSelect
+# toggles to 0 when the already-active day is re-tapped, so we drive through
+# distinct values (7 -> off -> 3) which is deterministic regardless of the
+# seeded starting value.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+# Bring the reminder pills into view.
+- scrollUntilVisible:
+    element:
+      id: "btn-reminder-7d"
+    direction: DOWN
+    timeout: 15000
+
+# Select 7 days -> indicator must read "Currently: 7d before".
+- tapOn:
+    id: "btn-reminder-7d"
+- assertVisible: "Currently: 7d before"
+- takeScreenshot: 146_reminder_7d
+
+# Select Off -> indicator must read "Currently: off".
+- tapOn:
+    id: "btn-reminder-0d"
+- assertVisible: "Currently: off"
+- takeScreenshot: 146_reminder_off
+
+# Select 3 days -> indicator must read "Currently: 3d before".
+- tapOn:
+    id: "btn-reminder-3d"
+- assertVisible: "Currently: 3d before"
+- takeScreenshot: 146_reminder_3d
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

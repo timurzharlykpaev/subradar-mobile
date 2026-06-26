@@ -19,7 +19,7 @@ name: "80 - Add Subscription (Manual) — HARD asserts (v1.4.0)"
 
 # Expand manual form
 - tapOn:
-    id: "btn-manual-toggle"
+    id: "hero-manual"
 
 # Fill essential fields
 - extendedWaitUntil:

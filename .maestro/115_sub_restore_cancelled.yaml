@@ -1,0 +1,117 @@
+appId: com.goalin.subradar
+name: "115 - Restore cancelled sub (UI GAP — no restore path)"
+#
+# ⚠️ GAP — NO HARD-ASSERT POSSIBLE FOR RESTORE ⚠️
+#
+# A cancelled subscription CANNOT be restored to ACTIVE through the app UI:
+#   - subscriptionsApi.restore (src/api/subscriptions.ts:29) is NEVER called
+#     anywhere in app/ or src/components/.
+#   - The detail screen ([id].tsx) for a CANCELLED sub shows only edit + delete
+#     (the Cancel button is hidden once status === 'CANCELLED', :364), with NO
+#     Restore / Reactivate control.
+#   - The long-press menu (subscriptions.tsx:267) drops "Mark as cancelled"
+#     for already-cancelled rows and offers no restore.
+#   - The Edit sheet (EditSubscriptionSheet.tsx:271-275) only flips TRIAL↔ACTIVE
+#     and explicitly LEAVES CANCELLED rows alone.
+# The "reactivate" i18n string (en.json:1370) exists but is unused by any
+# subscription-restore control.
+#
+# So this flow does NOT fake a restore. It cancels a sub, then asserts the
+# cancelled detail has NO restore affordance — documenting the gap and
+# guarding against a silent regression if one is added.
+#
+# TODO(product): wire subscriptionsApi.restore to a btn-restore-sub button
+#   shown when status === 'CANCELLED', then rewrite into a real hard-assert:
+#     restore → assertVisible status-badge-active.
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add + cancel a sub (reuse the cancel path) ──────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Restore Probe"
+- tapOn:
+    id: "amount-input"
+- inputText: "8.00"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn:
+    text: "Restore Probe"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+- tapOn:
+    id: "btn-cancel-sub"
+- extendedWaitUntil:
+    visible:
+      text: "Cancel Subscription"
+    timeout: 8000
+- tapOn:
+    text: "Cancel Subscription"
+- tapOn:
+    text: "OK"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+# ── Open the cancelled sub and assert the GAP ───────────────
+- tapOn:
+    id: "filter-chip-cancelled"
+- extendedWaitUntil:
+    visible:
+      text: "Restore Probe"
+    timeout: 8000
+- tapOn:
+    text: "Restore Probe"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+- assertVisible:
+    id: "status-badge-cancelled"
+# No restore affordance exists for a cancelled sub.
+- assertNotVisible:
+    id: "btn-restore-sub"
+- assertNotVisible:
+    id: "btn-cancel-sub"     # cancel button is hidden once CANCELLED
+- assertNotVisible:
+    text: "Reactivate"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

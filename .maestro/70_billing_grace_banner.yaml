@@ -1,101 +1,34 @@
 appId: com.goalin.subradar
-name: "70 - Billing: GraceBanner renders for grace_pro user (v1.4.0)"
+name: "70 - Billing: GraceBanner renders for grace_pro user"
 #
-# Seed user `qa-pro-grace@subradar.test` is in state `grace_pro` with
-# gracePeriodEnd ~4 days ahead. BannerRenderer (resolver-driven, server
-# priority) should surface GraceBanner — orange, pointing to paywall.
+# HARD-ASSERT GraceBanner for the seeded grace_pro account. Previously this
+# flow logged in as review@subradar.ai (a fresh FREE review user) and only
+# screenshotted the dashboard — it never surfaced a grace banner, so it was a
+# false positive. Now it logs in as the real seeded grace user and asserts the
+# grace-banner testID + tap-through to the paywall.
 #
-# Pre-req: dev DB seeded via `npm run seed:test-users`, dev backend has
-# ENABLE_REVIEW_ACCOUNT=true, mobile build targets api-dev.
+# Grounded: banner-priority.ts L99-110 (state=grace_pro + gracePeriodEnd),
+# seed-test-users.ts L167-176 (qa-pro-grace, gracePeriodEnd +4d).
+# GraceBanner.tsx testID="grace-banner", onPress → router.push('/paywall').
 ---
-- clearState
-- launchApp
-- runFlow: ./_dismiss_logbox.yaml
-- extendedWaitUntil:
-    visible:
-      id: "btn-get-started"
-    timeout: 30000
-- tapOn:
-    id: "btn-get-started"
-
-- runFlow: ./_dismiss_logbox.yaml
-- extendedWaitUntil:
-    visible:
-      id: "step-value-preview"
-    timeout: 10000
-- tapOn:
-    id: "btn-next"
-
-- runFlow: ./_dismiss_logbox.yaml
-- extendedWaitUntil:
-    visible:
-      id: "step-currency"
-    timeout: 3000
-- tapOn:
-    id: "btn-next"
-
-- runFlow: ./_dismiss_logbox.yaml
-- extendedWaitUntil:
-    visible:
-      id: "step-auth"
-    timeout: 10000
-- tapOn:
-    id: "btn-email"
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-pro-grace@subradar.test"
 
 - extendedWaitUntil:
     visible:
-      id: "email-input"
-    timeout: 10000
-- tapOn:
-    id: "email-input"
-# Seeded user in `grace_pro` state — review bypass still required because
-# the OTP is signed on backend; we piggy-back on review@ but tweak below.
-- inputText: "review@subradar.ai"
-- tapOn:
-    id: "btn-send-code"
-
-- extendedWaitUntil:
-    visible:
-      id: "otp-input-0"
+      id: "grace-banner"
     timeout: 15000
-- tapOn:
-    id: "otp-input-0"
-- inputText: "0"
-- tapOn:
-    id: "otp-input-1"
-- inputText: "0"
-- tapOn:
-    id: "otp-input-2"
-- inputText: "0"
-- tapOn:
-    id: "otp-input-3"
-- inputText: "0"
-- tapOn:
-    id: "otp-input-4"
-- inputText: "0"
-- tapOn:
-    id: "otp-input-5"
-- inputText: "0"
-- tapOn:
-    id: "btn-verify"
+- takeScreenshot: 70_grace_banner
 
-# Dismiss permissions + welcome modals
 - tapOn:
-    text: "Maybe later"
-    optional: true
-- tapOn:
-    text: "Skip for now"
-    optional: true
-
-# GraceBanner is a top-of-dashboard rectangle; exact copy is locale-driven.
-# We just check the Dashboard reachable without error overlays — the banner
-# is asserted visually via screenshot.
+    id: "grace-banner"
 - extendedWaitUntil:
     visible:
-      text: "Total"
-    timeout: 20000
-    optional: true
+      id: "paywall-screen"
+    timeout: 12000
 
-- takeScreenshot: 70_grace_banner
+- assertNotVisible: "Render Error"
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

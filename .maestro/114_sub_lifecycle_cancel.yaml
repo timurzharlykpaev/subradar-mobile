@@ -1,0 +1,111 @@
+appId: com.goalin.subradar
+name: "114 - Subscription lifecycle: cancel → CANCELLED, stays in list"
+#
+# HARD-ASSERT: add a sub, open detail, tap Cancel subscription, confirm the
+# native Alert, land back on the list, filter Cancelled and confirm the sub
+# is still there as CANCELLED.
+# Grounded:
+#   [id].tsx:366 btn-cancel-sub → Alert(title=subscriptions.cancel_title
+#     "Cancel Subscription", destructive btn same text, "Keep" cancel) →
+#     success Alert "OK" → router.back(); status set to CANCELLED.
+#   subscriptions.tsx:481 filter-chip-cancelled
+#   SubscriptionCard badge text = subscriptions.status_cancelled "Cancelled"
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add a sub ───────────────────────────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Cancel Me"
+- tapOn:
+    id: "amount-input"
+- inputText: "12.00"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open detail ─────────────────────────────────────────────
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- tapOn:
+    text: "Cancel Me"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+- assertVisible:
+    id: "status-badge-active"
+
+# ── Cancel subscription ─────────────────────────────────────
+- tapOn:
+    id: "btn-cancel-sub"
+# Confirmation Alert — destructive button text = "Cancel Subscription"
+# (subscriptions.cancel_title). "Keep" is the dismiss button.
+- extendedWaitUntil:
+    visible:
+      text: "Cancel Subscription"
+    timeout: 8000
+- tapOn:
+    text: "Cancel Subscription"
+# Success Alert → OK
+- tapOn:
+    text: "OK"
+    optional: true
+
+# Back on the list
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+# ── Filter Cancelled → sub still present as CANCELLED ───────
+- tapOn:
+    id: "filter-chip-cancelled"
+- extendedWaitUntil:
+    visible:
+      text: "Cancel Me"
+    timeout: 8000
+
+# Open it and assert the cancelled status badge on detail
+- tapOn:
+    text: "Cancel Me"
+- extendedWaitUntil:
+    visible:
+      id: "subscription-detail-screen"
+    timeout: 10000
+- assertVisible:
+    id: "status-badge-cancelled"
+- assertNotVisible:
+    id: "status-badge-active"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

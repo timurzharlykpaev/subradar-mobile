@@ -1,0 +1,67 @@
+appId: com.goalin.subradar
+name: "122 - Paywall: Team owner sees Team (org) card marked CURRENT"
+#
+# Seeded `qa-team-owner@subradar.test` = Team plan active (plan
+# 'organization' → UI plan id 'org'). Opens the paywall and HARD-ASSERTS
+# the Team tile carries the `-current` suffix (plan-card-org-current).
+# The Pro card must NOT be marked current — although Team entitles Pro
+# features, the plan the user is ON is Team, so isCurrentPlan('pro') is
+# false and only the bare plan-card-pro renders.
+#
+# Team is only marked current on the MONTHLY toggle (yearly always
+# upgradable). We tap Monthly defensively before asserting.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-team-owner@subradar.test"
+
+- runFlow: ./_dismiss_modals.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+- assertVisible: "TEAM"
+
+- tapOn:
+    id: "dashboard-plan-badge"
+
+# subscription-plan primary CTA for a Team owner is "Upgrade to Team"
+# (switch-to-yearly) — fall back to "Upgrade to Pro" label if rendered.
+- extendedWaitUntil:
+    visible:
+      text: "Upgrade to Team"
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: "Upgrade to Team"
+    optional: true
+- tapOn:
+    text: "Upgrade to Pro"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 15000
+
+- tapOn:
+    text: "Monthly"
+    optional: true
+
+# HARD-ASSERT: Team (org) card flagged current.
+- assertVisible:
+    id: "plan-card-org-current"
+# Pro card present but NOT current.
+- assertVisible:
+    id: "plan-card-pro"
+- assertNotVisible:
+    id: "plan-card-pro-current"
+
+- takeScreenshot: 122_paywall_team_current
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

@@ -1,0 +1,55 @@
+appId: com.goalin.subradar
+name: "145 - Settings: notifications toggle (no-crash + sibling reminder pills)"
+#
+# LIMITATION: btn-notifications-toggle is a bare <Switch> with NO text/value
+# label that Maestro can read, so we cannot HARD-assert the on/off state from
+# the UI. We instead prove the control is wired and non-crashing by toggling
+# it twice (round-trip) and asserting the reminder pills section it gates
+# stays rendered. The reminder "Currently:" indicator IS assertable and is
+# covered as a hard-assert in 146.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+# Bring the Notifications section into view.
+- scrollUntilVisible:
+    element:
+      id: "btn-notifications-toggle"
+    direction: DOWN
+    timeout: 15000
+
+- assertVisible:
+    text: "Push Notifications"
+- takeScreenshot: 145_notifications_before
+
+# Toggle off then back on — round-trip, must not crash.
+- tapOn:
+    id: "btn-notifications-toggle"
+- waitForAnimationToEnd
+- takeScreenshot: 145_notifications_toggled
+
+- tapOn:
+    id: "btn-notifications-toggle"
+- waitForAnimationToEnd
+
+# The switch still exists and the gated reminder pills are still rendered.
+- assertVisible:
+    id: "btn-notifications-toggle"
+- assertVisible:
+    id: "btn-reminder-3d"
+- takeScreenshot: 145_notifications_restored
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

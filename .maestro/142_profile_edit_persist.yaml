@@ -1,0 +1,78 @@
+appId: com.goalin.subradar
+name: "142 - Profile: edit name persists to settings (hard-assert)"
+#
+# btn-edit-profile -> /edit-profile. The name field is a DoneAccessoryInput
+# WITHOUT a testID (LIMITATION), so we target it by its current value /
+# placeholder. We clear it, type a deterministic name, tap the header "Save"
+# (also no testID — matched by text), then HARD-assert the new name renders
+# in the Settings profile card after returning.
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+
+- tapOn:
+    id: "btn-edit-profile"
+
+# edit-profile screen — header title "Edit Profile" confirms we arrived.
+- extendedWaitUntil:
+    visible:
+      text: "Edit Profile"
+    timeout: 10000
+
+# Focus the name input. The seeded review account may have an empty name
+# (placeholder "Your name") or a value, so try both anchors.
+- tapOn:
+    text: "Your name"
+    optional: true
+- tapOn:
+    id: "input-card-nickname"
+    optional: true
+# Generic fallback: tap the first editable field under the Name label.
+- tapOn:
+    below:
+      text: "Name"
+    optional: true
+
+# Clear whatever is there, then type the new deterministic name.
+- eraseText
+- inputText: "Maestro QA Name"
+- hideKeyboard
+
+# Save via header action (text, no testID).
+- tapOn:
+    text: "Save"
+
+# Back on settings — HARD assert the new name is rendered in the profile card.
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+- assertVisible: "Maestro QA Name"
+- takeScreenshot: 142_name_persisted
+
+# Reopen settings tab to prove persistence across a remount.
+- tapOn:
+    id: "tab-home"
+    optional: true
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen"
+    timeout: 10000
+- assertVisible: "Maestro QA Name"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

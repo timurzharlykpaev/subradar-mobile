@@ -1,0 +1,103 @@
+appId: com.goalin.subradar
+name: "123 - Trial offer modal: triggers on 2nd sub, start -> paywall"
+#
+# TrialOfferModal trigger (app/(tabs)/index.tsx ~L186): free user with
+# access.actions.canStartTrial, AsyncStorage 'trial_offered' unset, whose
+# active-sub count crosses from <2 to >=2 IN-SESSION. Seeded
+# `qa-free-empty` starts at 0 subs with canStartTrial=true and a clean
+# AsyncStorage (clearState in _login_as), so adding two subs here fires it.
+#
+# HARD-ASSERT path: modal visible (trial-offer-modal) → trial-offer-start
+# closes the modal and pushes /paywall (assert paywall-screen). A skip
+# branch is exercised in _dismiss_modals elsewhere; here we take the
+# positive "start trial" path because it proves the CTA wiring end-to-end.
+#
+# The two add-subscription steps use the same manual-sheet IDs as
+# 04_add_subscription_manual / 38_add_manual_with_trial.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-free-empty@subradar.test"
+
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+# ---- Add subscription #1 ----
+- tapOn:
+    id: "tab-add"
+- tapOn:
+    id: "tab-manual"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Netflix"
+- tapOn:
+    id: "amount-input"
+- inputText: "15.99"
+- tapOn:
+    id: "btn-save-sub"
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ---- Add subscription #2 (crosses the <2 -> >=2 threshold) ----
+- tapOn:
+    id: "tab-add"
+- tapOn:
+    id: "tab-manual"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Spotify"
+- tapOn:
+    id: "amount-input"
+- inputText: "9.99"
+- tapOn:
+    id: "btn-save-sub"
+- runFlow: ./_dismiss_logbox.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# HARD-ASSERT: the trial-offer modal appears after the 2nd sub.
+- extendedWaitUntil:
+    visible:
+      id: "trial-offer-modal"
+    timeout: 12000
+- assertVisible:
+    id: "trial-offer-start"
+- assertVisible:
+    id: "trial-offer-skip"
+
+- takeScreenshot: 123_trial_offer_modal
+
+# Positive path: "Start trial" closes the modal and routes to the paywall.
+- tapOn:
+    id: "trial-offer-start"
+- extendedWaitUntil:
+    notVisible:
+      id: "trial-offer-modal"
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 15000
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

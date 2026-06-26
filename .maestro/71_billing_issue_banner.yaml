@@ -1,30 +1,38 @@
 appId: com.goalin.subradar
-name: "71 - Billing: BillingIssueBanner highest priority (v1.4.0)"
+name: "71 - Billing: BillingIssueBanner highest priority"
 #
-# Regardless of what other banners could apply, billing_issue wins in the
-# BannerRenderer server-driven priority list. Tests that the Dashboard
-# shows exactly one banner and that it's the red billing-issue variant.
+# HARD-ASSERT BillingIssueBanner for the seeded billing_issue account.
+# Previously this flow ran 00_onboarding_flow.yaml (a fresh FREE review user)
+# and only screenshotted — it never surfaced the billing-issue banner, so it
+# was a false positive. Now it logs in as the real seeded account and asserts
+# the billing_issue-banner testID is present (it's the top-priority banner).
 #
-# Pre-req: seed user `qa-pro-billing-issue@subradar.test` has
-# billingStatus=billing_issue with billingIssueAt ~2 days ago. Runs via
-# review@ OTP login (review bypass creates a fresh review user in state
-# `free` — see below; for the actual grace/billing_issue assertion the
-# tester should log in as the seeded user via an auth token injection,
-# which is future work). This flow therefore asserts the absence of
-# regression: Dashboard renders with no stacked banners for review user.
+# Grounded: banner-priority.ts L90-97 (state=billing_issue OR billingIssueAt),
+# seed-test-users.ts L178-189 (qa-pro-billing-issue, billingIssueAt -2d).
+# BillingIssueBanner.tsx testID="billing_issue-banner".
+#
+# Note: the BillingIssueBanner CTA presents the RevenueCat Customer Center
+# (native UI), not an in-app paywall route — so we assert presence only and
+# do not assert a paywall-screen transition here.
 ---
-- runFlow: ./00_onboarding_flow.yaml
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-pro-billing-issue@subradar.test"
 
 - extendedWaitUntil:
     visible:
-      text: "Total"
-    timeout: 20000
-    optional: true
-
-# Only ONE banner must render at a time. Assert no two banner texts
-# co-exist in the top region. The specific copy is locale-dependent,
-# so we use a screenshot for visual verification.
+      id: "billing_issue-banner"
+    timeout: 15000
 - takeScreenshot: 71_billing_issue_state
 
+# Only ONE banner renders at a time — the lower-priority annual_upgrade /
+# win_back must NOT co-exist with billing_issue.
+- assertNotVisible:
+    id: "win_back-banner"
+- assertNotVisible:
+    id: "grace-banner"
+
+- assertNotVisible: "Render Error"
 - assertNotVisible: "undefined"
 - assertNotVisible: "NaN"

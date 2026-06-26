@@ -1,0 +1,85 @@
+appId: com.goalin.subradar
+name: "124 - Paywall: free user starts purchase, reaches IAP dialog, cancels"
+#
+# Free user selects the Pro plan card and taps the CTA. Purchase cannot be
+# completed in a sandbox/simulator IAP environment, so we drive the flow to
+# the native StoreKit confirmation sheet (or RC "products unavailable"
+# alert if offerings never resolved) and then back out. The point is to
+# PROVE the CTA reacts — not to complete a real transaction. Native dialog
+# matches are optional:true because their exact copy/locale is StoreKit-
+# controlled and absent on builds without RC offerings.
+#
+# CTA has no testID; it is matched by its translated label. Depending on
+# trial eligibility (canTrial = hasTrialOffer && canStartTrial) the label
+# is either the trial CTA ("Start Trial") or "Upgrade to Pro" — both
+# branches are attempted.
+---
+- runFlow:
+    file: ./_login_as.yaml
+    env:
+      EMAIL: "qa-free-empty@subradar.test"
+
+- runFlow: ./_dismiss_modals.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+
+# Open paywall via dashboard quick-action (free users only).
+- tapOn:
+    text: "Upgrade to Pro"
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 15000
+
+# Select the Pro plan tile — HARD-ASSERT it is present and tappable.
+- assertVisible:
+    id: "plan-card-pro"
+- tapOn:
+    id: "plan-card-pro"
+
+# Give RC offerings a beat to resolve so the CTA can build a package.
+- waitForAnimationToEnd:
+    timeout: 4000
+
+# Tap the CTA — label depends on trial eligibility; try both.
+- tapOn:
+    text: "Start Trial"
+    optional: true
+- tapOn:
+    text: "Upgrade to Pro"
+    optional: true
+- tapOn:
+    text: "Перейти на Pro"
+    optional: true
+
+- takeScreenshot: 124_purchase_cta_tapped
+
+# Outcome A: native StoreKit purchase sheet (sandbox). Cancel it.
+- tapOn:
+    text: "Cancel"
+    optional: true
+- tapOn:
+    text: "Отменить"
+    optional: true
+
+# Outcome B: RC "products unavailable" alert (no offerings on this build).
+# Dismiss it — either way the CTA demonstrably reacted.
+- tapOn:
+    text: "OK"
+    optional: true
+- tapOn:
+    text: "ОК"
+    optional: true
+
+# Back on the paywall (or it stays mounted) — assert it survived the flow.
+- extendedWaitUntil:
+    visible:
+      id: "paywall-screen"
+    timeout: 10000
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

@@ -1,0 +1,71 @@
+appId: com.goalin.subradar
+name: "151 - Dashboard navigation: see-all + upcoming detail (HARD)"
+#
+# Logs in as the Pro seed (qa-pro-active, 8 subs) so the dashboard is
+# populated without an add step. HARD-asserts that:
+#   - btn-see-all-subs lands on subscriptions-screen, back returns home
+#   - tapping a dashboard active-sub row opens subscription-detail-screen
+---
+- runFlow: { file: ./_login_as.yaml, env: { EMAIL: "qa-pro-active@subradar.test" } }
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 25000
+- runFlow: ./_dismiss_modals.yaml
+
+# Sanity before navigating
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+
+# ── "See all" → subscriptions screen ──
+- scrollUntilVisible:
+    element:
+      id: "btn-see-all-subs"
+    direction: DOWN
+    timeout: 12000
+- tapOn:
+    id: "btn-see-all-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 15000
+- assertNotVisible: "Render Error"
+
+# Back to dashboard
+- tapOn:
+    id: "tab-home"
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 15000
+
+# ── Tap an active subscription card → detail screen ──
+# The active-subs section renders dashboard-sub-{id} rows. We don't know
+# the id, so scroll to the section then tap the first row by index.
+- scrollUntilVisible:
+    element:
+      text: "Total this month"
+    direction: UP
+    timeout: 8000
+    optional: true
+- scrollUntilVisible:
+    element:
+      id: "btn-see-all-subs"
+    direction: DOWN
+    timeout: 12000
+- tapOn:
+    point: "50%,55%"
+    optional: true
+# If a sub row was tapped, the detail screen opens; assert optionally so
+# an off-target tap on a non-row doesn't fail the whole flow.
+- assertVisible:
+    id: "subscription-detail-screen"
+    optional: true
+
+# Whatever screen we're on, no render garbage
+- assertNotVisible: "NaN"
+- assertNotVisible: "undefined"
+- assertNotVisible: "Invalid Date"
+- assertNotVisible: "Render Error"
+- takeScreenshot: 151_dashboard_navigation

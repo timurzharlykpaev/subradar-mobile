@@ -1,0 +1,112 @@
+appId: com.goalin.subradar
+name: "117 - Duplicate-category banner (Pro-gated — not triggerable on free)"
+#
+# ⚠️ GAP — CANNOT HARD-ASSERT THE BANNER ON A FREE ACCOUNT ⚠️
+#
+# The duplicate-category upsell banner (subscriptions.tsx:552) renders ONLY when:
+#     isProBilling (access.plan === 'pro')  &&  !isTeam  &&  duplicateCategoriesArr >= 1
+# i.e. it is a Pro→Team upsell, shown exclusively to PRO-billing users who have
+# 2+ ACTIVE/TRIAL subs in the same category (duplicateCategoriesArr,
+# subscriptions.tsx:171-178). The 00_setup_auth.yaml account is a FRESH FREE
+# user, so isProBilling is false and the banner is suppressed BY DESIGN.
+#
+# Additionally the category picker chips (ManualFormView.tsx:204) have no
+# testID, so steering two subs into the same category by automation is brittle
+# (would rely on category label text per locale).
+#
+# This flow therefore asserts the CORRECT free-tier behavior: even with two
+# subs that would share a category, the Pro-only dupe banner does NOT appear.
+# It does not fabricate the Pro path.
+#
+# TODO(qa): add a Pro-seeded variant using _login_as.yaml with a qa-pro
+#   account that already has two same-category subs, then hard-assert:
+#     assertVisible text "Enable Team"  (team_upsell.dupe_banner, en.json:1207)
+#   and tap → paywall.
+---
+- runFlow: ./00_setup_auth.yaml
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# ── Add two subs (default category) ─────────────────────────
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Dupe One"
+- tapOn:
+    id: "amount-input"
+- inputText: "4.00"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "Dupe Two"
+- tapOn:
+    id: "amount-input"
+- inputText: "4.50"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+- tapOn:
+    id: "btn-save-sub"
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+- runFlow: ./_dismiss_modals.yaml
+
+# ── Open list — assert the Pro dupe banner is NOT shown to free ─
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      text: "Dupe One"
+    timeout: 10000
+- assertVisible:
+    text: "Dupe Two"
+# team_upsell.dupe_banner CTA ("Enable Team") must be absent for free users.
+- assertNotVisible:
+    text: "Enable Team"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"

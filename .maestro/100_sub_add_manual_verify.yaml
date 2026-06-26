@@ -1,0 +1,87 @@
+appId: com.goalin.subradar
+name: "100 - Add manual → verify card appears in list (HARD)"
+#
+# Proves a manually-created subscription actually persists: add via the
+# manual form, switch to the Subs tab, assert the named card is present in
+# the subscription-list. The name text only renders if the row exists in
+# the store (which is re-fetched from the backend on tab focus), so its
+# presence is a true post-condition for "create worked".
+#
+# GROUNDING:
+#  - tab-add / add-sub-sheet  → (tabs)/_layout + AddSubscriptionSheet.tsx:1228
+#  - hero-manual              → add-subscription/IdleView.tsx:416 (NOT the
+#                               non-existent "btn-manual-toggle" the older
+#                               80-series flows tapped — that id is absent
+#                               from source, so this flow uses the real one)
+#  - name-input / amount-input/ btn-save-sub → add-subscription/ManualFormView.tsx:444,468,723
+#  - tab-subs / subscriptions-screen / subscription-list → (tabs)/subscriptions.tsx:337,583
+---
+- runFlow: ./00_setup_auth.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "dashboard-screen"
+    timeout: 20000
+
+# Open the Add sheet, expand the manual form
+- tapOn:
+    id: "tab-add"
+- extendedWaitUntil:
+    visible:
+      id: "add-sub-sheet"
+    timeout: 10000
+- tapOn:
+    id: "hero-manual"
+
+- extendedWaitUntil:
+    visible:
+      id: "name-input"
+    timeout: 10000
+- tapOn:
+    id: "name-input"
+- inputText: "QA Verify Sub"
+- tapOn:
+    id: "amount-input"
+- inputText: "12.34"
+- tapOn:
+    text: "Done"
+    optional: true
+- hideKeyboard
+
+- tapOn:
+    id: "btn-save-sub"
+
+# Sheet must close — first real proof the save handler ran
+- extendedWaitUntil:
+    notVisible:
+      id: "add-sub-sheet"
+    timeout: 15000
+
+# First sub for a free user pops the TrialOfferModal — clear it
+- runFlow: ./_dismiss_modals.yaml
+
+# Go to the Subscriptions tab and confirm the row is really there
+- tapOn:
+    id: "tab-subs"
+- extendedWaitUntil:
+    visible:
+      id: "subscriptions-screen"
+    timeout: 10000
+
+# HARD post-condition: the named card rendered in the list. This text node
+# only exists if the subscription is in the store after the focus refetch.
+- extendedWaitUntil:
+    visible:
+      id: "subscription-list"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      text: "QA Verify Sub"
+    timeout: 15000
+
+- assertVisible:
+    text: "QA Verify Sub"
+
+- assertNotVisible: "undefined"
+- assertNotVisible: "NaN"
+- assertNotVisible: "Render Error"
