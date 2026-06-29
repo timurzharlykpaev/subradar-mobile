@@ -589,9 +589,16 @@ export default function SubscriptionsScreen() {
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           updateCellsBatchingPeriod={50}
-          removeClippedSubviews={true}
+          // removeClippedSubviews + a fixed getItemLayout both fight the
+          // Reanimated FadeOut/LinearTransition row-exit animation: during a
+          // delete they leave the screen background (#11111F, reads as black
+          // in dark mode) exposed as a sliver under the list. Rows are also
+          // variable-height (tags / trial badge), so a static 92px
+          // getItemLayout is invalid regardless. The list is short (<50
+          // items), so dropping these virtualization optimizations costs
+          // nothing and removes the artifact.
+          removeClippedSubviews={false}
           windowSize={10}
-          getItemLayout={(_data, index) => ({ length: 92, offset: 92 * index, index })}
           renderItem={renderItem}
           ListEmptyComponent={
             // Show skeletons while we still don't have a confirmed empty
