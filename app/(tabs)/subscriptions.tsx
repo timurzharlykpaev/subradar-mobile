@@ -114,6 +114,18 @@ export default function SubscriptionsScreen() {
     }, [fetchSubs])
   );
 
+  // When another screen (e.g. Analytics "All subscriptions" row tap) seeds a
+  // search query before navigating here, surface the search bar so the user
+  // sees what they were dropped into and can clear it. The bar reads the
+  // current store query as its initial value when it mounts.
+  useFocusEffect(
+    useCallback(() => {
+      if (useSubscriptionsStore.getState().searchQuery) {
+        setShowSearch(true);
+      }
+    }, [])
+  );
+
   // Refresh when AddSubscriptionSheet closes
   useEffect(() => {
     if (prevSheetVisible.current && !addSheetVisible) {

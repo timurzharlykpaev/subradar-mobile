@@ -58,7 +58,7 @@ export default function AIAnalysisSummary({
       {/* Savings row */}
       {totalMonthlySavings > 0 && (
         <View style={[styles.savingsRow, { backgroundColor: colors.success + '18' }]}>
-          <Ionicons name="trending-down-outline" size={18} color={colors.success} />
+          <Ionicons name="trending-down-outline" size={18} color={colors.success} style={styles.savingsIcon} />
           <Text style={[styles.savingsText, { color: colors.success }]}>
             {t('analysis.potential_savings_inline', 'Potential savings: {{amount}}/mo', {
               amount: formatMoney(totalMonthlySavings, currency, i18n.language),
@@ -128,7 +128,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 14,
   },
+  savingsIcon: {
+    flexShrink: 0,
+  },
+  // flex:1 keeps the amount inside the pill — long sums (e.g. 6-digit KZT)
+  // now wrap to a second line instead of overflowing the block's right edge.
   savingsText: {
+    flex: 1,
     fontSize: 14,
     fontWeight: '600',
   },

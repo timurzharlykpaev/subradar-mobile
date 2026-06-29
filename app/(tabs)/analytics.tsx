@@ -542,6 +542,19 @@ export default function AnalyticsScreen() {
     [subscriptions],
   );
 
+  // Tapping a row in the "All subscriptions" block drills into the
+  // Subscriptions tab and pre-filters it to that one service (reset the
+  // status filter to "all" so an active chip can't hide it, then seed the
+  // search query). The Subscriptions screen opens its search bar on focus
+  // when a query is present, so the user lands with it already found.
+  const openInSubscriptions = useCallback((name: string) => {
+    const store = useSubscriptionsStore.getState();
+    store.setFilter('all');
+    store.setSelectedCategory(null);
+    store.setSearchQuery(name);
+    router.push('/(tabs)/subscriptions');
+  }, [router]);
+
   const getMonthlyAmount = useCallback((s: typeof activeSubs[0]) => {
     const mult = s.billingPeriod === 'WEEKLY' ? 4.33
       : s.billingPeriod === 'QUARTERLY' ? 1 / 3
@@ -1120,30 +1133,45 @@ export default function AnalyticsScreen() {
             )}
           </View>
           <View testID="analytics-all-subs" style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {activeSubs.map((sub, index) => (
-              <View key={sub.id} style={[styles.subRow, index < activeSubs.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}>
-                <SubIcon
-                  iconUrl={sub.iconUrl}
-                  name={sub.name}
-                  imageStyle={styles.subIconImage}
-                  placeholderStyle={[styles.subIcon, { backgroundColor: colors.primaryLight }]}
-                  textStyle={[styles.subIconText, { color: colors.primary }]}
-                />
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
-                  <Text style={[styles.subCategory, { color: colors.textSecondary }]} numberOfLines={1}>
-                    <CategoryIcon category={CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.id || 'OTHER'} size={14} />{' '}
-                    {(() => {
-                      const cat = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
-                      return cat ? String(t(`categories.${cat.id.toLowerCase()}`, cat.label)) : sub.category;
-                    })()}
+            {/* Cap the height past ~7 rows so a long list doesn't stretch the
+                whole analytics page — it scrolls internally instead. Below the
+                threshold we render inline so the card hugs its content. */}
+            <ScrollView
+              style={activeSubs.length > 7 ? styles.allSubsScroll : undefined}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              scrollEnabled={activeSubs.length > 7}
+            >
+              {activeSubs.map((sub, index) => (
+                <TouchableOpacity
+                  key={sub.id}
+                  activeOpacity={0.6}
+                  onPress={() => openInSubscriptions(sub.name)}
+                  style={[styles.subRow, index < activeSubs.length - 1 ? { borderBottomWidth: 1, borderBottomColor: colors.border } : undefined]}
+                >
+                  <SubIcon
+                    iconUrl={sub.iconUrl}
+                    name={sub.name}
+                    imageStyle={styles.subIconImage}
+                    placeholderStyle={[styles.subIcon, { backgroundColor: colors.primaryLight }]}
+                    textStyle={[styles.subIconText, { color: colors.primary }]}
+                  />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={[styles.subName, { color: colors.text }]} numberOfLines={1}>{sub.name}</Text>
+                    <Text style={[styles.subCategory, { color: colors.textSecondary }]} numberOfLines={1}>
+                      <CategoryIcon category={CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase())?.id || 'OTHER'} size={14} />{' '}
+                      {(() => {
+                        const cat = CATEGORIES.find((c) => c.id.toUpperCase() === sub.category?.toUpperCase());
+                        return cat ? String(t(`categories.${cat.id.toLowerCase()}`, cat.label)) : sub.category;
+                      })()}
+                    </Text>
+                  </View>
+                  <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
+                    {formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? displayCurrency, lang)}/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, 'mo')}
                   </Text>
-                </View>
-                <Text style={[styles.subAmount, { color: colors.text }]} numberOfLines={1}>
-                  {formatMoney(sub.displayAmount ?? sub.amount, sub.displayCurrency ?? displayCurrency, lang)}/{t(`period_short.${(sub.billingPeriod || 'MONTHLY').toUpperCase()}`, 'mo')}
-                </Text>
-              </View>
-            ))}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
             {activeSubs.length === 0 && (
               <Text style={[styles.empty, { color: colors.textSecondary }]}>{t('analytics.no_data')}</Text>
             )}
@@ -1435,6 +1463,10 @@ const styles = StyleSheet.create({
   top5ProgressFill: { height: 3 },
 
   // All subs
+  // ~7 rows (≈54px each) before the block scrolls internally.
+  allSubsScroll: {
+    maxHeight: 380,
+  },
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',

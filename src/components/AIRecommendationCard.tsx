@@ -94,7 +94,12 @@ export default function AIRecommendationCard({ recommendation, currency }: Props
           <Text style={[styles.priorityText, { color: priorityColor }]}>{priorityLabel}</Text>
         </View>
         {recommendation.estimatedSavingsMonthly > 0 && (
-          <Text style={[styles.savings, { color: colors.success }]}>
+          <Text
+            style={[styles.savings, { color: colors.success }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+          >
             {`-${formatMoney(recommendation.estimatedSavingsMonthly, currency, i18n.language || 'en')}/${t('period_short.MONTHLY', 'mo')}`}
           </Text>
         )}
@@ -135,11 +140,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
   },
   priorityBadge: {
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
+    flexShrink: 0,
   },
   priorityText: {
     fontSize: 11,
@@ -149,5 +156,7 @@ const styles = StyleSheet.create({
   savings: {
     fontSize: 13,
     fontWeight: '700',
+    flexShrink: 1,
+    textAlign: 'right',
   },
 });

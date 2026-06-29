@@ -24,6 +24,11 @@ export function UndoToast({ message, duration = 5000, onUndo, onDismiss }: Props
   const mountedRef = useRef(true);
 
   useEffect(() => {
+    // Reset on every mount. React 18 StrictMode / Fast Refresh runs effects
+    // mount → cleanup → mount; without this the cleanup leaves mountedRef
+    // false on the second mount, so the finish callback below early-returns
+    // and the toast never auto-dismisses (reported as "не уходит автоматически").
+    mountedRef.current = true;
     const animation = Animated.timing(progress, {
       toValue: 0,
       duration,
