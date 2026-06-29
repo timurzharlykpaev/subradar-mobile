@@ -11,39 +11,8 @@ import { BillingDayPicker } from '../BillingDayPicker';
 import { NumericInput } from '../NumericInput';
 import { CurrencyPicker } from '../CurrencyPicker';
 import { usePaymentCardsStore } from '../../stores/paymentCardsStore';
+import { resolveIconUrl } from '../../utils/iconUrl';
 import type { ParsedSub } from './types';
-
-// Same module-scope brand → domain dictionary as BulkConfirmView keeps —
-// we hit icon.horse with the resolved hostname so the editor banner
-// shows the same brand mark the row showed in the list, without
-// requiring the catalog to have enriched the candidate.
-const DOMAIN_MAP: Record<string, string> = {
-  chatgpt: 'openai.com', 'chatgpt plus': 'openai.com', openai: 'openai.com',
-  youtube: 'youtube.com', 'youtube premium': 'youtube.com',
-  netflix: 'netflix.com', spotify: 'spotify.com', 'spotify premium': 'spotify.com',
-  'apple tv+': 'tv.apple.com', 'apple music': 'music.apple.com',
-  icloud: 'icloud.com', 'disney+': 'disneyplus.com', 'hbo max': 'hbomax.com',
-  github: 'github.com', figma: 'figma.com', notion: 'notion.so', slack: 'slack.com',
-  adobe: 'adobe.com', midjourney: 'midjourney.com', claude: 'claude.ai',
-  nordvpn: 'nordvpn.com', '1password': '1password.com',
-  strava: 'strava.com', duolingo: 'duolingo.com',
-};
-
-function resolveIconUrl(sub: ParsedSub): string | null {
-  if (sub.iconUrl) return sub.iconUrl;
-  if (sub.serviceUrl) {
-    try {
-      const host = new URL(sub.serviceUrl).hostname.replace(/^www\./, '');
-      if (host) return `https://icon.horse/icon/${host}`;
-    } catch {
-      /* fall through */
-    }
-  }
-  const nameLower = (sub.name || '').toLowerCase().trim();
-  const mapped = DOMAIN_MAP[nameLower];
-  if (mapped) return `https://icon.horse/icon/${mapped}`;
-  return null;
-}
 
 interface Props {
   visible: boolean;
@@ -140,7 +109,7 @@ function BulkEditModalImpl({
   const currentCategory = (sub.category || 'OTHER').toUpperCase();
   const currentReminder = sub.reminderDaysBefore ?? [3];
   const currency = (sub.currency || 'USD').toUpperCase();
-  const iconUrl = resolveIconUrl(sub);
+  const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl, name: sub.name }) ?? null;
 
   return (
     <KeyboardAwareModal

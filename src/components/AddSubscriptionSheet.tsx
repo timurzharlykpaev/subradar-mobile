@@ -395,7 +395,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
     }
-    const iconUrl = resolveIconUrl({ iconUrl: form.iconUrl, serviceUrl: form.serviceUrl });
+    const iconUrl = resolveIconUrl({ iconUrl: form.iconUrl, serviceUrl: form.serviceUrl, name: form.name });
 
     const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
     const rawBilling = (form.billingPeriod || 'MONTHLY').toUpperCase();
@@ -502,7 +502,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     setLoadingStage('saving');
     const source = addedViaSourceRef.current;
 
-    const iconUrl = resolveIconUrl({ iconUrl: data.iconUrl, serviceUrl: data.serviceUrl });
+    const iconUrl = resolveIconUrl({ iconUrl: data.iconUrl, serviceUrl: data.serviceUrl, name: data.name });
 
     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
     const rawCategory = (data.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
@@ -1046,7 +1046,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       try {
         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
         const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
+        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl, name: sub.name });
         const todayStr = new Date().toISOString().split('T')[0];
         const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',
@@ -1151,7 +1151,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (wizardSavingRef.current) return;
     wizardSavingRef.current = true;
     try {
-    const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
+    const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl, name: sub.name });
 
     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
     const rawCategory = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g, '_');
@@ -1214,7 +1214,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       try {
         const rawCat = (sub.category || 'OTHER').toUpperCase().replace(/\s+/g,'_');
         const rawBill = (sub.billingPeriod || 'MONTHLY').toUpperCase();
-        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl });
+        const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl, name: sub.name });
         const todayStr2 = new Date().toISOString().split('T')[0];
         const res = await subscriptionsApi.create({
           name: sub.name || 'Subscription',

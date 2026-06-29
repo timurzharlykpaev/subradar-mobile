@@ -11,30 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { formatMoney } from '../../utils/formatMoney';
+import { resolveIconUrl } from '../../utils/iconUrl';
 import type { ParsedSub } from '../AIWizard';
-
-// Known service → real domain mapping (hoisted to module scope so it isn't
-// re-created on every render inside the row map).
-const DOMAIN_MAP: Record<string, string> = {
-  'chatgpt': 'openai.com', 'chatgpt plus': 'openai.com', 'openai': 'openai.com',
-  'youtube': 'youtube.com', 'youtube premium': 'youtube.com', 'youtube music': 'music.youtube.com',
-  'netflix': 'netflix.com', 'netflix premium': 'netflix.com', 'netflix standard': 'netflix.com',
-  'spotify': 'spotify.com', 'spotify premium': 'spotify.com',
-  'playstation plus': 'playstation.com', 'playstation': 'playstation.com', 'ps plus': 'playstation.com',
-  'xbox game pass': 'xbox.com', 'xbox': 'xbox.com',
-  'apple tv+': 'tv.apple.com', 'apple tv': 'tv.apple.com',
-  'apple music': 'music.apple.com', 'apple arcade': 'apple.com',
-  'icloud': 'icloud.com', 'icloud+': 'icloud.com', 'icloud plus': 'icloud.com',
-  'disney+': 'disneyplus.com', 'disney plus': 'disneyplus.com',
-  'hbo max': 'hbomax.com', 'hbo': 'hbomax.com',
-  'amazon prime': 'amazon.com', 'prime video': 'amazon.com',
-  'github': 'github.com', 'github copilot': 'github.com',
-  'figma': 'figma.com', 'notion': 'notion.so', 'slack': 'slack.com',
-  'adobe': 'adobe.com', 'adobe creative cloud': 'adobe.com',
-  'midjourney': 'midjourney.com', 'claude': 'claude.ai',
-  'nordvpn': 'nordvpn.com', '1password': '1password.com',
-  'strava': 'strava.com', 'duolingo': 'duolingo.com',
-};
 
 interface BulkRowProps {
   index: number;
@@ -60,11 +38,10 @@ function BulkRowImpl({
   const { colors } = useTheme();
   const { t } = useTranslation();
 
-  const nameLower = (sub.name || '').toLowerCase().trim();
-  const domain = sub.serviceUrl
-    ? (() => { try { return new URL(sub.serviceUrl).hostname.replace(/^www\./, ''); } catch { return ''; } })()
-    : DOMAIN_MAP[nameLower] || '';
-  const iconUrl = sub.iconUrl || (domain ? `https://icon.horse/icon/${domain}` : null);
+  // Centralised resolver: explicit iconUrl → serviceUrl host → name-guessed
+  // domain (DOMAIN_MAP + single-token heuristic), all via Google's favicon
+  // service. Surfaces logos for AI-scanned rows that arrive with just a name.
+  const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl, name: sub.name }) ?? null;
 
   const categoryKey = `categories.${(sub.category || 'OTHER').toLowerCase()}`;
   const categoryLabel = t(categoryKey, (sub.category || 'OTHER').replace(/_/g, ' '));

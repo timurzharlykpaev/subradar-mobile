@@ -49,6 +49,7 @@ import { BulkEditModal } from '../src/components/add-subscription/BulkEditModal'
 import type { ParsedSub } from '../src/components/add-subscription/types';
 import { subscriptionsApi } from '../src/api/subscriptions';
 import { useSubscriptionsStore } from '../src/stores/subscriptionsStore';
+import { resolveIconUrl } from '../src/utils/iconUrl';
 
 /**
  * Gmail bulk-import screen — Pro/Team gated end to end:
@@ -266,14 +267,6 @@ export default function GmailImportScreen() {
       // SaaS brands that own their .com (≈90% of real subscriptions).
       const items: ParsedSub[] = result.candidates.map((c) => {
         const cleanedName = (c.name || '').trim();
-        const slug = cleanedName
-          .toLowerCase()
-          .replace(/\+/g, 'plus')
-          .replace(/[^a-z0-9]/g, '');
-        const fallbackServiceUrl =
-          !c.serviceUrl && slug.length >= 2
-            ? `https://${slug}.com`
-            : undefined;
         return {
           name: cleanedName || undefined,
           amount: c.amount,
@@ -281,7 +274,10 @@ export default function GmailImportScreen() {
           billingPeriod: c.billingPeriod as ParsedSub['billingPeriod'],
           category: c.category,
           iconUrl: c.iconUrl,
-          serviceUrl: c.serviceUrl ?? fallbackServiceUrl,
+          // No bespoke `<slug>.com` fallback here — resolveIconUrl/guessServiceDomain
+          // (DOMAIN_MAP + single-token heuristic) infers the icon from the name and
+          // avoids the wrong-domain globe that joining multi-word names produced.
+          serviceUrl: c.serviceUrl,
           cancelUrl: c.cancelUrl,
           nextPaymentDate: c.nextPaymentDate,
           currentPlan: undefined,
@@ -565,7 +561,10 @@ export default function GmailImportScreen() {
             : {}),
           ...(sub.serviceUrl ? { serviceUrl: sub.serviceUrl } : {}),
           ...(sub.cancelUrl ? { cancelUrl: sub.cancelUrl } : {}),
-          ...(sub.iconUrl ? { iconUrl: sub.iconUrl } : {}),
+          ...((() => {
+            const iconUrl = resolveIconUrl({ iconUrl: sub.iconUrl, serviceUrl: sub.serviceUrl, name: sub.name });
+            return iconUrl ? { iconUrl } : {};
+          })()),
           ...(sub.currentPlan ? { currentPlan: sub.currentPlan } : {}),
           ...(sub.paymentCardId ? { paymentCardId: sub.paymentCardId } : {}),
           ...(sub.tags && sub.tags.length > 0 ? { tags: sub.tags } : {}),

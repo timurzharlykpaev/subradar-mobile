@@ -545,7 +545,7 @@ const QUICK_ADD_SERVICES = [
   { name: 'Spotify',   amount: 9.99,  color: '#1DB954', iconUrl: 'https://icon.horse/icon/spotify.com'    },
   { name: 'iCloud+',   amount: 2.99,  color: '#0071E3', iconUrl: 'https://icon.horse/icon/icloud.com'    },
   { name: 'YouTube',   amount: 13.99, color: '#FF0000', iconUrl: 'https://icon.horse/icon/youtube.com'   },
-  { name: 'ChatGPT',   amount: 20.00, color: '#10A37F', iconUrl: 'https://icon.horse/icon/openai.com'    },
+  { name: 'ChatGPT',   amount: 20.00, color: '#10A37F', iconUrl: 'https://www.google.com/s2/favicons?domain=openai.com&sz=128'    },
   { name: 'Other',     amount: 0,     color: '#8B5CF6', iconUrl: ''                                       },
 ] as const;
 
