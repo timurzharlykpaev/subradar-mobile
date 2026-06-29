@@ -59,7 +59,12 @@ export default function AIAnalysisSummary({
       {totalMonthlySavings > 0 && (
         <View style={[styles.savingsRow, { backgroundColor: colors.success + '18' }]}>
           <Ionicons name="trending-down-outline" size={18} color={colors.success} style={styles.savingsIcon} />
-          <Text style={[styles.savingsText, { color: colors.success }]}>
+          <Text
+            style={[styles.savingsText, { color: colors.success }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
+          >
             {t('analysis.potential_savings_inline', 'Potential savings: {{amount}}/mo', {
               amount: formatMoney(totalMonthlySavings, currency, i18n.language),
             })}
