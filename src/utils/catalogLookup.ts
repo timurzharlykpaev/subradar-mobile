@@ -46,7 +46,7 @@ const QUICK_CATALOG: Record<string, CatalogEntry> = {
   },
   chatgpt: {
     name: 'ChatGPT', category: 'AI_SERVICES', amount: 20, currency: 'USD', billingPeriod: 'MONTHLY',
-    iconUrl: 'https://icon.horse/icon/openai.com', serviceUrl: 'https://chat.openai.com',
+    iconUrl: 'https://www.google.com/s2/favicons?domain=openai.com&sz=128', serviceUrl: 'https://chat.openai.com',
     cancelUrl: 'https://help.openai.com/en/articles/7232013',
     plans: [
       { name: 'Plus', amount: 20, currency: 'USD', billingPeriod: 'MONTHLY' },
