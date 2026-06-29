@@ -62,6 +62,22 @@ import type { LoadingStage } from './add-subscription/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_TOP_GAP = 60;
+
+// The free-plan subscription cap can surface as an explicit error code or, on
+// older backend builds, as a bare 403 whose message mentions the limit. The
+// narrow `code`-only check let those fall through to the generic "something
+// went wrong" alert instead of the upgrade modal — match all three shapes.
+function isSubscriptionLimitError(err: any): boolean {
+  const errorData = err?.response?.data?.error || err?.response?.data;
+  const code = errorData?.code || '';
+  const status = err?.response?.status;
+  const msg = (typeof errorData === 'string' ? errorData : errorData?.message) || err?.message || '';
+  return (
+    code === 'SUBSCRIPTION_LIMIT_REACHED' ||
+    status === 403 ||
+    /limit reached|subscription limit|upgrade to pro|exceeded|quota/i.test(msg)
+  );
+}
 const SHEET_MAX_HEIGHT = Math.min(SCREEN_HEIGHT * 0.92, SCREEN_HEIGHT - SHEET_TOP_GAP);
 
 interface Props {
@@ -172,6 +188,11 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('thinking');
   // Modal gate for Pro-only limits (replaces blocking Alert.alert dialogs)
   const [proGate, setProGate] = useState<string | null>(null);
+  // When a save is blocked by the free-plan cap, we stash the create here so
+  // that once the user upgrades (access.isPro flips true) the subscription
+  // they were adding is committed automatically — they don't have to re-enter
+  // it after returning from the paywall.
+  const pendingProSaveRef = useRef<(() => Promise<void>) | null>(null);
   const [transcribedText, setTranscribedText] = useState('');
   const [confirmData, setConfirmData] = useState<ConfirmCardData | null>(null);
   const [bulkItems, setBulkItems] = useState<ParsedSub[]>([]);
@@ -281,6 +302,10 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
   const { setForm, setF, setMoreExpanded } = formCtx;
 
   const resetAll = useCallback(() => {
+    // Drop any cap-blocked save that was waiting on an upgrade — otherwise a
+    // later upgrade (e.g. from Settings) would silently add a sub the user
+    // abandoned here.
+    pendingProSaveRef.current = null;
     setFlowState('idle');
     setTranscribedText('');
     setConfirmData(null);
@@ -370,49 +395,52 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     if (!form.name.trim() || !form.amount || parseFloat(form.amount) <= 0) {
       return;
     }
-    savingRef.current = true;
-    setSaving(true);
-    try {
-      const iconUrl = resolveIconUrl({ iconUrl: form.iconUrl, serviceUrl: form.serviceUrl });
+    const iconUrl = resolveIconUrl({ iconUrl: form.iconUrl, serviceUrl: form.serviceUrl });
 
-      const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
-      const rawBilling = (form.billingPeriod || 'MONTHLY').toUpperCase();
-      const safeBilling = VALID_BILLING.includes(rawBilling) ? rawBilling : 'MONTHLY';
+    const VALID_BILLING = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY', 'LIFETIME', 'ONE_TIME'];
+    const rawBilling = (form.billingPeriod || 'MONTHLY').toUpperCase();
+    const safeBilling = VALID_BILLING.includes(rawBilling) ? rawBilling : 'MONTHLY';
 
-      const res = await subscriptionsApi.create({
-        name: form.name,
-        category: (form.category || 'OTHER').toUpperCase(),
-        amount: parseFloat(form.amount),
-        currency: form.currency,
-        billingPeriod: safeBilling,
-        billingDay: Math.min(Math.max(parseInt(form.billingDay) || 1, 1), 31),
-        status: form.isTrial ? 'TRIAL' : 'ACTIVE',
-        paymentCardId: form.paymentCardId || undefined,
-        currentPlan: form.currentPlan || undefined,
-        serviceUrl: form.serviceUrl || undefined,
-        cancelUrl: form.cancelUrl || undefined,
-        iconUrl: iconUrl || undefined,
-        notes: form.notes || undefined,
-        // Always pair status:'TRIAL' with a real trialEndDate. Without
-        // it the backend persists TRIAL + null and SubscriptionCard
-        // renders neither the trial badge nor the next-payment row
-        // because `trialDays === null` short-circuits the trial branch
-        // and the trial branch suppresses the next-payment fallback.
-        // Default to +7d (matches what the toggle pre-fills) so the
-        // user always gets a working trial card even if they cleared
-        // the date field by accident.
-        trialEndDate: form.isTrial
-          ? (form.trialEndDate ||
-              new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
-          : undefined,
-        startDate: form.startDate || undefined,
-        nextPaymentDate: form.nextPaymentDate || undefined,
-        reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
-        reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
-        color: form.color || undefined,
-        tags: form.tags.length > 0 ? form.tags : undefined,
-        addedVia: source,
-      });
+    const payload = {
+      name: form.name,
+      category: (form.category || 'OTHER').toUpperCase(),
+      amount: parseFloat(form.amount),
+      currency: form.currency,
+      billingPeriod: safeBilling,
+      billingDay: Math.min(Math.max(parseInt(form.billingDay) || 1, 1), 31),
+      status: form.isTrial ? 'TRIAL' : 'ACTIVE',
+      paymentCardId: form.paymentCardId || undefined,
+      currentPlan: form.currentPlan || undefined,
+      serviceUrl: form.serviceUrl || undefined,
+      cancelUrl: form.cancelUrl || undefined,
+      iconUrl: iconUrl || undefined,
+      notes: form.notes || undefined,
+      // Always pair status:'TRIAL' with a real trialEndDate. Without
+      // it the backend persists TRIAL + null and SubscriptionCard
+      // renders neither the trial badge nor the next-payment row
+      // because `trialDays === null` short-circuits the trial branch
+      // and the trial branch suppresses the next-payment fallback.
+      // Default to +7d (matches what the toggle pre-fills) so the
+      // user always gets a working trial card even if they cleared
+      // the date field by accident.
+      trialEndDate: form.isTrial
+        ? (form.trialEndDate ||
+            new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
+        : undefined,
+      startDate: form.startDate || undefined,
+      nextPaymentDate: form.nextPaymentDate || undefined,
+      reminderDaysBefore: form.reminderDaysBefore.length > 0 ? form.reminderDaysBefore : undefined,
+      reminderEnabled: form.reminderDaysBefore.length > 0 ? true : undefined,
+      color: form.color || undefined,
+      tags: form.tags.length > 0 ? form.tags : undefined,
+      addedVia: source,
+    };
+
+    // Closure so the exact same create can be replayed automatically once the
+    // user upgrades (see the access.isPro effect) — the sub they were adding
+    // isn't lost behind the paywall.
+    const doCreate = async () => {
+      const res = await subscriptionsApi.create(payload);
       addSubscription(res.data);
       const allSubs = useSubscriptionsStore.getState().subscriptions;
       analytics.subscriptionAdded(
@@ -429,19 +457,23 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
         if (!isMounted.current) return;
         useSubscriptionsStore.getState().setSubscriptions(r.data || []);
       }).catch(() => {});
+    };
+
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      await doCreate();
     } catch (err: any) {
       const errorData = err?.response?.data?.error || err?.response?.data;
-      const code = errorData?.code || '';
       const status = err?.response?.status;
-      // Only treat 429 as the subscription-cap paywall trigger when the
-      // server explicitly tagged it as such. Generic 429 = NestJS throttler
-      // (rate-limit on /subscriptions); showing the upgrade modal there is
-      // the wrong UX — the user already created the sub on the first POST,
-      // the 2nd/3rd are double-tap collisions.
-      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED';
-      const isRateLimited = status === 429 && !isLimitError;
+      // Generic 429 = NestJS throttler (rate-limit on /subscriptions); the user
+      // already created the sub on the first POST, the 2nd/3rd are double-tap
+      // collisions — don't show the upgrade modal there.
+      const isRateLimited = status === 429 && !isSubscriptionLimitError(err);
 
-      if (isLimitError) {
+      if (isSubscriptionLimitError(err)) {
+        // Stash the create so upgrading auto-commits it, then show the modal.
+        pendingProSaveRef.current = doCreate;
         analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'manual_save_backend' });
         setProGate('unlimited_subs');
       } else if (isRateLimited) {
@@ -467,12 +499,9 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setProGate('unlimited_subs');
       return;
     }
-    savingRef.current = true;
-    setSaving(true);
     setLoadingStage('saving');
     const source = addedViaSourceRef.current;
 
-    try {
     const iconUrl = resolveIconUrl({ iconUrl: data.iconUrl, serviceUrl: data.serviceUrl });
 
     const VALID_CATEGORIES = ['STREAMING', 'AI_SERVICES', 'INFRASTRUCTURE', 'DEVELOPER', 'PRODUCTIVITY', 'MUSIC', 'GAMING', 'EDUCATION', 'FINANCE', 'DESIGN', 'SECURITY', 'HEALTH', 'SPORT', 'NEWS', 'BUSINESS', 'OTHER'];
@@ -483,7 +512,7 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
     const rawBillingPeriod = (data.billingPeriod || 'MONTHLY').toUpperCase();
     const safeBillingPeriod = VALID_BILLING.includes(rawBillingPeriod) ? rawBillingPeriod : 'MONTHLY';
 
-    const res = await subscriptionsApi.create({
+    const payload = {
       name: data.name || 'Subscription',
       category: safeCategory,
       amount: data.amount || 0,
@@ -503,31 +532,39 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       addedVia: source,
       reminderEnabled: data.reminderEnabled ?? true,
       reminderDaysBefore: data.reminderDaysBefore ?? [3],
-    });
-    addSubscription(res.data);
-    if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
-    const allSubs = useSubscriptionsStore.getState().subscriptions;
-    analytics.subscriptionAdded(
-      (data.category || 'OTHER').toLowerCase(),
-      data.amount || 0,
-      data.currency || currency || 'USD',
-      (data.billingPeriod || 'MONTHLY').toLowerCase(),
-      allSubs.length === 0,
-      source === 'AI_SCREENSHOT' ? 'screenshot' : source === 'AI_TEXT' ? 'ai_lookup' : 'manual',
-    );
-    setSuccessName(data.name || '');
-    setShowSuccess(true);
-    subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
-      if (!isMounted.current) return;
-      useSubscriptionsStore.getState().setSubscriptions(r.data || []);
-    }).catch(() => {});
+    };
+
+    // Replayable on upgrade — see the access.isPro effect.
+    const doCreate = async () => {
+      const res = await subscriptionsApi.create(payload);
+      addSubscription(res.data);
+      if (res.data.iconUrl) { prefetchImage(res.data.iconUrl); }
+      const allSubs = useSubscriptionsStore.getState().subscriptions;
+      analytics.subscriptionAdded(
+        (data.category || 'OTHER').toLowerCase(),
+        data.amount || 0,
+        data.currency || currency || 'USD',
+        (data.billingPeriod || 'MONTHLY').toLowerCase(),
+        allSubs.length === 0,
+        source === 'AI_SCREENSHOT' ? 'screenshot' : source === 'AI_TEXT' ? 'ai_lookup' : 'manual',
+      );
+      setSuccessName(data.name || '');
+      setShowSuccess(true);
+      subscriptionsApi.getAll({ displayCurrency: useSettingsStore.getState().displayCurrency }).then((r) => {
+        if (!isMounted.current) return;
+        useSubscriptionsStore.getState().setSubscriptions(r.data || []);
+      }).catch(() => {});
+    };
+
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      await doCreate();
     } catch (err: any) {
-      const errorData = err?.response?.data?.error || err?.response?.data;
-      const code = errorData?.code || '';
       const status = err?.response?.status;
-      const isLimitError = code === 'SUBSCRIPTION_LIMIT_REACHED';
-      const isRateLimited = status === 429 && !isLimitError;
-      if (isLimitError) {
+      const isRateLimited = status === 429 && !isSubscriptionLimitError(err);
+      if (isSubscriptionLimitError(err)) {
+        pendingProSaveRef.current = doCreate;
         analytics.track('pro_gate_shown', { feature: 'unlimited_subs', source: 'confirm_save_backend' });
         setProGate('unlimited_subs');
       } else if (isRateLimited) {
@@ -540,6 +577,33 @@ export function AddSubscriptionSheet({ visible, onClose }: Props) {
       setSaving(false);
     }
   }, [subsLimitReached, currency, addSubscription, t]);
+
+  // Auto-commit a cap-blocked save once the user upgrades. When the limit
+  // modal sent them to the paywall and they came back Pro, `access.isPro`
+  // flips false→true here; replay the stashed create so the subscription they
+  // were adding lands without re-entry. Guard on the transition (not just the
+  // truthy value) so an already-Pro user re-rendering never double-fires.
+  const wasProRef = useRef(access?.isPro ?? false);
+  useEffect(() => {
+    const isProNow = access?.isPro ?? false;
+    const justUpgraded = isProNow && !wasProRef.current;
+    wasProRef.current = isProNow;
+    if (!justUpgraded) return;
+    const pending = pendingProSaveRef.current;
+    if (!pending) return;
+    pendingProSaveRef.current = null;
+    setProGate(null);
+    savingRef.current = true;
+    setSaving(true);
+    pending()
+      .catch((err: any) => {
+        Alert.alert(t('common.error'), translateBackendError(t, err) || t('add.save_failed'));
+      })
+      .finally(() => {
+        savingRef.current = false;
+        setSaving(false);
+      });
+  }, [access?.isPro, t]);
 
   // ── Convert CatalogEntry to ConfirmCardData ─────────────────────────────
   // The previous version stamped `currency: displayCurrency` onto the
