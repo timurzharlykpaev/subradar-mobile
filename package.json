@@ -1,6 +1,6 @@
 {
   "name": "subradar-mobile",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -20,7 +20,8 @@
     "build:testflight": "git checkout main && git pull origin main && eas build --platform ios --profile testflight --auto-submit",
     "build:production": "git checkout main && git pull origin main && eas build --platform ios --profile production --auto-submit",
     "build:preview": "eas build --platform ios --profile preview",
-    "build:android": "eas build --platform android --profile production"
+    "build:android": "eas build --platform android --profile production",
+    "lint": "expo lint"
   },
   "dependencies": {
     "@amplitude/analytics-react-native": "^1.5.52",
@@ -93,6 +94,8 @@
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~10.0.0",
     "jest": "~29.7.0",
     "ts-jest": "^29.4.6"
   },
