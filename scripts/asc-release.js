@@ -16,19 +16,30 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 
-const KEY_ID = 'P4F4X7WXXW';
-const ISSUER_ID = '8b7aa06e-9951-41f6-80f9-e877a63c4bf8';
+// Key config via env (falls back to the original team key). For an ASC
+// *Individual* key, leave ASC_ISSUER_ID empty → JWT uses `sub:"user"` and no
+// issuer (Team keys use `iss`). Individual keys inherit the user's role, so an
+// Admin/Account-Holder individual key can create versions + submit for review.
+// Defaults to the Admin *Individual* key (can create versions + submit for
+// review). The old team key P4F4X7WXXW is Developer-role and 403s on those, so
+// it's only good for build upload / metadata. Override via env if needed; set
+// a non-empty ASC_ISSUER_ID to use a Team key (JWT `iss`) instead.
+const KEY_ID = process.env.ASC_KEY_ID || 'VOEAQNENEFVE';
+const ISSUER_ID = process.env.ASC_ISSUER_ID || '';
+const INDIVIDUAL = !ISSUER_ID; // individual key → JWT uses sub:"user", no issuer
 const APP_ID = '6760282723';
-const P8 = path.join(__dirname, '..', 'AuthKey_P4F4X7WXXW.p8');
+const P8 = process.env.ASC_P8_PATH
+  ? path.resolve(process.env.ASC_P8_PATH)
+  : path.join(__dirname, '..', 'AuthKey_VOEAQNENEFVE.p8');
 
 function tok() {
   const key = fs.readFileSync(P8, 'utf8');
   const now = Math.floor(Date.now() / 1000);
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
-  const si =
-    b64({ alg: 'ES256', kid: KEY_ID, typ: 'JWT' }) +
-    '.' +
-    b64({ iss: ISSUER_ID, iat: now, exp: now + 900, aud: 'appstoreconnect-v1' });
+  const payload = INDIVIDUAL
+    ? { sub: 'user', iat: now, exp: now + 900, aud: 'appstoreconnect-v1' }
+    : { iss: ISSUER_ID, iat: now, exp: now + 900, aud: 'appstoreconnect-v1' };
+  const si = b64({ alg: 'ES256', kid: KEY_ID, typ: 'JWT' }) + '.' + b64(payload);
   const s = crypto.createSign('SHA256');
   s.update(si);
   return si + '.' + s.sign({ key, dsaEncoding: 'ieee-p1363' }).toString('base64url');
@@ -83,12 +94,12 @@ async function main() {
     const created = await api('POST', '/v1/appStoreVersions', {
       data: {
         type: 'appStoreVersions',
-        attributes: { platform: 'IOS_APP', versionString, releaseType: 'AFTER_APPROVAL' },
+        attributes: { platform: 'IOS', versionString, releaseType: 'AFTER_APPROVAL' },
         relationships: { app: { data: { type: 'apps', id: APP_ID } } },
       },
     });
     version = created.data;
-    console.log(`• created version ${versionString} (MANUAL release) → ${version.id}`);
+    console.log(`• created version ${versionString} (auto-release on approval) → ${version.id}`);
   }
 
   // 4. Attach the build.
@@ -113,14 +124,14 @@ async function main() {
 
   // 6. Submit for review (reviewSubmissions flow).
   const sub = await api('POST', '/v1/reviewSubmissions', {
-    data: { type: 'reviewSubmissions', attributes: { platform: 'IOS_APP' }, relationships: { app: { data: { type: 'apps', id: APP_ID } } } },
+    data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' }, relationships: { app: { data: { type: 'apps', id: APP_ID } } } },
   });
   const subId = sub.data.id;
   await api('POST', '/v1/reviewSubmissionItems', {
     data: { type: 'reviewSubmissionItems', relationships: { reviewSubmission: { data: { type: 'reviewSubmissions', id: subId } }, appStoreVersion: { data: { type: 'appStoreVersions', id: version.id } } } },
   });
   await api('PATCH', `/v1/reviewSubmissions/${subId}`, { data: { type: 'reviewSubmissions', id: subId, attributes: { submitted: true } } });
-  console.log(`\n✅ Submitted ${versionString} (build ${buildNumber}) to App Store review. Release type: MANUAL.`);
+  console.log(`\n✅ Submitted ${versionString} (build ${buildNumber}) to App Store review. Release type: auto-release on approval.`);
   console.log(`   Review submission: ${subId}`);
 }
 

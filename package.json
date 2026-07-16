@@ -20,6 +20,7 @@
     "release": "bash scripts/release.sh",
     "metadata:pull": "node scripts/asc-metadata.js pull",
     "metadata:push": "node scripts/asc-metadata.js push",
+    "release:appstore": "node scripts/asc-release.js",
     "build:testflight": "git checkout main && git pull origin main && eas build --platform ios --profile testflight --auto-submit",
     "build:production": "git checkout main && git pull origin main && eas build --platform ios --profile production --auto-submit",
     "build:preview": "eas build --platform ios --profile preview",
