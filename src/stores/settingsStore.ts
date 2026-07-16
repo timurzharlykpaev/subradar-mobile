@@ -192,9 +192,35 @@ export const useSettingsStore = create<SettingsState>()(
           (typeof user.displayCurrency === 'string' && user.displayCurrency) || '';
         if (dc) {
           const upper = dc.toUpperCase();
-          next.displayCurrency = upper;
-          next.currency = upper;
-          next.currencyExplicitlySet = true;
+          // Never stomp an explicit local currency pick with the server's
+          // value. `hydrateFromUser` runs on EVERY launch (DataLoader), so if
+          // the user picked a currency whose `updateMe({ displayCurrency })`
+          // mirror never landed (fire-and-forget PATCH can fail, or the app was
+          // killed mid-flight) — or the account still holds the default USD —
+          // the stale server value would silently revert their choice on every
+          // re-entry. The local persisted pick survives restarts and IS the
+          // freshest signal, so it wins. Mirrors the `languageExplicitlySet`
+          // guard below (added in d74ffee for locale — the currency path in
+          // this function was missed even though its commit message claimed to
+          // mirror `currencyExplicitlySet`). We still adopt the server currency
+          // on a device that never set one (multi-device sync for a fresh
+          // login).
+          const state = useSettingsStore.getState();
+          if (!state.currencyExplicitlySet) {
+            next.displayCurrency = upper;
+            next.currency = upper;
+            next.currencyExplicitlySet = true;
+          } else if (upper !== state.displayCurrency) {
+            // Explicit local pick diverges from the server → the earlier PATCH
+            // never landed. Local wins on screen (above), and we re-push it so
+            // server-side analytics / team reports stop computing totals in the
+            // stale currency. Fire-and-forget, same as setCurrency.
+            usersApi
+              .updateMe({ displayCurrency: state.displayCurrency })
+              .catch((err) =>
+                reportPatchFailure('displayCurrency', state.displayCurrency, err),
+              );
+          }
         }
         const reg =
           (typeof user.region === 'string' && user.region) ||
