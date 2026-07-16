@@ -1,0 +1,104 @@
+{
+  "appId": "6760282723",
+  "versionString": "1.3.2",
+  "info": {
+    "en-US": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    },
+    "pt-PT": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    },
+    "ko": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    },
+    "ja": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    },
+    "ru": {
+      "name": "SubRadar AI",
+      "subtitle": null
+    },
+    "es-ES": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    },
+    "de-DE": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    },
+    "zh-Hant": {
+      "name": "SubRadar AI",
+      "subtitle": "Smart Subscription Tracker"
+    }
+  },
+  "version": {
+    "ru": {
+      "description": "SubRadar AI — умный трекер подписок, который покажет, на что реально уходят твои деньги, и не даст забыть про автосписания.\n\nПОЧЕМУ ЛЮДИ ПЕРЕПЛАЧИВАЮТ\nСредний пользователь iPhone тратит больше 20 000 ₸ в месяц на подписки. Половина — это забытые триалы, дубли и сервисы, которыми никто уже не пользуется. SubRadar найдёт их за 30 секунд.\n\nДОБАВЛЯЙ ПОДПИСКИ ТАК, КАК УДОБНО\n- Голосом — наговори, AI вытащит название, цену и цикл оплаты\n- Скриншотом чека или экрана — AI распознает всё автоматически\n- Сканированием Gmail — подключи почту, мы найдём все подписки сами (Pro)\n- Умным поиском по каталогу из 1000+ популярных сервисов\n\nПЛАТИ ОСОЗНАННО\n- Push-напоминания за 1–7 дней до списания\n- Предупреждение перед окончанием триала\n- Календарь предстоящих платежей\n- Отслеживание изменений цены в реальном времени\n\nAI-ИНСАЙТЫ, КОТОРЫЕ ЭКОНОМЯТ\n- Прогноз расходов на месяц, полгода, год вперёд\n- Поиск дублей — когда одна и та же подписка оплачена с разных карт\n- Алёрты на неиспользуемые подписки\n- Подбор более дешёвых альтернатив\n- Ежемесячный AI-аудит с рекомендациями, что отменить\n\nВНЯТНАЯ АНАЛИТИКА\n- Разбивка по категориям: стриминг, AI, продуктивность, спорт\n- По картам и сервисам\n- Графики год-к-году\n- PDF-отчёты для бухгалтерии и налоговой\n\nУПОРЯДОЧИВАНИЕ ПО КАРТАМ\n- Привяжи подписку к карте по последним 4 цифрам\n- Сумма по каждой карте на одном экране\n- Знай, какая карта когда списывается\n\nДЛЯ СЕМЬИ И КОМАНДЫ\n- Общее рабочее пространство для семьи или офиса\n- Видно, кто чем пользуется — убирай лишние места сразу\n- Аналитика по каждому участнику\n- Роли и права доступа\n\nТАРИФЫ\n- Free: до 3 подписок с базовой аналитикой\n- Pro: без лимита, голос + фото + Gmail-импорт, полная AI-аналитика, PDF-отчёты\n- Team: всё из Pro плюс общее пространство, аналитика по людям, админ-настройки\n\n10 ЯЗЫКОВ\nАнглийский, русский, немецкий, французский, испанский, португальский, казахский, японский, корейский, китайский.\n\nПРИВАТНОСТЬ В ПЕРВУЮ ОЧЕРЕДЬ\nСквозное шифрование при передаче. Шифрование БД на уровне колонок. Твои данные не продаются и не передаются рекламодателям. Прошли независимый аудит CASA Tier 2.\n\nСайт: https://subradar.ai\nПоддержка: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "ko": {
+      "description": "SubRadar AI는 모든 정기 결제를 가장 똑똑하게 관리하는 방법입니다. 잊고 있던 구독에 더 이상 돈을 쓰지 마세요. 돈이 어디로 가는지 정확히 파악하고, 갱신에 더 이상 놀라지 마세요.\n\n왜 우리는 더 많이 지불할까요\n평균적인 iPhone 사용자는 매달 30만원 이상을 구독에 쓰며, 그중 절반은 잊은 체험판, 중복 결제, 또는 더 이상 사용하지 않는 서비스입니다. SubRadar는 30초 만에 모두 찾아냅니다.\n\n원하는 방식으로 구독 추가\n- 음성 — 자연스럽게 말하면 AI가 서비스명, 가격, 결제 주기를 추출\n- 사진 — 영수증이나 스크린샷을 찍으면 AI가 자동으로 채움\n- Gmail 스캔 — 메일을 연결하면 모든 구독을 자동으로 찾음 (Pro)\n- 1,000개 이상의 인기 서비스가 등록된 스마트 카탈로그\n\n결제일에 놀라지 마세요\n- 각 갱신 1~7일 전 푸시 알림\n- 무료 체험 종료 알림으로 자동 결제 전 취소\n- 다가오는 결제 캘린더\n- 가격 변동 실시간 감지\n\n돈을 아끼는 AI 인사이트\n- 1, 6, 12개월 지출 예측\n- 다른 카드나 가족 간 중복 결제 감지\n- 미사용 구독 알림\n- 더 저렴한 대안 서비스 추천\n- 매월 AI 감사 및 맞춤형 해지 추천\n\n실제 의사 결정을 위한 분석\n- 카테고리별 분석: 스트리밍, AI, 생산성, 피트니스\n- 카드별 및 서비스별 집계\n- 연도별 비교 차트\n- 세금 및 경비 관리를 위한 PDF 보고서\n\n카드별 정리\n- 카드 마지막 4자리로 구독을 연결\n- 카드별 합계를 한눈에\n- 어떤 카드가 언제 결제되는지 정확히 파악\n\n가족과 팀을 위해\n- 가족이나 회사를 위한 공유 워크스페이스\n- 누가 무엇을 사용하는지 확인 — 중복 좌석 즉시 제거\n- 멤버별 지출 개요\n- 역할 기반 액세스 권한\n\n요금제\n- 무료: 최대 3개 구독, 기본 분석\n- Pro: 무제한, 음성 + 사진 + Gmail 가져오기, 전체 AI 분석, PDF 보고서\n- Team: Pro 모든 기능 + 공유 워크스페이스, 멤버 인사이트, 관리자 제어\n\n10개 언어\n영어, 러시아어, 독일어, 프랑스어, 스페인어, 포르투갈어, 카자흐어, 일본어, 한국어, 중국어.\n\n개인정보 최우선\n전송 중 종단간 암호화. 데이터베이스 열 수준 암호화. 데이터를 판매하거나 광고주와 공유하지 않습니다. 독립 CASA Tier 2 보안 감사 통과.\n\n웹사이트: https://subradar.ai\n지원: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "pt-PT": {
+      "description": "SubRadar AI é a forma mais inteligente de assumir o controle de cada pagamento recorrente. Pare de pagar por assinaturas esquecidas, veja exatamente para onde vai o seu dinheiro e nunca mais seja pego de surpresa por uma renovação.\n\nPOR QUE PAGAMOS A MAIS\nO usuário médio de iPhone gasta mais de R$ 250 por mês em assinaturas — metade são testes esquecidos, duplicatas ou serviços que ele não usa mais. O SubRadar encontra todas em 30 segundos.\n\nADICIONE ASSINATURAS DO SEU JEITO\n- Por voz — fale naturalmente, a IA extrai o serviço, preço e ciclo de cobrança\n- Por foto — fotografe um recibo ou screenshot, a IA preenche os detalhes\n- Varredura do Gmail — conecte seu e-mail e encontramos cada assinatura automaticamente (Pro)\n- Catálogo inteligente com mais de 1.000 serviços populares\n\nNUNCA MAIS SEJA PEGO DE SURPRESA\n- Lembretes 1 a 7 dias antes de cada renovação\n- Alertas de fim de teste para cancelar a tempo\n- Calendário de próximos pagamentos\n- Detecção em tempo real de mudanças de preço\n\nINSIGHTS DE IA QUE ECONOMIZAM\n- Previsão de gastos para 1, 6 e 12 meses\n- Detecção de duplicatas entre cartões e membros da família\n- Alertas para assinaturas não utilizadas\n- Sugestões de alternativas mais baratas\n- Auditoria mensal de IA com recomendações personalizadas\n\nANALÍTICA PARA DECISÕES REAIS\n- Análise por categoria: streaming, IA, produtividade, fitness\n- Por cartão e por fornecedor\n- Gráficos de comparação anual\n- Relatórios PDF para impostos e controle de despesas\n\nORGANIZAÇÃO POR CARTÃO\n- Vincule cada assinatura a um cartão pelos 4 últimos dígitos\n- Totais por cartão em uma olhada\n- Saiba exatamente qual cartão é cobrado e quando\n\nPARA FAMÍLIAS E EQUIPES\n- Espaço compartilhado para casa ou empresa\n- Veja quem usa o quê — elimine lugares duplicados imediatamente\n- Visão geral de gastos por membro\n- Acesso baseado em funções\n\nPLANOS\n- Grátis: até 3 assinaturas com análise básica\n- Pro: assinaturas ilimitadas, importação por voz + foto + Gmail, IA completa, relatórios PDF\n- Team: tudo do Pro mais espaço compartilhado, insights por membro e controles de admin\n\n10 IDIOMAS\nInglês, russo, alemão, francês, espanhol, português, cazaque, japonês, coreano, chinês.\n\nPRIVACIDADE EM PRIMEIRO LUGAR\nCriptografia de ponta a ponta em trânsito. Criptografia em nível de coluna no banco de dados. Não vendemos seus dados nem os compartilhamos com anunciantes. Auditoria de segurança CASA Tier 2 aprovada.\n\nSite: https://subradar.ai\nSuporte: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "zh-Hant": {
+      "description": "SubRadar AI 是管理每一笔订阅费用最聪明的方式。不再为遗忘的订阅付费，清楚地看到钱花在哪里，再也不会被自动续费打个措手不及。\n\n为什么我们付得太多\n普通 iPhone 用户每月花费超过 1500 元在订阅服务上，其中一半是被遗忘的试用、重复订阅或不再使用的服务。SubRadar 30 秒内全部找出。\n\n按你喜欢的方式添加订阅\n- 语音 — 自然说出，AI 自动识别服务名称、价格和计费周期\n- 拍照 — 拍下收据或截图，AI 自动填写细节\n- Gmail 扫描 — 连接邮箱，自动找出每一个订阅（Pro）\n- 智能���录，覆盖 1000+ 主流服务\n\n再也不被扣款吓一跳\n- 每次续费前 1 到 7 天的推送提醒\n- 试用期结束提醒，自动扣费前及时取消\n- 即将���来的付款日历\n- 实时检测价格变动\n\n帮你省钱的 AI 洞察\n- 1、6、12 个月支出预测\n- 跨卡片和家庭成员的重复订阅检测\n- 未使用订阅提醒\n- 更便宜的替代服务推荐\n- 每月 AI 审计和个性化取消建议\n\n为真实决策而生的分析\n- 分类细分：流媒体、AI、效率、健身等\n- 按卡和按服务商分类汇总\n- 同比趋势图表\n- 用于税务和报销的 PDF 报告\n\n按卡片整理\n- 用卡片末 4 位绑定订阅\n- 每张卡的总额一目了然\n- 清楚知道哪张卡何时被扣\n\n家庭与团队\n- 为家庭或公司提供的共享工作空间\n- 看到谁在用什么 — 立即删除重复席位\n- 每个成员的支出概览\n- 基于角色的访问权限\n\n订阅计划\n- 免费：最多 3 个订阅，基础分析\n- Pro：无限订阅，语音 + 照片 + Gmail 导入，完整 AI 分析，PDF 报告\n- Team：Pro 全部功能 + 共享工作空间、成员洞察、管理员控制\n\n10 种语言\n英语、俄语、德语、法语、西班牙语、葡萄牙语、哈萨克语、日语、韩语、中文。\n\n隐私优先\n传输端到端加密。数据库列级加密。我们不会出售你的数据，也不会与广告商分享。已通过独立 CASA Tier 2 安全审计。\n\n网站：https://subradar.ai\n支持：support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "en-US": {
+      "description": "SubRadar AI is the smartest way to take control of every recurring payment in your life. Stop paying for subscriptions you forgot about, see exactly where your money goes, and never get blindsided by a renewal again.\n\nWHY PEOPLE OVERPAY\nThe average iPhone user spends over $230 a month on subscriptions — and half of them are forgotten trials, duplicates, or services they no longer use. SubRadar finds them in 30 seconds.\n\nADD SUBSCRIPTIONS THE AI WAY\n- Voice — speak naturally, AI extracts service, price, billing cycle\n- Photo — snap a screenshot or receipt, AI fills the rest\n- Gmail scan — connect Gmail, we find every subscription in your inbox automatically (Pro)\n- Smart catalog — autocomplete for 1,000+ popular services with local pricing\n\nNEVER MISS A CHARGE\n- Push reminders 1-7 days before every renewal\n- Trial expiration alerts so you cancel before the auto-charge\n- Upcoming payments calendar\n- Real-time price-change detection\n\nAI INSIGHTS THAT SAVE MONEY\n- Forecast: how much you'll spend over the next 1, 6, and 12 months\n- Duplicate detection: same service paid through different cards or family members\n- Unused subscription alerts based on usage signals\n- Cheaper alternative suggestions for your current services\n- Monthly AI audit with personalized cancellation recommendations\n\nANALYTICS BUILT FOR REAL DECISIONS\n- Category breakdown: streaming, AI tools, productivity, fitness, more\n- Per-card and per-merchant breakdowns\n- Year-over-year trend charts\n- Export full PDF reports for taxes and expense tracking\n\nORGANIZE BY PAYMENT CARD\n- Link each subscription to a specific card by last 4 digits\n- Per-card totals at a glance\n- Know exactly which card gets hit and when\n\nFOR FAMILIES AND TEAMS\n- Shared workspace for the household or company\n- See who uses what — eliminate duplicate seats immediately\n- Per-member spending overview\n- Role-based access and member analytics\n\nPLANS\n- Free: track up to 3 subscriptions with basic analytics\n- Pro: unlimited subscriptions, voice + photo + Gmail import, full AI analytics, PDF reports\n- Team: everything in Pro plus shared workspace, member insights, and admin controls\n\n10 LANGUAGES\nEnglish, Russian, German, French, Spanish, Portuguese, Italian, Kazakh, Japanese, Korean, Simplified Chinese.\n\nPRIVACY FIRST\nEnd-to-end encryption in transit. Database-level encryption at rest. We do not sell your data and we do not share it with advertisers — ever. Independent CASA Tier 2 security audit passed.\n\nWebsite: https://subradar.ai\nSupport: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "de-DE": {
+      "description": "SubRadar AI ist der klügste Weg, jede wiederkehrende Zahlung im Griff zu behalten. Schluss mit vergessenen Abos, Doppelbuchungen und Überraschungs-Abbuchungen.\n\nWARUM WIR ZU VIEL ZAHLEN\nDer durchschnittliche iPhone-Nutzer gibt über 180 € pro Monat für Abos aus — die Hälfte davon sind vergessene Testphasen, Duplikate oder ungenutzte Dienste. SubRadar findet sie in 30 Sekunden.\n\nABOS HINZUFÜGEN — SO WIE DU WILLST\n- Sprachsteuerung — Name, Preis und Abrechnungszyklus werden automatisch erkannt\n- Foto — Beleg oder Screenshot scannen, KI füllt die Details aus\n- Gmail-Scan — Postfach verbinden, wir finden jedes Abo automatisch (Pro)\n- Intelligenter Katalog mit über 1.000 beliebten Diensten\n\nNIE WIEDER ÜBERRASCHT WERDEN\n- Push-Erinnerungen 1–7 Tage vor jeder Abbuchung\n- Warnung vor Ablauf der Testphase\n- Kalender der anstehenden Zahlungen\n- Echtzeit-Erkennung von Preiserhöhungen\n\nKI-INSIGHTS, DIE GELD SPAREN\n- Ausgabenprognose für 1, 6 und 12 Monate\n- Duplikat-Erkennung über Karten und Familienmitglieder hinweg\n- Hinweise auf ungenutzte Abos\n- Vorschläge günstigerer Alternativen\n- Monatliches KI-Audit mit Empfehlungen\n\nANALYTIK FÜR ECHTE ENTSCHEIDUNGEN\n- Kategorienanalyse: Streaming, KI-Tools, Produktivität, Fitness\n- Aufschlüsselung nach Karte und Anbieter\n- Jahresvergleich-Diagramme\n- PDF-Reports für Steuer und Buchhaltung\n\nORGANISATION NACH KARTEN\n- Verknüpfe Abos mit Karten über die letzten 4 Ziffern\n- Summen pro Karte auf einen Blick\n- Wisse genau, wann welche Karte belastet wird\n\nFAMILIE UND TEAM\n- Geteilter Bereich für Haushalt oder Unternehmen\n- Sehe, wer was nutzt — entferne Doppelplätze sofort\n- Mitglieder-Übersicht und Team-Analytik\n- Rollenbasierte Zugriffsrechte\n\nTARIFE\n- Free: bis zu 3 Abos mit Basis-Analytik\n- Pro: unbegrenzte Abos, Sprach- + Foto- + Gmail-Import, vollständige KI-Analytik, PDF-Reports\n- Team: alles aus Pro plus geteilter Bereich, Mitglieder-Insights und Admin-Kontrollen\n\n10 SPRACHEN\nEnglisch, Russisch, Deutsch, Französisch, Spanisch, Portugiesisch, Kasachisch, Japanisch, Koreanisch, Chinesisch.\n\nDATENSCHUTZ AN ERSTER STELLE\nEnde-zu-Ende-Verschlüsselung bei der Übertragung. Datenbank-Verschlüsselung auf Spaltenebene. Wir verkaufen deine Daten nicht und teilen sie nicht mit Werbetreibenden. Unabhängiger CASA-Tier-2-Sicherheitsaudit bestanden.\n\nWebsite: https://subradar.ai\nSupport: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "ja": {
+      "description": "SubRadar AIは、すべての定期支払いを賢く管理する最もスマートな方法です。忘れていたサブスクの請求はもう来ません。お金がどこに消えているかを正確に把握し、更新で驚かされることはなくなります。\n\nなぜサブスクで払いすぎてしまうのか\n平均的なiPhoneユーザーは毎月3万円以上をサブスクに使っています。その半分は忘れていた無料トライアル、重複契約、もう使っていないサービスです。SubRadarが30秒で見つけ出します。\n\n好きな方法でサブスクを追加\n- 音声入力 — 話すだけでAIがサービス名、料金、請求サイクルを抽出\n- 写真 — 領収書やスクリーンショットを撮るだけ、AIが詳細を自動入力\n- Gmail連携 — メールを接続するとすべてのサブスクを自動検出（Pro）\n- スマートカタログ — 1,000以上の人気サービスをオートコンプリート\n\n請求に驚かない\n- 各更新の1〜7日前にプッシュ通知\n- トライアル終了の事前アラートで自動課金前にキャンセル\n- 今後の支払いカレンダー\n- 価格変更のリアルタイム検出\n\nお金を節約するAIインサイト\n- 1ヶ月、6ヶ月、12ヶ月の支出予測\n- 異なるカードや家族間の重複検出\n- 未使用サブスクのアラート\n- より安い代替サービスの提案\n- 月次AI監査と個別の解約推奨\n\n判断のためのアナリティクス\n- カテゴリ別内訳: ストリーミング、AI、生産性、フィットネスなど\n- カード別・サービス別の集計\n- 年次比較グラフ\n- 税務・経費管理用のPDFレポート\n\nカード別整理\n- カードの下4桁でサブスクを紐付け\n- カードごとの合計を一目で\n- どのカードがいつ請求されるか把握\n\n家族・チーム向け\n- 家族や会社のための共有ワークスペース\n- 誰が何を使っているかを可視化 — 重複席を即削除\n- メンバー別の支出概要\n- 役割ベースのアクセス権限\n\nプラン\n- 無料: サブスク3件まで、基本アナリティクス\n- Pro: 無制限、音声・写真・Gmail取り込み、AI完全分析、PDFレポート\n- Team: Proすべて + 共有ワークスペース、メンバーインサイト、管理者機能\n\n対応10言語\n英語、ロシア語、ドイツ語、フランス語、スペイン語、ポルトガル語、カザフ語、日本語、韓国語、中国語。\n\nプライバシー最優先\n転送時のエンドツーエンド暗号化。データベース列レベルの暗号化。データを売却することも、広告主と共有することもありません。CASA Tier 2セキュリティ監査合格済み。\n\nWebサイト: https://subradar.ai\nサポート: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    },
+    "es-ES": {
+      "description": "SubRadar AI es la forma más inteligente de controlar cada pago recurrente. Deja de pagar por suscripciones olvidadas, descubre adónde va realmente tu dinero y no te pille por sorpresa ninguna renovación.\n\nPOR QUÉ PAGAMOS DE MÁS\nEl usuario medio de iPhone gasta más de 200 € al mes en suscripciones — la mitad son pruebas olvidadas, duplicadas o servicios que ya no usa. SubRadar las encuentra en 30 segundos.\n\nAÑADE SUSCRIPCIONES COMO QUIERAS\n- Por voz — di el servicio y la IA extrae nombre, precio y ciclo\n- Por foto — captura un recibo o screenshot y la IA completa los datos\n- Escaneo de Gmail — conecta tu correo y encontramos cada suscripción automáticamente (Pro)\n- Catálogo inteligente con más de 1.000 servicios populares\n\nNUNCA TE PILLE UN COBRO\n- Recordatorios 1–7 días antes de cada renovación\n- Avisos de fin de prueba para cancelar a tiempo\n- Calendario de próximos pagos\n- Detección de subidas de precio en tiempo real\n\nINSIGHTS DE IA QUE AHORRAN DINERO\n- Previsión de gasto a 1, 6 y 12 meses\n- Detección de duplicados entre tarjetas y miembros familiares\n- Alertas de suscripciones sin uso\n- Sugerencias de alternativas más baratas\n- Auditoría mensual con recomendaciones personalizadas\n\nANALÍTICA PARA TOMAR DECISIONES\n- Desglose por categorías: streaming, IA, productividad, fitness\n- Por tarjeta y por proveedor\n- Gráficos año contra año\n- Informes PDF para impuestos y contabilidad\n\nORGANIZACIÓN POR TARJETAS\n- Vincula cada suscripción a una tarjeta por los 4 últimos dígitos\n- Total por tarjeta de un vistazo\n- Sabes exactamente qué tarjeta paga y cuándo\n\nPARA FAMILIAS Y EQUIPOS\n- Espacio compartido para hogar o empresa\n- Ve quién usa qué — elimina plazas duplicadas al instante\n- Resumen de gasto por miembro\n- Roles y permisos\n\nPLANES\n- Gratis: hasta 3 suscripciones con analítica básica\n- Pro: ilimitadas, importación por voz + foto + Gmail, IA completa, informes PDF\n- Team: todo lo de Pro más espacio compartido, insights por miembro y controles admin\n\n10 IDIOMAS\nInglés, ruso, alemán, francés, español, portugués, kazajo, japonés, coreano, chino.\n\nPRIVACIDAD COMO PRIORIDAD\nCifrado de extremo a extremo en tránsito. Cifrado a nivel de columna en la base de datos. Nunca vendemos tus datos ni los compartimos con anunciantes. Auditoría de seguridad CASA Tier 2 superada.\n\nWeb: https://subradar.ai\nSoporte: support@subradar.ai\n\nTerms of Use (EULA): https://subradar.ai/legal/terms\nPrivacy Policy: https://subradar.ai/legal/privacy\n",
+      "keywords": "subscription,tracker,spending,budget,reminder,billing,ai,recurring,payments,finance,money,cancel",
+      "promotionalText": null,
+      "whatsNew": "Fix bus",
+      "marketingUrl": "https://subradar.ai",
+      "supportUrl": "https://subradar.ai"
+    }
+  }
+}
