@@ -19,6 +19,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   ScrollView,
+  BackHandler,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -631,6 +632,23 @@ export default function OnboardingScreen() {
   }, [regionAutoDetected]);
   const { colors, isDark, toggleTheme } = useTheme();
   const safeInsets = useSafeAreaInsets();
+
+  // Android hardware back: step backward through onboarding instead of exiting
+  // the app. Mirrors the on-screen back button's visibility (hidden on the
+  // auth/loading/final steps 3-5); on step 0 or a hidden-back step we return
+  // false so the OS default (exit) applies.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const canGoBack = step > 0 && step !== 3 && step !== 4 && step !== 5;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (canGoBack) {
+        gotoStep(step - 1, 'back');
+        return true;
+      }
+      return false;
+    });
+    return () => sub.remove();
+  }, [step, gotoStep]);
 
   // Hide the bottom dots / nav buttons when the keyboard is up so they stop
   // colliding with the OTP inputs on shorter devices. Listening to keyboard

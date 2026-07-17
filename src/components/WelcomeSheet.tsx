@@ -95,7 +95,7 @@ export function WelcomeSheet({ visible, onAddWithAI, onSkip }: Props) {
   }, [visible]);
 
   return (
-    <Modal visible={visible} transparent animationType="none">
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onSkip}>
       <Animated.View style={[styles.backdrop, { opacity }]}>
         <TouchableOpacity style={styles.backdropTouch} activeOpacity={1} onPress={onSkip} />
       </Animated.View>

@@ -64,7 +64,7 @@ export function TrialOfferModal({ visible, onStartTrial, onSkip, isPending }: Pr
   }, [visible]);
 
   return (
-    <Modal visible={visible} transparent animationType="none">
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onSkip}>
       <Animated.View testID="trial-offer-modal" style={[styles.backdrop, { opacity }]}>
         <View style={styles.center}>
           <Animated.View
