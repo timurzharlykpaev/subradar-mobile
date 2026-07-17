@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { SafeLinearGradient as LinearGradient } from './SafeLinearGradient';
 import { useTheme } from '../theme';
@@ -14,6 +15,7 @@ interface Props {
 export function UndoToast({ message, duration = 5000, onUndo, onDismiss }: Props) {
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const progress = useRef(new Animated.Value(1)).current;
   const [visible, setVisible] = useState(true);
   // Track mount status so the timing callback doesn't fire onDismiss after
@@ -66,6 +68,10 @@ export function UndoToast({ message, duration = 5000, onUndo, onDismiss }: Props
       style={[
         styles.container,
         { backgroundColor: toastBg, borderWidth: isDark ? 1 : 0, borderColor: colors.border },
+        // Android: the tab bar grew by the nav-bar inset (see (tabs)/_layout),
+        // so lift the toast by the same amount to keep it above the bar. iOS
+        // keeps the tuned bottom:100.
+        Platform.OS === 'android' && { bottom: 100 + insets.bottom },
       ]}
     >
       <View style={styles.content}>
