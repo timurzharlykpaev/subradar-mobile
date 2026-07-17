@@ -1354,7 +1354,7 @@ const styles = StyleSheet.create({
   // marginRight on percent (+ a wider amount minWidth) enforces a readable
   // separator between the two right-aligned numbers.
   legendPercent: { fontSize: 12, minWidth: 40, textAlign: 'right', fontWeight: '700', flexShrink: 0, marginRight: 6 },
-  legendAmount: { fontSize: 13, fontWeight: '800', minWidth: 76, textAlign: 'right', flexShrink: 0 },
+  legendAmount: { fontSize: 13, fontWeight: '800', minWidth: 92, textAlign: 'right', flexShrink: 0 },
 
   // Card Breakdown
   cardBreakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },

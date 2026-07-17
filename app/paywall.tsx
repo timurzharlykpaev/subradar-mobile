@@ -902,17 +902,17 @@ export default function PaywallScreen() {
                 <View style={styles.badgesRow}>
                   {plan.id === 'pro' && accessViaTeam && !hasOwnPro && (
                     <View style={[styles.inlineBadge, { backgroundColor: '#10B981' }]}>
-                      <Text style={styles.inlineBadgeText}>{t('paywall.active_via_team', 'ACTIVE VIA TEAM')}</Text>
+                      <Text numberOfLines={1} style={styles.inlineBadgeText}>{t('paywall.active_via_team', 'ACTIVE VIA TEAM')}</Text>
                     </View>
                   )}
                   {plan.id === 'pro' && !isCurrent && !(accessViaTeam && !hasOwnPro) && (
                     <View style={[styles.inlineBadge, { backgroundColor: plan.color }]}>
-                      <Text style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
+                      <Text numberOfLines={1} style={styles.inlineBadgeText}>{t('paywall.most_popular')}</Text>
                     </View>
                   )}
                   {yearlySavingsText && !isCurrent && (
                     <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                      <Text style={styles.inlineBadgeText}>
+                      <Text numberOfLines={1} style={styles.inlineBadgeText}>
                         {t('team_upsell.save_vs_separate_short', {
                           amount: yearlySavingsText,
                           defaultValue: 'Save {{amount}}/yr',
@@ -922,12 +922,12 @@ export default function PaywallScreen() {
                   )}
                   {showBestValue && !isCurrent && (
                     <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                      <Text style={styles.inlineBadgeText}>{t('paywall.best_value', 'BEST VALUE')}</Text>
+                      <Text numberOfLines={1} style={styles.inlineBadgeText}>{t('paywall.best_value', 'BEST VALUE')}</Text>
                     </View>
                   )}
                   {isCurrent && (
                     <View style={[styles.inlineBadge, { backgroundColor: '#22C55E' }]}>
-                      <Text style={styles.inlineBadgeText}>{t('subscription_plan.current_plan').toUpperCase()}</Text>
+                      <Text numberOfLines={1} style={styles.inlineBadgeText}>{t('subscription_plan.current_plan').toUpperCase()}</Text>
                     </View>
                   )}
                 </View>
@@ -938,7 +938,7 @@ export default function PaywallScreen() {
                     {plan.features.map((f) => (
                       <View key={f.key} style={styles.featureRow}>
                         <Ionicons name={f.icon as any} size={16} color={plan.color} />
-                        <Text style={[styles.featureText, { color: colors.text }]}>
+                        <Text numberOfLines={2} style={[styles.featureText, { color: colors.text }]}>
                           {t(`paywall.feat_${f.key}`, f.key)}
                         </Text>
                       </View>
@@ -946,7 +946,7 @@ export default function PaywallScreen() {
                     {plan.missing.map((m) => (
                       <View key={m} style={styles.featureRow}>
                         <Ionicons name="close" size={16} color={colors.textMuted} />
-                        <Text style={[styles.featureText, { color: colors.textMuted }]}>
+                        <Text numberOfLines={2} style={[styles.featureText, { color: colors.textMuted }]}>
                           {t(`paywall.feat_${m}`, m)}
                         </Text>
                       </View>
@@ -1133,7 +1133,7 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 13, fontWeight: '700' },
 
   socialProofRow: { paddingHorizontal: 20, marginBottom: 12 },
-  socialProofCard: { borderRadius: 14, padding: 14, borderWidth: 1, gap: 4 },
+  socialProofCard: { borderRadius: 14, padding: 14, borderWidth: 1, gap: 4, maxWidth: 380, alignSelf: 'center', width: '100%' },
   starsRow: { flexDirection: 'row', gap: 2, marginBottom: 4 },
   socialProofText: { fontSize: 13, fontWeight: '500', fontStyle: 'italic', lineHeight: 18 },
   socialProofAuthor: { fontSize: 11, marginTop: 2 },
@@ -1144,7 +1144,7 @@ const styles = StyleSheet.create({
   saveBadge: { backgroundColor: '#22C55E', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   saveBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
 
-  planCard: { marginHorizontal: 20, marginBottom: 12, borderRadius: 20, padding: 16 },
+  planCard: { marginHorizontal: 20, marginBottom: 12, borderRadius: 20, padding: 16, maxWidth: 440, alignSelf: 'center', width: '100%' },
   inlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, alignSelf: 'flex-start' },
   inlineBadgeText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 0.3 },
   badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },

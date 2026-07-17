@@ -231,7 +231,7 @@ export function MemberDetailSheet({ visible, member, workspaceId, analytics, cur
                         )}
                         <View style={{ flex: 1, minWidth: 0 }}>
                           <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }} numberOfLines={1}>{sub.name}</Text>
-                          <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                          <Text numberOfLines={1} ellipsizeMode="tail" style={{ fontSize: 11, color: colors.textMuted }}>
                             {String(t(`categories.${(sub.category || 'OTHER').toLowerCase()}`, sub.category))} · {String(t(`add.${(sub.billingPeriod || 'MONTHLY').toLowerCase()}`, sub.billingPeriod))}
                           </Text>
                         </View>

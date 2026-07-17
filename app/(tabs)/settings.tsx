@@ -348,8 +348,8 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 22, color: '#FFF', fontWeight: '800' }}>{user?.name?.[0] || 'U'}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>{user?.name || 'User'}</Text>
-              <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 1 }}>{user?.email || ''}</Text>
+              <Text numberOfLines={1} style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>{user?.name || 'User'}</Text>
+              <Text numberOfLines={1} ellipsizeMode="middle" style={{ fontSize: 13, color: colors.textSecondary, marginTop: 1 }}>{user?.email || ''}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
                 <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: planBadgeColor + '20' }}>
                   <Text style={{ fontSize: 11, fontWeight: '800', color: planBadgeColor }}>{planBadgeText}</Text>

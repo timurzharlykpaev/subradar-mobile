@@ -763,7 +763,7 @@ export default function GmailImportScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           {t('gmail.title', 'Gmail import')}
         </Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+        <Text numberOfLines={1} ellipsizeMode="middle" style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
           {headerSubtitle}
         </Text>
       </View>
@@ -1250,6 +1250,9 @@ const sheetStyles = StyleSheet.create({
     borderRadius: 20,
     padding: 22,
     alignItems: 'center',
+    maxWidth: 520,
+    alignSelf: 'center',
+    width: '100%',
     shadowColor: '#000',
     shadowOpacity: 0.18,
     shadowRadius: 16,
