@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Tabs, useRouter } from 'expo-router';
-import { View, TouchableOpacity, StyleSheet, InteractionManager } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, InteractionManager, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { AddSubscriptionSheet } from '../../src/components/AddSubscriptionSheet';
@@ -26,6 +27,7 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors, isDark } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // Auth gate. The 401 interceptor in api/client.ts calls authStore.logout()
   // when the refresh token is also stale (typical case: app reinstalled on
@@ -61,6 +63,13 @@ export default function TabsLayout() {
           tabBarStyle: [styles.tabBar, {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
+            // Android: add the system nav-bar inset so tab icons/labels aren't
+            // hidden behind the 3-button nav or gesture bar. iOS keeps its
+            // tuned 84/20 (the home-indicator fits within it).
+            ...(Platform.OS === 'android' && {
+              height: 64 + insets.bottom,
+              paddingBottom: insets.bottom + 8,
+            }),
           }],
           tabBarShowLabel: true,
           tabBarActiveTintColor: colors.primary,

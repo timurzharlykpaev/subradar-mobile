@@ -15,6 +15,25 @@
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com"
       }
     },
+    "android-apk": {
+      "distribution": "internal",
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.subradar.ai/api/v1",
+        "EXPO_PUBLIC_REVENUECAT_KEY": "test_KCkKkTcGjgMgysTZtGukFRBZBBh",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1026598677430-a59lmlfdo7r0ug1f6lafl52aean648i9.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1026598677430-8qjldmtstvjo9a9gjsabipo05mo7ci5u.apps.googleusercontent.com",
+        "EXPO_PUBLIC_ENV": "production"
+      },
+      "android": {
+        "buildType": "apk",
+        "autoIncrement": true
+      },
+      "node": "22.0.0",
+      "cache": {
+        "key": "subradar-npm-v1"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
