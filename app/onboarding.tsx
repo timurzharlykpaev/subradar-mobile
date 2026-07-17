@@ -1831,7 +1831,17 @@ export default function OnboardingScreen() {
           accessory — tapping outside is the only way to close it, so we
           let the content area swallow taps. */}
       {!keyboardShown && (
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            // Android: clear the system navigation bar (edge-to-edge draws the
+            // footer behind it, cutting off the Continue/Next buttons). iOS keeps
+            // its tuned paddingBottom:40 (home indicator fits within it).
+            Platform.OS === 'android' && {
+              paddingBottom: safeInsets.bottom + 20,
+            },
+          ]}
+        >
           {/* Pagination dots — только в configuration steps (0-2). На terminal
               screens (auth/notifications/first_sub) убираем visual noise. */}
           {step < 3 && (
