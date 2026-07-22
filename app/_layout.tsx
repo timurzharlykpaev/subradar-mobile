@@ -26,6 +26,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { EventSubscription } from 'expo-modules-core';
 import { Stack, useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../src/api/auth';
 import { useFonts } from 'expo-font';
@@ -679,6 +680,7 @@ function DeepLinkHandler() {
   useEffect(() => {
     type Target =
       | { kind: 'magic'; token: string }
+      | { kind: 'oauth'; token: string; refreshToken?: string }
       | { kind: 'route'; path: string };
 
     const parseTarget = (url: string): Target | null => {
@@ -695,6 +697,19 @@ function DeepLinkHandler() {
       if (path === 'auth/magic') {
         const token = typeof params.token === 'string' ? params.token : null;
         if (token) return { kind: 'magic', token };
+      }
+
+      // Google OAuth return — backend redirects to
+      // `subradar://auth/callback?token=…&refreshToken=…`. On Android the
+      // custom-scheme redirect can leak past WebBrowser.openAuthSessionAsync
+      // into this deep-link handler (which had no `auth/callback` case), so
+      // Google login "did nothing" / routing broke. Handle it here too — this
+      // is idempotent belt-and-suspenders with the in-onboarding handler.
+      if (path === 'auth/callback') {
+        const token = typeof params.token === 'string' ? params.token : null;
+        const refreshToken =
+          typeof params.refreshToken === 'string' ? params.refreshToken : undefined;
+        if (token) return { kind: 'oauth', token, refreshToken };
       }
 
       // Generic app paths — `subradar.ai/app/<surface>` from emails / landing.
@@ -738,6 +753,23 @@ function DeepLinkHandler() {
         } catch {
           // Invalid / expired token — bounce to onboarding so the user can
           // request a fresh magic link instead of staring at a hung URL.
+          router.replace('/onboarding');
+        }
+        return;
+      }
+
+      if (target.kind === 'oauth') {
+        try {
+          await AsyncStorage.setItem('auth_token', target.token);
+          if (target.refreshToken) {
+            await AsyncStorage.setItem('refresh_token', target.refreshToken);
+          }
+          // Token is now in storage → the axios interceptor authorizes this call.
+          const res = await authApi.getProfile();
+          setUser(res.data, target.token, target.refreshToken);
+          router.replace('/(tabs)');
+        } catch {
+          // Bad/expired token → back to onboarding to retry.
           router.replace('/onboarding');
         }
         return;
@@ -903,6 +935,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
     <ErrorBoundary>
       <ThemeProvider>
       <View style={{ flex: 1 }}>
@@ -926,6 +959,7 @@ export default function RootLayout() {
       </View>
       </ThemeProvider>
     </ErrorBoundary>
+    </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
